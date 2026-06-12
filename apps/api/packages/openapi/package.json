@@ -1,0 +1,9 @@
+{
+  "name": "@xennic/openapi",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Xennic Platform OpenAPI Specification",
+  "main": "./v1/openapi.json",
+  "types": "./v1/openapi.json",
+  "files": ["v1/"]
+}
