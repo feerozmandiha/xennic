@@ -1,0 +1,168 @@
+{
+  "common": {
+    "appName": "زنیک",
+    "appNameEn": "Xennic",
+    "loading": "در حال بارگذاری...",
+    "error": "خطا",
+    "success": "موفق",
+    "cancel": "انصراف",
+    "confirm": "تأیید",
+    "save": "ذخیره",
+    "edit": "ویرایش",
+    "delete": "حذف",
+    "back": "بازگشت",
+    "next": "بعدی",
+    "search": "جستجو...",
+    "noData": "داده‌ای یافت نشد",
+    "total": "مجموع",
+    "actions": "عملیات"
+  },
+  "auth": {
+    "login": "ورود",
+    "logout": "خروج",
+    "register": "ثبت‌نام",
+    "email": "ایمیل",
+    "password": "رمز عبور",
+    "firstName": "نام",
+    "lastName": "نام خانوادگی",
+    "forgotPassword": "فراموشی رمز عبور",
+    "resetPassword": "بازنشانی رمز عبور",
+    "loginTitle": "ورود به زنیک",
+    "loginSubtitle": "پلتفرم مهندسی برق",
+    "registerTitle": "ساخت حساب کاربری",
+    "noAccount": "حساب کاربری ندارید؟",
+    "hasAccount": "حساب کاربری دارید؟",
+    "emailPlaceholder": "email@company.com",
+    "passwordPlaceholder": "مثال: Pass@1234",
+    "passwordHint": "حداقل ۸ کاراکتر، شامل حرف بزرگ، عدد و کاراکتر خاص (@$!%*?&)",
+    "loginButton": "ورود به سیستم",
+    "registerButton": "ایجاد حساب",
+    "invalidCredentials": "ایمیل یا رمز عبور اشتباه است",
+    "brandTitle": "پلتفرم حرفه‌ای\nمهندسی برق",
+    "feature1": "محاسبات استاندارد IEC / IEEE",
+    "feature2": "مشاور هوش مصنوعی مهندسی برق",
+    "feature3": "طراحی سیستم‌های خورشیدی",
+    "feature4": "تحلیل کیفیت توان (IEEE 519)"
+  },
+  "nav": {
+    "dashboard": "داشبورد",
+    "projects": "پروژه‌ها",
+    "engineering": "محاسبات مهندسی",
+    "storage": "فایل‌ها",
+    "notifications": "اعلان‌ها",
+    "settings": "تنظیمات",
+    "workspace": "فضای کاری",
+    "subscription": "اشتراک",
+    "ai": "هوش مصنوعی",
+    "energy": "تحلیل انرژی",
+    "articles": "مقالات",
+    "consultations": "مشاوره",
+    "admin": "مدیریت پلتفرم"
+  },
+  "dashboard": {
+    "welcome": "خوش آمدید",
+    "totalProjects": "پروژه‌های فعال",
+    "totalCalculations": "محاسبات این ماه",
+    "storageUsed": "فضای استفاده‌شده",
+    "planName": "پلن فعال",
+    "recentCalculations": "آخرین محاسبات",
+    "recentProjects": "آخرین پروژه‌ها",
+    "quickCalculate": "محاسبه سریع",
+    "upgradePrompt": "برای دسترسی نامحدود ارتقا دهید"
+  },
+  "projects": {
+    "title": "پروژه‌ها",
+    "newProject": "پروژه جدید",
+    "projectName": "نام پروژه",
+    "description": "توضیحات",
+    "status": "وضعیت",
+    "startDate": "تاریخ شروع",
+    "endDate": "تاریخ پایان",
+    "members": "اعضا",
+    "notes": "یادداشت‌ها",
+    "statuses": {
+      "active": "فعال",
+      "completed": "تکمیل‌شده",
+      "archived": "آرشیو",
+      "cancelled": "لغوشده"
+    }
+  },
+  "engineering": {
+    "title": "محاسبات مهندسی",
+    "catalog": "کاتالوگ محاسبات",
+    "calculate": "محاسبه",
+    "result": "نتیجه",
+    "standard": "استاندارد",
+    "inputs": "ورودی‌ها",
+    "outputs": "خروجی‌ها",
+    "history": "تاریخچه",
+    "categories": {
+      "basic": "الکتریک پایه",
+      "cable": "کابل",
+      "transformer": "ترانسفورماتور",
+      "protection": "حفاظت",
+      "power_quality": "کیفیت توان"
+    },
+    "proRequired": "این محاسبه نیاز به پلن Pro دارد"
+  },
+  "storage": {
+    "title": "فایل‌ها",
+    "upload": "آپلود فایل",
+    "download": "دانلود",
+    "totalFiles": "تعداد فایل‌ها",
+    "totalSize": "حجم کل",
+    "uploadSuccess": "فایل با موفقیت آپلود شد",
+    "deleteConfirm": "آیا از حذف این فایل مطمئن هستید؟"
+  },
+  "notifications": {
+    "title": "اعلان‌ها",
+    "markAllRead": "همه را خواندم",
+    "noNotifications": "اعلانی وجود ندارد",
+    "unread": "خوانده‌نشده"
+  },
+  "subscription": {
+    "title": "اشتراک",
+    "currentPlan": "پلن فعلی",
+    "upgrade": "ارتقا",
+    "plans": {
+      "free": "رایگان",
+      "pro": "حرفه‌ای",
+      "enterprise": "سازمانی"
+    },
+    "features": {
+      "projects": "پروژه",
+      "calculations_month": "محاسبه در ماه",
+      "ai_requests_month": "درخواست هوش مصنوعی",
+      "storage_gb": "گیگابایت فضا",
+      "unlimited": "نامحدود"
+    }
+  },
+  "settings": {
+    "title": "تنظیمات",
+    "profile": "پروفایل",
+    "workspace": "Workspace",
+    "security": "امنیت",
+    "plan": "اشتراک",
+    "appearance": "ظاهر",
+    "language": "زبان",
+    "theme": "ظاهر",
+    "themes": {
+      "light": "روشن",
+      "dark": "تاریک",
+      "system": "سیستم"
+    },
+    "languages": {
+      "fa": "فارسی",
+      "en": "English"
+    }
+  },
+  "errors": {
+    "required": "این فیلد الزامی است",
+    "invalidEmail": "فرمت ایمیل نادرست است",
+    "minLength": "حداقل {min} کاراکتر",
+    "serverError": "خطای سرور — لطفاً دوباره امتحان کنید",
+    "unauthorized": "لطفاً وارد سیستم شوید",
+    "forbidden": "دسترسی مجاز نیست",
+    "notFound": "صفحه مورد نظر یافت نشد"
+  }
+}

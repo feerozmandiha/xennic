@@ -1,0 +1,10 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "references": {
+    "docs": {
+      "type": "local",
+      "path": "/home/your-username/path/to/your/docs-folder",
+      "description": "اسناد معماری و نیازمندی‌های پروژه"
+    }
+  }
+}

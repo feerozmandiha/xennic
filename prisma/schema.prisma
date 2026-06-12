@@ -1,0 +1,807 @@
+// ============================================================
+// XENNIC PLATFORM — Prisma Schema v2
+// ORM:      Prisma
+// DB:       PostgreSQL 17
+// Strategy: Multi-Tenant (workspace_id isolation)
+// Keys:     UUID (all business entities)
+// ============================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================
+// IDENTITY DOMAIN
+// ============================================================
+
+model users {
+  id               String    @id @default(uuid())
+  email            String    @unique
+  phone            String?   @unique
+  password         String    // hashed — Argon2id
+  first_name       String
+  last_name        String
+  avatar_file_id   String?
+  is_admin         Boolean   @default(false)
+  is_active        Boolean   @default(true)
+  email_verified_at DateTime?
+  last_login       DateTime?
+  created_by       String?
+  updated_by       String?
+  created_at       DateTime  @default(now())
+  updated_at       DateTime  @updatedAt
+  deleted_at       DateTime?
+
+  sessions         sessions[]
+  refresh_tokens   refresh_tokens[]
+  user_roles       user_roles[]
+  workspace_members workspace_members[]
+  workspace_invitations_sent workspace_invitations[] @relation("InvitedBy")
+  projects_created projects[]        @relation("ProjectCreatedBy")
+  project_members  project_members[]
+  project_notes    project_notes[]
+  calculations     calculations[]
+  files            files[]
+  notifications    notifications[]
+  audit_logs       audit_logs[]
+  ai_usage         ai_usage[]
+  orders           orders[]
+
+  @@index([deleted_at])
+  @@index([created_at])
+}
+
+model sessions {
+  id               String    @id @default(uuid())
+  user_id          String
+  workspace_id     String?
+  ip_address       String?
+  user_agent       String?
+  expires_at       DateTime
+  last_activity_at DateTime  @default(now())
+  created_at       DateTime  @default(now())
+
+  user             users     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id])
+  @@index([expires_at])
+}
+
+model refresh_tokens {
+  id         String    @id @default(uuid())
+  user_id    String
+  token_hash String    @unique
+  expires_at DateTime
+  revoked_at DateTime?
+  created_at DateTime  @default(now())
+
+  user       users     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id])
+  @@index([token_hash])
+}
+
+model password_reset_tokens {
+  id         String    @id @default(uuid())
+  user_id    String
+  token_hash String    @unique
+  expires_at DateTime
+  used_at    DateTime?
+  created_at DateTime  @default(now())
+
+  @@index([token_hash])
+  @@index([user_id])
+}
+
+model roles {
+  id          String    @id @default(uuid())
+  name        String
+  slug        String    @unique
+  description String?
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+
+  user_roles       user_roles[]
+  role_permissions role_permissions[]
+
+  @@index([slug])
+}
+
+model permissions {
+  id          String    @id @default(uuid())
+  name        String
+  slug        String    @unique
+  description String?
+  domain      String
+  created_at  DateTime  @default(now())
+
+  role_permissions role_permissions[]
+
+  @@index([slug])
+  @@index([domain])
+}
+
+model role_permissions {
+  id            String      @id @default(uuid())
+  role_id       String
+  permission_id String
+
+  role          roles       @relation(fields: [role_id], references: [id], onDelete: Cascade)
+  permission    permissions @relation(fields: [permission_id], references: [id], onDelete: Cascade)
+
+  @@unique([role_id, permission_id])
+}
+
+model user_roles {
+  id           String   @id @default(uuid())
+  user_id      String
+  role_id      String
+  workspace_id String
+
+  user         users    @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  role         roles    @relation(fields: [role_id], references: [id], onDelete: Cascade)
+
+  @@unique([user_id, role_id, workspace_id])
+  @@index([user_id, workspace_id])
+}
+
+// ============================================================
+// WORKSPACE DOMAIN
+// ============================================================
+
+model workspaces {
+  id         String    @id @default(uuid())
+  code       String    @unique
+  name       String
+  created_by String
+  updated_by String?
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  deleted_at DateTime?
+
+  members      workspace_members[]
+  invitations  workspace_invitations[]
+  settings     workspace_settings?
+  projects     projects[]
+  subscriptions subscriptions[]
+  usage_logs   usage_logs[]
+  invoices     invoices[]
+  calculations calculations[]
+  files        files[]
+  api_keys     api_keys[]
+  webhooks     webhooks[]
+  audit_logs   audit_logs[]
+  conversations conversations[]
+  ai_usage     ai_usage[]
+  orders       orders[]
+
+  @@index([code])
+  @@index([created_by])
+  @@index([deleted_at])
+}
+
+model workspace_members {
+  id           String   @id @default(uuid())
+  workspace_id String
+  user_id      String
+  role         String   @default("MEMBER")
+  joined_at    DateTime @default(now())
+
+  workspace    workspaces @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
+  user         users      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@unique([workspace_id, user_id])
+  @@index([workspace_id])
+  @@index([user_id])
+}
+
+model workspace_invitations {
+  id           String   @id @default(uuid())
+  workspace_id String
+  email        String
+  role         String   @default("MEMBER")
+  token        String   @unique
+  invited_by   String
+  status       String   @default("pending")
+  expires_at   DateTime
+  created_at   DateTime @default(now())
+
+  workspace    workspaces @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
+  inviter      users      @relation("InvitedBy", fields: [invited_by], references: [id])
+
+  @@index([workspace_id])
+  @@index([token])
+  @@index([email])
+}
+
+model workspace_settings {
+  id           String   @id @default(uuid())
+  workspace_id String   @unique
+  settings     Json     @default("{}")
+  updated_at   DateTime @updatedAt
+
+  workspace    workspaces @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
+}
+
+// ============================================================
+// SUBSCRIPTION DOMAIN
+// ============================================================
+
+model plans {
+  id            String    @id @default(uuid())
+  name          String
+  slug          String    @unique
+  monthly_price Decimal   @default(0) @db.Decimal(10, 2)
+  yearly_price  Decimal   @default(0) @db.Decimal(10, 2)
+  features      Json      @default("{}")
+  is_active     Boolean   @default(true)
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+
+  subscriptions subscriptions[]
+  feature_flags feature_flags[]
+
+  @@index([slug])
+  @@index([is_active])
+}
+
+model subscriptions {
+  id           String    @id @default(uuid())
+  workspace_id String
+  plan_id      String
+  status       String    @default("active")
+  starts_at    DateTime  @default(now())
+  ends_at      DateTime?
+  cancelled_at DateTime?
+  created_at   DateTime  @default(now())
+  updated_at   DateTime  @updatedAt
+
+  workspace    workspaces @relation(fields: [workspace_id], references: [id])
+  plan         plans      @relation(fields: [plan_id], references: [id])
+
+  @@index([workspace_id])
+  @@index([status])
+}
+
+model usage_logs {
+  id           String   @id @default(uuid())
+  workspace_id String
+  feature      String
+  amount       Int      @default(1)
+  logged_at    DateTime @default(now())
+
+  workspace    workspaces @relation(fields: [workspace_id], references: [id])
+
+  @@index([workspace_id])
+  @@index([feature])
+  @@index([logged_at])
+}
+
+// ============================================================
+// BILLING DOMAIN
+// ============================================================
+
+model invoices {
+  id             String    @id @default(uuid())
+  workspace_id   String
+  invoice_number String    @unique
+  status         String    @default("pending")
+  currency       String    @default("USD")
+  subtotal       Decimal   @db.Decimal(12, 2)
+  tax_amount     Decimal   @default(0) @db.Decimal(12, 2)
+  total_amount   Decimal   @db.Decimal(12, 2)
+  issued_at      DateTime  @default(now())
+  due_at         DateTime?
+  paid_at        DateTime?
+  created_at     DateTime  @default(now())
+  updated_at     DateTime  @updatedAt
+
+  workspace      workspaces   @relation(fields: [workspace_id], references: [id])
+  payments       payments[]
+
+  @@index([workspace_id])
+  @@index([status])
+  @@index([invoice_number])
+}
+
+model payments {
+  id               String    @id @default(uuid())
+  workspace_id     String
+  invoice_id       String
+  gateway          String
+  reference_number String?
+  amount           Decimal   @db.Decimal(12, 2)
+  status           String    @default("pending")
+  paid_at          DateTime?
+  created_at       DateTime  @default(now())
+
+  invoice          invoices     @relation(fields: [invoice_id], references: [id])
+  transactions     transactions[]
+
+  @@index([workspace_id])
+  @@index([invoice_id])
+  @@index([status])
+}
+
+model transactions {
+  id         String   @id @default(uuid())
+  workspace_id String
+  payment_id String
+  type       String
+  amount     Decimal  @db.Decimal(12, 2)
+  status     String   @default("pending")
+  metadata   Json     @default("{}")
+  created_at DateTime @default(now())
+
+  payment    payments @relation(fields: [payment_id], references: [id])
+
+  @@index([workspace_id])
+  @@index([payment_id])
+}
+
+// ============================================================
+// PROJECT DOMAIN
+// ============================================================
+
+model projects {
+  id           String    @id @default(uuid())
+  workspace_id String
+  name         String
+  description  String?
+  status       String    @default("active")
+  start_date   DateTime?
+  end_date     DateTime?
+  created_by   String
+  updated_by   String?
+  created_at   DateTime  @default(now())
+  updated_at   DateTime  @updatedAt
+  deleted_at   DateTime?
+
+  workspace    workspaces      @relation(fields: [workspace_id], references: [id])
+  creator      users           @relation("ProjectCreatedBy", fields: [created_by], references: [id])
+  members      project_members[]
+  notes        project_notes[]
+  reports      project_reports[]
+  calculations calculations[]
+
+  @@index([workspace_id])
+  @@index([status])
+  @@index([deleted_at])
+}
+
+model project_members {
+  id         String   @id @default(uuid())
+  project_id String
+  user_id    String
+  role       String   @default("viewer")
+  joined_at  DateTime @default(now())
+
+  project    projects @relation(fields: [project_id], references: [id], onDelete: Cascade)
+  user       users    @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@unique([project_id, user_id])
+  @@index([project_id])
+}
+
+model project_notes {
+  id         String   @id @default(uuid())
+  project_id String
+  content    String
+  created_by String
+  created_at DateTime @default(now())
+
+  project    projects @relation(fields: [project_id], references: [id], onDelete: Cascade)
+  author     users    @relation(fields: [created_by], references: [id])
+
+  @@index([project_id])
+}
+
+model project_reports {
+  id         String   @id @default(uuid())
+  project_id String
+  file_id    String?
+  created_at DateTime @default(now())
+
+  project    projects @relation(fields: [project_id], references: [id], onDelete: Cascade)
+
+  @@index([project_id])
+}
+
+// ============================================================
+// ENGINEERING DOMAIN
+// ============================================================
+
+model calculations {
+  id               String   @id @default(uuid())
+  workspace_id     String
+  project_id       String?
+  user_id          String
+  type             String
+  version          String
+  inputs           Json     @default("{}")
+  results          Json     @default("{}")
+  engine_version   String
+  standard_version String
+  created_at       DateTime @default(now())
+
+  workspace        workspaces @relation(fields: [workspace_id], references: [id])
+  project          projects?  @relation(fields: [project_id], references: [id])
+  user             users      @relation(fields: [user_id], references: [id])
+
+  @@index([workspace_id])
+  @@index([project_id])
+  @@index([type])
+  @@index([created_at])
+}
+
+model calculation_templates {
+  id         String   @id @default(uuid())
+  name       String
+  type       String
+  schema     Json     @default("{}")
+  created_at DateTime @default(now())
+
+  @@index([type])
+}
+
+model engineering_standards {
+  id           String    @id @default(uuid())
+  code         String    @unique
+  title        String
+  organization String
+  version      String
+  published_at DateTime?
+  status       String    @default("active")
+
+  @@index([code])
+  @@index([organization])
+}
+
+// ============================================================
+// AI DOMAIN
+// ============================================================
+
+model agents {
+  id         String   @id @default(uuid())
+  name       String
+  slug       String   @unique
+  version    String
+  is_active  Boolean  @default(true)
+  created_at DateTime @default(now())
+
+  conversations conversations[]
+  ai_usage      ai_usage[]
+
+  @@index([slug])
+}
+
+model conversations {
+  id           String   @id @default(uuid())
+  workspace_id String
+  agent_id     String
+  title        String?
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+
+  workspace    workspaces @relation(fields: [workspace_id], references: [id])
+  agent        agents     @relation(fields: [agent_id], references: [id])
+  messages     messages[]
+
+  @@index([workspace_id])
+  @@index([agent_id])
+}
+
+model messages {
+  id              String   @id @default(uuid())
+  conversation_id String
+  role            String
+  content         String
+  metadata        Json     @default("{}")
+  created_at      DateTime @default(now())
+
+  conversation    conversations @relation(fields: [conversation_id], references: [id], onDelete: Cascade)
+
+  @@index([conversation_id])
+}
+
+model ai_usage {
+  id                String   @id @default(uuid())
+  workspace_id      String
+  user_id           String
+  agent_id          String?
+  provider          String
+  model             String
+  prompt_tokens     Int      @default(0)
+  completion_tokens Int      @default(0)
+  total_tokens      Int      @default(0)
+  cost              Decimal  @default(0) @db.Decimal(10, 6)
+  created_at        DateTime @default(now())
+
+  workspace    workspaces @relation(fields: [workspace_id], references: [id])
+  user         users      @relation(fields: [user_id], references: [id])
+  agent        agents?    @relation(fields: [agent_id], references: [id])
+
+  @@index([workspace_id])
+  @@index([user_id])
+  @@index([created_at])
+}
+
+// ============================================================
+// KNOWLEDGE DOMAIN
+// ============================================================
+
+model articles {
+  id           String    @id @default(uuid())
+  slug         String    @unique
+  status       String    @default("draft")
+  published_at DateTime?
+  created_at   DateTime  @default(now())
+  updated_at   DateTime  @updatedAt
+  deleted_at   DateTime?
+
+  translations article_translations[]
+
+  @@index([slug])
+  @@index([status])
+}
+
+model article_translations {
+  id         String   @id @default(uuid())
+  article_id String
+  locale     String
+  title      String
+  excerpt    String?
+  content    String
+
+  article    articles @relation(fields: [article_id], references: [id], onDelete: Cascade)
+
+  @@unique([article_id, locale])
+  @@index([article_id])
+}
+
+model categories {
+  id        String      @id @default(uuid())
+  parent_id String?
+  slug      String      @unique
+  status    String      @default("active")
+
+  parent    categories?  @relation("CategoryTree", fields: [parent_id], references: [id])
+  children  categories[] @relation("CategoryTree")
+
+  @@index([slug])
+  @@index([parent_id])
+}
+
+// ============================================================
+// MARKETPLACE DOMAIN
+// ============================================================
+
+model vendors {
+  id         String   @id @default(uuid())
+  name       String
+  slug       String   @unique
+  status     String   @default("active")
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  products   products[]
+
+  @@index([slug])
+}
+
+model products {
+  id         String   @id @default(uuid())
+  vendor_id  String
+  type       String
+  sku        String   @unique
+  price      Decimal  @db.Decimal(12, 2)
+  currency   String   @default("USD")
+  status     String   @default("active")
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  deleted_at DateTime?
+
+  vendor       vendors               @relation(fields: [vendor_id], references: [id])
+  translations product_translations[]
+  order_items  order_items[]
+
+  @@index([vendor_id])
+  @@index([status])
+  @@index([sku])
+}
+
+model product_translations {
+  id          String   @id @default(uuid())
+  product_id  String
+  locale      String
+  title       String
+  description String?
+
+  product     products @relation(fields: [product_id], references: [id], onDelete: Cascade)
+
+  @@unique([product_id, locale])
+}
+
+model orders {
+  id           String   @id @default(uuid())
+  workspace_id String
+  user_id      String
+  status       String   @default("pending")
+  currency     String   @default("USD")
+  total_amount Decimal  @db.Decimal(12, 2)
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+
+  workspace    workspaces    @relation(fields: [workspace_id], references: [id])
+  user         users         @relation(fields: [user_id], references: [id])
+  items        order_items[]
+
+  @@index([workspace_id])
+  @@index([user_id])
+  @@index([status])
+}
+
+model order_items {
+  id         String  @id @default(uuid())
+  order_id   String
+  product_id String
+  quantity   Int     @default(1)
+  unit_price Decimal @db.Decimal(12, 2)
+  total_price Decimal @db.Decimal(12, 2)
+
+  order      orders   @relation(fields: [order_id], references: [id], onDelete: Cascade)
+  product    products @relation(fields: [product_id], references: [id])
+
+  @@index([order_id])
+}
+
+// ============================================================
+// STORAGE DOMAIN
+// ============================================================
+
+model files {
+  id            String   @id @default(uuid())
+  workspace_id  String
+  bucket        String
+  path          String
+  filename      String
+  original_name String
+  extension     String
+  mime_type     String
+  size          BigInt
+  checksum      String?
+  uploaded_by   String
+  created_at    DateTime @default(now())
+  deleted_at    DateTime?
+
+  workspace     workspaces     @relation(fields: [workspace_id], references: [id])
+  uploader      users          @relation(fields: [uploaded_by], references: [id])
+  versions      file_versions[]
+
+  @@index([workspace_id])
+  @@index([uploaded_by])
+  @@index([mime_type])
+}
+
+model file_versions {
+  id         String   @id @default(uuid())
+  file_id    String
+  version    Int      @default(1)
+  path       String
+  checksum   String?
+  created_at DateTime @default(now())
+
+  file       files    @relation(fields: [file_id], references: [id], onDelete: Cascade)
+
+  @@index([file_id])
+}
+
+// ============================================================
+// API DOMAIN
+// ============================================================
+
+model api_keys {
+  id           String    @id @default(uuid())
+  workspace_id String
+  name         String
+  key_hash     String    @unique
+  last_used_at DateTime?
+  expires_at   DateTime?
+  created_at   DateTime  @default(now())
+
+  workspace    workspaces @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
+
+  @@index([workspace_id])
+  @@index([key_hash])
+}
+
+model webhooks {
+  id           String   @id @default(uuid())
+  workspace_id String
+  url          String
+  secret       String?
+  events       Json     @default("[]")
+  is_active    Boolean  @default(true)
+  created_at   DateTime @default(now())
+
+  workspace    workspaces @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
+
+  @@index([workspace_id])
+}
+
+// ============================================================
+// NOTIFICATION DOMAIN
+// ============================================================
+
+model notifications {
+  id         String    @id @default(uuid())
+  user_id    String
+  type       String
+  channel    String
+  title      String
+  content    String
+  status     String    @default("pending")
+  sent_at    DateTime?
+  created_at DateTime  @default(now())
+
+  user       users     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id])
+  @@index([status])
+  @@index([created_at])
+}
+
+// ============================================================
+// ADMIN DOMAIN
+// ============================================================
+
+model system_settings {
+  id         String   @id @default(uuid())
+  key        String   @unique
+  value      String
+  updated_at DateTime @updatedAt
+
+  @@index([key])
+}
+
+model feature_flags {
+  id           String    @id @default(uuid())
+  name         String    @unique
+  description  String?
+  enabled      Boolean   @default(false)
+  plan_id      String?
+  workspace_id String?
+  created_at   DateTime  @default(now())
+
+  plan         plans?    @relation(fields: [plan_id], references: [id])
+
+  @@index([name])
+}
+
+model audit_logs {
+  id           String   @id @default(uuid())
+  workspace_id String?
+  user_id      String?
+  ip_address   String?
+  user_agent   String?
+  action       String
+  entity       String?
+  entity_id    String?
+  old_values   Json?
+  new_values   Json?
+  metadata     Json?
+  created_at   DateTime @default(now())
+
+  workspace    workspaces? @relation(fields: [workspace_id], references: [id])
+  user         users?      @relation(fields: [user_id], references: [id])
+
+  @@index([workspace_id])
+  @@index([user_id])
+  @@index([action])
+  @@index([created_at])
+}

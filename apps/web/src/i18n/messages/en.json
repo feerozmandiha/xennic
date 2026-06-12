@@ -1,0 +1,168 @@
+{
+  "common": {
+    "appName": "Xennic",
+    "appNameEn": "Xennic",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "save": "Save",
+    "edit": "Edit",
+    "delete": "Delete",
+    "back": "Back",
+    "next": "Next",
+    "search": "Search...",
+    "noData": "No data found",
+    "total": "Total",
+    "actions": "Actions"
+  },
+  "auth": {
+    "login": "Sign In",
+    "logout": "Sign Out",
+    "register": "Sign Up",
+    "email": "Email",
+    "password": "Password",
+    "firstName": "First Name",
+    "lastName": "Last Name",
+    "forgotPassword": "Forgot Password",
+    "resetPassword": "Reset Password",
+    "loginTitle": "Sign in to Xennic",
+    "loginSubtitle": "Electrical Engineering Platform",
+    "registerTitle": "Create an account",
+    "noAccount": "Don't have an account?",
+    "hasAccount": "Already have an account?",
+    "emailPlaceholder": "email@company.com",
+    "passwordPlaceholder": "e.g. Pass@1234",
+    "passwordHint": "Min. 8 chars with uppercase, number & special char (@$!%*?&)",
+    "loginButton": "Sign In",
+    "registerButton": "Create Account",
+    "invalidCredentials": "Invalid email or password",
+    "brandTitle": "Professional\nEngineering Platform",
+    "feature1": "IEC / IEEE Standard Calculations",
+    "feature2": "AI-Powered Engineering Consultant",
+    "feature3": "Solar PV System Design",
+    "feature4": "Power Quality Analysis (IEEE 519)"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "projects": "Projects",
+    "engineering": "Engineering",
+    "storage": "Files",
+    "notifications": "Notifications",
+    "settings": "Settings",
+    "workspace": "Workspace",
+    "subscription": "Subscription",
+    "ai": "AI Assistant",
+    "energy": "Energy Analysis",
+    "articles": "Articles",
+    "consultations": "Consultations",
+    "admin": "Admin"
+  },
+  "dashboard": {
+    "welcome": "Welcome",
+    "totalProjects": "Active Projects",
+    "totalCalculations": "Calculations this month",
+    "storageUsed": "Storage used",
+    "planName": "Current Plan",
+    "recentCalculations": "Recent Calculations",
+    "recentProjects": "Recent Projects",
+    "quickCalculate": "Quick Calculate",
+    "upgradePrompt": "Upgrade for unlimited access"
+  },
+  "projects": {
+    "title": "Projects",
+    "newProject": "New Project",
+    "projectName": "Project Name",
+    "description": "Description",
+    "status": "Status",
+    "startDate": "Start Date",
+    "endDate": "End Date",
+    "members": "Members",
+    "notes": "Notes",
+    "statuses": {
+      "active": "Active",
+      "completed": "Completed",
+      "archived": "Archived",
+      "cancelled": "Cancelled"
+    }
+  },
+  "engineering": {
+    "title": "Engineering Calculations",
+    "catalog": "Calculation Catalog",
+    "calculate": "Calculate",
+    "result": "Result",
+    "standard": "Standard",
+    "inputs": "Inputs",
+    "outputs": "Outputs",
+    "history": "History",
+    "categories": {
+      "basic": "Basic Electrical",
+      "cable": "Cable",
+      "transformer": "Transformer",
+      "protection": "Protection",
+      "power_quality": "Power Quality"
+    },
+    "proRequired": "This calculation requires a Pro plan"
+  },
+  "storage": {
+    "title": "Files",
+    "upload": "Upload File",
+    "download": "Download",
+    "totalFiles": "Total Files",
+    "totalSize": "Total Size",
+    "uploadSuccess": "File uploaded successfully",
+    "deleteConfirm": "Are you sure you want to delete this file?"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "markAllRead": "Mark all as read",
+    "noNotifications": "No notifications",
+    "unread": "Unread"
+  },
+  "subscription": {
+    "title": "Subscription",
+    "currentPlan": "Current Plan",
+    "upgrade": "Upgrade",
+    "plans": {
+      "free": "Free",
+      "pro": "Pro",
+      "enterprise": "Enterprise"
+    },
+    "features": {
+      "projects": "projects",
+      "calculations_month": "calculations/month",
+      "ai_requests_month": "AI requests/month",
+      "storage_gb": "GB storage",
+      "unlimited": "Unlimited"
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "profile": "Profile",
+    "security": "Security",
+    "language": "Language",
+    "theme": "Theme",
+    "themes": {
+      "light": "Light",
+      "dark": "Dark",
+      "system": "System"
+    },
+    "languages": {
+      "fa": "فارسی",
+      "en": "English"
+    },
+    "workspace": "Workspace",
+    "plan": "Subscription",
+    "appearance": "Appearance"
+  },
+  "errors": {
+    "required": "This field is required",
+    "invalidEmail": "Invalid email format",
+    "minLength": "Minimum {min} characters",
+    "serverError": "Server error — please try again",
+    "unauthorized": "Please sign in",
+    "forbidden": "Access denied",
+    "notFound": "Page not found"
+  }
+}

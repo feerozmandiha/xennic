@@ -1,0 +1,5594 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/": {
+      "get": {
+        "operationId": "ApiController_getHello",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Api"
+        ]
+      }
+    },
+    "/health": {
+      "get": {
+        "operationId": "HealthController_getHealth",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Health"
+        ]
+      }
+    },
+    "/workspaces": {
+      "post": {
+        "description": "Creates a new workspace. Owner is automatically set from JWT token.",
+        "operationId": "WorkspaceController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateWorkspaceDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Workspace created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "409": {
+            "description": "Workspace with this name already exists"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Create a new workspace",
+        "tags": [
+          "workspaces"
+        ]
+      },
+      "get": {
+        "description": "Returns workspaces where the current user is owner or member.",
+        "operationId": "WorkspaceController_findAll",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": 20,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Workspaces retrieved"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get my workspaces",
+        "tags": [
+          "workspaces"
+        ]
+      }
+    },
+    "/workspaces/{id}": {
+      "get": {
+        "operationId": "WorkspaceController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Workspace UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Workspace found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Workspace not found"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get workspace by ID",
+        "tags": [
+          "workspaces"
+        ]
+      },
+      "put": {
+        "description": "Updates workspace name.",
+        "operationId": "WorkspaceController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Workspace UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateWorkspaceDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Workspace updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Workspace not found"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Update workspace",
+        "tags": [
+          "workspaces"
+        ]
+      },
+      "delete": {
+        "operationId": "WorkspaceController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Workspace UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Workspace soft deleted"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Soft delete workspace",
+        "tags": [
+          "workspaces"
+        ]
+      }
+    },
+    "/workspaces/{id}/restore": {
+      "patch": {
+        "operationId": "WorkspaceController_restore",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Workspace UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Workspace restored",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Restore soft-deleted workspace",
+        "tags": [
+          "workspaces"
+        ]
+      }
+    },
+    "/workspaces/{id}/hard": {
+      "delete": {
+        "description": "⚠️ IRREVERSIBLE",
+        "operationId": "WorkspaceController_hardDelete",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Workspace UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Workspace permanently deleted"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Permanently delete workspace",
+        "tags": [
+          "workspaces"
+        ]
+      }
+    },
+    "/workspaces/{workspaceId}/members": {
+      "get": {
+        "description": "Returns all members of a workspace.",
+        "operationId": "WorkspaceMemberController_getMembers",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Members retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/WorkspaceMemberResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "List members",
+        "tags": [
+          "workspaces"
+        ]
+      },
+      "post": {
+        "description": "Directly adds a user to the workspace (requires OWNER or ADMIN).",
+        "operationId": "WorkspaceMemberController_addMember",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddMemberDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Member added",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceMemberResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden — only OWNER or ADMIN"
+          },
+          "409": {
+            "description": "User already a member"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Add member",
+        "tags": [
+          "workspaces"
+        ]
+      }
+    },
+    "/workspaces/{workspaceId}/members/{userId}": {
+      "patch": {
+        "description": "Changes the role of a workspace member.",
+        "operationId": "WorkspaceMemberController_updateMemberRole",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace UUID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "userId",
+            "required": true,
+            "in": "path",
+            "description": "User UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateMemberRoleDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Role updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceMemberResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Update member role",
+        "tags": [
+          "workspaces"
+        ]
+      },
+      "delete": {
+        "description": "Removes a user from the workspace.",
+        "operationId": "WorkspaceMemberController_removeMember",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace UUID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "userId",
+            "required": true,
+            "in": "path",
+            "description": "User UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Member removed"
+          },
+          "403": {
+            "description": "Cannot remove OWNER"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Remove member",
+        "tags": [
+          "workspaces"
+        ]
+      }
+    },
+    "/workspaces/{workspaceId}/invitations": {
+      "get": {
+        "description": "Returns all invitations for the workspace.",
+        "operationId": "WorkspaceMemberController_getInvitations",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Invitations retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/WorkspaceInvitationResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "List invitations",
+        "tags": [
+          "workspaces"
+        ]
+      },
+      "post": {
+        "description": "Sends an invitation to join the workspace by email.",
+        "operationId": "WorkspaceMemberController_inviteMember",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InviteMemberDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Invitation created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceInvitationResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Pending invitation already exists"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Invite member",
+        "tags": [
+          "workspaces"
+        ]
+      }
+    },
+    "/workspaces/{workspaceId}/invitations/{id}": {
+      "delete": {
+        "description": "Cancels a pending workspace invitation.",
+        "operationId": "WorkspaceMemberController_cancelInvitation",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace UUID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Invitation UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Invitation cancelled"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Cancel invitation",
+        "tags": [
+          "workspaces"
+        ]
+      }
+    },
+    "/workspaces/invitations/accept": {
+      "post": {
+        "description": "Accepts a workspace invitation using a token.",
+        "operationId": "InvitationAcceptController_acceptInvitation",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AcceptInvitationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Invitation accepted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceMemberResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid or expired token"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Accept invitation",
+        "tags": [
+          "workspaces"
+        ]
+      }
+    },
+    "/users": {
+      "post": {
+        "description": "Creates a new user account.",
+        "operationId": "UserController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateUserHttpDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "User created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed"
+          },
+          "409": {
+            "description": "User with this email already exists"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Create a new user",
+        "tags": [
+          "users"
+        ]
+      },
+      "get": {
+        "description": "Returns paginated list of users.",
+        "operationId": "UserController_findAll",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": 20,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Users retrieved successfully"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get all users",
+        "tags": [
+          "users"
+        ]
+      }
+    },
+    "/users/{id}": {
+      "get": {
+        "description": "Returns detailed user information.",
+        "operationId": "UserController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "User UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User not found"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get user by ID",
+        "tags": [
+          "users"
+        ]
+      },
+      "put": {
+        "description": "Updates user profile information.",
+        "operationId": "UserController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "User UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUserHttpDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "User updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User not found"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Update user",
+        "tags": [
+          "users"
+        ]
+      },
+      "delete": {
+        "description": "Marks user as deleted (can be restored).",
+        "operationId": "UserController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "User UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "User soft deleted successfully"
+          },
+          "404": {
+            "description": "User not found"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Soft delete user",
+        "tags": [
+          "users"
+        ]
+      }
+    },
+    "/users/{id}/restore": {
+      "patch": {
+        "description": "Restores a previously soft-deleted user.",
+        "operationId": "UserController_restore",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "User UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User restored successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User not found"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Restore soft-deleted user",
+        "tags": [
+          "users"
+        ]
+      }
+    },
+    "/users/{id}/hard": {
+      "delete": {
+        "description": "⚠️ IRREVERSIBLE - Completely removes user from database.",
+        "operationId": "UserController_hardDelete",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "User UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "User permanently deleted"
+          },
+          "404": {
+            "description": "User not found"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Permanently delete user",
+        "tags": [
+          "users"
+        ]
+      }
+    },
+    "/auth/register": {
+      "post": {
+        "description": "Creates a new user account and returns authentication tokens.",
+        "operationId": "AuthController_register",
+        "parameters": [
+          {
+            "name": "user-agent",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "User registered successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed"
+          },
+          "409": {
+            "description": "User with this email already exists"
+          }
+        },
+        "summary": "Register a new user",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "description": "Authenticates user and returns JWT tokens.",
+        "operationId": "AuthController_login",
+        "parameters": [
+          {
+            "name": "user-agent",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid credentials"
+          }
+        },
+        "summary": "Login with email and password",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/refresh-token": {
+      "post": {
+        "description": "Generates a new access token using a valid refresh token.",
+        "operationId": "AuthController_refreshToken",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefreshTokenDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Token refreshed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid or expired refresh token"
+          }
+        },
+        "summary": "Refresh access token",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "description": "Revokes all tokens and sessions for the current user.",
+        "operationId": "AuthController_logout",
+        "parameters": [],
+        "responses": {
+          "204": {
+            "description": "Logged out successfully"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Logout",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/me": {
+      "get": {
+        "description": "Returns the profile of the authenticated user.",
+        "operationId": "AuthController_getMe",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "User profile retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get current user profile",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/forgot-password": {
+      "post": {
+        "description": "Sends a password reset link to the user's email.",
+        "operationId": "AuthController_forgotPassword",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ForgotPasswordDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Password reset email sent if user exists"
+          }
+        },
+        "summary": "Request password reset",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/reset-password": {
+      "post": {
+        "description": "Resets user password using a valid reset token.",
+        "operationId": "AuthController_resetPassword",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResetPasswordDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Password reset successful"
+          },
+          "400": {
+            "description": "Invalid or expired token"
+          }
+        },
+        "summary": "Reset password",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/change-password": {
+      "put": {
+        "description": "Changes the password of the authenticated user.",
+        "operationId": "AuthController_changePassword",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangePasswordDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Password changed successfully"
+          },
+          "401": {
+            "description": "Current password is incorrect"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Change password",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/roles": {
+      "get": {
+        "description": "Returns list of all roles.",
+        "operationId": "RoleController_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Roles retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RoleResponseDto"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get all roles",
+        "tags": [
+          "roles"
+        ]
+      },
+      "post": {
+        "description": "Creates a new role with specified permissions.",
+        "operationId": "RoleController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateRoleDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Role created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RoleResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed"
+          },
+          "409": {
+            "description": "Role with this slug already exists"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Create a new role",
+        "tags": [
+          "roles"
+        ]
+      }
+    },
+    "/roles/{id}": {
+      "get": {
+        "description": "Returns detailed information about a specific role.",
+        "operationId": "RoleController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Role UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Role found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RoleResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Role not found"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get role by ID",
+        "tags": [
+          "roles"
+        ]
+      },
+      "put": {
+        "description": "Updates role name and description.",
+        "operationId": "RoleController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Role UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateRoleDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Role updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RoleResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Role not found"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Update role",
+        "tags": [
+          "roles"
+        ]
+      },
+      "delete": {
+        "description": "Permanently deletes a role.",
+        "operationId": "RoleController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Role UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Role deleted successfully"
+          },
+          "404": {
+            "description": "Role not found"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Delete role",
+        "tags": [
+          "roles"
+        ]
+      }
+    },
+    "/roles/{id}/permissions": {
+      "post": {
+        "description": "Adds one or more permissions to a specific role.",
+        "operationId": "RoleController_assignPermissions",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Role UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssignPermissionsDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Permissions assigned successfully"
+          },
+          "404": {
+            "description": "Role or Permission not found"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Assign permissions to role",
+        "tags": [
+          "roles"
+        ]
+      }
+    },
+    "/permissions": {
+      "get": {
+        "description": "Returns list of all available permissions, optionally filtered by domain.",
+        "operationId": "PermissionController_findAll",
+        "parameters": [
+          {
+            "name": "domain",
+            "required": false,
+            "in": "query",
+            "description": "Filter by domain (e.g. identity, workspace, engineering)",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Permissions retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PermissionResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get all permissions",
+        "tags": [
+          "permissions"
+        ]
+      },
+      "post": {
+        "description": "Creates a new permission with domain.action slug format.",
+        "operationId": "PermissionController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePermissionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Permission created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PermissionResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Permission with this slug already exists"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Create a new permission",
+        "tags": [
+          "permissions"
+        ]
+      }
+    },
+    "/permissions/{id}": {
+      "get": {
+        "description": "Returns detailed information about a specific permission.",
+        "operationId": "PermissionController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Permission UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Permission found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PermissionResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Permission not found"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get permission by ID",
+        "tags": [
+          "permissions"
+        ]
+      },
+      "delete": {
+        "description": "Permanently deletes a permission and removes it from all roles.",
+        "operationId": "PermissionController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Permission UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Permission deleted successfully"
+          },
+          "404": {
+            "description": "Permission not found"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Delete permission",
+        "tags": [
+          "permissions"
+        ]
+      }
+    },
+    "/projects": {
+      "get": {
+        "description": "Returns paginated list of projects in the workspace.",
+        "operationId": "ProjectController_findAll",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": 20,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Projects retrieved successfully"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "List projects",
+        "tags": [
+          "projects"
+        ]
+      },
+      "post": {
+        "description": "Creates a new project in the workspace.",
+        "operationId": "ProjectController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateProjectDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Project created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Create project",
+        "tags": [
+          "projects"
+        ]
+      }
+    },
+    "/projects/{id}": {
+      "get": {
+        "description": "Returns a specific project by ID.",
+        "operationId": "ProjectController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Project UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Project found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Project not found"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get project",
+        "tags": [
+          "projects"
+        ]
+      },
+      "patch": {
+        "description": "Updates project details.",
+        "operationId": "ProjectController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Project UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProjectDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Project updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Project not found"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Update project",
+        "tags": [
+          "projects"
+        ]
+      },
+      "delete": {
+        "description": "Marks project as deleted (recoverable).",
+        "operationId": "ProjectController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Project UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Project deleted"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Soft delete project",
+        "tags": [
+          "projects"
+        ]
+      }
+    },
+    "/projects/{id}/restore": {
+      "patch": {
+        "description": "Restores a soft-deleted project.",
+        "operationId": "ProjectController_restore",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Project UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Project restored",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Restore project",
+        "tags": [
+          "projects"
+        ]
+      }
+    },
+    "/projects/{id}/members": {
+      "get": {
+        "description": "Returns all members of a project.",
+        "operationId": "ProjectController_getMembers",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Project UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Members retrieved"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "List members",
+        "tags": [
+          "projects"
+        ]
+      },
+      "post": {
+        "description": "Adds a user to the project.",
+        "operationId": "ProjectController_addMember",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Project UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddProjectMemberDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Member added"
+          },
+          "409": {
+            "description": "User already a member"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Add member",
+        "tags": [
+          "projects"
+        ]
+      }
+    },
+    "/projects/{id}/members/{userId}": {
+      "delete": {
+        "description": "Removes a user from the project.",
+        "operationId": "ProjectController_removeMember",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Project UUID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "userId",
+            "required": true,
+            "in": "path",
+            "description": "User UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Member removed"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Remove member",
+        "tags": [
+          "projects"
+        ]
+      }
+    },
+    "/projects/{id}/notes": {
+      "get": {
+        "description": "Returns all notes of a project.",
+        "operationId": "ProjectController_getNotes",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Project UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Notes retrieved"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "List notes",
+        "tags": [
+          "projects"
+        ]
+      },
+      "post": {
+        "description": "Adds a note to the project.",
+        "operationId": "ProjectController_addNote",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Project UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddProjectNoteDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Note added"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Add note",
+        "tags": [
+          "projects"
+        ]
+      }
+    },
+    "/projects/{id}/notes/{noteId}": {
+      "delete": {
+        "description": "Permanently deletes a project note.",
+        "operationId": "ProjectController_deleteNote",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Project UUID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "noteId",
+            "required": true,
+            "in": "path",
+            "description": "Note UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Note deleted"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Delete note",
+        "tags": [
+          "projects"
+        ]
+      }
+    },
+    "/engineering/calculations": {
+      "get": {
+        "description": "Returns paginated list of calculations in the workspace.",
+        "operationId": "EngineeringController_findAll",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "projectId",
+            "required": false,
+            "in": "query",
+            "description": "Filter by project",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "type",
+            "required": false,
+            "in": "query",
+            "description": "Filter by calculation type (e.g. BASIC-001)",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Calculations retrieved successfully"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "List calculations",
+        "tags": [
+          "engineering"
+        ]
+      },
+      "post": {
+        "description": "Executes an engineering calculation via the Python engine, saves the result and returns it.\n\n**Supported types:** BASIC-001, BASIC-002, BASIC-003, BASIC-004, BASIC-005, CABLE-001, CABLE-002, CABLE-003, CABLE-004, TRF-001, TRF-002, TRF-003, TRF-004, PROT-001, PQ-001, PQ-002, PQ-003, PQ-004, PQ-005, PQ-006",
+        "operationId": "EngineeringController_run",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RunCalculationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Calculation executed and saved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CalculationResultDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed — invalid inputs for the calculation type"
+          },
+          "403": {
+            "description": "This calculation requires a Pro or Enterprise plan"
+          },
+          "404": {
+            "description": "Calculation type not found"
+          },
+          "503": {
+            "description": "Engineering service unavailable"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Run a calculation",
+        "tags": [
+          "engineering"
+        ]
+      }
+    },
+    "/engineering/calculations/{id}": {
+      "get": {
+        "description": "Returns a specific calculation.",
+        "operationId": "EngineeringController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Calculation UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Calculation found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CalculationResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Calculation not found"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get calculation by ID",
+        "tags": [
+          "engineering"
+        ]
+      },
+      "delete": {
+        "description": "Permanently deletes a calculation record.",
+        "operationId": "EngineeringController_delete",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Calculation UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Calculation deleted"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Delete calculation",
+        "tags": [
+          "engineering"
+        ]
+      }
+    },
+    "/engineering/catalog": {
+      "get": {
+        "description": "Returns list of available calculation types based on user's plan.",
+        "operationId": "EngineeringController_getCatalog",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Catalog retrieved"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get calculation catalog",
+        "tags": [
+          "engineering"
+        ]
+      }
+    },
+    "/engineering/health": {
+      "get": {
+        "description": "Checks if the Python engineering engine is running.",
+        "operationId": "EngineeringController_health",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Health status"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Engineering service health",
+        "tags": [
+          "engineering"
+        ]
+      }
+    },
+    "/engineering/energy/ocr-bill": {
+      "post": {
+        "description": "آپلود قبض PDF/تصویر → OCR → تحلیل pandapower",
+        "operationId": "EngineeringController_ocrBill",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "OCR + تحلیل قبض برق (Proxy)",
+        "tags": [
+          "engineering"
+        ]
+      }
+    },
+    "/engineering/energy/analyze": {
+      "post": {
+        "operationId": "EngineeringController_analyzeEnergy",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "تحلیل دستی مصرف انرژی (Proxy)",
+        "tags": [
+          "engineering"
+        ]
+      }
+    },
+    "/engineering/energy/manual-analyze": {
+      "post": {
+        "description": "وقتی OCR موفق نشد — داده مستقیم از فرم به Python ارسال می‌شود",
+        "operationId": "EngineeringController_manualAnalyze",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "تحلیل قبض با ورود دستی (Proxy)",
+        "tags": [
+          "engineering"
+        ]
+      }
+    },
+    "/engineering/energy/ocr-preview": {
+      "post": {
+        "operationId": "EngineeringController_ocrPreview",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "پیش‌نمایش OCR قبض (Proxy)",
+        "tags": [
+          "engineering"
+        ]
+      }
+    },
+    "/subscriptions/plans": {
+      "get": {
+        "description": "Returns all available subscription plans with features and pricing.",
+        "operationId": "SubscriptionController_getPlans",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Plans retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PlanResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "List all plans",
+        "tags": [
+          "subscriptions"
+        ]
+      }
+    },
+    "/subscriptions/plans/{id}": {
+      "get": {
+        "operationId": "SubscriptionController_getPlan",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Plan UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Plan not found"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get plan by ID",
+        "tags": [
+          "subscriptions"
+        ]
+      }
+    },
+    "/workspaces/{workspaceId}/subscription": {
+      "get": {
+        "description": "Returns the active subscription and plan details for the workspace.",
+        "operationId": "WorkspaceSubscriptionController_getSubscription",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace UUID",
+            "schema": {}
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Subscription retrieved"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get workspace subscription",
+        "tags": [
+          "subscriptions"
+        ]
+      },
+      "post": {
+        "description": "Subscribes the workspace to a new plan. Cancels existing subscription.",
+        "operationId": "WorkspaceSubscriptionController_subscribe",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace UUID",
+            "schema": {}
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubscribeDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Subscribed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SubscriptionResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Already subscribed to this plan"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Subscribe to a plan",
+        "tags": [
+          "subscriptions"
+        ]
+      }
+    },
+    "/workspaces/{workspaceId}/subscription/{subscriptionId}/cancel": {
+      "post": {
+        "operationId": "WorkspaceSubscriptionController_cancel",
+        "parameters": [
+          {
+            "name": "subscriptionId",
+            "required": true,
+            "in": "path",
+            "description": "Subscription UUID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "workspaceId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace UUID",
+            "schema": {}
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Subscription cancelled"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Cancel subscription",
+        "tags": [
+          "subscriptions"
+        ]
+      }
+    },
+    "/workspaces/{workspaceId}/subscription/history": {
+      "get": {
+        "operationId": "WorkspaceSubscriptionController_getHistory",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace UUID",
+            "schema": {}
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "History retrieved"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Subscription history",
+        "tags": [
+          "subscriptions"
+        ]
+      }
+    },
+    "/workspaces/{workspaceId}/subscription/usage": {
+      "get": {
+        "description": "Returns current month usage for calculations, AI requests, etc.",
+        "operationId": "WorkspaceSubscriptionController_getUsage",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace UUID",
+            "schema": {}
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Usage stats retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UsageStatsDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Usage statistics",
+        "tags": [
+          "subscriptions"
+        ]
+      }
+    },
+    "/storage/upload": {
+      "post": {
+        "description": "Upload a file using multipart/form-data.\n\nMax size: 100MB.\n\nSend as `Content-Type: multipart/form-data` with field name `file`.",
+        "operationId": "StorageController_upload",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "File to upload"
+                  }
+                },
+                "required": [
+                  "file"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "File uploaded successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FileResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid file or file too large"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Upload a file",
+        "tags": [
+          "storage"
+        ]
+      }
+    },
+    "/storage/files": {
+      "get": {
+        "description": "Returns paginated files in the workspace.",
+        "operationId": "StorageController_findAll",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "bucket",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "public",
+                "private",
+                "reports",
+                "documents",
+                "engineering",
+                "ai"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Files retrieved"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "List files",
+        "tags": [
+          "storage"
+        ]
+      }
+    },
+    "/storage/files/{id}": {
+      "get": {
+        "operationId": "StorageController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "File UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "File found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FileResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "File not found"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get file info + presigned download URL",
+        "tags": [
+          "storage"
+        ]
+      },
+      "delete": {
+        "operationId": "StorageController_delete",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "File UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "File deleted"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Soft delete file",
+        "tags": [
+          "storage"
+        ]
+      }
+    },
+    "/storage/files/{id}/download": {
+      "get": {
+        "description": "Streams the file content directly as binary.",
+        "operationId": "StorageController_download",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "File UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Download file directly",
+        "tags": [
+          "storage"
+        ]
+      }
+    },
+    "/storage/stats": {
+      "get": {
+        "description": "Returns total files count and storage space used.",
+        "operationId": "StorageController_getStats",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Stats retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StorageStatsDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Storage statistics",
+        "tags": [
+          "storage"
+        ]
+      }
+    },
+    "/storage/health": {
+      "get": {
+        "operationId": "StorageController_health",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Health status"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Storage (MinIO) health check",
+        "tags": [
+          "storage"
+        ]
+      }
+    },
+    "/notifications": {
+      "get": {
+        "description": "Returns in-app notifications for the authenticated user.",
+        "operationId": "NotificationController_getMyNotifications",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "description": "Filter by status",
+            "schema": {
+              "enum": [
+                "pending",
+                "sent",
+                "read",
+                "failed"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Notifications retrieved"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get my notifications",
+        "tags": [
+          "notifications"
+        ]
+      }
+    },
+    "/notifications/unread-count": {
+      "get": {
+        "operationId": "NotificationController_getUnreadCount",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Unread count"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get unread notification count",
+        "tags": [
+          "notifications"
+        ]
+      }
+    },
+    "/notifications/{id}/read": {
+      "patch": {
+        "operationId": "NotificationController_markAsRead",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Notification UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Marked as read",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotificationResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Notification not found"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Mark notification as read",
+        "tags": [
+          "notifications"
+        ]
+      }
+    },
+    "/notifications/read-all": {
+      "patch": {
+        "operationId": "NotificationController_markAllAsRead",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "All notifications marked as read"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Mark all notifications as read",
+        "tags": [
+          "notifications"
+        ]
+      }
+    },
+    "/notifications/{id}": {
+      "delete": {
+        "operationId": "NotificationController_delete",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Notification UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Notification deleted"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Delete notification",
+        "tags": [
+          "notifications"
+        ]
+      }
+    },
+    "/notifications/send": {
+      "post": {
+        "description": "Sends a notification to the authenticated user. Useful for testing.",
+        "operationId": "NotificationController_sendToSelf",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SendNotificationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Notification sent",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotificationResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Send a notification to self (test)",
+        "tags": [
+          "notifications"
+        ]
+      }
+    },
+    "/ai/agents": {
+      "get": {
+        "operationId": "AiController_getAgents",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Agents retrieved"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "List active AI agents",
+        "tags": [
+          "ai"
+        ]
+      }
+    },
+    "/ai/conversations": {
+      "get": {
+        "operationId": "AiController_listConversations",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Conversations retrieved"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "List conversations in workspace",
+        "tags": [
+          "ai"
+        ]
+      },
+      "post": {
+        "operationId": "AiController_createConversation",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateConversationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Conversation created"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Create a new conversation",
+        "tags": [
+          "ai"
+        ]
+      }
+    },
+    "/ai/conversations/{id}": {
+      "get": {
+        "operationId": "AiController_getConversation",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Conversation UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Conversation retrieved"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get conversation with messages",
+        "tags": [
+          "ai"
+        ]
+      },
+      "delete": {
+        "operationId": "AiController_deleteConversation",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Conversation UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Delete conversation",
+        "tags": [
+          "ai"
+        ]
+      }
+    },
+    "/ai/conversations/{id}/messages": {
+      "post": {
+        "operationId": "AiController_sendMessage",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Conversation UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SendMessageDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "AI response returned"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Send a message and get AI response",
+        "tags": [
+          "ai"
+        ]
+      }
+    },
+    "/ai/usage": {
+      "get": {
+        "operationId": "AiController_getUsage",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Usage stats retrieved"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "AI usage stats for current month",
+        "tags": [
+          "ai"
+        ]
+      }
+    },
+    "/articles": {
+      "get": {
+        "operationId": "ArticlesController_findAll",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "category",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "لیست مقالات مهندسی برق",
+        "tags": [
+          "articles"
+        ]
+      },
+      "post": {
+        "operationId": "ArticlesController_create",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "ایجاد مقاله جدید",
+        "tags": [
+          "articles"
+        ]
+      }
+    },
+    "/articles/{slug}": {
+      "get": {
+        "operationId": "ArticlesController_findOne",
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "دریافت مقاله با slug",
+        "tags": [
+          "articles"
+        ]
+      }
+    },
+    "/articles/{slug}/like": {
+      "post": {
+        "operationId": "ArticlesController_like",
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "لایک مقاله",
+        "tags": [
+          "articles"
+        ]
+      }
+    },
+    "/consultations": {
+      "get": {
+        "operationId": "ConsultationsController_findAll",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "لیست مشاوره‌های workspace",
+        "tags": [
+          "consultations"
+        ]
+      },
+      "post": {
+        "operationId": "ConsultationsController_create",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "ارسال سوال مشاوره جدید",
+        "tags": [
+          "consultations"
+        ]
+      }
+    },
+    "/consultations/{id}": {
+      "get": {
+        "operationId": "ConsultationsController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "جزئیات مشاوره",
+        "tags": [
+          "consultations"
+        ]
+      }
+    },
+    "/consultations/{id}/reply": {
+      "post": {
+        "operationId": "ConsultationsController_reply",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "پاسخ به مشاوره",
+        "tags": [
+          "consultations"
+        ]
+      }
+    },
+    "/consultations/{id}/ai-reply": {
+      "post": {
+        "operationId": "ConsultationsController_aiReply",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "پاسخ خودکار Groq AI به مشاوره",
+        "tags": [
+          "consultations"
+        ]
+      }
+    },
+    "/consultations/{id}/status": {
+      "patch": {
+        "operationId": "ConsultationsController_updateStatus",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "تغییر وضعیت مشاوره",
+        "tags": [
+          "consultations"
+        ]
+      }
+    },
+    "/admin/dashboard": {
+      "get": {
+        "operationId": "AdminController_dashboard",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "آمار کلی پلتفرم",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/admin/dashboard/chart": {
+      "get": {
+        "operationId": "AdminController_chart",
+        "parameters": [
+          {
+            "name": "days",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "نمودار فعالیت روزانه",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/admin/users": {
+      "get": {
+        "operationId": "AdminController_getUsers",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "لیست کاربران",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/admin/users/{id}": {
+      "patch": {
+        "operationId": "AdminController_updateUser",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "ویرایش کاربر (status، isAdmin، role)",
+        "tags": [
+          "admin"
+        ]
+      },
+      "delete": {
+        "operationId": "AdminController_deleteUser",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "حذف نرم کاربر",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/admin/workspaces": {
+      "get": {
+        "operationId": "AdminController_getWorkspaces",
+        "parameters": [
+          {
+            "name": "page",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "search",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "لیست workspace ها",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/admin/workspaces/{id}/plan": {
+      "patch": {
+        "operationId": "AdminController_updatePlan",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "تغییر پلن workspace",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/admin/plans": {
+      "get": {
+        "operationId": "AdminController_getPlans",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "لیست پلن‌ها",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/admin/plans/{id}": {
+      "put": {
+        "operationId": "AdminController_updatePlan2",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "ویرایش پلن (قیمت، ویژگی‌ها)",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/admin/consultations": {
+      "get": {
+        "operationId": "AdminController_getConsultations",
+        "parameters": [
+          {
+            "name": "page",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "priority",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "لیست تیکت‌های مشاوره (همه workspace ها)",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/admin/consultations/{id}/reply": {
+      "post": {
+        "operationId": "AdminController_adminReply",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "پاسخ ادمین به مشاوره",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/admin/consultations/{id}/status": {
+      "patch": {
+        "operationId": "AdminController_updateConsultationStatus",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "تغییر وضعیت مشاوره",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/admin/articles": {
+      "post": {
+        "operationId": "AdminController_createArticle",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "ایجاد مقاله توسط ادمین",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/admin/articles/{id}/status": {
+      "patch": {
+        "operationId": "AdminController_updateArticleStatus",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "تغییر وضعیت مقاله (draft/published/archived)",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/admin/notifications/broadcast": {
+      "post": {
+        "operationId": "AdminController_broadcast",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "ارسال اعلان سراسری به همه (یا یک پلن خاص)",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/admin/audit-log": {
+      "get": {
+        "operationId": "AdminController_auditLog",
+        "parameters": [
+          {
+            "name": "page",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "action",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "تاریخچه تغییرات پلتفرم",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/admin/settings": {
+      "get": {
+        "operationId": "AdminController_getSettings",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "تنظیمات سیستم",
+        "tags": [
+          "admin"
+        ]
+      },
+      "put": {
+        "operationId": "AdminController_updateSettings",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "آپدیت تنظیمات سیستم",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/admin/check": {
+      "get": {
+        "operationId": "AdminCheckController_checkAdmin",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "بررسی وضعیت ادمین کاربر جاری",
+        "tags": [
+          "admin"
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "Xennic Platform API",
+    "description": "Xennic Engineering Platform API Documentation",
+    "version": "1.0.0",
+    "contact": {
+      "name": "Xennic Team",
+      "url": "https://xennic.com",
+      "email": "support@xennic.com"
+    },
+    "license": {
+      "name": "Proprietary",
+      "url": "https://xennic.com/terms"
+    }
+  },
+  "tags": [
+    {
+      "name": "health",
+      "description": "Health check endpoints"
+    },
+    {
+      "name": "workspaces",
+      "description": "Workspace management (multi-tenant isolation)"
+    },
+    {
+      "name": "auth",
+      "description": "Authentication and user management"
+    },
+    {
+      "name": "users",
+      "description": "User profile management"
+    },
+    {
+      "name": "roles",
+      "description": "Role management and assignment"
+    },
+    {
+      "name": "permissions",
+      "description": "Permission management"
+    },
+    {
+      "name": "projects",
+      "description": "Project management"
+    },
+    {
+      "name": "engineering",
+      "description": "Engineering calculations"
+    }
+  ],
+  "servers": [],
+  "components": {
+    "securitySchemes": {
+      "JWT-auth": {
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "type": "http",
+        "name": "JWT",
+        "description": "Enter JWT token",
+        "in": "header"
+      }
+    },
+    "schemas": {
+      "CreateWorkspaceDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Workspace display name",
+            "example": "Engineering Workspace",
+            "minLength": 2,
+            "maxLength": 100
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "WorkspaceResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Workspace unique identifier (UUIDv7)",
+            "example": "464e54bb-5e81-426f-ab75-39226f6f8980"
+          },
+          "code": {
+            "type": "string",
+            "description": "Unique workspace code (auto-generated)",
+            "example": "ENGINEERING_WORKSPACE1_7LGG"
+          },
+          "name": {
+            "type": "string",
+            "description": "Workspace display name",
+            "example": "Engineering Workspace"
+          },
+          "createdBy": {
+            "type": "string",
+            "description": "ID of user who created the workspace",
+            "example": "user-123"
+          },
+          "updatedBy": {
+            "type": "object",
+            "description": "ID of last user who updated the workspace",
+            "nullable": true,
+            "example": "user-456"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Creation timestamp",
+            "example": "2026-06-03T02:59:44.524Z"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Last update timestamp",
+            "example": "2026-06-03T02:59:44.524Z"
+          },
+          "isDeleted": {
+            "type": "boolean",
+            "description": "Soft delete status",
+            "example": false
+          }
+        },
+        "required": [
+          "id",
+          "code",
+          "name",
+          "createdBy",
+          "updatedBy",
+          "createdAt",
+          "updatedAt",
+          "isDeleted"
+        ]
+      },
+      "UpdateWorkspaceDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "WorkspaceMemberResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "workspaceId": {
+            "type": "string"
+          },
+          "userId": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "OWNER",
+              "ADMIN",
+              "ENGINEER",
+              "CONSULTANT",
+              "MEMBER",
+              "VIEWER"
+            ]
+          },
+          "joinedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "workspaceId",
+          "userId",
+          "role",
+          "joinedAt"
+        ]
+      },
+      "AddMemberDto": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "example": "user-uuid",
+            "description": "UUID of the user to add"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "OWNER",
+              "ADMIN",
+              "ENGINEER",
+              "CONSULTANT",
+              "MEMBER",
+              "VIEWER"
+            ],
+            "example": "ENGINEER"
+          }
+        },
+        "required": [
+          "userId",
+          "role"
+        ]
+      },
+      "UpdateMemberRoleDto": {
+        "type": "object",
+        "properties": {
+          "role": {
+            "type": "string",
+            "enum": [
+              "ADMIN",
+              "ENGINEER",
+              "CONSULTANT",
+              "MEMBER",
+              "VIEWER"
+            ],
+            "example": "ADMIN"
+          }
+        },
+        "required": [
+          "role"
+        ]
+      },
+      "WorkspaceInvitationResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "workspaceId": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "OWNER",
+              "ADMIN",
+              "ENGINEER",
+              "CONSULTANT",
+              "MEMBER",
+              "VIEWER"
+            ]
+          },
+          "invitedBy": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "expiresAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "workspaceId",
+          "email",
+          "role",
+          "invitedBy",
+          "status",
+          "expiresAt",
+          "createdAt"
+        ]
+      },
+      "InviteMemberDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "engineer@company.com",
+            "description": "Email address to invite"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "ADMIN",
+              "ENGINEER",
+              "CONSULTANT",
+              "MEMBER",
+              "VIEWER"
+            ],
+            "example": "ENGINEER"
+          }
+        },
+        "required": [
+          "email",
+          "role"
+        ]
+      },
+      "AcceptInvitationDto": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "description": "Invitation token received via email"
+          }
+        },
+        "required": [
+          "token"
+        ]
+      },
+      "CreateUserHttpDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "user@example.com",
+            "description": "User email address"
+          },
+          "firstName": {
+            "type": "string",
+            "example": "John",
+            "description": "First name",
+            "minLength": 2,
+            "maxLength": 50
+          },
+          "lastName": {
+            "type": "string",
+            "example": "Doe",
+            "description": "Last name",
+            "minLength": 2,
+            "maxLength": 50
+          },
+          "password": {
+            "type": "string",
+            "example": "SecurePass123!",
+            "description": "Password"
+          },
+          "phone": {
+            "type": "string",
+            "example": "+1234567890",
+            "description": "Phone number"
+          }
+        },
+        "required": [
+          "email",
+          "firstName",
+          "lastName",
+          "password"
+        ]
+      },
+      "UserResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "isEmailVerified": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "firstName",
+          "lastName",
+          "status",
+          "isEmailVerified",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "UpdateUserHttpDto": {
+        "type": "object",
+        "properties": {
+          "firstName": {
+            "type": "string",
+            "example": "John",
+            "description": "First name"
+          },
+          "lastName": {
+            "type": "string",
+            "example": "Doe",
+            "description": "Last name"
+          },
+          "phone": {
+            "type": "string",
+            "example": "+1234567890",
+            "description": "Phone number"
+          }
+        }
+      },
+      "RegisterDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "user@example.com",
+            "description": "User email address"
+          },
+          "firstName": {
+            "type": "string",
+            "example": "John",
+            "description": "First name",
+            "minLength": 2,
+            "maxLength": 50
+          },
+          "lastName": {
+            "type": "string",
+            "example": "Doe",
+            "description": "Last name",
+            "minLength": 2,
+            "maxLength": 50
+          },
+          "password": {
+            "type": "string",
+            "example": "SecurePass123!",
+            "description": "Password (min 8 chars, with uppercase, lowercase, number, special char)"
+          },
+          "phone": {
+            "type": "string",
+            "example": "+1234567890",
+            "description": "Phone number (optional)"
+          }
+        },
+        "required": [
+          "email",
+          "firstName",
+          "lastName",
+          "password"
+        ]
+      },
+      "AuthResponseDto": {
+        "type": "object",
+        "properties": {
+          "accessToken": {
+            "type": "string"
+          },
+          "refreshToken": {
+            "type": "string"
+          },
+          "expiresIn": {
+            "type": "number",
+            "example": 900
+          },
+          "tokenType": {
+            "type": "string",
+            "example": "Bearer"
+          },
+          "user": {
+            "type": "object"
+          }
+        },
+        "required": [
+          "accessToken",
+          "refreshToken",
+          "expiresIn",
+          "tokenType",
+          "user"
+        ]
+      },
+      "LoginDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "user@example.com",
+            "description": "User email address"
+          },
+          "password": {
+            "type": "string",
+            "example": "SecurePass123!",
+            "description": "User password"
+          }
+        },
+        "required": [
+          "email",
+          "password"
+        ]
+      },
+      "RefreshTokenDto": {
+        "type": "object",
+        "properties": {
+          "refreshToken": {
+            "type": "string",
+            "description": "Refresh token"
+          }
+        },
+        "required": [
+          "refreshToken"
+        ]
+      },
+      "ForgotPasswordDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "user@example.com",
+            "description": "User email address"
+          }
+        },
+        "required": [
+          "email"
+        ]
+      },
+      "ResetPasswordDto": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "description": "Password reset token"
+          },
+          "newPassword": {
+            "type": "string",
+            "example": "NewSecurePass123!",
+            "description": "New password"
+          }
+        },
+        "required": [
+          "token",
+          "newPassword"
+        ]
+      },
+      "ChangePasswordDto": {
+        "type": "object",
+        "properties": {
+          "currentPassword": {
+            "type": "string",
+            "description": "Current password"
+          },
+          "newPassword": {
+            "type": "string",
+            "description": "New password"
+          }
+        },
+        "required": [
+          "currentPassword",
+          "newPassword"
+        ]
+      },
+      "RoleResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Role unique identifier (UUIDv7)"
+          },
+          "name": {
+            "type": "string",
+            "description": "Role display name"
+          },
+          "slug": {
+            "type": "string",
+            "description": "Unique role slug"
+          },
+          "description": {
+            "type": "object",
+            "description": "Role description",
+            "nullable": true
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Creation timestamp"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Last update timestamp"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "slug",
+          "description",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "CreateRoleDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Engineer",
+            "description": "Role display name"
+          },
+          "slug": {
+            "type": "string",
+            "example": "ENGINEER",
+            "description": "Unique role slug (UPPERCASE_UNDERSCORE)"
+          },
+          "description": {
+            "type": "string",
+            "example": "Can perform engineering calculations",
+            "description": "Role description"
+          }
+        },
+        "required": [
+          "name",
+          "slug"
+        ]
+      },
+      "UpdateRoleDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Senior Engineer",
+            "description": "Role display name"
+          },
+          "description": {
+            "type": "string",
+            "example": "Advanced engineering access",
+            "description": "Role description"
+          }
+        }
+      },
+      "AssignPermissionsDto": {
+        "type": "object",
+        "properties": {
+          "permissionIds": {
+            "example": [
+              "uuid-1",
+              "uuid-2"
+            ],
+            "description": "Array of permission UUIDs to assign to the role",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "permissionIds"
+        ]
+      },
+      "PermissionResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Permission unique identifier (UUIDv7)"
+          },
+          "name": {
+            "type": "string",
+            "description": "Permission display name"
+          },
+          "slug": {
+            "type": "string",
+            "description": "Unique permission slug (domain.action)"
+          },
+          "description": {
+            "type": "object",
+            "description": "Permission description",
+            "nullable": true
+          },
+          "domain": {
+            "type": "string",
+            "description": "Domain name"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Creation timestamp"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "slug",
+          "description",
+          "domain",
+          "createdAt"
+        ]
+      },
+      "CreatePermissionDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Read Users",
+            "description": "Permission display name"
+          },
+          "slug": {
+            "type": "string",
+            "example": "users.read",
+            "description": "Unique permission slug in format: domain.action"
+          },
+          "domain": {
+            "type": "string",
+            "example": "identity",
+            "description": "Domain name: identity | workspace | projects | engineering | ai | marketplace | storage | api | admin"
+          },
+          "description": {
+            "type": "string",
+            "example": "Can read user information",
+            "description": "Permission description"
+          }
+        },
+        "required": [
+          "name",
+          "slug",
+          "domain"
+        ]
+      },
+      "CreateProjectDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Substation Upgrade 2026",
+            "description": "Project name"
+          },
+          "description": {
+            "type": "string",
+            "example": "Upgrade of 63kV substation"
+          },
+          "status": {
+            "type": "string",
+            "example": "active",
+            "enum": [
+              "active",
+              "completed",
+              "archived",
+              "cancelled"
+            ]
+          },
+          "startDate": {
+            "type": "string",
+            "example": "2026-07-01",
+            "description": "ISO date string"
+          },
+          "endDate": {
+            "type": "string",
+            "example": "2026-12-31",
+            "description": "ISO date string"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "ProjectResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Project unique identifier (UUIDv7)"
+          },
+          "workspaceId": {
+            "type": "string",
+            "description": "Workspace ID (tenant isolation)"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "object",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "completed",
+              "archived",
+              "cancelled"
+            ]
+          },
+          "startDate": {
+            "type": "object",
+            "nullable": true
+          },
+          "endDate": {
+            "type": "object",
+            "nullable": true
+          },
+          "createdBy": {
+            "type": "string"
+          },
+          "updatedBy": {
+            "type": "object",
+            "nullable": true
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "isDeleted": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "workspaceId",
+          "name",
+          "description",
+          "status",
+          "startDate",
+          "endDate",
+          "createdBy",
+          "updatedBy",
+          "createdAt",
+          "updatedAt",
+          "isDeleted"
+        ]
+      },
+      "UpdateProjectDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Updated Project Name"
+          },
+          "description": {
+            "type": "object",
+            "example": "Updated description",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "completed",
+              "archived",
+              "cancelled"
+            ],
+            "example": "active"
+          },
+          "startDate": {
+            "type": "object",
+            "example": "2026-07-01",
+            "nullable": true
+          },
+          "endDate": {
+            "type": "object",
+            "example": "2026-12-31",
+            "nullable": true
+          }
+        }
+      },
+      "AddProjectMemberDto": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "example": "user-uuid",
+            "description": "User UUID to add"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "owner",
+              "admin",
+              "engineer",
+              "viewer"
+            ],
+            "example": "engineer",
+            "description": "Role within the project"
+          }
+        },
+        "required": [
+          "userId",
+          "role"
+        ]
+      },
+      "AddProjectNoteDto": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "string",
+            "example": "Site survey completed successfully.",
+            "description": "Note content"
+          }
+        },
+        "required": [
+          "content"
+        ]
+      },
+      "RunCalculationDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "BASIC-001",
+              "BASIC-002",
+              "BASIC-003",
+              "BASIC-004",
+              "BASIC-005",
+              "CABLE-001",
+              "CABLE-002",
+              "CABLE-003",
+              "CABLE-004",
+              "TRF-001",
+              "TRF-002",
+              "TRF-003",
+              "TRF-004",
+              "PROT-001",
+              "PQ-001",
+              "PQ-002",
+              "PQ-003",
+              "PQ-004",
+              "PQ-005",
+              "PQ-006"
+            ],
+            "example": "BASIC-001",
+            "description": "Calculation type code (e.g. BASIC-001 = Ohm's Law)"
+          },
+          "inputs": {
+            "type": "object",
+            "example": {
+              "current_a": 10,
+              "resistance_ohm": 23
+            },
+            "description": "Calculation inputs — structure depends on calculation type"
+          },
+          "projectId": {
+            "type": "string",
+            "example": "project-uuid",
+            "description": "Optional project ID to associate the calculation with"
+          }
+        },
+        "required": [
+          "type",
+          "inputs"
+        ]
+      },
+      "CalculationResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Calculation record ID (UUIDv7)"
+          },
+          "workspaceId": {
+            "type": "string"
+          },
+          "projectId": {
+            "type": "object",
+            "nullable": true
+          },
+          "userId": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "example": "BASIC-001"
+          },
+          "version": {
+            "type": "string",
+            "example": "1.0"
+          },
+          "inputs": {
+            "type": "object",
+            "example": {
+              "current_a": 10
+            }
+          },
+          "results": {
+            "type": "object",
+            "example": {
+              "voltage_v": 230
+            }
+          },
+          "engineVersion": {
+            "type": "string"
+          },
+          "standardVersion": {
+            "type": "string"
+          },
+          "durationMs": {
+            "type": "number",
+            "example": 42,
+            "description": "Execution time in milliseconds"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "workspaceId",
+          "projectId",
+          "userId",
+          "type",
+          "version",
+          "inputs",
+          "results",
+          "engineVersion",
+          "standardVersion",
+          "durationMs",
+          "createdAt"
+        ]
+      },
+      "CalculationResultDto": {
+        "type": "object",
+        "properties": {
+          "calculation": {
+            "description": "Saved calculation record",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CalculationResponseDto"
+              }
+            ]
+          },
+          "result": {
+            "type": "object",
+            "description": "Full result from engineering engine"
+          }
+        },
+        "required": [
+          "calculation",
+          "result"
+        ]
+      },
+      "PlanFeaturesDto": {
+        "type": "object",
+        "properties": {
+          "projects": {
+            "type": "number",
+            "example": 3,
+            "description": "-1 = unlimited"
+          },
+          "calculations_month": {
+            "type": "number",
+            "example": 100
+          },
+          "ai_requests_month": {
+            "type": "number",
+            "example": 50
+          },
+          "storage_gb": {
+            "type": "number",
+            "example": 1
+          },
+          "api_access": {
+            "type": "boolean",
+            "example": false
+          },
+          "report_formats": {
+            "example": [
+              "pdf"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "projects",
+          "calculations_month",
+          "ai_requests_month",
+          "storage_gb",
+          "api_access",
+          "report_formats"
+        ]
+      },
+      "PlanResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string",
+            "example": "free"
+          },
+          "monthlyPrice": {
+            "type": "number",
+            "example": 0
+          },
+          "yearlyPrice": {
+            "type": "number",
+            "example": 0
+          },
+          "features": {
+            "$ref": "#/components/schemas/PlanFeaturesDto"
+          },
+          "isActive": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "slug",
+          "monthlyPrice",
+          "yearlyPrice",
+          "features",
+          "isActive"
+        ]
+      },
+      "SubscribeDto": {
+        "type": "object",
+        "properties": {
+          "planId": {
+            "type": "string",
+            "description": "Plan UUID to subscribe to",
+            "example": "plan-uuid"
+          },
+          "expiresAt": {
+            "type": "string",
+            "description": "Subscription expiry date (optional)"
+          }
+        },
+        "required": [
+          "planId"
+        ]
+      },
+      "SubscriptionResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "workspaceId": {
+            "type": "string"
+          },
+          "planId": {
+            "type": "string"
+          },
+          "planSlug": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "cancelled",
+              "expired",
+              "trial"
+            ]
+          },
+          "startsAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "expiresAt": {
+            "type": "object",
+            "nullable": true
+          },
+          "cancelledAt": {
+            "type": "object",
+            "nullable": true
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "workspaceId",
+          "planId",
+          "planSlug",
+          "status",
+          "startsAt",
+          "expiresAt",
+          "cancelledAt",
+          "createdAt"
+        ]
+      },
+      "UsageStatsDto": {
+        "type": "object",
+        "properties": {
+          "planSlug": {
+            "type": "string",
+            "example": "free"
+          },
+          "calculations": {
+            "type": "object",
+            "example": {
+              "used": 10,
+              "limit": 100
+            }
+          },
+          "ai_requests": {
+            "type": "object",
+            "example": {
+              "used": 5,
+              "limit": 50
+            }
+          }
+        },
+        "required": [
+          "planSlug",
+          "calculations",
+          "ai_requests"
+        ]
+      },
+      "FileResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "workspaceId": {
+            "type": "string"
+          },
+          "bucket": {
+            "type": "string",
+            "enum": [
+              "public",
+              "private",
+              "reports",
+              "documents",
+              "engineering",
+              "ai"
+            ]
+          },
+          "filename": {
+            "type": "string"
+          },
+          "originalName": {
+            "type": "string"
+          },
+          "extension": {
+            "type": "string"
+          },
+          "mimeType": {
+            "type": "string"
+          },
+          "size": {
+            "type": "number"
+          },
+          "sizeHuman": {
+            "type": "string"
+          },
+          "checksum": {
+            "type": "object",
+            "nullable": true
+          },
+          "uploadedBy": {
+            "type": "string"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "downloadUrl": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "workspaceId",
+          "bucket",
+          "filename",
+          "originalName",
+          "extension",
+          "mimeType",
+          "size",
+          "sizeHuman",
+          "checksum",
+          "uploadedBy",
+          "createdAt",
+          "downloadUrl"
+        ]
+      },
+      "StorageStatsDto": {
+        "type": "object",
+        "properties": {
+          "totalFiles": {
+            "type": "number"
+          },
+          "totalSizeBytes": {
+            "type": "number"
+          },
+          "totalSizeHuman": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "totalFiles",
+          "totalSizeBytes",
+          "totalSizeHuman"
+        ]
+      },
+      "NotificationResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "userId": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "channel": {
+            "type": "string",
+            "enum": [
+              "in_app",
+              "email",
+              "sms",
+              "push"
+            ]
+          },
+          "title": {
+            "type": "string"
+          },
+          "content": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "sent",
+              "read",
+              "failed"
+            ]
+          },
+          "sentAt": {
+            "type": "object",
+            "nullable": true
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "isRead": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "userId",
+          "type",
+          "channel",
+          "title",
+          "content",
+          "status",
+          "sentAt",
+          "createdAt",
+          "isRead"
+        ]
+      },
+      "SendNotificationDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "workspace_invite",
+              "workspace_member_added",
+              "workspace_member_removed",
+              "project_added",
+              "project_updated",
+              "calculation_complete",
+              "subscription_changed",
+              "subscription_expiring",
+              "file_shared",
+              "system",
+              "security_alert"
+            ],
+            "example": "system"
+          },
+          "channel": {
+            "type": "string",
+            "enum": [
+              "in_app",
+              "email",
+              "sms",
+              "push"
+            ],
+            "example": "in_app"
+          },
+          "title": {
+            "type": "string",
+            "example": "اطلاعیه مهم"
+          },
+          "content": {
+            "type": "string",
+            "example": "محتوای پیام"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "CreateConversationDto": {
+        "type": "object",
+        "properties": {
+          "agentSlug": {
+            "type": "string",
+            "example": "electrical-engineer"
+          },
+          "title": {
+            "type": "string",
+            "example": "بررسی THD سیستم"
+          }
+        },
+        "required": [
+          "agentSlug"
+        ]
+      },
+      "SendMessageDto": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "string",
+            "example": "چطور THD جریان را کاهش دهم؟"
+          }
+        },
+        "required": [
+          "content"
+        ]
+      }
+    }
+  }
+}
