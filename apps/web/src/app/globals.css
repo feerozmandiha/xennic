@@ -26,6 +26,8 @@
    CSS VARIABLES — Light Mode
 ═══════════════════════════════════════════════════════════════ */
 :root {
+  color-scheme: light dark;
+
   --background:           0 0% 100%;
   --foreground:           222 47% 11%;
   --card:                 0 0% 100%;

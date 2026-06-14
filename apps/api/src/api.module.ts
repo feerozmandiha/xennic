@@ -14,6 +14,8 @@ import { NotificationModule }  from './modules/notification/notification.module.
 import { AiModule }            from './modules/ai/ai.module.js';
 import { ArticlesModule }      from './modules/articles/articles.module.js';
 import { ConsultationsModule } from './modules/consultations/consultations.module.js';
+import { CommentsModule }      from './modules/comments/comments.module.js';
+import { BillingModule }       from './modules/billing/billing.module.js';   // ✅ صورتحساب
 import { AdminModule }         from './modules/admin/admin.module.js';         // ✅ ادمین
 
 @Module({
@@ -26,11 +28,13 @@ import { AdminModule }         from './modules/admin/admin.module.js';         /
     ProjectModule,
     EngineeringModule,
     SubscriptionModule,
+    BillingModule,       // ✅ ماژول صورتحساب
     StorageModule,
     NotificationModule,
     AiModule,
     ArticlesModule,
     ConsultationsModule,
+    CommentsModule,
     AdminModule,         // ✅ مدیریت پلتفرم
   ],
   controllers: [ApiController],

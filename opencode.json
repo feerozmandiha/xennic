@@ -3,8 +3,8 @@
   "references": {
     "docs": {
       "type": "local",
-      "path": "/home/your-username/path/to/your/docs-folder",
-      "description": "اسناد معماری و نیازمندی‌های پروژه"
+      "path": "/home/ahmad/xennic-docs/docs",
+      "description": "اسناد معماری، مستندات فنی، الزامات و نقشه راه توسعه پلتفرم مهندسی برق"
     }
   }
 }

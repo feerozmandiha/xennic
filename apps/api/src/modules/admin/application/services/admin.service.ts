@@ -263,25 +263,16 @@ export class AdminService {
     const { page, limit, search } = opts;
     const offset = (page - 1) * limit;
     try {
-      const where: any = {};
-      if (search) {
-        where.OR = [
-          { name: { contains: search, mode: 'insensitive' } },
-          { slug: { contains: search, mode: 'insensitive' } },
-        ];
-      }
-
-      // استفاده از raw SQL — نام relation در Prisma ممکن است متفاوت باشد
       const searchClause = search
-        ? `AND (ws.name ILIKE '%' || $3 || '%' OR ws.slug ILIKE '%' || $3 || '%')`
+        ? `AND (ws.name ILIKE '%' || $3 || '%' OR ws.code ILIKE '%' || $3 || '%')`
         : '';
       const params: any[] = [limit, offset];
       if (search) params.push(search);
 
       const rows = await prisma.$queryRawUnsafe<any[]>(`
         SELECT
-          ws.id, ws.name, ws.slug,
-          COALESCE(ws.plan_slug, 'free') AS plan_slug,
+          ws.id, ws.name, ws.code,
+          COALESCE(sub.plan_slug, 'free') AS plan_slug,
           ws.created_at,
           COALESCE(m.member_count, 0)::int AS member_count,
           COALESCE(u.email, '')            AS owner_email,
@@ -295,6 +286,14 @@ export class AdminService {
         LEFT JOIN "workspace_members" wm
           ON wm.workspace_id = ws.id AND wm.role = 'owner'
         LEFT JOIN "users" u ON u.id = wm.user_id
+        LEFT JOIN LATERAL (
+          SELECT p.slug AS plan_slug
+          FROM "subscriptions" s
+          JOIN "plans" p ON p.id = s.plan_id
+          WHERE s.workspace_id = ws.id AND s.status = 'active'
+          ORDER BY s.created_at DESC
+          LIMIT 1
+        ) sub ON true
         WHERE 1=1 ${searchClause}
         ORDER BY ws.created_at DESC
         LIMIT $1 OFFSET $2
@@ -523,16 +522,25 @@ export class AdminService {
           `
         : await prisma.workspaces.findMany({ select: { id: true } });
 
+      const wsIds = workspaces.map(w => w.id);
+      if (wsIds.length === 0) return { success: true, sent: 0 };
+
+      // resolve workspace IDs → user IDs via workspace_members
+      const members = await prisma.$queryRawUnsafe<{ user_id: string }[]>(
+        `SELECT DISTINCT user_id FROM workspace_members WHERE workspace_id IN (${wsIds.map((_, i) => `$${i + 1}`).join(', ')})`,
+        ...wsIds,
+      );
+
       const now = new Date();
-      for (const ws of workspaces) {
+      for (const m of members) {
         await prisma.$executeRaw`
           INSERT INTO "notifications"
-            (id, workspace_id, type, title, body, is_read, created_at)
+            (id, user_id, type, channel, title, content, status, sent_at, created_at)
           VALUES
-            (${randomUUID()}, ${ws.id}, ${data.type}, ${data.title}, ${data.body}, false, ${now})
+            (${randomUUID()}, ${m.user_id}, ${data.type}, 'in_app', ${data.title}, ${data.body}, 'sent', ${now}, ${now})
         `.catch(() => null);
       }
-      return { success: true, sent: workspaces.length };
+      return { success: true, sent: members.length };
     } catch (err) {
       this.logger.error('broadcast:', (err as Error).message);
       return { success: true, sent: 0 };

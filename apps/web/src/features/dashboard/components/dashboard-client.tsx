@@ -14,6 +14,7 @@ import { Badge }    from '@/components/ui/badge';
 import { useAuthStore } from '@/stores/auth.store';
 import { apiClient }    from '@/lib/api/client';
 import { cn }           from '@/lib/utils';
+import { usePlan } from '@/features/subscription/hooks/use-plan';
 
 // ── Stat Card ─────────────────────────────────────────────────────────────────
 
@@ -219,11 +220,7 @@ export function DashboardClient() {
     retry: false,
   });
 
-  const planSlug  = usage?.data?.planSlug  ?? 'free';
-  const calcUsed  = usage?.data?.calculations?.used  ?? 0;
-  const calcLimit = usage?.data?.calculations?.limit ?? 100;
-  const aiUsed    = usage?.data?.aiRequests?.used    ?? 0;
-  const aiLimit   = usage?.data?.aiRequests?.limit   ?? 10;
+  const { planSlug, calcUsed, calcLimit, aiUsed, aiLimit } = usePlan();
   const planLabel = planSlug === 'free' ? 'رایگان' : planSlug === 'pro' ? 'حرفه‌ای' : 'سازمانی';
 
   const isLoading = usageLoading;
@@ -415,7 +412,7 @@ export function DashboardClient() {
               </div>
             </div>
             <a
-              href={`/${locale}/settings`}
+              href={`/${locale}/billing/checkout?plan=pro`}
               className={cn(
                 'inline-flex items-center gap-2 h-9 px-5 rounded-[var(--radius)]',
                 'bg-[hsl(var(--primary))] text-white text-sm font-semibold',
