@@ -1,3 +1,5 @@
+import * as crypto from 'crypto';
+
 export class RefreshTokenEntity {
   private constructor(
     public readonly id: string,

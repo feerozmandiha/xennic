@@ -9,8 +9,9 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge }    from '@/components/ui/badge';
 import { useToast } from '@/stores/toast.store';
-import { apiClient } from '@/lib/api/client';
+import { apiClient, ApiError } from '@/lib/api/client';
 import { cn }        from '@/lib/utils';
+import { UpgradePrompt } from '@/features/subscription/components/upgrade-prompt';
 
 // ─────────────────────────────────────────────────────────────
 // types
@@ -89,11 +90,12 @@ function NewConsultationForm({ onDone, onCancel }: {
   onDone:   (id: string) => void;
   onCancel: () => void;
 }) {
-  const toast = useToast();
-  const qc    = useQueryClient();
+  const toast    = useToast();
+  const qc       = useQueryClient();
   const [form, setForm] = useState({
     title: '', description: '', category: 'general', priority: 'normal', tags: '',
   });
+  const [planBlocked, setPlanBlocked] = useState(false);
 
   const set = (k: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
     setForm(f => ({ ...f, [k]: e.target.value }));
@@ -108,8 +110,25 @@ function NewConsultationForm({ onDone, onCancel }: {
       toast.success('سوال ارسال شد');
       onDone(res.data.id);
     },
-    onError: () => toast.error('خطا در ارسال سوال'),
+    onError: (err) => {
+      if (err instanceof ApiError && err.status === 403) {
+        setPlanBlocked(true);
+      } else {
+        toast.error('خطا در ارسال سوال');
+      }
+    },
   });
+
+  if (planBlocked) {
+    return (
+      <div className="space-y-4">
+        <UpgradePrompt feature="ارسال مشاوره مهندسی" />
+        <button onClick={() => setPlanBlocked(false)} className="text-sm text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] transition-colors">
+          بازگشت به فرم
+        </button>
+      </div>
+    );
+  }
 
   const inputCls = 'w-full px-3 py-2 rounded-[var(--radius-lg)] border border-[hsl(var(--border))] bg-[hsl(var(--background))] text-sm outline-none focus:border-[hsl(var(--primary))] focus:ring-1 focus:ring-[hsl(var(--primary)/0.3)] transition-all';
 

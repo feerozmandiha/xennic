@@ -8,13 +8,11 @@ import { WorkspaceGuard }     from '../../../rbac/infrastructure/guards/workspac
 import { ArticlesService }    from '../../application/services/articles.service.js';
 
 @ApiTags('articles')
-@ApiBearerAuth('JWT-auth')
-@UseGuards(JwtAuthGuard, WorkspaceGuard)
 @Controller('articles')
 export class ArticlesController {
   constructor(private readonly svc: ArticlesService) {}
 
-  // GET /articles
+  // GET /articles — عمومی (نیاز به احراز هویت ندارد)
   @Get()
   @ApiOperation({ summary: 'لیست مقالات مهندسی برق' })
   @ApiQuery({ name: 'page',     required: false, type: Number })
@@ -36,7 +34,7 @@ export class ArticlesController {
     return { success: true, data: result.data, meta: { total: result.total } };
   }
 
-  // GET /articles/:slug
+  // GET /articles/:slug — عمومی
   @Get(':slug')
   @ApiOperation({ summary: 'دریافت مقاله با slug' })
   @ApiParam({ name: 'slug', type: String })
@@ -45,8 +43,10 @@ export class ArticlesController {
     return { success: true, data: article };
   }
 
-  // POST /articles
+  // POST /articles — نیاز به احراز هویت
   @Post()
+  @ApiBearerAuth('JWT-auth')
+  @UseGuards(JwtAuthGuard, WorkspaceGuard)
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'ایجاد مقاله جدید' })
   async create(@Body() dto: any, @Req() req: any) {
@@ -54,8 +54,10 @@ export class ArticlesController {
     return { success: true, data: article };
   }
 
-  // POST /articles/:slug/like
+  // POST /articles/:slug/like — نیاز به احراز هویت
   @Post(':slug/like')
+  @ApiBearerAuth('JWT-auth')
+  @UseGuards(JwtAuthGuard, WorkspaceGuard)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'لایک مقاله' })
   async like(@Param('slug') slug: string) {

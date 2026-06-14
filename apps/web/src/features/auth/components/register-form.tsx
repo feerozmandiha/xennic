@@ -14,7 +14,7 @@ const API_BASE = typeof window !== 'undefined'
   ? `${process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000'}/api/v1`
   : `${process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000'}/api/v1`;
 
-export function RegisterForm() {
+export function RegisterForm({ plan: initialPlan }: { plan?: string | null }) {
   const t      = useTranslations('auth');
   const tErr   = useTranslations('errors');
   const router = useRouter();
@@ -69,14 +69,26 @@ export function RegisterForm() {
 
       if (json.success && json.data) {
         setAuth(json.data.accessToken, json.data.refreshToken, json.data.user);
+
+        // ذخیره پلن مورد نظر برای هدایت پس از ثبت‌نام
+        if (initialPlan && initialPlan !== 'free') {
+          localStorage.setItem('xennic_selected_plan', initialPlan);
+        }
+
         // workspace setup
         await handlePostLogin(
           useAuthStore.getState().setWorkspace,
           API_BASE,
           json.data.accessToken,
           useAuthStore.getState().setIsAdmin,
+          initialPlan,
         );
-        router.push(`/${locale}/dashboard`);
+
+        router.push(
+          initialPlan && initialPlan !== 'free'
+            ? `/${locale}/billing/checkout?plan=${initialPlan}`
+            : `/${locale}/dashboard`,
+        );
       } else {
         // خطای validation از NestJS
         const msg = json.error?.message ?? json.message ?? 'خطا در ثبت‌نام';

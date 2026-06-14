@@ -1,3 +1,5 @@
+import * as crypto from 'crypto';
+
 export class SessionEntity {
   private constructor(
     public readonly id: string,

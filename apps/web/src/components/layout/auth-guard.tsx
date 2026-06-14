@@ -21,7 +21,9 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!hydrated) return;
     if (!isAuthenticated || !token) {
-      router.replace(`/${locale}/login`);
+      const currentPath = window.location.pathname + window.location.search;
+      const redirectTo  = encodeURIComponent(currentPath);
+      router.replace(`/${locale}/login?redirectTo=${redirectTo}`);
     }
   }, [hydrated, isAuthenticated, token, router, locale]);
 

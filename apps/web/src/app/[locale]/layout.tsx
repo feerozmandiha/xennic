@@ -69,7 +69,7 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
       className={`${iranSans.variable} ${inter.variable}`}
       suppressHydrationWarning
     >
-      <body className="min-h-screen bg-background font-sans antialiased">
+      <body className="min-h-screen bg-[hsl(var(--background))] font-sans antialiased">
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

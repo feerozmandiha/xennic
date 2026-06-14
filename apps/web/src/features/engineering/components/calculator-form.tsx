@@ -292,7 +292,12 @@ function ResultDisplay({ result }: { result: any }) {
 
 // ── Main Form ─────────────────────────────────────────────────────────────────
 
-export function CalculatorForm({ code, onSuccess }: { code: string; onSuccess: (result: any) => void }) {
+export function CalculatorForm({ code, onSuccess, guestMode, onGuestConsume }: {
+  code: string;
+  onSuccess: (result: any) => void;
+  guestMode?: boolean;
+  onGuestConsume?: () => boolean;
+}) {
   const wsId = useAuthStore(s => s.workspaceId);
   const fields = FIELDS[code] ?? DEFAULT_FIELDS[code] ?? [];
 
@@ -301,12 +306,25 @@ export function CalculatorForm({ code, onSuccess }: { code: string; onSuccess: (
   const [calcErr, setCalcErr] = useState('');
 
   const mutation = useMutation({
-    mutationFn: () => {
+    mutationFn: async () => {
       const inputs: Record<string, any> = {};
       for (const [k, v] of Object.entries(values)) {
         if (v === '' || v === undefined) continue;
         inputs[k] = isNaN(Number(v)) ? v : Number(v);
       }
+
+      if (guestMode) {
+        // مصرف سهمیه BEFORE محاسبه — اگر سهمیه نباشد، خطا بده
+        if (onGuestConsume) {
+          const allowed = onGuestConsume();
+          if (!allowed) {
+            throw new Error('سهمیه محاسبات رایگان شما تمام شده است');
+          }
+        }
+        const { calcLocal } = await import('../utils/guest-calc');
+        return calcLocal(code, inputs);
+      }
+
       return apiClient.post('/engineering/calculations', { type: code, inputs });
     },
     onSuccess: (data: any) => {

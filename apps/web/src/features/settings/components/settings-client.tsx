@@ -619,6 +619,9 @@ function SecurityTab() {
 function PlanTab() {
   const wsId  = useAuthStore(s => s.workspaceId);
   const toast = useToast();
+  const router = useRouter();
+  const params = useParams();
+  const locale = (params?.locale as string) ?? 'fa';
 
   const { data, isLoading } = useQuery({
     queryKey: ['subscription', wsId],
@@ -729,7 +732,10 @@ function PlanTab() {
             <p className="text-xs text-[hsl(var(--muted-foreground))] leading-relaxed">
               محاسبات نامحدود، ۶ ماژول کیفیت توان، هوش مصنوعی مهندسی و ۵ فضای کاری
             </p>
-            <button className="w-full h-9 rounded-[var(--radius)] bg-[hsl(var(--primary))] text-white text-sm font-semibold hover:opacity-90 transition-opacity">
+            <button
+              onClick={() => router.push(`/${locale}/billing/checkout?plan=pro`)}
+              className="w-full h-9 rounded-[var(--radius)] bg-[hsl(var(--primary))] text-white text-sm font-semibold hover:opacity-90 transition-opacity"
+            >
               ارتقا به Pro ↑
             </button>
           </CardContent>

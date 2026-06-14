@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { usePathname, useParams } from 'next/navigation';
+import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { useQuery } from '@tanstack/react-query';
 import {
@@ -55,7 +56,7 @@ function NavItem({
   const isActive = pathname.includes(`/${navKey}`);
 
   return (
-    <a
+    <Link
       href={href}
       onClick={onClick}
       className={cn(
@@ -87,7 +88,7 @@ function NavItem({
       {isActive && (
         <ChevronLeft className="h-3 w-3 opacity-40 rtl:rotate-180 shrink-0" />
       )}
-    </a>
+    </Link>
   );
 }
 
@@ -102,8 +103,11 @@ function SidebarContent({ locale, pathname, onNavClick }: {
   return (
     <div className="flex flex-col h-full bg-[hsl(var(--sidebar))] text-[hsl(var(--sidebar-foreground))]">
 
-      {/* ── Logo ─────────────────────────────────────────────── */}
-      <div className="flex items-center gap-3 px-5 py-5 border-b border-[hsl(var(--sidebar-border))] shrink-0">
+      {/* ── Logo (clickable → landing) ──────────────────────── */}
+      <Link
+        href={`/${locale}`}
+        className="flex items-center gap-3 px-5 py-5 border-b border-[hsl(var(--sidebar-border))] shrink-0 hover:bg-[hsl(var(--sidebar-muted))] transition-colors"
+      >
         <div className={cn(
           'w-8 h-8 rounded-[var(--radius)] flex items-center justify-center shrink-0',
           'bg-[hsl(var(--sidebar-accent))] shadow-[0_0_12px_hsl(var(--sidebar-accent)/0.4)]',
@@ -116,7 +120,7 @@ function SidebarContent({ locale, pathname, onNavClick }: {
             Engineering Platform
           </p>
         </div>
-      </div>
+      </Link>
 
       {/* ── Nav ──────────────────────────────────────────────── */}
       <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">

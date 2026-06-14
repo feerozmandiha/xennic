@@ -58,6 +58,8 @@ const CATEGORIES = [
   { key: 'general',       label: '📚 عمومی' },
 ];
 
+const PREMIUM_CATEGORIES = ['protection', 'power_quality', 'grounding', 'renewable'];
+
 const CATEGORY_COLOR: Record<string, string> = {
   cable:         'bg-blue-100 text-blue-700',
   transformer:   'bg-yellow-100 text-yellow-700',
@@ -76,17 +78,28 @@ const CATEGORY_COLOR: Record<string, string> = {
 function ArticleCard({ article, onClick }: { article: Article; onClick: () => void }) {
   const catLabel = CATEGORIES.find(c => c.key === article.category)?.label ?? article.category;
   const catColor = CATEGORY_COLOR[article.category] ?? CATEGORY_COLOR.general;
+  const isPremium = PREMIUM_CATEGORIES.includes(article.category);
 
   return (
     <Card
-      className="cursor-pointer hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 group"
-      onClick={onClick}
+      className={cn(
+        'transition-all duration-200 group',
+        isPremium ? 'cursor-default opacity-80' : 'cursor-pointer hover:shadow-md hover:-translate-y-0.5',
+      )}
+      onClick={isPremium ? undefined : onClick}
     >
       <CardContent className="p-5 flex flex-col gap-3">
         <div className="flex items-center justify-between">
-          <span className={cn('text-[10px] font-semibold px-2 py-0.5 rounded-full', catColor)}>
-            {catLabel}
-          </span>
+          <div className="flex items-center gap-1.5">
+            <span className={cn('text-[10px] font-semibold px-2 py-0.5 rounded-full', catColor)}>
+              {catLabel}
+            </span>
+            {isPremium && (
+              <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700 flex items-center gap-0.5">
+                ویژه اعضا
+              </span>
+            )}
+          </div>
           <span className="flex items-center gap-1 text-[10px] text-[hsl(var(--muted-foreground))]">
             <Clock className="h-3 w-3" />{article.readMinutes} دقیقه
           </span>
@@ -232,6 +245,19 @@ function ArticleReader({ slug, onBack }: { slug: string; onBack: () => void }) {
           <Heart className={cn('h-3.5 w-3.5', liked && 'fill-current')} />
           {liked ? 'پسندیدم!' : 'مفید بود'}
         </button>
+      </div>
+
+      {/* Membership CTA */}
+      <div className="rounded-xl border border-[hsl(var(--primary)/0.2)] bg-gradient-to-r from-[hsl(var(--primary)/0.05)] to-[#6366f1]/5 p-6 text-center space-y-3">
+        <p className="text-sm text-[hsl(var(--muted-foreground))]">
+          برای دسترسی به مقالات تخصصی‌تر، راهنماهای محاسباتی و ویدئوهای آموزشی، عضو شوید
+        </p>
+        <a
+          href="/register"
+          className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[hsl(var(--primary))] to-[#6366f1] px-6 py-2.5 text-sm font-semibold text-white hover:opacity-90 transition-all"
+        >
+          عضویت رایگان
+        </a>
       </div>
     </div>
   );

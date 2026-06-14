@@ -2619,6 +2619,522 @@
         ]
       }
     },
+    "/billing/invoices": {
+      "get": {
+        "description": "Paginated list of workspace invoices.",
+        "operationId": "BillingController_getInvoices",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": 20,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Invoices retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/InvoiceResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "List invoices",
+        "tags": [
+          "billing"
+        ]
+      },
+      "post": {
+        "description": "Creates a new invoice for the workspace.",
+        "operationId": "BillingController_createInvoice",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateInvoiceDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Invoice created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvoiceResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Create invoice",
+        "tags": [
+          "billing"
+        ]
+      }
+    },
+    "/billing/invoices/{id}": {
+      "get": {
+        "operationId": "BillingController_getInvoice",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Invoice UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvoiceResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Invoice not found"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get invoice by ID",
+        "tags": [
+          "billing"
+        ]
+      }
+    },
+    "/billing/payments": {
+      "get": {
+        "description": "Paginated list of workspace payments.",
+        "operationId": "BillingController_getPayments",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": 20,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Payments retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PaymentResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "List payments",
+        "tags": [
+          "billing"
+        ]
+      },
+      "post": {
+        "description": "Creates a payment record for an invoice.",
+        "operationId": "BillingController_createPayment",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePaymentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Payment created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Create payment",
+        "tags": [
+          "billing"
+        ]
+      }
+    },
+    "/billing/payments/request": {
+      "post": {
+        "description": "Redirects to Zarinpal payment page.",
+        "operationId": "BillingController_requestPayment",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestPaymentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Payment URL generated"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Request gateway payment",
+        "tags": [
+          "billing"
+        ]
+      }
+    },
+    "/billing/payments/verify": {
+      "post": {
+        "description": "Verifies payment after gateway callback.",
+        "operationId": "BillingController_verifyPayment",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Payment verified"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Verify gateway payment",
+        "tags": [
+          "billing"
+        ]
+      }
+    },
+    "/billing/transactions": {
+      "get": {
+        "description": "Paginated list of workspace transactions.",
+        "operationId": "BillingController_getTransactions",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": 20,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Transactions retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TransactionResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "List transactions",
+        "tags": [
+          "billing"
+        ]
+      }
+    },
+    "/billing/payment-methods": {
+      "get": {
+        "description": "Saved payment methods for workspace.",
+        "operationId": "BillingController_getPaymentMethods",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PaymentMethodResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "List payment methods",
+        "tags": [
+          "billing"
+        ]
+      },
+      "post": {
+        "operationId": "BillingController_addPaymentMethod",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddPaymentMethodDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentMethodResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Add payment method",
+        "tags": [
+          "billing"
+        ]
+      }
+    },
+    "/billing/payment-methods/{id}": {
+      "delete": {
+        "operationId": "BillingController_deletePaymentMethod",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Payment method UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Payment method deleted"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Delete payment method",
+        "tags": [
+          "billing"
+        ]
+      }
+    },
+    "/billing/payment-methods/{id}/default": {
+      "post": {
+        "operationId": "BillingController_setDefaultPaymentMethod",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Payment method UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentMethodResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Set default payment method",
+        "tags": [
+          "billing"
+        ]
+      }
+    },
+    "/billing/subscription-payments": {
+      "get": {
+        "description": "History of subscription payments.",
+        "operationId": "BillingController_getSubscriptionPayments",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "History retrieved"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Subscription payment history",
+        "tags": [
+          "billing"
+        ]
+      }
+    },
+    "/billing/subscription-payments/renew": {
+      "post": {
+        "operationId": "BillingController_processRenewal",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Renewal processed"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Process subscription renewal payment",
+        "tags": [
+          "billing"
+        ]
+      }
+    },
+    "/billing/dashboard": {
+      "get": {
+        "description": "Financial overview for workspace.",
+        "operationId": "BillingController_getDashboard",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BillingDashboardDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Billing dashboard",
+        "tags": [
+          "billing"
+        ]
+      }
+    },
     "/storage/upload": {
       "post": {
         "description": "Upload a file using multipart/form-data.\n\nMax size: 100MB.\n\nSend as `Content-Type: multipart/form-data` with field name `file`.",
@@ -3321,11 +3837,6 @@
             "description": ""
           }
         },
-        "security": [
-          {
-            "JWT-auth": []
-          }
-        ],
         "summary": "لیست مقالات مهندسی برق",
         "tags": [
           "articles"
@@ -3368,11 +3879,6 @@
             "description": ""
           }
         },
-        "security": [
-          {
-            "JWT-auth": []
-          }
-        ],
         "summary": "دریافت مقاله با slug",
         "tags": [
           "articles"
@@ -3584,6 +4090,162 @@
         "summary": "تغییر وضعیت مشاوره",
         "tags": [
           "consultations"
+        ]
+      }
+    },
+    "/articles/{articleId}/comments": {
+      "get": {
+        "operationId": "CommentsController_findByArticle",
+        "parameters": [
+          {
+            "name": "articleId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "دریافت نظرات یک مقاله",
+        "tags": [
+          "comments"
+        ]
+      },
+      "post": {
+        "operationId": "CommentsController_create",
+        "parameters": [
+          {
+            "name": "articleId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCommentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "ثبت نظر جدید",
+        "tags": [
+          "comments"
+        ]
+      }
+    },
+    "/comments/{id}": {
+      "patch": {
+        "operationId": "CommentsController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCommentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "ویرایش نظر",
+        "tags": [
+          "comments"
+        ]
+      },
+      "delete": {
+        "operationId": "CommentsController_delete",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "حذف نظر",
+        "tags": [
+          "comments"
+        ]
+      }
+    },
+    "/comments/{id}/like": {
+      "post": {
+        "operationId": "CommentsController_toggleLike",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "لایک/آنلایک نظر",
+        "tags": [
+          "comments"
         ]
       }
     },
@@ -5368,6 +6030,339 @@
           "ai_requests"
         ]
       },
+      "InvoiceResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "workspaceId": {
+            "type": "string"
+          },
+          "invoiceNumber": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "paid",
+              "overdue",
+              "cancelled",
+              "refunded"
+            ]
+          },
+          "currency": {
+            "type": "string"
+          },
+          "subtotal": {
+            "type": "number"
+          },
+          "taxAmount": {
+            "type": "number"
+          },
+          "totalAmount": {
+            "type": "number"
+          },
+          "issuedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "dueAt": {
+            "type": "object",
+            "nullable": true
+          },
+          "paidAt": {
+            "type": "object",
+            "nullable": true
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "workspaceId",
+          "invoiceNumber",
+          "status",
+          "currency",
+          "subtotal",
+          "taxAmount",
+          "totalAmount",
+          "issuedAt",
+          "dueAt",
+          "paidAt",
+          "createdAt"
+        ]
+      },
+      "CreateInvoiceDto": {
+        "type": "object",
+        "properties": {
+          "subtotal": {
+            "type": "number",
+            "example": 1500000,
+            "description": "Subtotal amount"
+          },
+          "taxAmount": {
+            "type": "number",
+            "example": 135000,
+            "description": "Tax amount"
+          },
+          "totalAmount": {
+            "type": "number",
+            "example": 1635000,
+            "description": "Total amount"
+          },
+          "currency": {
+            "type": "string",
+            "example": "IRR",
+            "default": "USD"
+          }
+        },
+        "required": [
+          "subtotal",
+          "totalAmount"
+        ]
+      },
+      "PaymentResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "workspaceId": {
+            "type": "string"
+          },
+          "invoiceId": {
+            "type": "string"
+          },
+          "gateway": {
+            "type": "string"
+          },
+          "gatewayReference": {
+            "type": "object",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "processing",
+              "paid",
+              "failed",
+              "refunded"
+            ]
+          },
+          "amount": {
+            "type": "number"
+          },
+          "paidAt": {
+            "type": "object",
+            "nullable": true
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "workspaceId",
+          "invoiceId",
+          "gateway",
+          "gatewayReference",
+          "status",
+          "amount",
+          "paidAt",
+          "createdAt"
+        ]
+      },
+      "CreatePaymentDto": {
+        "type": "object",
+        "properties": {
+          "invoiceId": {
+            "type": "string",
+            "description": "Invoice UUID"
+          },
+          "gateway": {
+            "type": "string",
+            "enum": [
+              "zarinpal",
+              "payping"
+            ],
+            "example": "zarinpal"
+          },
+          "amount": {
+            "type": "number",
+            "example": 1635000
+          }
+        },
+        "required": [
+          "invoiceId",
+          "gateway",
+          "amount"
+        ]
+      },
+      "RequestPaymentDto": {
+        "type": "object",
+        "properties": {
+          "paymentId": {
+            "type": "string",
+            "description": "Payment UUID"
+          },
+          "callbackUrl": {
+            "type": "string",
+            "example": "https://xennic.com/api/v1/billing/callback"
+          }
+        },
+        "required": [
+          "paymentId",
+          "callbackUrl"
+        ]
+      },
+      "TransactionResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "workspaceId": {
+            "type": "string"
+          },
+          "paymentId": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "number"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "completed",
+              "failed"
+            ]
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "workspaceId",
+          "paymentId",
+          "type",
+          "amount",
+          "status",
+          "createdAt"
+        ]
+      },
+      "PaymentMethodResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "gateway": {
+            "type": "string"
+          },
+          "maskedNumber": {
+            "type": "object",
+            "nullable": true
+          },
+          "cardHolderName": {
+            "type": "object",
+            "nullable": true
+          },
+          "isDefault": {
+            "type": "boolean"
+          },
+          "expiresAt": {
+            "type": "object",
+            "nullable": true
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "gateway",
+          "maskedNumber",
+          "cardHolderName",
+          "isDefault",
+          "expiresAt",
+          "createdAt"
+        ]
+      },
+      "AddPaymentMethodDto": {
+        "type": "object",
+        "properties": {
+          "gateway": {
+            "type": "string",
+            "enum": [
+              "zarinpal",
+              "payping"
+            ],
+            "example": "zarinpal"
+          },
+          "gatewayCustomerId": {
+            "type": "string",
+            "description": "Gateway customer token"
+          },
+          "maskedNumber": {
+            "type": "string",
+            "example": "****1234"
+          },
+          "cardHolderName": {
+            "type": "string",
+            "example": "علی احمدی"
+          },
+          "isDefault": {
+            "type": "boolean",
+            "default": false
+          }
+        },
+        "required": [
+          "gateway"
+        ]
+      },
+      "BillingDashboardDto": {
+        "type": "object",
+        "properties": {
+          "totalInvoiced": {
+            "type": "number"
+          },
+          "totalPaid": {
+            "type": "number"
+          },
+          "totalPending": {
+            "type": "number"
+          },
+          "totalOverdue": {
+            "type": "number"
+          },
+          "recentPayments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PaymentResponseDto"
+            }
+          }
+        },
+        "required": [
+          "totalInvoiced",
+          "totalPaid",
+          "totalPending",
+          "totalOverdue",
+          "recentPayments"
+        ]
+      },
       "FileResponseDto": {
         "type": "object",
         "properties": {
@@ -5583,6 +6578,38 @@
           "content": {
             "type": "string",
             "example": "چطور THD جریان را کاهش دهم؟"
+          }
+        },
+        "required": [
+          "content"
+        ]
+      },
+      "CreateCommentDto": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "string",
+            "description": "متن نظر",
+            "minLength": 1,
+            "maxLength": 2000
+          },
+          "parentId": {
+            "type": "string",
+            "description": "شناسه نظر والد (برای پاسخ)"
+          }
+        },
+        "required": [
+          "content"
+        ]
+      },
+      "UpdateCommentDto": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "string",
+            "description": "متن ویرایش شده نظر",
+            "minLength": 1,
+            "maxLength": 2000
           }
         },
         "required": [

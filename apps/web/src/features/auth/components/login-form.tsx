@@ -3,24 +3,27 @@
 import { useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { Eye, EyeOff, Zap } from 'lucide-react';
+import { Eye, EyeOff, Zap, ArrowLeft } from 'lucide-react';
+import Link from 'next/link';
 import { Button }  from '@/components/ui/button';
 import { Input }   from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useAuthStore } from '@/stores/auth.store';
+import { useToast } from '@/stores/toast.store';
 import { handlePostLogin } from '@/features/auth/hooks/use-post-login';
 
 const API_BASE = typeof window !== 'undefined'
   ? `${process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000'}/api/v1`
   : `${process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000'}/api/v1`;
 
-export function LoginForm() {
+export function LoginForm({ redirectTo, plan: initialPlan }: { redirectTo?: string | null; plan?: string | null }) {
   const t      = useTranslations('auth');
   const tErr   = useTranslations('errors');
   const router = useRouter();
   const params = useParams();
   const locale = (params?.locale as string) ?? 'fa';
   const setAuth = useAuthStore(s => s.setAuth);
+  const toast  = useToast();
 
   const [email,    setEmail]    = useState('');
   const [password, setPassword] = useState('');
@@ -47,15 +50,43 @@ export function LoginForm() {
       const res  = JSON.parse(text);
 
       if (res.success && res.data) {
+        toast.success('ورود موفق', `خوش آمدید، ${res.data.user.firstName} ${res.data.user.lastName}`);
         setAuth(res.data.accessToken, res.data.refreshToken, res.data.user);
+
+        // ذخیره پلن از URL در localStorage اگر همراه login آمده
+        if (initialPlan && initialPlan !== 'free') {
+          localStorage.setItem('xennic_selected_plan', initialPlan);
+        }
+
+        // بررسی پلن از props یا localStorage
+        const effectivePlan = initialPlan || (
+          typeof window !== 'undefined'
+            ? localStorage.getItem('xennic_selected_plan')
+            : null
+        );
+
         // workspace setup
         await handlePostLogin(
           useAuthStore.getState().setWorkspace,
           API_BASE,
           res.data.accessToken,
           useAuthStore.getState().setIsAdmin,
+          effectivePlan,
         );
-        router.push(`/${locale}/dashboard`);
+
+        // پاک کردن پلن ذخیره شده
+        if (effectivePlan) {
+          localStorage.removeItem('xennic_selected_plan');
+        }
+
+        // تعیین مسیر نهایی
+        if (redirectTo) {
+          router.push(decodeURIComponent(redirectTo));
+        } else if (effectivePlan && effectivePlan !== 'free') {
+          router.push(`/${locale}/billing/checkout?plan=${effectivePlan}`);
+        } else {
+          router.push(`/${locale}/dashboard`);
+        }
       } else {
         const msg = res.error?.message ?? '';
         if (msg.toLowerCase().includes('inactive')) {
@@ -77,7 +108,15 @@ export function LoginForm() {
   }
 
   return (
-    <Card>
+    <>
+      <Link
+        href={`/${locale}`}
+        className="hidden lg:flex items-center gap-1.5 text-sm text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] transition-colors mb-3"
+      >
+        <ArrowLeft className="h-4 w-4" />
+        بازگشت به صفحه اصلی
+      </Link>
+      <Card>
       <CardHeader className="text-center space-y-2 pb-4">
         <div className="flex justify-center">
           <div className="w-11 h-11 rounded-[var(--radius-lg)] bg-[hsl(var(--primary)/0.1)] flex items-center justify-center">
@@ -158,5 +197,6 @@ export function LoginForm() {
         </form>
       </CardContent>
     </Card>
+    </>
   );
 }

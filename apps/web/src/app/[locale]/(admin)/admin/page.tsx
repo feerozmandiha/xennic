@@ -20,10 +20,16 @@ export default function AdminPage() {
   const token           = useAuthStore(s => s.token);
   const setIsAdmin      = useAuthStore(s => s.setIsAdmin);
 
+  const [hydrated,    setHydrated]    = useState(false);
   const [checking,    setChecking]    = useState(true);
   const [isAdmin,     setLocalAdmin]  = useState(false);
 
+  // ── hydration guard ──────────────────────────────────────────────────────
+  useEffect(() => { setHydrated(true); }, []);
+
   useEffect(() => {
+    if (!hydrated) return;
+
     if (!isAuthenticated || !token) {
       router.replace(`/${locale}/login`);
       return;
@@ -45,9 +51,9 @@ export default function AdminPage() {
         setChecking(false);
         if (!storeIsAdmin) setTimeout(() => router.replace(`/${locale}/dashboard`), 1500);
       });
-  }, [isAuthenticated, token]);
+  }, [hydrated, isAuthenticated, token]);
 
-  if (!isAuthenticated || checking) {
+  if (!hydrated || checking) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen gap-3">
         <Loader2 className="h-6 w-6 animate-spin text-[hsl(var(--primary))]" />
