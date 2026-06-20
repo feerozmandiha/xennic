@@ -4,7 +4,7 @@ RAG API Endpoints for Xennic AI Platform
 Endpoints for indexing and searching documents
 """
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel
 from typing import List, Dict, Any, Optional
 
@@ -77,132 +77,130 @@ class ContextResponse(BaseModel):
     documents: List[Dict[str, Any]]
 
 
+def _get_store(request: Request) -> VectorStore:
+    if not hasattr(request.app.state, 'vector_store') or request.app.state.vector_store is None:
+        request.app.state.vector_store = VectorStore()
+    return request.app.state.vector_store
+
+
 # ============================================================================
 # Endpoints
 # ============================================================================
 
 @router.post("/index", response_model=IndexDocumentResponse)
-async def index_documents(request: IndexDocumentRequest):
+async def index_documents(request: Request, body: IndexDocumentRequest):
     """
     Index documents for RAG
-    
+
     Processes documents by:
     1. Chunking into smaller pieces
     2. Generating embeddings
     3. Storing in vector database
-    
+
     Documents are scoped by workspace_id for isolation.
     """
     try:
-        # Initialize components
-        vector_store = VectorStore()
+        vector_store = _get_store(request)
         embedding_pipeline = EmbeddingPipeline()
         chunker = DocumentChunker(
-            chunk_size=request.chunk_size,
-            chunk_overlap=request.chunk_overlap,
+            chunk_size=body.chunk_size,
+            chunk_overlap=body.chunk_overlap,
         )
-        
-        # Chunk documents
-        all_chunks = []
-        for doc in request.documents:
+
+        all_chunks: List[Chunk] = []
+        for doc in body.documents:
             chunks = chunker.chunk_document(doc)
             all_chunks.extend(chunks)
-        
+
         if not all_chunks:
             return IndexDocumentResponse(
                 success=True,
                 indexed_count=0,
                 chunk_count=0,
-                collection=request.collection,
-                workspace_id=request.workspace_id,
+                collection=body.collection,
+                workspace_id=body.workspace_id,
             )
-        
-        # Convert chunks to documents
+
         chunk_docs = chunker.chunks_to_documents(all_chunks)
-        
-        # Extract content and metadata
         contents = [chunk.content for chunk in all_chunks]
-        
-        # Generate embeddings
         embeddings = await embedding_pipeline.generate_embeddings(contents)
-        
-        # Add to vector store
+
         await vector_store.add_documents(
-            collection=request.collection,
+            collection=body.collection,
             documents=chunk_docs,
             embeddings=embeddings,
-            workspace_id=request.workspace_id,
+            workspace_id=body.workspace_id,
         )
-        
+
         return IndexDocumentResponse(
             success=True,
-            indexed_count=len(request.documents),
+            indexed_count=len(body.documents),
             chunk_count=len(all_chunks),
-            collection=request.collection,
-            workspace_id=request.workspace_id,
+            collection=body.collection,
+            workspace_id=body.workspace_id,
         )
-    
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.post("/search", response_model=SearchResponse)
-async def search_documents(request: SearchRequest):
+async def search_documents(request: Request, body: SearchRequest):
     """
     Search for documents using semantic similarity
-    
+
     Results are filtered by workspace_id for isolation.
     """
     try:
         retriever = RAGRetriever()
-        
+
         results = await retriever.retrieve(
-            query=request.query,
-            workspace_id=request.workspace_id,
-            collection=request.collection,
-            limit=request.limit,
-            score_threshold=request.score_threshold,
+            query=body.query,
+            workspace_id=body.workspace_id,
+            collection=body.collection,
+            limit=body.limit,
+            score_threshold=body.score_threshold,
         )
-        
+
         return SearchResponse(
             success=True,
-            query=request.query,
-            collection=request.collection,
-            workspace_id=request.workspace_id,
+            query=body.query,
+            collection=body.collection,
+            workspace_id=body.workspace_id,
             results=results,
             total=len(results),
         )
-    
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.post("/context", response_model=ContextResponse)
-async def get_context(request: MultiCollectionSearchRequest):
+async def get_context(request: Request, body: MultiCollectionSearchRequest):
     """
     Retrieve context for RAG from multiple collections
-    
+
     Returns a formatted context string ready for LLM prompts.
     """
     try:
         retriever = RAGRetriever()
-        
+
         result = await retriever.retrieve_with_context(
-            query=request.query,
-            workspace_id=request.workspace_id,
-            collections=request.collections,
-            limit=request.limit_per_collection * len(request.collections),
+            query=body.query,
+            workspace_id=body.workspace_id,
+            collections=body.collections,
+            limit=body.limit_per_collection * len(body.collections),
         )
-        
+
         return ContextResponse(
             success=True,
-            query=request.query,
-            workspace_id=request.workspace_id,
+            query=body.query,
+            workspace_id=body.workspace_id,
             context=result['context'],
             total_retrieved=result['total_retrieved'],
             documents=result['documents'],
         )
-    
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -210,35 +208,32 @@ async def get_context(request: MultiCollectionSearchRequest):
 @router.get("/collections")
 async def list_collections():
     """List all available collections"""
-    vector_store = VectorStore()
     return {
         "success": True,
-        "collections": list(vector_store.COLLECTIONS.keys()),
-        "details": vector_store.COLLECTIONS,
+        "collections": VectorStore.COLLECTIONS,
     }
 
 
 @router.get("/collections/{collection}/info")
-async def get_collection_info(collection: str):
+async def get_collection_info(request: Request, collection: str, workspace_id: Optional[str] = None):
     """Get information about a specific collection"""
     try:
-        vector_store = VectorStore()
-        info = await vector_store.get_collection_info(collection)
+        vector_store = _get_store(request)
+        info = await vector_store.get_collection_info(collection, workspace_id)
         return {"success": True, **info}
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
 
 
 @router.delete("/workspace/{workspace_id}")
-async def delete_workspace_documents(workspace_id: str, collection: str):
+async def delete_workspace_documents(request: Request, workspace_id: str):
     """Delete all documents for a workspace (for cleanup)"""
     try:
-        vector_store = VectorStore()
-        deleted = await vector_store.delete_by_workspace(collection, workspace_id)
+        vector_store = _get_store(request)
+        deleted = await vector_store.delete_workspace(workspace_id)
         return {
             "success": True,
             "workspace_id": workspace_id,
-            "collection": collection,
             "deleted_count": deleted,
         }
     except Exception as e:

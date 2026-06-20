@@ -14,6 +14,7 @@
     "next": "بعدی",
     "search": "جستجو...",
     "noData": "داده‌ای یافت نشد",
+    "searchMinChars": "حداقل ۲ کاراکتر برای جستجو وارد کنید",
     "total": "مجموع",
     "actions": "عملیات"
   },
@@ -48,6 +49,7 @@
     "dashboard": "داشبورد",
     "projects": "پروژه‌ها",
     "engineering": "محاسبات مهندسی",
+    "power-system": "مطالعات سیستم قدرت",
     "storage": "فایل‌ها",
     "notifications": "اعلان‌ها",
     "settings": "تنظیمات",
@@ -55,8 +57,11 @@
     "subscription": "اشتراک",
     "ai": "هوش مصنوعی",
     "energy": "تحلیل انرژی",
-    "articles": "مقالات",
     "consultations": "مشاوره",
+    "knowledge": "دانشنامه فنی",
+    "marketplace": "بازارگاه",
+    "search": "جستجو",
+    "billing": "اشتراک و صورتحساب",
     "admin": "مدیریت پلتفرم"
   },
   "dashboard": {
@@ -104,6 +109,116 @@
       "power_quality": "کیفیت توان"
     },
     "proRequired": "این محاسبه نیاز به پلن Pro دارد"
+  },
+  "powerSystem": {
+    "title": "مطالعات سیستم قدرت",
+    "description": "پخش بار، اتصال کوتاه، راه‌اندازی موتور و سایزینگ باسبار بر اساس IEC 60909",
+    "authRequired": "برای اجرای مطالعات سیستم قدرت لطفاً وارد سیستم شوید",
+    "tabLabels": {
+      "PS-001": "پخش بار (Load Flow)",
+      "PS-002": "اتصال کوتاه (IEC 60909)",
+      "PS-003": "راه‌اندازی موتور",
+      "PS-004": "سایزینگ باسبار"
+    },
+    "tabStandards": {
+      "PS-001": "IEC 60909 / نیوتن-رافسون",
+      "PS-002": "IEC 60909-0:2016",
+      "PS-003": "IEC 60034 / IEEE 399",
+      "PS-004": "IEC 61439-1 / IEC 60865"
+    },
+    "network": {
+      "buses": "باس‌ها",
+      "lines": "خطوط",
+      "transformers": "ترانسفورماتورها",
+      "loads": "بارها",
+      "generators": "ژنراتورها",
+      "addBus": "افزودن باس",
+      "addLine": "افزودن خط",
+      "addTransformer": "افزودن ترانسفورماتور",
+      "addLoad": "افزودن بار",
+      "addGenerator": "افزودن ژنراتور",
+      "fields": {
+        "name": "نام",
+        "vn_kv": "Vn (kV)",
+        "type": "نوع",
+        "fromBus": "باس مبدأ",
+        "toBus": "باس مقصد",
+        "length_km": "طول (km)",
+        "r_ohm_per_km": "R (Ω/km)",
+        "x_ohm_per_km": "X (Ω/km)",
+        "c_nf_per_km": "C (nF/km)",
+        "max_i_ka": "حداکثر I (kA)",
+        "hvBus": "باس HV",
+        "lvBus": "باس LV",
+        "sn_mva": "Sn (MVA)",
+        "vn_hv_kv": "HV (kV)",
+        "vn_lv_kv": "LV (kV)",
+        "vkr_pct": "Vkr (%)",
+        "vk_pct": "Vk (%)",
+        "bus": "باس",
+        "p_mw": "P (MW)",
+        "q_mvar": "Q (MVAr)",
+        "p_mw_short": "P (MW)",
+        "sn_mva_gen": "Sn (MVA)"
+      },
+      "types": {
+        "slack": "مرجع (Slack)",
+        "load": "بار (Load)",
+        "gen": "ژنراتور"
+      }
+    },
+    "motor": {
+      "title": "پارامترهای موتور",
+      "motor_kw": "توان موتور (kW)",
+      "motor_vn_kv": "ولتاژ موتور (kV)",
+      "startingMethod": "روش راه‌اندازی",
+      "startingCurrent": "جریان راه‌اندازی (×In)",
+      "allowableDip": "افت ولتاژ مجاز (%)",
+      "transformerKva": "ترانسفورماتور (kVA)",
+      "transformerZ": "امپدانس ترانس (%)",
+      "methods": {
+        "DOL": "مستقیم (DOL)",
+        "StarDelta": "ستاره-مثلث",
+        "Autotransformer": "اتوترانسفورماتور",
+        "SoftStarter": "سافت استارتر",
+        "VFD": "درایو (VFD)"
+      }
+    },
+    "busbar": {
+      "title": "پارامترهای باسبار",
+      "material": "جنس",
+      "shape": "شکل",
+      "width": "عرض (mm)",
+      "thickness": "ضخامت (mm)",
+      "spacing": "فاصله (mm)",
+      "ambientTemp": "دمای محیط (°C)",
+      "loadCurrent": "جریان بار (A)",
+      "faultCurrent": "جریان خطا (kA)",
+      "faultDuration": "مدت خطا (s)",
+      "length": "طول (m)",
+      "materials": {
+        "copper": "مس",
+        "aluminum": "آلومینیوم"
+      },
+      "shapes": {
+        "rectangular": "مستطیلی",
+        "round": "دایره‌ای"
+      }
+    },
+    "run": "اجرای {type}",
+    "calcFailed": "خطا در محاسبه",
+    "results": {
+      "title": "نتایج",
+      "warnings": "هشدارها",
+      "networkSummary": "خلاصه شبکه",
+      "yes": "بله",
+      "no": "خیر",
+      "buses": "باس",
+      "lines": "خط",
+      "transformers": "ترانسفورماتور",
+      "loads": "بار",
+      "generators": "ژنراتور"
+    }
   },
   "storage": {
     "title": "فایل‌ها",
@@ -155,6 +270,46 @@
       "fa": "فارسی",
       "en": "English"
     }
+  },
+  "knowledge": {
+    "title": "دانشنامه فنی",
+    "slug": "شناسه یکتا (slug)",
+    "content": "محتوا",
+    "newArticle": "مقاله جدید",
+    "editArticle": "ویرایش مقاله",
+    "newArticleDescription": "یک مقاله دانشنامه فنی جدید ایجاد کنید. پس از ایجاد می‌توانید محتوا را ویرایش کنید."
+  },
+  "marketplace": {
+    "title": "بازارگاه",
+    "description": "مدیریت محصولات، سفارشات و فروشندگان",
+    "products": "محصولات",
+    "orders": "سفارشات",
+    "vendors": "فروشندگان",
+    "newProduct": "محصول جدید",
+    "newVendor": "فروشنده جدید",
+    "editProduct": "ویرایش محصول",
+    "productDeleted": "محصول حذف شد",
+    "productCreated": "محصول ایجاد شد",
+    "productUpdated": "محصول به‌روز شد",
+    "vendorCreated": "فروشنده ایجاد شد",
+    "noProducts": "هیچ محصولی یافت نشد",
+    "noOrders": "هیچ سفارشی یافت نشد",
+    "noVendors": "هیچ فروشنده‌ای یافت نشد",
+    "notFound": "یافت نشد",
+    "backToMarketplace": "بازگشت به بازارگاه",
+    "vendor": "فروشنده",
+    "vendorName": "نام فروشنده",
+    "selectVendor": "انتخاب فروشنده",
+    "type": "نوع",
+    "price": "قیمت",
+    "currency": "واحد",
+    "items": "آیتم",
+    "createdAt": "تاریخ ایجاد",
+    "create": "ایجاد",
+    "update": "به‌روزرسانی",
+    "cancel": "انصراف",
+    "error": "خطا در انجام عملیات",
+    "selectVendorFirst": "لطفاً ابتدا فروشنده را انتخاب کنید"
   },
   "errors": {
     "required": "این فیلد الزامی است",

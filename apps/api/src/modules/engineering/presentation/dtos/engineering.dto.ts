@@ -8,11 +8,32 @@ import type { CalculationEntity } from '../../domain/entities/calculation.entity
 
 export const SUPPORTED_CALCULATION_TYPES = [
   'BASIC-001', 'BASIC-002', 'BASIC-003', 'BASIC-004', 'BASIC-005',
-  'CABLE-001', 'CABLE-002', 'CABLE-003', 'CABLE-004',
-  'TRF-001',   'TRF-002',   'TRF-003',   'TRF-004',
-  'PROT-001',
+  'CABLE-001', 'CABLE-002', 'CABLE-003', 'CABLE-004', 'CABLE-005',
+  'TRF-001',   'TRF-002',   'TRF-003',   'TRF-004',   'TRF-005',
+  // Protection
+  'PROT-001',  'PROT-002',  'PROT-004',  'PROT-005',
+  'SC-001',    'GND-001',   'ARC-001',
   // Power Quality
   'PQ-001', 'PQ-002', 'PQ-003', 'PQ-004', 'PQ-005', 'PQ-006',
+  'CAP-001',
+  // Power System Studies
+  'PS-001', 'PS-002', 'PS-003', 'PS-004',
+  // Switchgear & Lighting
+  'SWT-001',
+  'LIGHT-001', 'LIGHT-002',
+  // Grounding
+  'GND-002',
+  // Renewable & Motors
+  'MOT-002',
+  'BATTERY-002',
+  'SOLAR-002', 'SOLAR-003',
+  'BAT-BU-001',
+  // Power Factor Correction
+  'PFC-001',
+  // Harmonic
+  'HARM-001',
+  // Economics
+  'ECO-001', 'ECO-002', 'ECO-003',
 ] as const;
 
 export type CalculationType = typeof SUPPORTED_CALCULATION_TYPES[number];

@@ -31,7 +31,18 @@ async def lifespan(app: FastAPI):
         print(f"   - {agent_info['agent_id']}: {agent_info['agent_name']}")
     
     app.state.registry = registry
+
+    from .rag.vector_store import VectorStore
+    app.state.vector_store = VectorStore()
+    if app.state.vector_store.is_qdrant_enabled():
+        print("✅ Qdrant vector store active")
+    else:
+        print("⚠️ File-based vector store active (Qdrant not available)")
+
     yield
+
+    if hasattr(app.state, 'vector_store') and app.state.vector_store is not None:
+        await app.state.vector_store.close()
     print("🛑 Shutting down Xennic AI Service...")
 
 

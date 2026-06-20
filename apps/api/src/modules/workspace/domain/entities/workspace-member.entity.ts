@@ -1,6 +1,9 @@
 export type WorkspaceMemberRole =
   | 'OWNER'
   | 'ADMIN'
+  | 'EDITOR'
+  | 'KNOWLEDGE_WRITER'
+  | 'REVIEWER'
   | 'ENGINEER'
   | 'CONSULTANT'
   | 'MEMBER'

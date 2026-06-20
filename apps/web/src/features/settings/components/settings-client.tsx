@@ -1,25 +1,29 @@
 'use client';
 
-import { useState } from 'react';
-import { useTranslations } from 'next-intl';
+import { useState, useEffect } from 'react';
 import { useTheme }        from 'next-themes';
-import { useRouter, useParams } from 'next/navigation';
+import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Sun, Moon, Monitor, Globe, User, CreditCard,
   Shield, Save, Building2, UserPlus, Trash2,
   Crown, UserMinus, Mail, RefreshCw, ChevronRight,
   CheckCircle2, AlertTriangle, Eye, EyeOff,
+  Settings, Palette, Clock, Bell, Sliders,
+  Languages, Ruler, Zap, Thermometer, Hash, Percent,
+  PaintBucket, ToggleLeft,
 } from 'lucide-react';
 import { PageHeader }  from '@/components/ui/page-header';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input }   from '@/components/ui/input';
 import { Badge }   from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Separator } from '@/components/ui/separator';
 import { useAuthStore } from '@/stores/auth.store';
 import { useToast }     from '@/stores/toast.store';
 import { apiClient }    from '@/lib/api/client';
 import { cn }           from '@/lib/utils';
+import { BillingClient } from '@/features/billing/components/billing-client';
 
 // ── Tabs ──────────────────────────────────────────────────────────────────────
 
@@ -133,6 +137,34 @@ function WorkspaceTab() {
   const [invEmail,  setInvEmail]  = useState('');
   const [invRole,   setInvRole]   = useState<'ADMIN' | 'MEMBER' | 'VIEWER'>('MEMBER');
   const [showInvite, setShowInvite] = useState(false);
+
+  // ── Workspace Settings ──
+  const [wsSettings, setWsSettings] = useState<any>(null);
+  const [showSettings, setShowSettings] = useState(false);
+
+  const { data: settingsData, isLoading: settingsLoading } = useQuery({
+    queryKey: ['ws-settings', wsId],
+    queryFn:  () => apiClient.get<any>(`/workspaces/${wsId}/settings`),
+    enabled:  !!wsId && showSettings,
+    retry: false,
+  });
+
+  const settings = settingsData?.data?.settings ?? wsSettings;
+
+  useEffect(() => {
+    if (settingsData?.data?.settings && !wsSettings) {
+      setWsSettings(settingsData.data.settings);
+    }
+  }, [settingsData, wsSettings]);
+
+  const settingsSaveMutation = useMutation({
+    mutationFn: (data: any) => apiClient.patch(`/workspaces/${wsId}/settings`, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['ws-settings'] });
+      toast.success('تنظیمات workspace ذخیره شد');
+    },
+    onError: (e: any) => toast.error(e?.message ?? 'خطا در ذخیره تنظیمات'),
+  });
 
   // Workspace info
   const { data: wsData, isLoading: wsLoading } = useQuery({
@@ -466,6 +498,364 @@ function WorkspaceTab() {
           </CardContent>
         </Card>
       )}
+
+      {/* ── Workspace Settings ── */}
+      <Card>
+        <CardHeader className="pb-3 flex flex-row items-center justify-between">
+          <CardTitle className="text-sm flex items-center gap-2">
+            <Settings className="h-4 w-4 text-[hsl(var(--muted-foreground))]" />
+            تنظیمات Workspace
+          </CardTitle>
+          {isOwner && (
+            <button
+              onClick={() => { setShowSettings(s => !s); }}
+              className="inline-flex items-center gap-1.5 h-7 px-3 rounded-[var(--radius)] bg-[hsl(var(--primary)/0.08)] text-[hsl(var(--primary))] text-xs font-medium hover:bg-[hsl(var(--primary)/0.12)] transition-colors"
+            >
+              <ChevronRight className={cn('h-3.5 w-3.5 transition-transform', showSettings && 'rotate-90')} />
+              {showSettings ? 'بستن' : 'ویرایش'}
+            </button>
+          )}
+        </CardHeader>
+        {showSettings && (
+          <CardContent>
+            {settingsLoading ? (
+              <div className="space-y-3">
+                <Skeleton className="h-8 w-48" />
+                <Skeleton className="h-40" />
+                <Skeleton className="h-32" />
+              </div>
+            ) : (
+              <div className="space-y-6">
+
+                {/* ── Brand ── */}
+                <div>
+                  <h4 className="text-xs font-semibold text-[hsl(var(--muted-foreground))] flex items-center gap-1.5 mb-3">
+                    <Palette className="h-3.5 w-3.5" />
+                    برند
+                  </h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="space-y-1.5">
+                      <label className="text-[11px] font-medium text-[hsl(var(--muted-foreground))]">نام برند</label>
+                      <Input
+                        value={settings?.brand?.name ?? ''}
+                        onChange={e => setWsSettings((s: any) => ({ ...s, brand: { ...s?.brand, name: e.target.value } }))}
+                        placeholder="Xennic Engineering"
+                        className="h-8 text-sm"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-[11px] font-medium text-[hsl(var(--muted-foreground))]">آدرس لوگو</label>
+                      <Input
+                        dir="ltr"
+                        value={settings?.brand?.logo_url ?? ''}
+                        onChange={e => setWsSettings((s: any) => ({ ...s, brand: { ...s?.brand, logo_url: e.target.value } }))}
+                        placeholder="https://storage.example.com/logo.png"
+                        className="h-8 text-sm"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-[11px] font-medium text-[hsl(var(--muted-foreground))]">رنگ اصلی</label>
+                      <div className="flex items-center gap-2">
+                        <Input
+                          value={settings?.brand?.primary_color ?? '#2563eb'}
+                          onChange={e => setWsSettings((s: any) => ({ ...s, brand: { ...s?.brand, primary_color: e.target.value } }))}
+                          placeholder="#2563eb"
+                          className="h-8 text-sm font-mono flex-1"
+                          dir="ltr"
+                        />
+                        <div
+                          className="w-8 h-8 rounded-[var(--radius)] border border-[hsl(var(--border))] shrink-0"
+                          style={{ backgroundColor: settings?.brand?.primary_color ?? '#2563eb' }}
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-[11px] font-medium text-[hsl(var(--muted-foreground))]">رنگ ثانویه</label>
+                      <div className="flex items-center gap-2">
+                        <Input
+                          value={settings?.brand?.accent_color ?? '#7c3aed'}
+                          onChange={e => setWsSettings((s: any) => ({ ...s, brand: { ...s?.brand, accent_color: e.target.value } }))}
+                          placeholder="#7c3aed"
+                          className="h-8 text-sm font-mono flex-1"
+                          dir="ltr"
+                        />
+                        <div
+                          className="w-8 h-8 rounded-[var(--radius)] border border-[hsl(var(--border))] shrink-0"
+                          style={{ backgroundColor: settings?.brand?.accent_color ?? '#7c3aed' }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <Separator />
+
+                {/* ── Localization ── */}
+                <div>
+                  <h4 className="text-xs font-semibold text-[hsl(var(--muted-foreground))] flex items-center gap-1.5 mb-3">
+                    <Globe className="h-3.5 w-3.5" />
+                    محلی‌سازی
+                  </h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="space-y-1.5">
+                      <label className="text-[11px] font-medium text-[hsl(var(--muted-foreground))]">زبان</label>
+                      <select
+                        value={settings?.localization?.locale ?? 'fa'}
+                        onChange={e => setWsSettings((s: any) => ({ ...s, localization: { ...s?.localization, locale: e.target.value } }))}
+                        className="h-8 w-full rounded-[var(--radius)] border border-[hsl(var(--input))] bg-transparent px-2 text-sm focus:outline-none focus:ring-2 focus:ring-[hsl(var(--ring))]"
+                      >
+                        <option value="fa">فارسی</option>
+                        <option value="en">English</option>
+                      </select>
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-[11px] font-medium text-[hsl(var(--muted-foreground))]">جهت</label>
+                      <select
+                        value={settings?.localization?.direction ?? 'rtl'}
+                        onChange={e => setWsSettings((s: any) => ({ ...s, localization: { ...s?.localization, direction: e.target.value } }))}
+                        className="h-8 w-full rounded-[var(--radius)] border border-[hsl(var(--input))] bg-transparent px-2 text-sm focus:outline-none focus:ring-2 focus:ring-[hsl(var(--ring))]"
+                      >
+                        <option value="rtl">راست‌به‌چپ (RTL)</option>
+                        <option value="ltr">چپ‌به‌راست (LTR)</option>
+                      </select>
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-[11px] font-medium text-[hsl(var(--muted-foreground))]">منطقه زمانی</label>
+                      <select
+                        value={settings?.localization?.timezone ?? 'Asia/Tehran'}
+                        onChange={e => setWsSettings((s: any) => ({ ...s, localization: { ...s?.localization, timezone: e.target.value } }))}
+                        className="h-8 w-full rounded-[var(--radius)] border border-[hsl(var(--input))] bg-transparent px-2 text-sm focus:outline-none focus:ring-2 focus:ring-[hsl(var(--ring))]"
+                        dir="ltr"
+                      >
+                        <option value="Asia/Tehran">Asia/Tehran (UTC+3:30)</option>
+                        <option value="UTC">UTC</option>
+                        <option value="Asia/Dubai">Asia/Dubai (UTC+4)</option>
+                        <option value="Europe/London">Europe/London (UTC+1)</option>
+                        <option value="America/New_York">America/New_York (UTC-4)</option>
+                      </select>
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-[11px] font-medium text-[hsl(var(--muted-foreground))]">فرمت تاریخ</label>
+                      <select
+                        value={settings?.localization?.date_format ?? 'YYYY/MM/DD'}
+                        onChange={e => setWsSettings((s: any) => ({ ...s, localization: { ...s?.localization, date_format: e.target.value } }))}
+                        className="h-8 w-full rounded-[var(--radius)] border border-[hsl(var(--input))] bg-transparent px-2 text-sm focus:outline-none focus:ring-2 focus:ring-[hsl(var(--ring))]"
+                      >
+                        <option value="YYYY/MM/DD">۱۴۰۴/۰۳/۲۶</option>
+                        <option value="YYYY-MM-DD">۱۴۰۴-۰۳-۲۶</option>
+                        <option value="DD/MM/YYYY">۲۶/۰۳/۱۴۰۴</option>
+                      </select>
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-[11px] font-medium text-[hsl(var(--muted-foreground))]">فرمت اعداد</label>
+                      <select
+                        value={settings?.localization?.number_format ?? 'fa'}
+                        onChange={e => setWsSettings((s: any) => ({ ...s, localization: { ...s?.localization, number_format: e.target.value } }))}
+                        className="h-8 w-full rounded-[var(--radius)] border border-[hsl(var(--input))] bg-transparent px-2 text-sm focus:outline-none focus:ring-2 focus:ring-[hsl(var(--ring))]"
+                      >
+                        <option value="fa">فارسی (۱۲۳۴)</option>
+                        <option value="en">English (1234)</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                <Separator />
+
+                {/* ── Calculation Defaults ── */}
+                <div>
+                  <h4 className="text-xs font-semibold text-[hsl(var(--muted-foreground))] flex items-center gap-1.5 mb-3">
+                    <Sliders className="h-3.5 w-3.5" />
+                    پیش‌فرض‌های محاسباتی
+                  </h4>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    <div className="space-y-1.5">
+                      <label className="text-[11px] font-medium text-[hsl(var(--muted-foreground))]">ولتاژ (kV)</label>
+                      <Input
+                        type="number" step="0.1" min="0" max="1000"
+                        value={settings?.defaults?.voltage_level_kv ?? 0.4}
+                        onChange={e => setWsSettings((s: any) => ({ ...s, defaults: { ...s?.defaults, voltage_level_kv: parseFloat(e.target.value) } }))}
+                        className="h-8 text-sm"
+                        dir="ltr"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-[11px] font-medium text-[hsl(var(--muted-foreground))]">فرکانس (Hz)</label>
+                      <select
+                        value={settings?.defaults?.frequency_hz ?? 50}
+                        onChange={e => setWsSettings((s: any) => ({ ...s, defaults: { ...s?.defaults, frequency_hz: parseInt(e.target.value) } }))}
+                        className="h-8 w-full rounded-[var(--radius)] border border-[hsl(var(--input))] bg-transparent px-2 text-sm focus:outline-none focus:ring-2 focus:ring-[hsl(var(--ring))]"
+                      >
+                        <option value={50}>50 Hz</option>
+                        <option value={60}>60 Hz</option>
+                      </select>
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-[11px] font-medium text-[hsl(var(--muted-foreground))]">دمای محیط (°C)</label>
+                      <Input
+                        type="number" step="1" min="-20" max="80"
+                        value={settings?.defaults?.ambient_temperature_c ?? 35}
+                        onChange={e => setWsSettings((s: any) => ({ ...s, defaults: { ...s?.defaults, ambient_temperature_c: parseFloat(e.target.value) } }))}
+                        className="h-8 text-sm"
+                        dir="ltr"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-[11px] font-medium text-[hsl(var(--muted-foreground))]">جنس هادی</label>
+                      <select
+                        value={settings?.defaults?.conductor_material ?? 'copper'}
+                        onChange={e => setWsSettings((s: any) => ({ ...s, defaults: { ...s?.defaults, conductor_material: e.target.value } }))}
+                        className="h-8 w-full rounded-[var(--radius)] border border-[hsl(var(--input))] bg-transparent px-2 text-sm focus:outline-none focus:ring-2 focus:ring-[hsl(var(--ring))]"
+                      >
+                        <option value="copper">مس</option>
+                        <option value="aluminum">آلومینیوم</option>
+                      </select>
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-[11px] font-medium text-[hsl(var(--muted-foreground))]">نوع عایق</label>
+                      <select
+                        value={settings?.defaults?.insulation_type ?? 'XLPE'}
+                        onChange={e => setWsSettings((s: any) => ({ ...s, defaults: { ...s?.defaults, insulation_type: e.target.value } }))}
+                        className="h-8 w-full rounded-[var(--radius)] border border-[hsl(var(--input))] bg-transparent px-2 text-sm focus:outline-none focus:ring-2 focus:ring-[hsl(var(--ring))]"
+                      >
+                        <option value="XLPE">XLPE</option>
+                        <option value="PVC">PVC</option>
+                        <option value="EPR">EPR</option>
+                        <option value="MI">MI</option>
+                      </select>
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-[11px] font-medium text-[hsl(var(--muted-foreground))]">ضریب توان</label>
+                      <Input
+                        type="number" step="0.01" min="0" max="1"
+                        value={settings?.defaults?.power_factor ?? 0.85}
+                        onChange={e => setWsSettings((s: any) => ({ ...s, defaults: { ...s?.defaults, power_factor: parseFloat(e.target.value) } }))}
+                        className="h-8 text-sm"
+                        dir="ltr"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <Separator />
+
+                {/* ── Notifications ── */}
+                <div>
+                  <h4 className="text-xs font-semibold text-[hsl(var(--muted-foreground))] flex items-center gap-1.5 mb-3">
+                    <Bell className="h-3.5 w-3.5" />
+                    اعلان‌ها
+                  </h4>
+                  <div className="space-y-2">
+                    <label className="flex items-center justify-between py-2 px-3 rounded-[var(--radius)] bg-[hsl(var(--secondary)/0.3)]">
+                      <span className="text-xs">اعلان‌های ایمیلی</span>
+                      <input
+                        type="checkbox"
+                        checked={settings?.notifications?.email_alerts ?? true}
+                        onChange={e => setWsSettings((s: any) => ({ ...s, notifications: { ...s?.notifications, email_alerts: e.target.checked } }))}
+                        className="h-4 w-4 rounded border-[hsl(var(--border))] text-[hsl(var(--primary))] focus:ring-[hsl(var(--ring))]"
+                      />
+                    </label>
+                    <label className="flex items-center justify-between py-2 px-3 rounded-[var(--radius)] bg-[hsl(var(--secondary)/0.3)]">
+                      <span className="text-xs">پایان محاسبات</span>
+                      <input
+                        type="checkbox"
+                        checked={settings?.notifications?.calculation_completed ?? true}
+                        onChange={e => setWsSettings((s: any) => ({ ...s, notifications: { ...s?.notifications, calculation_completed: e.target.checked } }))}
+                        className="h-4 w-4 rounded border-[hsl(var(--border))] text-[hsl(var(--primary))] focus:ring-[hsl(var(--ring))]"
+                      />
+                    </label>
+                    <label className="flex items-center justify-between py-2 px-3 rounded-[var(--radius)] bg-[hsl(var(--secondary)/0.3)]">
+                      <span className="text-xs">عضویت عضو جدید</span>
+                      <input
+                        type="checkbox"
+                        checked={settings?.notifications?.member_joined ?? true}
+                        onChange={e => setWsSettings((s: any) => ({ ...s, notifications: { ...s?.notifications, member_joined: e.target.checked } }))}
+                        className="h-4 w-4 rounded border-[hsl(var(--border))] text-[hsl(var(--primary))] focus:ring-[hsl(var(--ring))]"
+                      />
+                    </label>
+                    <label className="flex items-center justify-between py-2 px-3 rounded-[var(--radius)] bg-[hsl(var(--secondary)/0.3)]">
+                      <span className="text-xs">گزارش هفتگی</span>
+                      <input
+                        type="checkbox"
+                        checked={settings?.notifications?.weekly_report ?? false}
+                        onChange={e => setWsSettings((s: any) => ({ ...s, notifications: { ...s?.notifications, weekly_report: e.target.checked } }))}
+                        className="h-4 w-4 rounded border-[hsl(var(--border))] text-[hsl(var(--primary))] focus:ring-[hsl(var(--ring))]"
+                      />
+                    </label>
+                  </div>
+                </div>
+
+                <Separator />
+
+                {/* ── Features ── */}
+                <div>
+                  <h4 className="text-xs font-semibold text-[hsl(var(--muted-foreground))] flex items-center gap-1.5 mb-3">
+                    <ToggleLeft className="h-3.5 w-3.5" />
+                    ویژگی‌ها
+                  </h4>
+                  <div className="space-y-2">
+                    <label className="flex items-center justify-between py-2 px-3 rounded-[var(--radius)] bg-[hsl(var(--secondary)/0.3)]">
+                      <span className="text-xs">ذخیره خودکار</span>
+                      <input
+                        type="checkbox"
+                        checked={settings?.features?.auto_save ?? true}
+                        onChange={e => setWsSettings((s: any) => ({ ...s, features: { ...s?.features, auto_save: e.target.checked } }))}
+                        className="h-4 w-4 rounded border-[hsl(var(--border))] text-[hsl(var(--primary))] focus:ring-[hsl(var(--ring))]"
+                      />
+                    </label>
+                    <label className="flex items-center justify-between py-2 px-3 rounded-[var(--radius)] bg-[hsl(var(--secondary)/0.3)]">
+                      <span className="text-xs">نمایش گزینه‌های پیشرفته</span>
+                      <input
+                        type="checkbox"
+                        checked={settings?.features?.show_advanced_options ?? false}
+                        onChange={e => setWsSettings((s: any) => ({ ...s, features: { ...s?.features, show_advanced_options: e.target.checked } }))}
+                        className="h-4 w-4 rounded border-[hsl(var(--border))] text-[hsl(var(--primary))] focus:ring-[hsl(var(--ring))]"
+                      />
+                    </label>
+                    <div className="flex items-center justify-between py-2 px-3 rounded-[var(--radius)] bg-[hsl(var(--secondary)/0.3)]">
+                      <span className="text-xs">فرمت پیش‌فرض خروجی</span>
+                      <select
+                        value={settings?.features?.export_default_format ?? 'pdf'}
+                        onChange={e => setWsSettings((s: any) => ({ ...s, features: { ...s?.features, export_default_format: e.target.value } }))}
+                        className="h-7 w-24 rounded-[var(--radius)] border border-[hsl(var(--border))] bg-transparent px-1 text-xs focus:outline-none focus:ring-2 focus:ring-[hsl(var(--ring))]"
+                      >
+                        <option value="pdf">PDF</option>
+                        <option value="xlsx">Excel</option>
+                        <option value="csv">CSV</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                {/* ── Save / Reset ── */}
+                <div className="flex items-center gap-2 pt-2">
+                  <button
+                    onClick={() => settingsSaveMutation.mutate(settings)}
+                    disabled={settingsSaveMutation.isPending || !settings}
+                    className="inline-flex items-center gap-1.5 h-8 px-4 rounded-[var(--radius)] bg-[hsl(var(--primary))] text-white text-xs font-medium hover:opacity-90 disabled:opacity-50 transition-all"
+                  >
+                    {settingsSaveMutation.isPending ? 'در حال ذخیره...' : 'ذخیره تنظیمات'}
+                  </button>
+                  <button
+                    onClick={async () => {
+                      await apiClient.patch(`/workspaces/${wsId}/settings/reset`, {});
+                      queryClient.invalidateQueries({ queryKey: ['ws-settings'] });
+                      setWsSettings(null);
+                      toast.success('تنظیمات به حالت پیش‌فرض بازگشت');
+                    }}
+                    className="inline-flex items-center gap-1.5 h-8 px-3 rounded-[var(--radius)] border border-[hsl(var(--border))] text-xs hover:bg-[hsl(var(--secondary))] transition-colors"
+                  >
+                    <RefreshCw className="h-3 w-3" />
+                    بازنشانی به پیش‌فرض
+                  </button>
+                </div>
+
+              </div>
+            )}
+          </CardContent>
+        )}
+      </Card>
+
     </div>
   );
 }
@@ -617,132 +1007,7 @@ function SecurityTab() {
 // ─────────────────────────────────────────────────────────────
 
 function PlanTab() {
-  const wsId  = useAuthStore(s => s.workspaceId);
-  const toast = useToast();
-  const router = useRouter();
-  const params = useParams();
-  const locale = (params?.locale as string) ?? 'fa';
-
-  const { data, isLoading } = useQuery({
-    queryKey: ['subscription', wsId],
-    queryFn:  () => apiClient.get<any>(`/workspaces/${wsId}/subscription`),
-    enabled:  !!wsId,
-    retry: false,
-  });
-
-  const { data: usageData } = useQuery({
-    queryKey: ['usage', wsId],
-    queryFn:  () => apiClient.get<any>(`/workspaces/${wsId}/subscription/usage`),
-    enabled:  !!wsId,
-    retry: false,
-  });
-
-  const plan     = data?.data?.plan;
-  const planSlug = plan?.slug ?? 'free';
-  const usage    = usageData?.data;
-
-  const PLAN_LABELS: Record<string, string> = { free: 'رایگان', pro: 'حرفه‌ای', enterprise: 'سازمانی' };
-  const PLAN_COLORS: Record<string, any>    = { free: 'secondary', pro: 'default', enterprise: 'warning' };
-
-  function UsageRow({ label, used, limit }: { label: string; used: number; limit: number }) {
-    const unlimited = limit === -1;
-    const pct = unlimited ? 0 : Math.min(100, Math.round((used / limit) * 100));
-    const color = pct >= 90 ? 'bg-[hsl(var(--destructive))]' : pct >= 70 ? 'bg-[hsl(var(--warning))]' : 'bg-[hsl(var(--primary))]';
-
-    return (
-      <div className="space-y-1.5">
-        <div className="flex items-center justify-between text-xs">
-          <span className="text-[hsl(var(--muted-foreground))]">{label}</span>
-          <span className="font-medium tabular-nums">
-            {used.toLocaleString()}{unlimited ? '' : ` / ${limit.toLocaleString()}`}
-            {unlimited && ' (نامحدود)'}
-          </span>
-        </div>
-        {!unlimited && (
-          <div className="h-1.5 rounded-full bg-[hsl(var(--secondary))] overflow-hidden">
-            <div className={cn('h-full rounded-full transition-all duration-500', color)} style={{ width: `${pct}%` }} />
-          </div>
-        )}
-      </div>
-    );
-  }
-
-  if (isLoading) return <div className="space-y-4 max-w-lg"><Skeleton className="h-36" /><Skeleton className="h-48" /></div>;
-
-  return (
-    <div className="space-y-5 max-w-lg">
-      {/* Current Plan */}
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-sm flex items-center gap-2">
-            <CreditCard className="h-4 w-4 text-[hsl(var(--muted-foreground))]" />
-            پلن فعلی
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xl font-black">{PLAN_LABELS[planSlug]}</p>
-              <p className="text-xs text-[hsl(var(--muted-foreground))] mt-0.5 font-mono">{plan?.slug?.toUpperCase()}</p>
-            </div>
-            <Badge variant={PLAN_COLORS[planSlug]} className="text-sm px-3 py-1">
-              {PLAN_LABELS[planSlug]}
-            </Badge>
-          </div>
-
-          {plan?.features && (
-            <div className="grid grid-cols-2 gap-3 pt-3 border-t border-[hsl(var(--border))]">
-              {[
-                { label: 'محاسبه / ماه',    val: plan.features.calculations_month },
-                { label: 'AI / ماه',         val: plan.features.ai_requests_month },
-                { label: 'فضای کاری',        val: plan.features.workspaces },
-                { label: 'گیگابایت فضا',    val: plan.features.storage_gb },
-              ].map(({ label, val }) => (
-                <div key={label} className="p-3 rounded-[var(--radius-lg)] bg-[hsl(var(--secondary)/0.5)]">
-                  <p className="text-xs text-[hsl(var(--muted-foreground))]">{label}</p>
-                  <p className="font-bold mt-0.5">{val === -1 ? '∞' : val?.toLocaleString()}</p>
-                </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Usage */}
-      {usage && (
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm flex items-center gap-2">
-              <RefreshCw className="h-4 w-4 text-[hsl(var(--muted-foreground))]" />
-              مصرف این ماه
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <UsageRow label="محاسبات" used={usage.calculations?.used ?? 0} limit={usage.calculations?.limit ?? 100} />
-            <UsageRow label="درخواست AI" used={usage.aiRequests?.used ?? 0} limit={usage.aiRequests?.limit ?? 10} />
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Upgrade */}
-      {planSlug === 'free' && (
-        <Card className="border-[hsl(var(--primary)/0.3)] bg-[hsl(var(--primary)/0.03)]">
-          <CardContent className="p-5 space-y-3">
-            <p className="font-semibold text-sm">ارتقا به Pro</p>
-            <p className="text-xs text-[hsl(var(--muted-foreground))] leading-relaxed">
-              محاسبات نامحدود، ۶ ماژول کیفیت توان، هوش مصنوعی مهندسی و ۵ فضای کاری
-            </p>
-            <button
-              onClick={() => router.push(`/${locale}/billing/checkout?plan=pro`)}
-              className="w-full h-9 rounded-[var(--radius)] bg-[hsl(var(--primary))] text-white text-sm font-semibold hover:opacity-90 transition-opacity"
-            >
-              ارتقا به Pro ↑
-            </button>
-          </CardContent>
-        </Card>
-      )}
-    </div>
-  );
+  return <BillingClient />;
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -845,7 +1110,9 @@ function AppearanceTab() {
 // ─────────────────────────────────────────────────────────────
 
 export function SettingsClient() {
-  const [activeTab, setActiveTab] = useState<Tab>('profile');
+  const searchParams = useSearchParams();
+  const initialTab = (searchParams?.get('tab') as Tab) ?? 'profile';
+  const [activeTab, setActiveTab] = useState<Tab>(initialTab);
 
   const activeTabConfig = TABS.find(t => t.key === activeTab);
 

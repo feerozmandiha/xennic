@@ -9,7 +9,8 @@ import {
   Search, Loader2, Send, Edit3,
   LogOut, Trash2,
   ToggleLeft, ToggleRight, Plus,
-  Zap, Bot,
+  Zap, Bot, Tags, Hash, Pencil, X, FolderTree,
+  Key, Webhook, Flag,
 } from 'lucide-react';
 import { useAuthStore } from '@/stores/auth.store';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -42,6 +43,10 @@ const SECTIONS = [
   { key: 'articles',       label: 'مقالات',           icon: BookOpen },
   { key: 'notifications',  label: 'اعلان‌ها',         icon: Bell },
   { key: 'settings',       label: 'تنظیمات',          icon: Settings },
+  { key: 'taxonomy',       label: 'تاکسونومی',        icon: Tags },
+  { key: 'api-keys',       label: 'کلید API',         icon: Key },
+  { key: 'webhooks',       label: 'Webhook ها',       icon: Webhook },
+  { key: 'feature-flags',  label: 'Feature Flag ها',  icon: Flag },
 ] as const;
 
 type Section = typeof SECTIONS[number]['key'];
@@ -100,20 +105,20 @@ function DashboardSection() {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-        <StatCard title="کاربران"        value={s?.users.total ?? 0}        sub={`${s?.users.active ?? 0} فعال`}          icon={Users}         color="bg-blue-500"   trend={s?.users.new_30d} />
-        <StatCard title="Workspace ها"   value={s?.workspaces.total ?? 0}   sub={`${s?.workspaces.new_30d ?? 0} ماه جاری`}icon={Building2}      color="bg-purple-500" />
-        <StatCard title="محاسبات"        value={s?.calculations.total ?? 0} sub={`${s?.calculations.new_30d ?? 0} ماه جاری`}icon={Zap}          color="bg-orange-500" />
-        <StatCard title="مشاوره‌ها"      value={s?.consultations.total ?? 0} sub={`${s?.consultations.pending ?? 0} در انتظار`} icon={MessageSquare} color="bg-yellow-500" />
-        <StatCard title="درآمد ماهانه"   value={`${((s?.revenue.monthly ?? 0)/1_000_000).toFixed(1)}M ریال`} sub="ماه جاری"  icon={CreditCard}    color="bg-green-500" />
-        <StatCard title="مقالات"         value={s?.articles.total ?? 0}     sub="منتشر شده"                               icon={BookOpen}       color="bg-teal-500" />
+        <StatCard title="کاربران"        value={s?.users?.total ?? 0}        sub={`${s?.users?.active ?? 0} فعال`}          icon={Users}         color="bg-blue-500"   trend={s?.users?.new_30d} />
+        <StatCard title="Workspace ها"   value={s?.workspaces?.total ?? 0}   sub={`${s?.workspaces?.new_30d ?? 0} ماه جاری`}icon={Building2}      color="bg-purple-500" />
+        <StatCard title="محاسبات"        value={s?.calculations?.total ?? 0} sub={`${s?.calculations?.new_30d ?? 0} ماه جاری`}icon={Zap}          color="bg-orange-500" />
+        <StatCard title="مشاوره‌ها"      value={s?.consultations?.total ?? 0} sub={`${s?.consultations?.pending ?? 0} در انتظار`} icon={MessageSquare} color="bg-yellow-500" />
+        <StatCard title="درآمد ماهانه"   value={`${((s?.revenue?.monthly ?? 0)/1_000_000).toFixed(1)}M ریال`} sub="ماه جاری"  icon={CreditCard}    color="bg-green-500" />
+        <StatCard title="مقالات"         value={s?.articles?.total ?? 0}     sub="منتشر شده"                               icon={BookOpen}       color="bg-teal-500" />
       </div>
 
-      {s?.consultations.pending ? (
+      {s?.consultations?.pending ? (
         <div className="flex items-center gap-3 p-4 rounded-xl bg-yellow-50 border border-yellow-200">
           <AlertTriangle className="h-5 w-5 text-yellow-600 shrink-0" />
           <div>
             <p className="text-sm font-semibold text-yellow-800">
-              {s.consultations.pending} تیکت در انتظار پاسخ
+              {s.consultations?.pending} تیکت در انتظار پاسخ
             </p>
             <p className="text-xs text-yellow-600">برای پاسخ به تیکت‌ها به بخش «تیکت‌ها» بروید</p>
           </div>
@@ -980,20 +985,975 @@ function ArticlesAdminSection() {
 }
 
 // ─────────────────────────────────────────────────────────────
+// taxonomy section
+// ─────────────────────────────────────────────────────────────
+function TaxonomySection() {
+  const toast = useToast();
+  const qc    = useQueryClient();
+  const [type, setType] = useState('category');
+  const [search, setSearch] = useState('');
+  const [editing, setEditing] = useState<string | null>(null);
+  const [form, setForm] = useState<Record<string, any>>({});
+
+  const TYPES = [
+    { key: 'category',   label: 'دسته‌بندی', icon: FolderTree },
+    { key: 'topic',      label: 'موضوع',     icon: Hash },
+    { key: 'tag',        label: 'برچسب',     icon: Tags },
+    { key: 'discipline', label: 'تخصص',      icon: BookOpen },
+    { key: 'audience',   label: 'مخاطب',     icon: Users },
+  ];
+
+  const { data, isLoading } = useQuery({
+    queryKey: ['admin', 'taxonomy', type, search],
+    queryFn:  () => apiClient.get<{ success: boolean; data: any[] }>(
+      `/admin/taxonomy/${type}${search ? `?search=${encodeURIComponent(search)}` : ''}`),
+  });
+
+  const items: any[] = data?.data ?? [];
+
+  const createItem = useMutation({
+    mutationFn: (body: any) => apiClient.post(`/admin/taxonomy/${type}`, body),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin', 'taxonomy', type] });
+      toast.success('آیتم ایجاد شد');
+      setEditing(null);
+      setForm({});
+    },
+    onError: () => toast.error('خطا در ایجاد'),
+  });
+
+  const updateItem = useMutation({
+    mutationFn: ({ id, body }: { id: string; body: any }) =>
+      apiClient.patch(`/admin/taxonomy/${type}/${id}`, body),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin', 'taxonomy', type] });
+      toast.success('آیتم بروزرسانی شد');
+      setEditing(null);
+      setForm({});
+    },
+    onError: () => toast.error('خطا در بروزرسانی'),
+  });
+
+  const deleteItem = useMutation({
+    mutationFn: (id: string) => apiClient.delete(`/admin/taxonomy/${type}/${id}`),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin', 'taxonomy', type] });
+      toast.success('آیتم حذف شد');
+    },
+    onError: () => toast.error('خطا در حذف'),
+  });
+
+  const startEdit = (item: any) => {
+    setEditing(item.id);
+    setForm({ ...item });
+  };
+
+  const startCreate = () => {
+    setEditing('__new__');
+    setForm({ slug: '', name: '', name_en: '', icon: '', is_active: true });
+  };
+
+  const save = () => {
+    if (editing === '__new__') {
+      createItem.mutate(form);
+    } else {
+      updateItem.mutate({ id: editing!, body: form });
+    }
+  };
+
+  const currentType = TYPES.find(t => t.key === type)!;
+  const inputCls = 'w-full px-2.5 py-1.5 text-sm rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--background))] outline-none focus:border-[hsl(var(--primary))] transition-colors';
+
+  return (
+    <div className="space-y-4">
+      {/* type tabs */}
+      <div className="flex gap-1.5 flex-wrap">
+        {TYPES.map(t => {
+          const Icon = t.icon;
+          return (
+            <button key={t.key} onClick={() => { setType(t.key); setEditing(null); setForm({}); }}
+              className={cn(
+                'flex items-center gap-1.5 h-8 px-3 rounded-lg text-xs font-medium transition-all',
+                type === t.key
+                  ? 'bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]'
+                  : 'bg-[hsl(var(--secondary)/0.5)] text-[hsl(var(--foreground)/0.7)] hover:bg-[hsl(var(--secondary))]',
+              )}>
+              <Icon className="h-3.5 w-3.5" />
+              {t.label}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* search + add */}
+      <div className="flex items-center gap-2">
+        <div className="relative flex-1">
+          <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[hsl(var(--muted-foreground))]" />
+          <input value={search} onChange={e => setSearch(e.target.value)}
+            placeholder={`جستجو در ${currentType.label}...`}
+            className="w-full h-9 pr-9 pl-3 rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--background))] text-sm outline-none focus:border-[hsl(var(--primary))]" />
+        </div>
+        <button onClick={startCreate}
+          className="flex items-center gap-1.5 h-9 px-4 rounded-lg bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] text-sm hover:opacity-90">
+          <Plus className="h-4 w-4" />
+          جدید
+        </button>
+      </div>
+
+      {/* edit/create form */}
+      {editing && (
+        <div className="rounded-xl border border-[hsl(var(--primary)/0.3)] bg-[hsl(var(--primary)/0.03)] p-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-semibold flex items-center gap-2">
+              <Pencil className="h-4 w-4 text-[hsl(var(--primary))]" />
+              {editing === '__new__' ? `ایجاد ${currentType.label} جدید` : `ویرایش ${currentType.label}`}
+            </h3>
+            <button onClick={() => { setEditing(null); setForm({}); }}
+              className="h-7 w-7 flex items-center justify-center rounded-lg hover:bg-[hsl(var(--secondary))]">
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            <div>
+              <label className="text-[10px] font-medium text-[hsl(var(--muted-foreground))] block mb-0.5">Slug *</label>
+              <input value={form.slug ?? ''} onChange={e => setForm(f => ({ ...f, slug: e.target.value }))}
+                className={inputCls} placeholder="power-systems" />
+            </div>
+            <div>
+              <label className="text-[10px] font-medium text-[hsl(var(--muted-foreground))] block mb-0.5">نام فارسی *</label>
+              <input value={form.name ?? ''} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+                className={inputCls} placeholder="سیستم‌های قدرت" />
+            </div>
+            <div>
+              <label className="text-[10px] font-medium text-[hsl(var(--muted-foreground))] block mb-0.5">نام انگلیسی</label>
+              <input value={form.name_en ?? ''} onChange={e => setForm(f => ({ ...f, name_en: e.target.value }))}
+                className={inputCls} placeholder="Power Systems" />
+            </div>
+            {type === 'category' && (
+              <>
+                <div>
+                  <label className="text-[10px] font-medium text-[hsl(var(--muted-foreground))] block mb-0.5">آیکون</label>
+                  <input value={form.icon ?? ''} onChange={e => setForm(f => ({ ...f, icon: e.target.value }))}
+                    className={inputCls} placeholder="zap" />
+                </div>
+                <div>
+                  <label className="text-[10px] font-medium text-[hsl(var(--muted-foreground))] block mb-0.5">رنگ</label>
+                  <input value={form.color ?? ''} onChange={e => setForm(f => ({ ...f, color: e.target.value }))}
+                    className={inputCls} placeholder="#3B82F6" />
+                </div>
+                <div>
+                  <label className="text-[10px] font-medium text-[hsl(var(--muted-foreground))] block mb-0.5">ترتیب</label>
+                  <input type="number" value={form.sort_order ?? 0} onChange={e => setForm(f => ({ ...f, sort_order: Number(e.target.value) }))}
+                    className={inputCls} />
+                </div>
+              </>
+            )}
+            {(type === 'topic' || type === 'discipline') && (
+              <div>
+                <label className="text-[10px] font-medium text-[hsl(var(--muted-foreground))] block mb-0.5">آیکون</label>
+                <input value={form.icon ?? ''} onChange={e => setForm(f => ({ ...f, icon: e.target.value }))}
+                  className={inputCls} placeholder="zap" />
+              </div>
+            )}
+            {type === 'audience' && (
+              <div>
+                <label className="text-[10px] font-medium text-[hsl(var(--muted-foreground))] block mb-0.5">توضیحات</label>
+                <input value={form.description ?? ''} onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
+                  className={inputCls} placeholder="توضیحات مختصر..." />
+              </div>
+            )}
+            <div>
+              <label className="text-[10px] font-medium text-[hsl(var(--muted-foreground))] block mb-0.5">فعال</label>
+              <button onClick={() => setForm(f => ({ ...f, is_active: !f.is_active }))}
+                className="flex items-center gap-1.5 text-sm mt-1">
+                {form.is_active !== false
+                  ? <><ToggleRight className="h-5 w-5 text-green-600" /> فعال</>
+                  : <><ToggleLeft className="h-5 w-5 text-[hsl(var(--muted-foreground))]" /> غیرفعال</>}
+              </button>
+            </div>
+          </div>
+          <div className="flex justify-end gap-2 pt-1">
+            <button onClick={() => { setEditing(null); setForm({}); }}
+              className="h-8 px-4 text-xs rounded-lg border border-[hsl(var(--border))] hover:bg-[hsl(var(--secondary))]">
+              لغو
+            </button>
+            <button onClick={save}
+              disabled={(createItem.isPending || updateItem.isPending) || !form.name || !form.slug}
+              className="h-8 px-5 text-xs rounded-lg flex items-center gap-2 bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] hover:opacity-90 disabled:opacity-50">
+              {(createItem.isPending || updateItem.isPending) && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+              {editing === '__new__' ? 'ایجاد' : 'ذخیره'}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* items list */}
+      <div className="rounded-xl border border-[hsl(var(--border))] overflow-hidden">
+        <table className="w-full text-sm">
+          <thead className="bg-[hsl(var(--secondary)/0.5)]">
+            <tr>
+              <th className="text-right text-xs font-semibold text-[hsl(var(--muted-foreground))] px-4 py-3 w-12">#</th>
+              {type === 'category' && (
+                <th className="text-right text-xs font-semibold text-[hsl(var(--muted-foreground))] px-4 py-3">آیکون/رنگ</th>
+              )}
+              <th className="text-right text-xs font-semibold text-[hsl(var(--muted-foreground))] px-4 py-3">نام فارسی</th>
+              <th className="text-right text-xs font-semibold text-[hsl(var(--muted-foreground))] px-4 py-3">نام انگلیسی</th>
+              <th className="text-right text-xs font-semibold text-[hsl(var(--muted-foreground))] px-4 py-3">وضعیت</th>
+              <th className="text-right text-xs font-semibold text-[hsl(var(--muted-foreground))] px-4 py-3">عملیات</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-[hsl(var(--border)/0.5)]">
+            {isLoading ? (
+              Array.from({ length: 5 }).map((_, i) => (
+                <tr key={i}>
+                  <td colSpan={type === 'category' ? 6 : 5} className="px-4 py-3">
+                    <div className="h-4 bg-[hsl(var(--secondary)/0.5)] rounded animate-pulse" />
+                  </td>
+                </tr>
+              ))
+            ) : items.length === 0 ? (
+              <tr>
+                <td colSpan={type === 'category' ? 6 : 5} className="px-4 py-8 text-center text-[hsl(var(--muted-foreground))] text-sm">
+                  هیچ آیتمی یافت نشد
+                </td>
+              </tr>
+            ) : items.map((item: any, idx: number) => (
+              <tr key={item.id} className={cn(
+                'hover:bg-[hsl(var(--secondary)/0.3)] transition-colors',
+                editing === item.id && 'bg-[hsl(var(--primary)/0.05)]',
+              )}>
+                <td className="px-4 py-3 text-xs text-[hsl(var(--muted-foreground))]">{idx + 1}</td>
+                {type === 'category' && (
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-1.5">
+                      {item.icon && <span className="text-sm">{item.icon}</span>}
+                      {item.color && (
+                        <span className="w-4 h-4 rounded-full border" style={{ backgroundColor: item.color }} />
+                      )}
+                    </div>
+                  </td>
+                )}
+                <td className="px-4 py-3 font-medium">{item.name}</td>
+                <td className="px-4 py-3 text-xs text-[hsl(var(--muted-foreground))]">{item.name_en || '—'}</td>
+                <td className="px-4 py-3">
+                  <span className={cn(
+                    'text-[10px] font-semibold px-2 py-0.5 rounded-full',
+                    item.is_active !== false
+                      ? 'bg-green-100 text-green-700'
+                      : 'bg-red-100 text-red-600',
+                  )}>
+                    {item.is_active !== false ? 'فعال' : 'غیرفعال'}
+                  </span>
+                </td>
+                <td className="px-4 py-3">
+                  <div className="flex items-center gap-2">
+                    <button onClick={() => startEdit(item)}
+                      className="text-xs px-2 py-1 rounded border border-[hsl(var(--border))] hover:bg-[hsl(var(--secondary))] flex items-center gap-1">
+                      <Edit3 className="h-3 w-3" />
+                      ویرایش
+                    </button>
+                    <button onClick={() => {
+                      if (confirm(`آیا از حذف "${item.name}" مطمئن هستید؟`))
+                        deleteItem.mutate(item.id);
+                    }}
+                      disabled={deleteItem.isPending}
+                      className="text-xs px-2 py-1 rounded border border-red-200 text-red-500 hover:bg-red-50 disabled:opacity-40 flex items-center gap-1">
+                      <Trash2 className="h-3 w-3" />
+                      حذف
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// api-keys section
+// ─────────────────────────────────────────────────────────────
+function ApiKeysSection() {
+  const toast = useToast();
+  const qc    = useQueryClient();
+  const [showCreate, setShowCreate] = useState(false);
+  const [newKeyValue, setNewKeyValue] = useState('');
+  const [form, setForm] = useState({ name: '', expiresAt: '' });
+
+  const { data, isLoading } = useQuery({
+    queryKey: ['admin', 'api-keys'],
+    queryFn:  () => apiClient.get<{ success: boolean; data: any[] }>('/api-keys'),
+  });
+
+  const keys: any[] = data?.data ?? [];
+
+  const createKey = useMutation({
+    mutationFn: (body: any) => apiClient.post('/api-keys', body),
+    onSuccess: (res: any) => {
+      qc.invalidateQueries({ queryKey: ['admin', 'api-keys'] });
+      if (res?.data?.key) setNewKeyValue(res.data.key);
+      toast.success('کلید API ایجاد شد');
+      setShowCreate(false);
+      setForm({ name: '', expiresAt: '' });
+    },
+    onError: () => toast.error('خطا در ایجاد کلید API'),
+  });
+
+  const revokeKey = useMutation({
+    mutationFn: (id: string) => apiClient.post(`/api-keys/${id}/revoke`),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['admin', 'api-keys'] }); toast.success('کلید API باطل شد'); },
+    onError: () => toast.error('خطا در باطل‌سازی کلید'),
+  });
+
+  const deleteKey = useMutation({
+    mutationFn: (id: string) => apiClient.delete(`/api-keys/${id}`),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['admin', 'api-keys'] }); toast.success('کلید API حذف شد'); },
+    onError: () => toast.error('خطا در حذف کلید'),
+  });
+
+  const inputCls = 'w-full px-2.5 py-1.5 text-sm rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--background))] outline-none focus:border-[hsl(var(--primary))] transition-colors';
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <p className="text-xs text-[hsl(var(--muted-foreground))]">مدیریت کلیدهای API دسترسی به سرویس‌های Xennic</p>
+        <button onClick={() => setShowCreate(true)}
+          className="flex items-center gap-1.5 h-9 px-4 rounded-lg bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] text-sm hover:opacity-90">
+          <Plus className="h-4 w-4" />
+          کلید جدید
+        </button>
+      </div>
+
+      {newKeyValue && (
+        <div className="rounded-xl border border-green-300 bg-green-50 p-4 space-y-2">
+          <div className="flex items-center gap-2 text-green-800">
+            <CheckCircle2 className="h-5 w-5" />
+            <span className="text-sm font-semibold">کلید API ایجاد شد</span>
+          </div>
+          <p className="text-xs text-green-600">این کلید فقط یک بار نمایش داده می‌شود. آن را در جای امنی ذخیره کنید.</p>
+          <div className="flex items-center gap-2">
+            <code className="flex-1 px-3 py-2 bg-white rounded-lg text-sm font-mono border border-green-200 ltr text-left break-all">{newKeyValue}</code>
+            <button onClick={() => { navigator.clipboard.writeText(newKeyValue); toast.success('کپی شد'); }}
+              className="h-9 px-3 rounded-lg bg-green-600 text-white text-xs hover:bg-green-700">
+              کپی
+            </button>
+          </div>
+          <button onClick={() => setNewKeyValue('')} className="text-xs text-green-600 hover:underline">بستن</button>
+        </div>
+      )}
+
+      {showCreate && (
+        <div className="rounded-xl border border-[hsl(var(--primary)/0.3)] bg-[hsl(var(--primary)/0.03)] p-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-semibold flex items-center gap-2">
+              <Plus className="h-4 w-4 text-[hsl(var(--primary))]" />
+              ایجاد کلید API جدید
+            </h3>
+            <button onClick={() => { setShowCreate(false); setForm({ name: '', expiresAt: '' }); }}
+              className="h-7 w-7 flex items-center justify-center rounded-lg hover:bg-[hsl(var(--secondary))]">
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="text-[10px] font-medium text-[hsl(var(--muted-foreground))] block mb-0.5">نام *</label>
+              <input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+                className={inputCls} placeholder="کلید توسعه" />
+            </div>
+            <div>
+              <label className="text-[10px] font-medium text-[hsl(var(--muted-foreground))] block mb-0.5">تاریخ انقضا (اختیاری)</label>
+              <input type="date" value={form.expiresAt} onChange={e => setForm(f => ({ ...f, expiresAt: e.target.value }))}
+                className={inputCls} />
+            </div>
+          </div>
+          <div className="flex justify-end gap-2 pt-1">
+            <button onClick={() => { setShowCreate(false); setForm({ name: '', expiresAt: '' }); }}
+              className="h-8 px-4 text-xs rounded-lg border border-[hsl(var(--border))] hover:bg-[hsl(var(--secondary))]">
+              لغو
+            </button>
+            <button onClick={() => createKey.mutate({ name: form.name, expiresAt: form.expiresAt || undefined })}
+              disabled={createKey.isPending || !form.name}
+              className="h-8 px-5 text-xs rounded-lg flex items-center gap-2 bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] hover:opacity-90 disabled:opacity-50">
+              {createKey.isPending && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+              ایجاد
+            </button>
+          </div>
+        </div>
+      )}
+
+      <div className="rounded-xl border border-[hsl(var(--border))] overflow-hidden">
+        <table className="w-full text-sm">
+          <thead className="bg-[hsl(var(--secondary)/0.5)]">
+            <tr>
+              <th className="text-right text-xs font-semibold text-[hsl(var(--muted-foreground))] px-4 py-3">نام</th>
+              <th className="text-right text-xs font-semibold text-[hsl(var(--muted-foreground))] px-4 py-3">وضعیت</th>
+              <th className="text-right text-xs font-semibold text-[hsl(var(--muted-foreground))] px-4 py-3">آخرین استفاده</th>
+              <th className="text-right text-xs font-semibold text-[hsl(var(--muted-foreground))] px-4 py-3">انقضا</th>
+              <th className="text-right text-xs font-semibold text-[hsl(var(--muted-foreground))] px-4 py-3">عملیات</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-[hsl(var(--border)/0.5)]">
+            {isLoading ? (
+              Array.from({ length: 3 }).map((_, i) => (
+                <tr key={i}>
+                  <td colSpan={5} className="px-4 py-3"><div className="h-4 bg-[hsl(var(--secondary)/0.5)] rounded animate-pulse" /></td>
+                </tr>
+              ))
+            ) : keys.length === 0 ? (
+              <tr>
+                <td colSpan={5} className="px-4 py-8 text-center text-[hsl(var(--muted-foreground))] text-sm">
+                  هیچ کلید API یافت نشد
+                </td>
+              </tr>
+            ) : keys.map((k: any) => (
+              <tr key={k.id} className="hover:bg-[hsl(var(--secondary)/0.3)] transition-colors">
+                <td className="px-4 py-3 font-medium">{k.name}</td>
+                <td className="px-4 py-3">
+                  <span className={cn('text-[10px] font-semibold px-2 py-0.5 rounded-full',
+                    k.isRevoked ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-700')}>
+                    {k.isRevoked ? 'باطل شده' : 'فعال'}
+                  </span>
+                </td>
+                <td className="px-4 py-3 text-xs text-[hsl(var(--muted-foreground))]">
+                  {k.lastUsedAt ? new Date(k.lastUsedAt).toLocaleDateString('fa-IR') : '—'}
+                </td>
+                <td className="px-4 py-3 text-xs text-[hsl(var(--muted-foreground))]">
+                  {k.expiresAt ? new Date(k.expiresAt).toLocaleDateString('fa-IR') : 'بدون انقضا'}
+                </td>
+                <td className="px-4 py-3">
+                  <div className="flex items-center gap-2">
+                    {!k.isRevoked && (
+                      <button onClick={() => { if (confirm('آیا از باطل‌سازی این کلید مطمئن هستید؟')) revokeKey.mutate(k.id); }}
+                        disabled={revokeKey.isPending}
+                        className="text-xs px-2 py-1 rounded border border-yellow-200 text-yellow-600 hover:bg-yellow-50 disabled:opacity-40 flex items-center gap-1">
+                        باطل‌سازی
+                      </button>
+                    )}
+                    <button onClick={() => { if (confirm('آیا از حذف این کلید مطمئن هستید؟')) deleteKey.mutate(k.id); }}
+                      disabled={deleteKey.isPending}
+                      className="text-xs px-2 py-1 rounded border border-red-200 text-red-500 hover:bg-red-50 disabled:opacity-40 flex items-center gap-1">
+                      <Trash2 className="h-3 w-3" />
+                      حذف
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// webhooks section
+// ─────────────────────────────────────────────────────────────
+const WEBHOOK_EVENTS = [
+  { value: 'user.registered', label: 'ثبت‌نام کاربر' },
+  { value: 'user.login', label: 'ورود کاربر' },
+  { value: 'workspace.created', label: 'ایجاد workspace' },
+  { value: 'calculation.completed', label: 'تکمیل محاسبه' },
+  { value: 'calculation.failed', label: 'خطای محاسبه' },
+  { value: 'consultation.created', label: 'تیکت جدید' },
+  { value: 'consultation.answered', label: 'پاسخ تیکت' },
+  { value: 'payment.completed', label: 'پرداخت موفق' },
+  { value: 'payment.failed', label: 'خطای پرداخت' },
+  { value: 'subscription.created', label: 'اشتراک جدید' },
+  { value: 'subscription.cancelled', label: 'لغو اشتراک' },
+  { value: 'article.published', label: 'انتشار مقاله' },
+  { value: 'article.updated', label: 'بروزرسانی مقاله' },
+  { value: 'api_key.revoked', label: 'باطل‌سازی کلید API' },
+];
+
+function WebhooksSection() {
+  const toast = useToast();
+  const qc    = useQueryClient();
+  const [showCreate, setShowCreate] = useState(false);
+  const [editing, setEditing] = useState<string | null>(null);
+  const [form, setForm] = useState<Record<string, any>>({});
+
+  const { data, isLoading } = useQuery({
+    queryKey: ['admin', 'webhooks'],
+    queryFn:  () => apiClient.get<{ success: boolean; data: any[] }>('/webhooks'),
+  });
+
+  const webhooks: any[] = data?.data ?? [];
+
+  const inputCls = 'w-full px-2.5 py-1.5 text-sm rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--background))] outline-none focus:border-[hsl(var(--primary))] transition-colors';
+
+  const startCreate = () => {
+    setEditing('__new__');
+    setForm({ url: '', secret: '', events: [] });
+    setShowCreate(true);
+  };
+
+  const startEdit = (w: any) => {
+    setEditing(w.id);
+    setForm({ url: w.url, events: [...(w.events ?? [])], isActive: w.isActive });
+    setShowCreate(true);
+  };
+
+  const closeForm = () => {
+    setShowCreate(false);
+    setEditing(null);
+    setForm({});
+  };
+
+  const toggleEvent = (ev: string) => {
+    setForm((f: any) => ({
+      ...f,
+      events: f.events?.includes(ev) ? f.events.filter((e: string) => e !== ev) : [...(f.events ?? []), ev],
+    }));
+  };
+
+  const createWebhook = useMutation({
+    mutationFn: (body: any) => apiClient.post('/webhooks', body),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['admin', 'webhooks'] }); toast.success('Webhook ایجاد شد'); closeForm(); },
+    onError: () => toast.error('خطا در ایجاد webhook'),
+  });
+
+  const updateWebhook = useMutation({
+    mutationFn: ({ id, body }: { id: string; body: any }) => apiClient.patch(`/webhooks/${id}`, body),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['admin', 'webhooks'] }); toast.success('Webhook بروزرسانی شد'); closeForm(); },
+    onError: () => toast.error('خطا در بروزرسانی webhook'),
+  });
+
+  const deleteWebhook = useMutation({
+    mutationFn: (id: string) => apiClient.delete(`/webhooks/${id}`),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['admin', 'webhooks'] }); toast.success('Webhook حذف شد'); },
+    onError: () => toast.error('خطا در حذف webhook'),
+  });
+
+  const save = () => {
+    if (editing === '__new__') {
+      createWebhook.mutate({ url: form.url, events: form.events, secret: form.secret || undefined });
+    } else {
+      const body: any = {};
+      if (form.url !== undefined) body.url = form.url;
+      if (form.events !== undefined) body.events = form.events;
+      updateWebhook.mutate({ id: editing!, body });
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <p className="text-xs text-[hsl(var(--muted-foreground))]">مدیریت Webhook‌های ارسال رویداد به سرویس‌های خارجی</p>
+        <button onClick={startCreate}
+          className="flex items-center gap-1.5 h-9 px-4 rounded-lg bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] text-sm hover:opacity-90">
+          <Plus className="h-4 w-4" />
+          Webhook جدید
+        </button>
+      </div>
+
+      {showCreate && (
+        <div className="rounded-xl border border-[hsl(var(--primary)/0.3)] bg-[hsl(var(--primary)/0.03)] p-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-semibold flex items-center gap-2">
+              <Webhook className="h-4 w-4 text-[hsl(var(--primary))]" />
+              {editing === '__new__' ? 'Webhook جدید' : 'ویرایش Webhook'}
+            </h3>
+            <button onClick={closeForm}
+              className="h-7 w-7 flex items-center justify-center rounded-lg hover:bg-[hsl(var(--secondary))]">
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="sm:col-span-2">
+              <label className="text-[10px] font-medium text-[hsl(var(--muted-foreground))] block mb-0.5">URL *</label>
+              <input value={form.url ?? ''} onChange={e => setForm((f: any) => ({ ...f, url: e.target.value }))}
+                className={inputCls} placeholder="https://example.com/webhook" dir="ltr" />
+            </div>
+            <div>
+              <label className="text-[10px] font-medium text-[hsl(var(--muted-foreground))] block mb-0.5">Secret (اختیاری)</label>
+              <input value={form.secret ?? ''} onChange={e => setForm((f: any) => ({ ...f, secret: e.target.value }))}
+                className={inputCls} placeholder="secret-123" dir="ltr" />
+            </div>
+            {editing !== '__new__' && (
+              <div>
+                <label className="text-[10px] font-medium text-[hsl(var(--muted-foreground))] block mb-0.5">وضعیت</label>
+                <button onClick={() => setForm((f: any) => ({ ...f, isActive: !f.isActive }))}
+                  className="flex items-center gap-1.5 text-sm mt-1">
+                  {form.isActive !== false
+                    ? <><ToggleRight className="h-5 w-5 text-green-600" /> فعال</>
+                    : <><ToggleLeft className="h-5 w-5 text-[hsl(var(--muted-foreground))]" /> غیرفعال</>}
+                </button>
+              </div>
+            )}
+          </div>
+          <div>
+            <label className="text-[10px] font-medium text-[hsl(var(--muted-foreground))] block mb-1.5">رویدادها *</label>
+            <div className="flex flex-wrap gap-1.5">
+              {WEBHOOK_EVENTS.map(ev => (
+                <button key={ev.value} onClick={() => toggleEvent(ev.value)}
+                  className={cn(
+                    'h-7 px-2.5 rounded-lg text-[10px] font-medium border transition-all',
+                    (form.events ?? []).includes(ev.value)
+                      ? 'bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] border-[hsl(var(--primary))]'
+                      : 'bg-[hsl(var(--secondary)/0.3)] text-[hsl(var(--muted-foreground))] border-[hsl(var(--border))] hover:bg-[hsl(var(--secondary))]',
+                  )}>
+                  {ev.label}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="flex justify-end gap-2 pt-1">
+            <button onClick={closeForm}
+              className="h-8 px-4 text-xs rounded-lg border border-[hsl(var(--border))] hover:bg-[hsl(var(--secondary))]">
+              لغو
+            </button>
+            <button onClick={save}
+              disabled={(createWebhook.isPending || updateWebhook.isPending) || !form.url || !form.events?.length}
+              className="h-8 px-5 text-xs rounded-lg flex items-center gap-2 bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] hover:opacity-90 disabled:opacity-50">
+              {(createWebhook.isPending || updateWebhook.isPending) && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+              {editing === '__new__' ? 'ایجاد' : 'ذخیره'}
+            </button>
+          </div>
+        </div>
+      )}
+
+      <div className="rounded-xl border border-[hsl(var(--border))] overflow-hidden">
+        <table className="w-full text-sm">
+          <thead className="bg-[hsl(var(--secondary)/0.5)]">
+            <tr>
+              <th className="text-right text-xs font-semibold text-[hsl(var(--muted-foreground))] px-4 py-3">URL</th>
+              <th className="text-right text-xs font-semibold text-[hsl(var(--muted-foreground))] px-4 py-3">رویدادها</th>
+              <th className="text-right text-xs font-semibold text-[hsl(var(--muted-foreground))] px-4 py-3">وضعیت</th>
+              <th className="text-right text-xs font-semibold text-[hsl(var(--muted-foreground))] px-4 py-3">تاریخ ایجاد</th>
+              <th className="text-right text-xs font-semibold text-[hsl(var(--muted-foreground))] px-4 py-3">عملیات</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-[hsl(var(--border)/0.5)]">
+            {isLoading ? (
+              Array.from({ length: 3 }).map((_, i) => (
+                <tr key={i}>
+                  <td colSpan={5} className="px-4 py-3"><div className="h-4 bg-[hsl(var(--secondary)/0.5)] rounded animate-pulse" /></td>
+                </tr>
+              ))
+            ) : webhooks.length === 0 ? (
+              <tr>
+                <td colSpan={5} className="px-4 py-8 text-center text-[hsl(var(--muted-foreground))] text-sm">
+                  هیچ Webhook یافت نشد
+                </td>
+              </tr>
+            ) : webhooks.map((w: any) => (
+              <tr key={w.id} className="hover:bg-[hsl(var(--secondary)/0.3)] transition-colors">
+                <td className="px-4 py-3 font-mono text-xs max-w-[200px] truncate ltr text-left" title={w.url}>{w.url}</td>
+                <td className="px-4 py-3">
+                  <div className="flex flex-wrap gap-1">
+                    {(w.events ?? []).slice(0, 3).map((ev: string) => (
+                      <span key={ev} className="text-[10px] px-1.5 py-0.5 rounded bg-[hsl(var(--secondary)/0.5)] text-[hsl(var(--muted-foreground))]">
+                        {ev}
+                      </span>
+                    ))}
+                    {(w.events ?? []).length > 3 && (
+                      <span className="text-[10px] text-[hsl(var(--muted-foreground))]">+{w.events.length - 3}</span>
+                    )}
+                  </div>
+                </td>
+                <td className="px-4 py-3">
+                  <span className={cn('text-[10px] font-semibold px-2 py-0.5 rounded-full',
+                    w.isActive !== false ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600')}>
+                    {w.isActive !== false ? 'فعال' : 'غیرفعال'}
+                  </span>
+                </td>
+                <td className="px-4 py-3 text-xs text-[hsl(var(--muted-foreground))]">
+                  {w.createdAt ? new Date(w.createdAt).toLocaleDateString('fa-IR') : '—'}
+                </td>
+                <td className="px-4 py-3">
+                  <div className="flex items-center gap-2">
+                    <button onClick={() => startEdit(w)}
+                      className="text-xs px-2 py-1 rounded border border-[hsl(var(--border))] hover:bg-[hsl(var(--secondary))] flex items-center gap-1">
+                      <Edit3 className="h-3 w-3" />
+                      ویرایش
+                    </button>
+                    <button onClick={() => { if (confirm('آیا از حذف این Webhook مطمئن هستید؟')) deleteWebhook.mutate(w.id); }}
+                      disabled={deleteWebhook.isPending}
+                      className="text-xs px-2 py-1 rounded border border-red-200 text-red-500 hover:bg-red-50 disabled:opacity-40 flex items-center gap-1">
+                      <Trash2 className="h-3 w-3" />
+                      حذف
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// feature-flags section
+// ─────────────────────────────────────────────────────────────
+function FeatureFlagsSection() {
+  const toast = useToast();
+  const qc    = useQueryClient();
+  const [showCreate, setShowCreate] = useState(false);
+  const [editing, setEditing] = useState<string | null>(null);
+  const [form, setForm] = useState<Record<string, any>>({});
+
+  const { data, isLoading } = useQuery({
+    queryKey: ['admin', 'feature-flags'],
+    queryFn:  () => apiClient.get<{ success: boolean; data: any[] }>('/admin/feature-flags'),
+  });
+
+  const flags: any[] = data?.data ?? [];
+
+  const inputCls = 'w-full px-2.5 py-1.5 text-sm rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--background))] outline-none focus:border-[hsl(var(--primary))] transition-colors';
+
+  const startCreate = () => {
+    setEditing('__new__');
+    setForm({ name: '', description: '', enabled: false, scope: 'global' });
+    setShowCreate(true);
+  };
+
+  const startEdit = (f: any) => {
+    const scope = f.workspaceId ? 'workspace' : f.planId ? 'plan' : 'global';
+    setEditing(f.id);
+    setForm({ description: f.description ?? '', scope, planId: f.planId ?? '', workspaceId: f.workspaceId ?? '' });
+    setShowCreate(true);
+  };
+
+  const closeForm = () => {
+    setShowCreate(false);
+    setEditing(null);
+    setForm({});
+  };
+
+  const createFlag = useMutation({
+    mutationFn: (body: any) => apiClient.post('/admin/feature-flags', body),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['admin', 'feature-flags'] }); toast.success('Feature flag ایجاد شد'); closeForm(); },
+    onError: () => toast.error('خطا در ایجاد feature flag'),
+  });
+
+  const toggleFlag = useMutation({
+    mutationFn: ({ id, enabled }: { id: string; enabled: boolean }) => apiClient.patch(`/admin/feature-flags/${id}/toggle`, { enabled }),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['admin', 'feature-flags'] }); },
+    onError: () => toast.error('خطا در تغییر وضعیت'),
+  });
+
+  const updateFlag = useMutation({
+    mutationFn: ({ id, body }: { id: string; body: any }) => apiClient.patch(`/admin/feature-flags/${id}`, body),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['admin', 'feature-flags'] }); toast.success('Feature flag بروزرسانی شد'); closeForm(); },
+    onError: () => toast.error('خطا در بروزرسانی feature flag'),
+  });
+
+  const deleteFlag = useMutation({
+    mutationFn: (id: string) => apiClient.delete(`/admin/feature-flags/${id}`),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['admin', 'feature-flags'] }); toast.success('Feature flag حذف شد'); },
+    onError: () => toast.error('خطا در حذف feature flag'),
+  });
+
+  const save = () => {
+    if (editing === '__new__') {
+      const body: any = { name: form.name, description: form.description || undefined, enabled: form.enabled ?? false };
+      if (form.scope === 'plan') body.planId = form.planId;
+      if (form.scope === 'workspace') body.workspaceId = form.workspaceId;
+      createFlag.mutate(body);
+    } else {
+      const body: any = {};
+      if (form.description !== undefined) body.description = form.description;
+      body.planId = form.scope === 'plan' ? form.planId : null;
+      body.workspaceId = form.scope === 'workspace' ? form.workspaceId : null;
+      updateFlag.mutate({ id: editing!, body });
+    }
+  };
+
+  const getScopeLabel = (f: any) => {
+    if (f.workspaceId) return { label: 'Workspace', color: 'bg-purple-100 text-purple-700' };
+    if (f.planId) return { label: 'پلن', color: 'bg-blue-100 text-blue-700' };
+    return { label: 'سراسری', color: 'bg-gray-100 text-gray-700' };
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <p className="text-xs text-[hsl(var(--muted-foreground))]">مدیریت Feature Flagهای سراسری پلتفرم</p>
+        <button onClick={startCreate}
+          className="flex items-center gap-1.5 h-9 px-4 rounded-lg bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] text-sm hover:opacity-90">
+          <Plus className="h-4 w-4" />
+          Feature Flag جدید
+        </button>
+      </div>
+
+      {showCreate && (
+        <div className="rounded-xl border border-[hsl(var(--primary)/0.3)] bg-[hsl(var(--primary)/0.03)] p-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-semibold flex items-center gap-2">
+              <Flag className="h-4 w-4 text-[hsl(var(--primary))]" />
+              {editing === '__new__' ? 'Feature Flag جدید' : 'ویرایش Feature Flag'}
+            </h3>
+            <button onClick={closeForm}
+              className="h-7 w-7 flex items-center justify-center rounded-lg hover:bg-[hsl(var(--secondary))]">
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {editing === '__new__' && (
+              <div>
+                <label className="text-[10px] font-medium text-[hsl(var(--muted-foreground))] block mb-0.5">نام *</label>
+                <input value={form.name ?? ''} onChange={e => setForm((f: any) => ({ ...f, name: e.target.value }))}
+                  className={inputCls} placeholder="ai_calculator" dir="ltr" />
+              </div>
+            )}
+            <div>
+              <label className="text-[10px] font-medium text-[hsl(var(--muted-foreground))] block mb-0.5">توضیحات</label>
+              <input value={form.description ?? ''} onChange={e => setForm((f: any) => ({ ...f, description: e.target.value }))}
+                className={inputCls} placeholder="فعال‌سازی ماشین حساب هوش مصنوعی" />
+            </div>
+            <div>
+              <label className="text-[10px] font-medium text-[hsl(var(--muted-foreground))] block mb-0.5">حوزه</label>
+              <div className="flex gap-1.5 mt-1">
+                {[
+                  { key: 'global', label: 'سراسری' },
+                  { key: 'plan', label: 'پلن' },
+                  { key: 'workspace', label: 'Workspace' },
+                ].map(s => (
+                  <button key={s.key} onClick={() => setForm((f: any) => ({ ...f, scope: s.key, planId: '', workspaceId: '' }))}
+                    className={cn('h-7 px-3 rounded-lg text-[10px] font-medium border transition-all',
+                      form.scope === s.key
+                        ? 'bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] border-[hsl(var(--primary))]'
+                        : 'bg-[hsl(var(--secondary)/0.3)] text-[hsl(var(--muted-foreground))] border-[hsl(var(--border))]',
+                    )}>
+                    {s.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            {form.scope === 'plan' && (
+              <div>
+                <label className="text-[10px] font-medium text-[hsl(var(--muted-foreground))] block mb-0.5">شناسه پلن</label>
+                <input value={form.planId ?? ''} onChange={e => setForm((f: any) => ({ ...f, planId: e.target.value }))}
+                  className={inputCls} placeholder="plan-uuid" dir="ltr" />
+              </div>
+            )}
+            {form.scope === 'workspace' && (
+              <div>
+                <label className="text-[10px] font-medium text-[hsl(var(--muted-foreground))] block mb-0.5">شناسه Workspace</label>
+                <input value={form.workspaceId ?? ''} onChange={e => setForm((f: any) => ({ ...f, workspaceId: e.target.value }))}
+                  className={inputCls} placeholder="workspace-uuid" dir="ltr" />
+              </div>
+            )}
+            {editing === '__new__' && (
+              <div>
+                <label className="text-[10px] font-medium text-[hsl(var(--muted-foreground))] block mb-0.5">فعال</label>
+                <button onClick={() => setForm((f: any) => ({ ...f, enabled: !f.enabled }))}
+                  className="flex items-center gap-1.5 text-sm mt-1">
+                  {form.enabled
+                    ? <><ToggleRight className="h-5 w-5 text-green-600" /> فعال</>
+                    : <><ToggleLeft className="h-5 w-5 text-[hsl(var(--muted-foreground))]" /> غیرفعال</>}
+                </button>
+              </div>
+            )}
+          </div>
+          <div className="flex justify-end gap-2 pt-1">
+            <button onClick={closeForm}
+              className="h-8 px-4 text-xs rounded-lg border border-[hsl(var(--border))] hover:bg-[hsl(var(--secondary))]">
+              لغو
+            </button>
+            <button onClick={save}
+              disabled={(createFlag.isPending || updateFlag.isPending) || (editing === '__new__' && !form.name)}
+              className="h-8 px-5 text-xs rounded-lg flex items-center gap-2 bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] hover:opacity-90 disabled:opacity-50">
+              {(createFlag.isPending || updateFlag.isPending) && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+              {editing === '__new__' ? 'ایجاد' : 'ذخیره'}
+            </button>
+          </div>
+        </div>
+      )}
+
+      <div className="rounded-xl border border-[hsl(var(--border))] overflow-hidden">
+        <table className="w-full text-sm">
+          <thead className="bg-[hsl(var(--secondary)/0.5)]">
+            <tr>
+              <th className="text-right text-xs font-semibold text-[hsl(var(--muted-foreground))] px-4 py-3">نام</th>
+              <th className="text-right text-xs font-semibold text-[hsl(var(--muted-foreground))] px-4 py-3">توضیحات</th>
+              <th className="text-right text-xs font-semibold text-[hsl(var(--muted-foreground))] px-4 py-3">وضعیت</th>
+              <th className="text-right text-xs font-semibold text-[hsl(var(--muted-foreground))] px-4 py-3">حوزه</th>
+              <th className="text-right text-xs font-semibold text-[hsl(var(--muted-foreground))] px-4 py-3">عملیات</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-[hsl(var(--border)/0.5)]">
+            {isLoading ? (
+              Array.from({ length: 3 }).map((_, i) => (
+                <tr key={i}>
+                  <td colSpan={5} className="px-4 py-3"><div className="h-4 bg-[hsl(var(--secondary)/0.5)] rounded animate-pulse" /></td>
+                </tr>
+              ))
+            ) : flags.length === 0 ? (
+              <tr>
+                <td colSpan={5} className="px-4 py-8 text-center text-[hsl(var(--muted-foreground))] text-sm">
+                  هیچ Feature flag یافت نشد
+                </td>
+              </tr>
+            ) : flags.map((f: any) => {
+              const scope = getScopeLabel(f);
+              return (
+                <tr key={f.id} className="hover:bg-[hsl(var(--secondary)/0.3)] transition-colors">
+                  <td className="px-4 py-3 font-mono text-xs ltr">{f.name}</td>
+                  <td className="px-4 py-3 text-xs text-[hsl(var(--muted-foreground))] max-w-[200px] truncate">{f.description || '—'}</td>
+                  <td className="px-4 py-3">
+                    <button onClick={() => toggleFlag.mutate({ id: f.id, enabled: !f.enabled })}
+                      disabled={toggleFlag.isPending}
+                      className="flex items-center gap-1.5 text-sm">
+                      {f.enabled
+                        ? <><ToggleRight className="h-5 w-5 text-green-600" /> فعال</>
+                        : <><ToggleLeft className="h-5 w-5 text-[hsl(var(--muted-foreground))]" /> غیرفعال</>}
+                    </button>
+                  </td>
+                  <td className="px-4 py-3">
+                    <span className={cn('text-[10px] font-semibold px-2 py-0.5 rounded-full', scope.color)}>
+                      {scope.label}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-2">
+                      <button onClick={() => startEdit(f)}
+                        className="text-xs px-2 py-1 rounded border border-[hsl(var(--border))] hover:bg-[hsl(var(--secondary))] flex items-center gap-1">
+                        <Edit3 className="h-3 w-3" />
+                        ویرایش
+                      </button>
+                      <button onClick={() => { if (confirm('آیا از حذف این feature flag مطمئن هستید؟')) deleteFlag.mutate(f.id); }}
+                        disabled={deleteFlag.isPending}
+                        className="text-xs px-2 py-1 rounded border border-red-200 text-red-500 hover:bg-red-50 disabled:opacity-40 flex items-center gap-1">
+                        <Trash2 className="h-3 w-3" />
+                        حذف
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
 // main admin client
 // ─────────────────────────────────────────────────────────────
 export function AdminClient() {
   const [section, setSection] = useState<Section>('dashboard');
 
   const SECTION_COMPONENTS: Record<Section, React.ReactNode> = {
-    dashboard:     <DashboardSection />,
-    users:         <UsersSection />,
-    workspaces:    <WorkspacesSection />,
-    plans:         <PlansSection />,
-    consultations: <ConsultationsSection />,
-    articles:      <ArticlesAdminSection />,
-    notifications: <NotificationsSection />,
-    settings:      <SettingsSection />,
+    dashboard:      <DashboardSection />,
+    users:          <UsersSection />,
+    workspaces:     <WorkspacesSection />,
+    plans:          <PlansSection />,
+    consultations:  <ConsultationsSection />,
+    articles:       <ArticlesAdminSection />,
+    notifications:  <NotificationsSection />,
+    settings:       <SettingsSection />,
+    taxonomy:       <TaxonomySection />,
+    'api-keys':     <ApiKeysSection />,
+    webhooks:       <WebhooksSection />,
+    'feature-flags':<FeatureFlagsSection />,
   };
 
   const current = SECTIONS.find(s => s.key === section);

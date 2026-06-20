@@ -11,7 +11,7 @@ THD measures how much the waveform deviates from a pure sine wave.
 import math
 from typing import Dict, List, Any
 
-from src.core.base_calculator import BaseCalculator
+from src.core.base_calculator import BaseCalculator, ChartCurveData, EngineeringChart, HarmonicBinData
 from src.core.validation import ValidationEngine
 from .schemas import THDInput
 
@@ -123,6 +123,24 @@ class THDCalculator(BaseCalculator[THDInput]):
             "warnings":             warnings,
             "recommendations":      recommendations,
         }
+
+    def get_charts(self, inputs: THDInput, results: Dict[str, Any]) -> list[EngineeringChart]:
+        """Generate harmonic spectrum bar chart."""
+        harmonics_list: list[HarmonicBinData] = [
+            HarmonicBinData(order=h, magnitude_percent=round(v / inputs.harmonic_currents[1] * 100.0, 2))
+            for h, v in sorted(inputs.harmonic_currents.items())
+            if h != 1
+        ]
+
+        return [
+            EngineeringChart(
+                type="harmonic",
+                title="Harmonic Current Spectrum",
+                harmonics=sorted(harmonics_list, key=lambda x: x.order),
+                thd_percent=results.get("thd_percent"),
+                limit_percent=results.get("ieee519_thd_limit"),
+            ),
+        ]
 
     def get_units(self) -> Dict[str, str]:
         return {

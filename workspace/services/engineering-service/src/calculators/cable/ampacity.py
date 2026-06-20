@@ -16,8 +16,8 @@ where:
 - k2: Grouping correction factor (Table B.52.8)
 """
 
-from typing import Dict, List, Optional
-from src.core.base_calculator import BaseCalculator
+from typing import Dict, List, Optional, Any
+from src.core.base_calculator import BaseCalculator, EngineeringChart
 from src.core.validation import ValidationEngine
 from src.core.exceptions import ValidationError
 from src.data.tables.iec_60364_ampacity import (
@@ -157,6 +157,43 @@ class CableAmpacityCalculator(BaseCalculator[CableSizingInput]):
             "safety_margin": round(safety_margin, 1),
         }
     
+    def get_charts(self, inputs: CableSizingInput, results: Dict[str, Any]) -> list[EngineeringChart]:
+        """Generate cable sizing bar chart showing corrected ampacity per cable size."""
+        ampacity_table = get_ampacity_table(
+            inputs.conductor_material,
+            inputs.insulation_type,
+            inputs.installation_method,
+        )
+        k1 = results.get("temperature_correction_factor", 1.0)
+        k2 = results.get("grouping_correction_factor", 1.0)
+        load_current = inputs.load_current
+        recommended = results.get("recommended_cable_size", 0)
+
+        bars: list[dict] = []
+        for size in CABLE_SIZES:
+            base = ampacity_table.get(size)
+            if base is None:
+                continue
+            corrected = round(base * k1 * k2, 1)
+            is_recommended = abs(size - recommended) < 0.01
+            bars.append({
+                "label": f"{size} mm²{' ✅' if is_recommended else ''}",
+                "value": corrected,
+                "unit": "A",
+                "limit": load_current,
+                "color": "#16a34a" if is_recommended else "#3b82f6",
+            })
+
+        return [
+            EngineeringChart(
+                type="cable",
+                title="Cable Ampacity per Size",
+                bars=bars,
+                x_label="Cable Size (mm²)",
+                y_label="Corrected Ampacity (A)",
+            ),
+        ]
+
     def get_units(self) -> Dict[str, str]:
         """Return units for all inputs and outputs"""
         return {

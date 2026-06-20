@@ -30,6 +30,11 @@ class Settings(BaseSettings):
     # Engineering Service
     ENGINEERING_SERVICE_URL: str = "http://engineering-service:8001"
     
+    # Qdrant Vector Database
+    QDRANT_URL: Optional[str] = None
+    QDRANT_API_KEY: Optional[str] = None
+    QDRANT_FORCE_FALLBACK: bool = False
+
     # Database (future)
     DATABASE_URL: Optional[str] = None
     

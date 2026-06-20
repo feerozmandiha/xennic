@@ -43,6 +43,39 @@ class CalculationInput(BaseModel):
     )
 
 
+class ChartCurveData(BaseModel):
+    """Data for rendering a curve on an engineering chart."""
+    name: str
+    currents: list[float]
+    times: list[float]
+    color: str | None = None
+    dashed: bool = False
+
+
+class HarmonicBinData(BaseModel):
+    """Single harmonic bin data for spectrum charts."""
+    order: int
+    magnitude_percent: float
+
+
+class EngineeringChart(BaseModel):
+    """
+    Structured chart data emitted by calculators for frontend rendering.
+    
+    Types: 'tcc' (time-current curve), 'harmonic' (harmonic spectrum),
+           'bar' (bar chart), 'cable' (cable sizing summary)
+    """
+    type: str
+    title: str = ""
+    curves: list[ChartCurveData] = []
+    harmonics: list[HarmonicBinData] = []
+    bars: list[dict] = []
+    x_label: str = ""
+    y_label: str = ""
+    thd_percent: float | None = None
+    limit_percent: float | None = None
+
+
 class CalculationResult(BaseModel):
     """
     Standard calculation result structure
@@ -56,6 +89,7 @@ class CalculationResult(BaseModel):
     - Outputs
     - Units
     - Timestamp
+    - Optional chart data for visualization
     """
     calculation_code: str
     calculation_name: str
@@ -69,6 +103,7 @@ class CalculationResult(BaseModel):
     warnings: list[str] = []
     recommendations: list[str] = []
     calculation_timestamp: datetime
+    charts: list[EngineeringChart] = []
     
     model_config = ConfigDict(
         json_encoders={
@@ -156,6 +191,22 @@ class BaseCalculator(ABC, Generic[T]):
         """
         pass
     
+    def get_charts(self, inputs: T, results: Dict[str, Any]) -> list[EngineeringChart]:
+        """
+        Optional: return chart data for visualization.
+        
+        Override in subclasses to provide graphical output alongside
+        scalar calculation results.
+        
+        Args:
+            inputs: The validated input parameters
+            results: The raw results dict from _calculate()
+            
+        Returns:
+            List of EngineeringChart objects for frontend rendering
+        """
+        return []
+
     def execute(self, inputs: T) -> CalculationResult:
         """
         Execute the complete calculation pipeline
@@ -182,7 +233,10 @@ class BaseCalculator(ABC, Generic[T]):
         # Step 2: Calculate
         results = self._calculate(inputs)
         
-        # Step 3: Build result
+        # Step 3: Build charts
+        charts = self.get_charts(inputs, results)
+        
+        # Step 4: Build result
         return CalculationResult(
             calculation_code=self.CALCULATION_CODE,
             calculation_name=self.CALCULATION_NAME,
@@ -193,6 +247,7 @@ class BaseCalculator(ABC, Generic[T]):
             inputs=inputs.model_dump(),
             results=results,
             units=self.get_units(),
+            charts=charts,
             calculation_timestamp=datetime.now(timezone.utc),
         )
     

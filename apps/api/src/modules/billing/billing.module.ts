@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { BillingController } from './presentation/controllers/billing.controller.js';
+import { BillingCallbackController } from './presentation/controllers/billing-callback.controller.js';
 import { BillingService } from './application/services/billing.service.js';
 import { SubscriptionBillingService } from './application/services/subscription-billing.service.js';
 import { BillingRepository } from './infrastructure/repositories/billing.repository.js';
@@ -14,7 +15,7 @@ import { RbacModule } from '../rbac/rbac.module.js';
     WorkspaceModule,
     RbacModule,
   ],
-  controllers: [BillingController],
+  controllers: [BillingController, BillingCallbackController],
   providers: [
     BillingService,
     SubscriptionBillingService,

@@ -667,6 +667,134 @@
         ]
       }
     },
+    "/workspaces/{workspaceId}/settings": {
+      "get": {
+        "operationId": "WorkspaceSettingsController_getSettings",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get workspace settings",
+        "tags": [
+          "Workspace Settings"
+        ]
+      },
+      "patch": {
+        "operationId": "WorkspaceSettingsController_updateSettings",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateWorkspaceSettingsDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update workspace settings (partial)",
+        "tags": [
+          "Workspace Settings"
+        ]
+      }
+    },
+    "/workspaces/{workspaceId}/settings/reset": {
+      "patch": {
+        "operationId": "WorkspaceSettingsController_resetSettings",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Reset workspace settings to defaults",
+        "tags": [
+          "Workspace Settings"
+        ]
+      }
+    },
+    "/workspaces/{workspaceId}/dashboard": {
+      "get": {
+        "operationId": "DashboardController_getDashboard",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get aggregated workspace dashboard data",
+        "tags": [
+          "Workspace Dashboard"
+        ]
+      }
+    },
     "/users": {
       "post": {
         "description": "Creates a new user account.",
@@ -2129,7 +2257,7 @@
         ]
       },
       "post": {
-        "description": "Executes an engineering calculation via the Python engine, saves the result and returns it.\n\n**Supported types:** BASIC-001, BASIC-002, BASIC-003, BASIC-004, BASIC-005, CABLE-001, CABLE-002, CABLE-003, CABLE-004, TRF-001, TRF-002, TRF-003, TRF-004, PROT-001, PQ-001, PQ-002, PQ-003, PQ-004, PQ-005, PQ-006",
+        "description": "Executes an engineering calculation via the Python engine, saves the result and returns it.\n\n**Supported types:** BASIC-001, BASIC-002, BASIC-003, BASIC-004, BASIC-005, CABLE-001, CABLE-002, CABLE-003, CABLE-004, CABLE-005, TRF-001, TRF-002, TRF-003, TRF-004, TRF-005, PROT-001, PROT-002, PROT-004, PROT-005, SC-001, GND-001, ARC-001, PQ-001, PQ-002, PQ-003, PQ-004, PQ-005, PQ-006, CAP-001, PS-001, PS-002, PS-003, PS-004, SWT-001, LIGHT-001, LIGHT-002, GND-002, MOT-002, BATTERY-002, SOLAR-002, SOLAR-003, BAT-BU-001, PFC-001, HARM-001, ECO-001, ECO-002, ECO-003",
         "operationId": "EngineeringController_run",
         "parameters": [],
         "requestBody": {
@@ -3135,6 +3263,41 @@
         ]
       }
     },
+    "/billing/callback": {
+      "get": {
+        "description": "Public endpoint called by Zarinpal after payment. Redirects user to frontend success/failure page.",
+        "operationId": "BillingCallbackController_handleCallback",
+        "parameters": [
+          {
+            "name": "Authority",
+            "required": false,
+            "in": "query",
+            "description": "Zarinpal authority code",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Status",
+            "required": false,
+            "in": "query",
+            "description": "Zarinpal payment status (OK/NOK)",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "302": {
+            "description": "Redirect to frontend billing page"
+          }
+        },
+        "summary": "Zarinpal payment callback",
+        "tags": [
+          "billing"
+        ]
+      }
+    },
     "/storage/upload": {
       "post": {
         "description": "Upload a file using multipart/form-data.\n\nMax size: 100MB.\n\nSend as `Content-Type: multipart/form-data` with field name `file`.",
@@ -3775,6 +3938,36 @@
         ]
       }
     },
+    "/ai/validate": {
+      "post": {
+        "operationId": "AiController_validateCalculation",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ValidateCalculationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Validation completed"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Validate an engineering calculation using AI",
+        "tags": [
+          "ai"
+        ]
+      }
+    },
     "/ai/usage": {
       "get": {
         "operationId": "AiController_getUsage",
@@ -3792,125 +3985,6 @@
         "summary": "AI usage stats for current month",
         "tags": [
           "ai"
-        ]
-      }
-    },
-    "/articles": {
-      "get": {
-        "operationId": "ArticlesController_findAll",
-        "parameters": [
-          {
-            "name": "page",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "number"
-            }
-          },
-          {
-            "name": "limit",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "number"
-            }
-          },
-          {
-            "name": "category",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "search",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "summary": "لیست مقالات مهندسی برق",
-        "tags": [
-          "articles"
-        ]
-      },
-      "post": {
-        "operationId": "ArticlesController_create",
-        "parameters": [],
-        "responses": {
-          "201": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "JWT-auth": []
-          }
-        ],
-        "summary": "ایجاد مقاله جدید",
-        "tags": [
-          "articles"
-        ]
-      }
-    },
-    "/articles/{slug}": {
-      "get": {
-        "operationId": "ArticlesController_findOne",
-        "parameters": [
-          {
-            "name": "slug",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "summary": "دریافت مقاله با slug",
-        "tags": [
-          "articles"
-        ]
-      }
-    },
-    "/articles/{slug}/like": {
-      "post": {
-        "operationId": "ArticlesController_like",
-        "parameters": [
-          {
-            "name": "slug",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "JWT-auth": []
-          }
-        ],
-        "summary": "لایک مقاله",
-        "tags": [
-          "articles"
         ]
       }
     },
@@ -4090,162 +4164,6 @@
         "summary": "تغییر وضعیت مشاوره",
         "tags": [
           "consultations"
-        ]
-      }
-    },
-    "/articles/{articleId}/comments": {
-      "get": {
-        "operationId": "CommentsController_findByArticle",
-        "parameters": [
-          {
-            "name": "articleId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "summary": "دریافت نظرات یک مقاله",
-        "tags": [
-          "comments"
-        ]
-      },
-      "post": {
-        "operationId": "CommentsController_create",
-        "parameters": [
-          {
-            "name": "articleId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateCommentDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "JWT-auth": []
-          }
-        ],
-        "summary": "ثبت نظر جدید",
-        "tags": [
-          "comments"
-        ]
-      }
-    },
-    "/comments/{id}": {
-      "patch": {
-        "operationId": "CommentsController_update",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateCommentDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "JWT-auth": []
-          }
-        ],
-        "summary": "ویرایش نظر",
-        "tags": [
-          "comments"
-        ]
-      },
-      "delete": {
-        "operationId": "CommentsController_delete",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "JWT-auth": []
-          }
-        ],
-        "summary": "حذف نظر",
-        "tags": [
-          "comments"
-        ]
-      }
-    },
-    "/comments/{id}/like": {
-      "post": {
-        "operationId": "CommentsController_toggleLike",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "JWT-auth": []
-          }
-        ],
-        "summary": "لایک/آنلایک نظر",
-        "tags": [
-          "comments"
         ]
       }
     },
@@ -4812,66 +4730,2752 @@
           "admin"
         ]
       }
+    },
+    "/admin/taxonomy/{type}": {
+      "get": {
+        "operationId": "AdminTaxonomyController_findAll",
+        "parameters": [
+          {
+            "name": "type",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "لیست آیتم‌های تاکسونومی",
+        "tags": [
+          "admin-taxonomy"
+        ]
+      },
+      "post": {
+        "operationId": "AdminTaxonomyController_create",
+        "parameters": [
+          {
+            "name": "type",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTaxonomyItemDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "ایجاد آیتم تاکسونومی",
+        "tags": [
+          "admin-taxonomy"
+        ]
+      }
+    },
+    "/admin/taxonomy/{type}/{id}": {
+      "patch": {
+        "operationId": "AdminTaxonomyController_update",
+        "parameters": [
+          {
+            "name": "type",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTaxonomyItemDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "ویرایش آیتم تاکسونومی",
+        "tags": [
+          "admin-taxonomy"
+        ]
+      },
+      "delete": {
+        "operationId": "AdminTaxonomyController_remove",
+        "parameters": [
+          {
+            "name": "type",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "حذف آیتم تاکسونومی",
+        "tags": [
+          "admin-taxonomy"
+        ]
+      }
+    },
+    "/search": {
+      "get": {
+        "operationId": "SearchController_search",
+        "parameters": [
+          {
+            "name": "q",
+            "required": true,
+            "in": "query",
+            "description": "Search query (min 2 characters)",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Global search across all domains",
+        "tags": [
+          "Search"
+        ]
+      }
+    },
+    "/knowledge": {
+      "get": {
+        "description": "Returns paginated list of knowledge articles in the workspace.",
+        "operationId": "KnowledgeController_findAll",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "draft",
+                "review",
+                "published",
+                "archived"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Articles retrieved successfully"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "List knowledge articles",
+        "tags": [
+          "knowledge"
+        ]
+      },
+      "post": {
+        "description": "Creates a new knowledge article in the workspace.",
+        "operationId": "KnowledgeController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateKnowledgeDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Article created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KnowledgeResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Create knowledge article",
+        "tags": [
+          "knowledge"
+        ]
+      }
+    },
+    "/knowledge/search": {
+      "get": {
+        "description": "Full-text search with taxonomy and status filters.",
+        "operationId": "KnowledgeController_search",
+        "parameters": [
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "draft",
+                "review",
+                "published",
+                "archived"
+              ]
+            }
+          },
+          {
+            "name": "visibility",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "public",
+                "private",
+                "workspace"
+              ]
+            }
+          },
+          {
+            "name": "difficulty",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "beginner",
+                "intermediate",
+                "advanced",
+                "expert"
+              ]
+            }
+          },
+          {
+            "name": "language",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "fa",
+              "type": "string"
+            }
+          },
+          {
+            "name": "taxonomyType",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "category",
+                "topic",
+                "tag",
+                "discipline",
+                "audience"
+              ]
+            }
+          },
+          {
+            "name": "taxonomyId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": 20,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Search results"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Search knowledge articles",
+        "tags": [
+          "knowledge"
+        ]
+      }
+    },
+    "/knowledge/slug/{slug}": {
+      "get": {
+        "description": "Returns a knowledge article by its slug.",
+        "operationId": "KnowledgeController_findBySlug",
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "description": "Article slug",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Article found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KnowledgeResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Article not found"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get article by slug",
+        "tags": [
+          "knowledge"
+        ]
+      }
+    },
+    "/knowledge/{id}": {
+      "get": {
+        "description": "Returns a specific knowledge article by ID.",
+        "operationId": "KnowledgeController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Article UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Article found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KnowledgeResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Article not found"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get article by ID",
+        "tags": [
+          "knowledge"
+        ]
+      },
+      "patch": {
+        "description": "Updates knowledge article details.",
+        "operationId": "KnowledgeController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Article UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateKnowledgeDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Article updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KnowledgeResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Article not found"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Update article",
+        "tags": [
+          "knowledge"
+        ]
+      },
+      "delete": {
+        "description": "Marks article as deleted (recoverable).",
+        "operationId": "KnowledgeController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Article UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Article deleted"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Soft delete article",
+        "tags": [
+          "knowledge"
+        ]
+      }
+    },
+    "/knowledge/{id}/review": {
+      "post": {
+        "description": "Sends article to review workflow.",
+        "operationId": "KnowledgeController_requestReview",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Article UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssignReviewerDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Review requested"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Request review",
+        "tags": [
+          "knowledge"
+        ]
+      }
+    },
+    "/knowledge/{id}/publish": {
+      "post": {
+        "description": "Publishes the article and creates a version snapshot.",
+        "operationId": "KnowledgeController_publish",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Article UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Article published"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Publish article",
+        "tags": [
+          "knowledge"
+        ]
+      }
+    },
+    "/knowledge/{id}/reject": {
+      "post": {
+        "description": "Sends article back to draft from review.",
+        "operationId": "KnowledgeController_rejectReview",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Article UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Review rejected"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Reject review",
+        "tags": [
+          "knowledge"
+        ]
+      }
+    },
+    "/knowledge/{id}/archive": {
+      "post": {
+        "description": "Archives a published article.",
+        "operationId": "KnowledgeController_archive",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Article UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Article archived"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Archive article",
+        "tags": [
+          "knowledge"
+        ]
+      }
+    },
+    "/knowledge/{id}/restore": {
+      "post": {
+        "description": "Restores an archived article back to draft.",
+        "operationId": "KnowledgeController_restoreFromArchive",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Article UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Article restored"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Restore from archive",
+        "tags": [
+          "knowledge"
+        ]
+      }
+    },
+    "/knowledge/{id}/taxonomy": {
+      "get": {
+        "description": "Returns all taxonomy assignments for an article.",
+        "operationId": "KnowledgeController_getTaxonomy",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Article UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Taxonomy retrieved"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get taxonomy",
+        "tags": [
+          "knowledge"
+        ]
+      },
+      "post": {
+        "description": "Assigns a taxonomy entry to the article.",
+        "operationId": "KnowledgeController_addTaxonomy",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Article UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddTaxonomyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Taxonomy added"
+          },
+          "409": {
+            "description": "Already assigned"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Add taxonomy",
+        "tags": [
+          "knowledge"
+        ]
+      }
+    },
+    "/knowledge/{id}/taxonomy/{taxonomyId}": {
+      "delete": {
+        "description": "Removes a taxonomy assignment.",
+        "operationId": "KnowledgeController_removeTaxonomy",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Article UUID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "taxonomyId",
+            "required": true,
+            "in": "path",
+            "description": "Taxonomy assignment UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Taxonomy removed"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Remove taxonomy",
+        "tags": [
+          "knowledge"
+        ]
+      }
+    },
+    "/knowledge/{id}/versions": {
+      "get": {
+        "description": "Returns all version snapshots for an article.",
+        "operationId": "KnowledgeController_getVersions",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Article UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Versions retrieved"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "List versions",
+        "tags": [
+          "knowledge"
+        ]
+      }
+    },
+    "/knowledge/{id}/versions/{versionId}": {
+      "get": {
+        "description": "Returns a specific version snapshot.",
+        "operationId": "KnowledgeController_getVersion",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Article UUID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "versionId",
+            "required": true,
+            "in": "path",
+            "description": "Version UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Version retrieved"
+          },
+          "404": {
+            "description": "Version not found"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get version",
+        "tags": [
+          "knowledge"
+        ]
+      }
+    },
+    "/knowledge/{id}/versions/{versionId}/restore": {
+      "post": {
+        "description": "Restores content from a previous version (creates a new version).",
+        "operationId": "KnowledgeController_restoreVersion",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Article UUID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "versionId",
+            "required": true,
+            "in": "path",
+            "description": "Version UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Version restored"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Restore version",
+        "tags": [
+          "knowledge"
+        ]
+      }
+    },
+    "/knowledge/{id}/comments": {
+      "get": {
+        "description": "Returns all comments (top-level + replies) for an article.",
+        "operationId": "KnowledgeController_getComments",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Article UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Comments retrieved"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "List comments",
+        "tags": [
+          "knowledge"
+        ]
+      },
+      "post": {
+        "description": "Adds a comment to the article. Use parentId for replies.",
+        "operationId": "KnowledgeController_createComment",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Article UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCommentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Comment created"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Add comment",
+        "tags": [
+          "knowledge"
+        ]
+      }
+    },
+    "/knowledge/{id}/comments/{commentId}": {
+      "patch": {
+        "description": "Edits your own comment.",
+        "operationId": "KnowledgeController_updateComment",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Article UUID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "commentId",
+            "required": true,
+            "in": "path",
+            "description": "Comment UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCommentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Comment updated"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Edit comment",
+        "tags": [
+          "knowledge"
+        ]
+      },
+      "delete": {
+        "description": "Soft-deletes your own comment.",
+        "operationId": "KnowledgeController_deleteComment",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Article UUID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "commentId",
+            "required": true,
+            "in": "path",
+            "description": "Comment UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Comment deleted"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Delete comment",
+        "tags": [
+          "knowledge"
+        ]
+      }
+    },
+    "/knowledge/{id}/workflow": {
+      "get": {
+        "description": "Returns the workflow (review/publish/reject history) for an article.",
+        "operationId": "KnowledgeController_getWorkflow",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Article UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Workflow retrieved"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get workflow",
+        "tags": [
+          "knowledge"
+        ]
+      }
+    },
+    "/knowledge/{id}/workflow/submit": {
+      "post": {
+        "description": "Submits the article for review via workflow.",
+        "operationId": "KnowledgeController_submitWorkflow",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Article UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateWorkflowCommentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Submitted for review"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Submit for review",
+        "tags": [
+          "knowledge"
+        ]
+      }
+    },
+    "/knowledge/{id}/workflow/approve": {
+      "post": {
+        "description": "Approves the review, publishes the article via workflow.",
+        "operationId": "KnowledgeController_approveWorkflow",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Article UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateWorkflowCommentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Workflow approved"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Approve review",
+        "tags": [
+          "knowledge"
+        ]
+      }
+    },
+    "/knowledge/{id}/workflow/reject": {
+      "post": {
+        "description": "Rejects the review, returns article to draft via workflow.",
+        "operationId": "KnowledgeController_rejectWorkflow",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Article UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateWorkflowCommentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Workflow rejected"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Reject review",
+        "tags": [
+          "knowledge"
+        ]
+      }
+    },
+    "/knowledge/by-calculator/{calculatorType}": {
+      "get": {
+        "description": "Returns knowledge articles that reference a specific calculation type (e.g. BASIC-001).",
+        "operationId": "KnowledgeController_findByCalculatorType",
+        "parameters": [
+          {
+            "name": "calculatorType",
+            "required": true,
+            "in": "path",
+            "description": "Calculation type code (e.g. BASIC-001, CABLE-003)",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Articles found"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Find articles by calculator type",
+        "tags": [
+          "knowledge"
+        ]
+      }
+    },
+    "/knowledge/{id}/related-calculations": {
+      "get": {
+        "description": "Returns calculations that match the calculator types referenced by this article.",
+        "operationId": "KnowledgeController_getRelatedCalculations",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Article UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Related calculations"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get related calculations",
+        "tags": [
+          "knowledge"
+        ]
+      }
+    },
+    "/knowledge/analytics/dashboard": {
+      "get": {
+        "description": "Returns aggregate analytics for the workspace.",
+        "operationId": "KnowledgeController_getDashboardAnalytics",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Dashboard stats"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Dashboard analytics",
+        "tags": [
+          "knowledge"
+        ]
+      }
+    },
+    "/knowledge/{id}/analytics": {
+      "get": {
+        "description": "Returns analytics for a specific article.",
+        "operationId": "KnowledgeController_getAnalytics",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Article UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Analytics retrieved"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get analytics",
+        "tags": [
+          "knowledge"
+        ]
+      }
+    },
+    "/knowledge/{id}/view": {
+      "post": {
+        "description": "Increments the view counter for an article.",
+        "operationId": "KnowledgeController_recordView",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Article UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "View recorded"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Record view",
+        "tags": [
+          "knowledge"
+        ]
+      }
+    },
+    "/knowledge/{id}/standards": {
+      "get": {
+        "operationId": "KnowledgeStandardsController_getStandards",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Article UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Standards retrieved"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "List standards linked to an article",
+        "tags": [
+          "knowledge"
+        ]
+      },
+      "post": {
+        "operationId": "KnowledgeStandardsController_linkStandard",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Article UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LinkStandardDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Standard linked"
+          },
+          "404": {
+            "description": "Article or standard not found"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Link a standard to an article",
+        "tags": [
+          "knowledge"
+        ]
+      }
+    },
+    "/knowledge/{id}/standards/{standardId}": {
+      "delete": {
+        "operationId": "KnowledgeStandardsController_unlinkStandard",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Article UUID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "standardId",
+            "required": true,
+            "in": "path",
+            "description": "Standard UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Standard unlinked"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Unlink a standard from an article",
+        "tags": [
+          "knowledge"
+        ]
+      }
+    },
+    "/public/knowledge": {
+      "get": {
+        "description": "Returns published knowledge articles with public visibility.",
+        "operationId": "PublicKnowledgeController_findAll",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "locale",
+            "required": false,
+            "in": "query",
+            "description": "Filter by language",
+            "schema": {
+              "enum": [
+                "fa",
+                "en"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Articles retrieved"
+          }
+        },
+        "summary": "Public list published articles",
+        "tags": [
+          "knowledge-public"
+        ]
+      }
+    },
+    "/public/knowledge/{slug}": {
+      "get": {
+        "description": "Returns a published article by slug.",
+        "operationId": "PublicKnowledgeController_findBySlug",
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "description": "Article slug",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Article found"
+          },
+          "404": {
+            "description": "Article not found"
+          }
+        },
+        "summary": "Public get article by slug",
+        "tags": [
+          "knowledge-public"
+        ]
+      }
+    },
+    "/taxonomy": {
+      "get": {
+        "operationId": "TaxonomyController_getAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List all taxonomy types",
+        "tags": [
+          "Taxonomy"
+        ]
+      }
+    },
+    "/taxonomy/{type}": {
+      "get": {
+        "operationId": "TaxonomyController_getByType",
+        "parameters": [
+          {
+            "name": "type",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List taxonomy items by type",
+        "tags": [
+          "Taxonomy"
+        ]
+      }
+    },
+    "/standards": {
+      "get": {
+        "operationId": "StandardController_findAll",
+        "parameters": [
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "description": "Search by code or title",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "organization",
+            "required": false,
+            "in": "query",
+            "description": "Filter by organization",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "active",
+                "draft",
+                "superseded"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "1",
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "20",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Standards retrieved"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "List/search engineering standards",
+        "tags": [
+          "standards"
+        ]
+      },
+      "post": {
+        "operationId": "StandardController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateStandardDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Standard created"
+          },
+          "409": {
+            "description": "Code already exists"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Create a new engineering standard",
+        "tags": [
+          "standards"
+        ]
+      }
+    },
+    "/standards/{id}": {
+      "get": {
+        "operationId": "StandardController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Standard UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Standard found"
+          },
+          "404": {
+            "description": "Standard not found"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get standard by ID",
+        "tags": [
+          "standards"
+        ]
+      },
+      "patch": {
+        "operationId": "StandardController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Standard UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateStandardDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Standard updated"
+          },
+          "404": {
+            "description": "Standard not found"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Update a standard",
+        "tags": [
+          "standards"
+        ]
+      },
+      "delete": {
+        "operationId": "StandardController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Standard UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Standard deleted"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Delete a standard",
+        "tags": [
+          "standards"
+        ]
+      }
+    },
+    "/vendors": {
+      "get": {
+        "operationId": "VendorsController_findAll",
+        "parameters": [
+          {
+            "name": "q",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "List all vendors",
+        "tags": [
+          "Vendors"
+        ]
+      },
+      "post": {
+        "operationId": "VendorsController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateVendorDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Create a vendor",
+        "tags": [
+          "Vendors"
+        ]
+      }
+    },
+    "/vendors/{id}": {
+      "get": {
+        "operationId": "VendorsController_findById",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get vendor by ID",
+        "tags": [
+          "Vendors"
+        ]
+      },
+      "patch": {
+        "operationId": "VendorsController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateVendorDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Update a vendor",
+        "tags": [
+          "Vendors"
+        ]
+      }
+    },
+    "/products": {
+      "get": {
+        "operationId": "ProductsController_findAll",
+        "parameters": [
+          {
+            "name": "q",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "vendorId",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "type",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "category",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Search products",
+        "tags": [
+          "Products"
+        ]
+      },
+      "post": {
+        "operationId": "ProductsController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateProductDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Create a product",
+        "tags": [
+          "Products"
+        ]
+      }
+    },
+    "/products/suggest": {
+      "get": {
+        "operationId": "ProductsController_suggest",
+        "parameters": [
+          {
+            "name": "calculationType",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "resultParams",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Suggest products matching a calculation result",
+        "tags": [
+          "Products"
+        ]
+      }
+    },
+    "/products/{id}": {
+      "get": {
+        "operationId": "ProductsController_findById",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get product by ID",
+        "tags": [
+          "Products"
+        ]
+      },
+      "patch": {
+        "operationId": "ProductsController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProductDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Update a product",
+        "tags": [
+          "Products"
+        ]
+      },
+      "delete": {
+        "operationId": "ProductsController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Soft-delete a product",
+        "tags": [
+          "Products"
+        ]
+      }
+    },
+    "/orders": {
+      "get": {
+        "operationId": "OrdersController_findAll",
+        "parameters": [
+          {
+            "name": "status",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "List orders (workspace-scoped)",
+        "tags": [
+          "Orders"
+        ]
+      },
+      "post": {
+        "operationId": "OrdersController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateOrderDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Create an order",
+        "tags": [
+          "Orders"
+        ]
+      }
+    },
+    "/orders/{id}": {
+      "get": {
+        "operationId": "OrdersController_findById",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get order by ID",
+        "tags": [
+          "Orders"
+        ]
+      }
+    },
+    "/orders/{id}/status": {
+      "patch": {
+        "operationId": "OrdersController_updateStatus",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateOrderStatusDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Update order status",
+        "tags": [
+          "Orders"
+        ]
+      }
+    },
+    "/api-keys": {
+      "post": {
+        "description": "Returns the full key only once.",
+        "operationId": "ApiKeyController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateApiKeyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "API key created"
+          },
+          "400": {
+            "description": "Invalid input or limit reached"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Create a new API key",
+        "tags": [
+          "api-keys"
+        ]
+      },
+      "get": {
+        "description": "Returns paginated API keys for the workspace.",
+        "operationId": "ApiKeyController_findAll",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": 20,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "API keys retrieved"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "List API keys",
+        "tags": [
+          "api-keys"
+        ]
+      }
+    },
+    "/api-keys/{id}": {
+      "get": {
+        "operationId": "ApiKeyController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "API key UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "API key found"
+          },
+          "404": {
+            "description": "API key not found"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get API key details",
+        "tags": [
+          "api-keys"
+        ]
+      },
+      "delete": {
+        "operationId": "ApiKeyController_delete",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "API key UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "API key deleted"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Delete an API key",
+        "tags": [
+          "api-keys"
+        ]
+      }
+    },
+    "/api-keys/{id}/revoke": {
+      "post": {
+        "description": "Once revoked, the key cannot be used again.",
+        "operationId": "ApiKeyController_revoke",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "API key UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "API key revoked"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Revoke an API key",
+        "tags": [
+          "api-keys"
+        ]
+      }
+    },
+    "/api-keys/validate": {
+      "post": {
+        "description": "Public endpoint to validate an API key. Used by external services.",
+        "operationId": "ApiKeyController_validate",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Validation result"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Validate an API key",
+        "tags": [
+          "api-keys"
+        ]
+      }
+    },
+    "/webhooks": {
+      "post": {
+        "operationId": "WebhookController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateWebhookDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Webhook created"
+          },
+          "400": {
+            "description": "Invalid input"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Create a new webhook",
+        "tags": [
+          "webhooks"
+        ]
+      },
+      "get": {
+        "description": "Returns paginated webhooks for the workspace.",
+        "operationId": "WebhookController_findAll",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": 20,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Webhooks retrieved"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "List webhooks",
+        "tags": [
+          "webhooks"
+        ]
+      }
+    },
+    "/webhooks/{id}": {
+      "get": {
+        "operationId": "WebhookController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Webhook UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Webhook found"
+          },
+          "404": {
+            "description": "Webhook not found"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get webhook details",
+        "tags": [
+          "webhooks"
+        ]
+      },
+      "patch": {
+        "description": "Update URL, events, or active status.",
+        "operationId": "WebhookController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Webhook UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateWebhookDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Webhook updated"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Update webhook",
+        "tags": [
+          "webhooks"
+        ]
+      },
+      "delete": {
+        "operationId": "WebhookController_delete",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Webhook UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Webhook deleted"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Delete a webhook",
+        "tags": [
+          "webhooks"
+        ]
+      }
     }
   },
   "info": {
     "title": "Xennic Platform API",
     "description": "Xennic Engineering Platform API Documentation",
     "version": "1.0.0",
-    "contact": {
-      "name": "Xennic Team",
-      "url": "https://xennic.com",
-      "email": "support@xennic.com"
-    },
-    "license": {
-      "name": "Proprietary",
-      "url": "https://xennic.com/terms"
-    }
+    "contact": {}
   },
-  "tags": [
-    {
-      "name": "health",
-      "description": "Health check endpoints"
-    },
-    {
-      "name": "workspaces",
-      "description": "Workspace management (multi-tenant isolation)"
-    },
-    {
-      "name": "auth",
-      "description": "Authentication and user management"
-    },
-    {
-      "name": "users",
-      "description": "User profile management"
-    },
-    {
-      "name": "roles",
-      "description": "Role management and assignment"
-    },
-    {
-      "name": "permissions",
-      "description": "Permission management"
-    },
-    {
-      "name": "projects",
-      "description": "Project management"
-    },
-    {
-      "name": "engineering",
-      "description": "Engineering calculations"
-    }
-  ],
+  "tags": [],
   "servers": [],
   "components": {
     "securitySchemes": {
       "JWT-auth": {
         "scheme": "bearer",
         "bearerFormat": "JWT",
-        "type": "http",
-        "name": "JWT",
-        "description": "Enter JWT token",
-        "in": "header"
+        "type": "http"
       }
     },
     "schemas": {
@@ -4969,6 +7573,9 @@
             "enum": [
               "OWNER",
               "ADMIN",
+              "EDITOR",
+              "KNOWLEDGE_WRITER",
+              "REVIEWER",
               "ENGINEER",
               "CONSULTANT",
               "MEMBER",
@@ -5001,6 +7608,9 @@
             "enum": [
               "OWNER",
               "ADMIN",
+              "EDITOR",
+              "KNOWLEDGE_WRITER",
+              "REVIEWER",
               "ENGINEER",
               "CONSULTANT",
               "MEMBER",
@@ -5050,6 +7660,9 @@
             "enum": [
               "OWNER",
               "ADMIN",
+              "EDITOR",
+              "KNOWLEDGE_WRITER",
+              "REVIEWER",
               "ENGINEER",
               "CONSULTANT",
               "MEMBER",
@@ -5118,6 +7731,194 @@
         "required": [
           "token"
         ]
+      },
+      "BrandSettings": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Xennic Engineering"
+          },
+          "logo_url": {
+            "type": "string",
+            "example": "https://storage.xennic.ir/logo.png"
+          },
+          "primary_color": {
+            "type": "string",
+            "example": "#2563eb"
+          },
+          "accent_color": {
+            "type": "string",
+            "example": "#7c3aed"
+          }
+        }
+      },
+      "LocalizationSettings": {
+        "type": "object",
+        "properties": {
+          "locale": {
+            "type": "string",
+            "example": "fa",
+            "enum": [
+              "fa",
+              "en"
+            ]
+          },
+          "timezone": {
+            "type": "string",
+            "example": "Asia/Tehran"
+          },
+          "date_format": {
+            "type": "string",
+            "example": "YYYY/MM/DD"
+          },
+          "number_format": {
+            "type": "string",
+            "example": "fa",
+            "enum": [
+              "fa",
+              "en"
+            ]
+          },
+          "direction": {
+            "type": "string",
+            "example": "rtl",
+            "enum": [
+              "rtl",
+              "ltr"
+            ]
+          }
+        },
+        "required": [
+          "locale",
+          "timezone",
+          "date_format",
+          "number_format",
+          "direction"
+        ]
+      },
+      "IndustrySettings": {
+        "type": "object",
+        "properties": {
+          "sector": {
+            "type": "string",
+            "example": "power"
+          },
+          "sub_sector": {
+            "type": "string",
+            "example": "transmission_distribution"
+          },
+          "engineering_fields": {
+            "example": [
+              "LV",
+              "MV",
+              "power_quality"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "DefaultCalculationSettings": {
+        "type": "object",
+        "properties": {
+          "voltage_level_kv": {
+            "type": "number",
+            "example": 0.4
+          },
+          "frequency_hz": {
+            "type": "number",
+            "example": 50
+          },
+          "ambient_temperature_c": {
+            "type": "number",
+            "example": 35
+          },
+          "conductor_material": {
+            "type": "string",
+            "example": "copper"
+          },
+          "insulation_type": {
+            "type": "string",
+            "example": "XLPE"
+          },
+          "power_factor": {
+            "type": "number",
+            "example": 0.85
+          },
+          "load_factor": {
+            "type": "number",
+            "example": 0.75
+          }
+        }
+      },
+      "NotificationSettings": {
+        "type": "object",
+        "properties": {
+          "email_alerts": {
+            "type": "boolean",
+            "example": true
+          },
+          "calculation_completed": {
+            "type": "boolean",
+            "example": true
+          },
+          "member_joined": {
+            "type": "boolean",
+            "example": true
+          },
+          "weekly_report": {
+            "type": "boolean",
+            "example": false
+          }
+        }
+      },
+      "FeatureSettings": {
+        "type": "object",
+        "properties": {
+          "auto_save": {
+            "type": "boolean",
+            "example": true
+          },
+          "show_advanced_options": {
+            "type": "boolean",
+            "example": false
+          },
+          "export_default_format": {
+            "type": "string",
+            "example": "pdf",
+            "enum": [
+              "pdf",
+              "xlsx",
+              "csv"
+            ]
+          }
+        }
+      },
+      "UpdateWorkspaceSettingsDto": {
+        "type": "object",
+        "properties": {
+          "brand": {
+            "$ref": "#/components/schemas/BrandSettings"
+          },
+          "localization": {
+            "$ref": "#/components/schemas/LocalizationSettings"
+          },
+          "industry": {
+            "$ref": "#/components/schemas/IndustrySettings"
+          },
+          "defaults": {
+            "$ref": "#/components/schemas/DefaultCalculationSettings"
+          },
+          "notifications": {
+            "$ref": "#/components/schemas/NotificationSettings"
+          },
+          "features": {
+            "$ref": "#/components/schemas/FeatureSettings"
+          }
+        }
       },
       "CreateUserHttpDto": {
         "type": "object",
@@ -5728,17 +8529,44 @@
               "CABLE-002",
               "CABLE-003",
               "CABLE-004",
+              "CABLE-005",
               "TRF-001",
               "TRF-002",
               "TRF-003",
               "TRF-004",
+              "TRF-005",
               "PROT-001",
+              "PROT-002",
+              "PROT-004",
+              "PROT-005",
+              "SC-001",
+              "GND-001",
+              "ARC-001",
               "PQ-001",
               "PQ-002",
               "PQ-003",
               "PQ-004",
               "PQ-005",
-              "PQ-006"
+              "PQ-006",
+              "CAP-001",
+              "PS-001",
+              "PS-002",
+              "PS-003",
+              "PS-004",
+              "SWT-001",
+              "LIGHT-001",
+              "LIGHT-002",
+              "GND-002",
+              "MOT-002",
+              "BATTERY-002",
+              "SOLAR-002",
+              "SOLAR-003",
+              "BAT-BU-001",
+              "PFC-001",
+              "HARM-001",
+              "ECO-001",
+              "ECO-002",
+              "ECO-003"
             ],
             "example": "BASIC-001",
             "description": "Calculation type code (e.g. BASIC-001 = Ohm's Law)"
@@ -6584,14 +9412,334 @@
           "content"
         ]
       },
+      "ValidateCalculationDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "example": "CABLE-001"
+          },
+          "inputs": {
+            "type": "object",
+            "example": {
+              "load_current": 100,
+              "conductor_material": "copper",
+              "cable_length_m": 50
+            }
+          },
+          "result": {
+            "type": "object",
+            "example": {
+              "recommended_size": "35mm²",
+              "voltage_drop_percent": 1.2
+            }
+          }
+        },
+        "required": [
+          "type",
+          "inputs"
+        ]
+      },
+      "CreateTaxonomyItemDto": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string",
+            "example": "power-systems"
+          },
+          "name": {
+            "type": "string",
+            "example": "سیستم‌های قدرت"
+          },
+          "name_en": {
+            "type": "string",
+            "example": "Power Systems"
+          },
+          "icon": {
+            "type": "string"
+          },
+          "color": {
+            "type": "string"
+          },
+          "sort_order": {
+            "type": "number"
+          },
+          "is_active": {
+            "type": "boolean",
+            "default": true
+          },
+          "description": {
+            "type": "string"
+          },
+          "parent_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "slug",
+          "name"
+        ]
+      },
+      "UpdateTaxonomyItemDto": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string",
+            "example": "power-systems"
+          },
+          "name": {
+            "type": "string",
+            "example": "سیستم‌های قدرت"
+          },
+          "name_en": {
+            "type": "string",
+            "example": "Power Systems"
+          },
+          "icon": {
+            "type": "string"
+          },
+          "color": {
+            "type": "string"
+          },
+          "sort_order": {
+            "type": "number"
+          },
+          "is_active": {
+            "type": "boolean"
+          },
+          "description": {
+            "type": "string"
+          },
+          "parent_id": {
+            "type": "object"
+          }
+        }
+      },
+      "CreateKnowledgeDto": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string",
+            "example": "understanding-arc-flash",
+            "description": "URL-friendly slug (auto-generated if omitted)"
+          },
+          "content": {
+            "type": "object",
+            "description": "Block-based content as JSON object"
+          },
+          "language": {
+            "type": "string",
+            "example": "fa",
+            "default": "fa"
+          },
+          "visibility": {
+            "type": "string",
+            "enum": [
+              "public",
+              "private",
+              "workspace"
+            ],
+            "default": "public"
+          },
+          "difficulty": {
+            "type": "string",
+            "enum": [
+              "beginner",
+              "intermediate",
+              "advanced",
+              "expert"
+            ]
+          },
+          "taxonomy": {
+            "description": "Taxonomy assignments",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "slug"
+        ]
+      },
+      "KnowledgeResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "workspaceId": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "review",
+              "published",
+              "archived"
+            ]
+          },
+          "visibility": {
+            "type": "string",
+            "enum": [
+              "public",
+              "private",
+              "workspace"
+            ]
+          },
+          "language": {
+            "type": "string"
+          },
+          "version": {
+            "type": "number"
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "content": {
+            "type": "object"
+          },
+          "readingTime": {
+            "type": "object",
+            "nullable": true
+          },
+          "difficulty": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "beginner",
+              "intermediate",
+              "advanced",
+              "expert"
+            ]
+          },
+          "authorId": {
+            "type": "object",
+            "nullable": true
+          },
+          "reviewerId": {
+            "type": "object",
+            "nullable": true
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "publishedAt": {
+            "type": "object",
+            "nullable": true
+          },
+          "reviewedAt": {
+            "type": "object",
+            "nullable": true
+          },
+          "archivedAt": {
+            "type": "object",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "workspaceId",
+          "slug",
+          "status",
+          "visibility",
+          "language",
+          "version",
+          "isActive",
+          "content",
+          "readingTime",
+          "difficulty",
+          "authorId",
+          "reviewerId",
+          "createdAt",
+          "updatedAt",
+          "publishedAt",
+          "reviewedAt",
+          "archivedAt"
+        ]
+      },
+      "UpdateKnowledgeDto": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 200
+          },
+          "content": {
+            "type": "object"
+          },
+          "visibility": {
+            "type": "string",
+            "enum": [
+              "public",
+              "private",
+              "workspace"
+            ]
+          },
+          "difficulty": {
+            "type": "string",
+            "enum": [
+              "beginner",
+              "intermediate",
+              "advanced",
+              "expert"
+            ]
+          },
+          "readingTime": {
+            "type": "object",
+            "minimum": 0
+          }
+        }
+      },
+      "AssignReviewerDto": {
+        "type": "object",
+        "properties": {
+          "reviewerId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "reviewerId"
+        ]
+      },
+      "AddTaxonomyDto": {
+        "type": "object",
+        "properties": {
+          "taxonomyType": {
+            "type": "string",
+            "enum": [
+              "category",
+              "topic",
+              "tag",
+              "discipline",
+              "audience"
+            ]
+          },
+          "taxonomyId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "taxonomyType",
+          "taxonomyId"
+        ]
+      },
       "CreateCommentDto": {
         "type": "object",
         "properties": {
           "content": {
             "type": "string",
-            "description": "متن نظر",
-            "minLength": 1,
-            "maxLength": 2000
+            "description": "متن نظر"
           },
           "parentId": {
             "type": "string",
@@ -6607,14 +9755,339 @@
         "properties": {
           "content": {
             "type": "string",
-            "description": "متن ویرایش شده نظر",
-            "minLength": 1,
-            "maxLength": 2000
+            "description": "متن ویرایش‌شده نظر"
           }
         },
         "required": [
           "content"
         ]
+      },
+      "CreateWorkflowCommentDto": {
+        "type": "object",
+        "properties": {
+          "comment": {
+            "type": "string",
+            "description": "متن توضیح مرحله"
+          }
+        },
+        "required": [
+          "comment"
+        ]
+      },
+      "LinkStandardDto": {
+        "type": "object",
+        "properties": {
+          "standardId": {
+            "type": "string",
+            "description": "Standard ID to link"
+          }
+        },
+        "required": [
+          "standardId"
+        ]
+      },
+      "CreateStandardDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "example": "IEC-60909-0",
+            "description": "Standard code (unique)"
+          },
+          "title": {
+            "type": "string",
+            "example": "Short-circuit currents in three-phase AC systems",
+            "description": "Standard title"
+          },
+          "organization": {
+            "type": "string",
+            "example": "IEC",
+            "description": "Standards organization"
+          },
+          "version": {
+            "type": "string",
+            "example": "2016",
+            "description": "Standard version/year"
+          },
+          "publishedAt": {
+            "type": "string",
+            "example": "2020-01-15",
+            "description": "Publication date"
+          },
+          "status": {
+            "type": "string",
+            "example": "active",
+            "enum": [
+              "active",
+              "draft",
+              "superseded"
+            ]
+          }
+        },
+        "required": [
+          "code",
+          "title",
+          "organization",
+          "version"
+        ]
+      },
+      "UpdateStandardDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "example": "IEC-60909-0"
+          },
+          "title": {
+            "type": "string",
+            "example": "Short-circuit currents in three-phase AC systems"
+          },
+          "organization": {
+            "type": "string",
+            "example": "IEC"
+          },
+          "version": {
+            "type": "string",
+            "example": "2016"
+          },
+          "publishedAt": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "draft",
+              "superseded"
+            ]
+          }
+        }
+      },
+      "CreateVendorDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Siemens"
+          },
+          "slug": {
+            "type": "string",
+            "example": "siemens"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "UpdateVendorDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "inactive",
+              "suspended"
+            ]
+          }
+        }
+      },
+      "CreateProductDto": {
+        "type": "object",
+        "properties": {
+          "vendorId": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "example": "digital"
+          },
+          "category": {
+            "type": "string",
+            "example": "cable"
+          },
+          "specifications": {
+            "type": "object",
+            "example": {
+              "cable_size_mm2": 35,
+              "current_rating_a": 150,
+              "voltage_rating_v": 1000
+            }
+          },
+          "sku": {
+            "type": "string",
+            "example": "TRF-1000-3P"
+          },
+          "price": {
+            "type": "number",
+            "example": 4900000
+          },
+          "currency": {
+            "type": "string",
+            "default": "USD"
+          }
+        },
+        "required": [
+          "vendorId",
+          "type",
+          "price"
+        ]
+      },
+      "UpdateProductDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string"
+          },
+          "specifications": {
+            "type": "object"
+          },
+          "price": {
+            "type": "number"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "inactive",
+              "archived"
+            ]
+          }
+        }
+      },
+      "OrderItemDto": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "string"
+          },
+          "quantity": {
+            "type": "number",
+            "default": 1
+          },
+          "unitPrice": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "productId",
+          "quantity",
+          "unitPrice"
+        ]
+      },
+      "CreateOrderDto": {
+        "type": "object",
+        "properties": {
+          "currency": {
+            "type": "string",
+            "default": "USD"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OrderItemDto"
+            }
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
+      "UpdateOrderStatusDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "confirmed",
+              "processing",
+              "shipped",
+              "delivered",
+              "cancelled",
+              "refunded"
+            ]
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "CreateApiKeyDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Name for the API key",
+            "example": "Production CI/CD"
+          },
+          "expiresAt": {
+            "type": "string",
+            "description": "Expiration date (ISO 8601)",
+            "example": "2027-06-20T00:00:00Z"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "CreateWebhookDto": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "Webhook callback URL",
+            "example": "https://example.com/webhook"
+          },
+          "secret": {
+            "type": "string",
+            "description": "Secret for HMAC signature (auto-generated if empty)"
+          },
+          "events": {
+            "description": "Events to subscribe to",
+            "example": [
+              "project.created",
+              "calculation.completed"
+            ],
+            "type": "array",
+            "items": {
+              "type": "array"
+            }
+          }
+        },
+        "required": [
+          "url",
+          "events"
+        ]
+      },
+      "UpdateWebhookDto": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "New callback URL"
+          },
+          "events": {
+            "description": "Updated event subscriptions",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "isActive": {
+            "type": "boolean",
+            "description": "Enable or disable the webhook"
+          }
+        }
       }
     }
   }

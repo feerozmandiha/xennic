@@ -100,10 +100,14 @@ async function request<T>(
   extraHeaders?: Record<string, string>,
 ): Promise<T> {
   try {
+    const isFormData = body instanceof FormData;
+    const headers = buildHeaders(isFormData ? undefined : extraHeaders);
+    if (isFormData) delete headers['Content-Type'];
+
     const res = await fetch(`${API_BASE}${path}`, {
       method,
-      headers: buildHeaders(extraHeaders),
-      body: body ? JSON.stringify(body) : undefined,
+      headers,
+      body: body !== undefined ? (isFormData ? body as FormData : JSON.stringify(body)) : undefined,
     });
 
     const text = await res.text();
@@ -142,11 +146,11 @@ async function request<T>(
 
 // ── Public API ────────────────────────────────────────────────────────────────
 export const apiClient = {
-  get:    <T>(path: string)                 => request<T>('GET',    path),
-  post:   <T>(path: string, body?: unknown) => request<T>('POST',   path, body),
-  put:    <T>(path: string, body?: unknown) => request<T>('PUT',    path, body),
-  patch:  <T>(path: string, body?: unknown) => request<T>('PATCH',  path, body),
-  delete: <T>(path: string)                 => request<T>('DELETE', path),
+  get:    <T>(path: string)                                    => request<T>('GET',    path),
+  post:   <T>(path: string, body?: unknown, extraHeaders?: Record<string, string>) => request<T>('POST',   path, body, extraHeaders),
+  put:    <T>(path: string, body?: unknown, extraHeaders?: Record<string, string>) => request<T>('PUT',    path, body, extraHeaders),
+  patch:  <T>(path: string, body?: unknown, extraHeaders?: Record<string, string>) => request<T>('PATCH',  path, body, extraHeaders),
+  delete: <T>(path: string)                                    => request<T>('DELETE', path),
 };
 
 export { ApiError, getToken, getWorkspaceId };

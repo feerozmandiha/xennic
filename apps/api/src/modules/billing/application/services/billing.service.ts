@@ -4,6 +4,7 @@ import {
   NotFoundException,
   ConflictException,
   ForbiddenException,
+  Logger,
 } from '@nestjs/common';
 import type { IBillingRepository } from '../../domain/interfaces/billing.repository.interface.js';
 import { InvoiceEntity } from '../../domain/entities/invoice.entity.js';
@@ -14,6 +15,8 @@ import type { IPaymentGateway } from '../../infrastructure/gateways/payment-gate
 
 @Injectable()
 export class BillingService {
+  private readonly logger = new Logger(BillingService.name);
+
   constructor(
     @Inject('IBillingRepository')
     private readonly billingRepository: IBillingRepository,
@@ -119,6 +122,11 @@ export class BillingService {
       throw new Error(`Payment gateway error: ${result.message}`);
     }
 
+    payment.setAuthority(result.authority);
+    await this.billingRepository.savePayment(payment);
+
+    this.logger.log(`Payment ${paymentId} → Zarinpal authority: ${result.authority}`);
+
     return { redirectUrl: result.redirectUrl!, authority: result.authority };
   }
 
@@ -131,12 +139,45 @@ export class BillingService {
       throw new Error(`Payment verification failed: ${verification.message}`);
     }
 
-    // Find payment by authority — we need to look it up from pending payments
-    // In production, store authority on payment entity
-    const payments = await this.billingRepository.findAllPaymentsByWorkspace('');
-    const payment = payments.find(p => p.isPending() && p.amount === amount);
-    if (!payment) throw new NotFoundException('Payment not found for verification');
+    const payment = await this._findPaymentByAuthority(authority, amount);
+    this._completePayment(payment, authority, verification);
 
+    return payment;
+  }
+
+  async verifyByAuthority(authority: string): Promise<{ payment: PaymentEntity; workspaceId: string }> {
+    const payment = await this.billingRepository.findPaymentByAuthority(authority);
+    if (!payment) throw new NotFoundException('Payment not found for this authority');
+    if (!payment.isPending() && payment.status !== 'processing') {
+      throw new ConflictException('Payment is not pending or processing');
+    }
+
+    const verification = await this.zarinpalGateway.verifyPayment(authority, payment.amount);
+    if (!verification.success) {
+      this.logger.warn(`Zarinpal verify failed for authority ${authority}: ${verification.message}`);
+      throw new Error(`Payment verification failed: ${verification.message}`);
+    }
+
+    this._completePayment(payment, authority, verification);
+
+    return { payment, workspaceId: payment.workspaceId };
+  }
+
+  private async _findPaymentByAuthority(authority: string, amount: number): Promise<PaymentEntity> {
+    let payment = await this.billingRepository.findPaymentByAuthority(authority);
+    if (!payment) {
+      const payments = await this.billingRepository.findAllPaymentsByWorkspace('');
+      payment = payments.find(p => p.isPending() && p.amount === amount) ?? null;
+      if (!payment) throw new NotFoundException('Payment not found for verification');
+    }
+    return payment;
+  }
+
+  private async _completePayment(
+    payment: PaymentEntity,
+    authority: string,
+    verification: { referenceId: string; cardNumber?: string; message?: string },
+  ): Promise<void> {
     payment.confirm(verification.referenceId);
 
     const invoice = await this.billingRepository.findInvoiceById(payment.invoiceId);
@@ -161,7 +202,7 @@ export class BillingService {
     transaction.complete();
     await this.billingRepository.saveTransaction(transaction);
 
-    return payment;
+    this.logger.log(`Payment ${payment.id} completed — ref: ${verification.referenceId}`);
   }
 
   async getPayment(id: string, workspaceId: string): Promise<PaymentEntity> {

@@ -2,15 +2,15 @@
   "name": "@xennic/config",
   "version": "0.1.0",
   "private": true,
-
   "type": "module",
-
   "main": "./src/index.ts",
   "types": "./src/index.ts",
-
   "scripts": {
     "build": "tsc -p tsconfig.base.json",
     "typecheck": "tsc -p tsconfig.base.json --noEmit",
     "lint": "eslint src"
+  },
+  "devDependencies": {
+    "@nestjs/throttler": "^6.5.0"
   }
 }

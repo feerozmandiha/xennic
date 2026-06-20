@@ -11,29 +11,33 @@ export default function ContactPage() {
   const locale = (params?.locale as string) ?? 'fa';
   const [form, setForm] = useState({ name: '', email: '', subject: '', message: '' });
   const [sent, setSent] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const set = (k: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
     setForm(f => ({ ...f, [k]: e.target.value }));
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
     // TODO: actual API call
-    setTimeout(() => setSent(true), 800);
+    await new Promise(r => setTimeout(r, 800));
+    setSent(true);
+    setLoading(false);
   };
 
-  const inputCls = 'w-full px-4 py-3 rounded-xl bg-white/[0.05] border border-white/10 text-white text-sm outline-none focus:border-[#3b82f6] transition-colors placeholder:text-white/20';
+  const inputCls = 'w-full px-4 py-3 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--background))] text-[hsl(var(--foreground))] text-sm outline-none focus:border-[hsl(var(--primary))] transition-colors placeholder:text-[hsl(var(--muted-foreground))/0.5]';
 
   return (
-    <div className="min-h-screen bg-[#050b14]">
+    <div className="min-h-screen bg-[hsl(var(--background))]">
       <div className="max-w-5xl mx-auto px-5 pt-32 pb-20">
         <div className="text-center mb-14">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[#3b82f6]/30 bg-[#3b82f6]/5 text-xs text-[#93c5fd] font-medium mb-6">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[hsl(var(--primary))/0.3] bg-[hsl(var(--primary))/0.05] text-xs text-[hsl(var(--primary))/0.8] font-medium mb-6">
             تماس با ما
           </div>
-          <h1 className="text-4xl sm:text-5xl font-black text-white leading-tight mb-4">
+          <h1 className="text-4xl sm:text-5xl font-black text-[hsl(var(--foreground))] leading-tight mb-4">
             در ارتباط باشید
           </h1>
-          <p className="text-base text-white/50 max-w-xl mx-auto">
+          <p className="text-base text-[hsl(var(--muted-foreground))] max-w-xl mx-auto">
             سوالات، پیشنهادات و نیازهای خود را با ما در میان بگذارید
           </p>
         </div>
@@ -47,12 +51,12 @@ export default function ContactPage() {
               { icon: MapPin, title: 'دفتر مرکزی', desc: 'تهران، ایران' },
             ].map((item, i) => (
               <div key={i} className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-[#3b82f6] to-[#6366f1] flex items-center justify-center shrink-0">
+                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--accent))] flex items-center justify-center shrink-0">
                   <item.icon className="h-5 w-5 text-white" />
                 </div>
                 <div>
-                  <p className="text-white font-medium text-sm">{item.title}</p>
-                  <p className="text-xs text-white/40">{item.desc}</p>
+                  <p className="text-[hsl(var(--foreground))] font-medium text-sm">{item.title}</p>
+                  <p className="text-xs text-[hsl(var(--muted-foreground))]">{item.desc}</p>
                 </div>
               </div>
             ))}
@@ -61,12 +65,12 @@ export default function ContactPage() {
           {/* Form */}
           <div className="md:col-span-2">
             {sent ? (
-              <div className="p-10 rounded-xl border border-green-500/30 bg-green-500/5 text-center">
-                <div className="w-16 h-16 rounded-full bg-green-500/20 flex items-center justify-center mx-auto mb-4">
-                  <Send className="h-6 w-6 text-green-400" />
+              <div className="p-10 rounded-xl border border-[hsl(var(--success))/0.3] bg-[hsl(var(--success))/0.05] text-center">
+                <div className="w-16 h-16 rounded-full bg-[hsl(var(--success))/0.2] flex items-center justify-center mx-auto mb-4">
+                  <Send className="h-6 w-6 text-[hsl(var(--success))]" />
                 </div>
-                <h3 className="text-white text-lg font-bold mb-2">پیام شما ارسال شد</h3>
-                <p className="text-sm text-white/50">در اسرع وقت با شما تماس خواهیم گرفت</p>
+                <h3 className="text-[hsl(var(--foreground))] text-lg font-bold mb-2">پیام شما ارسال شد</h3>
+                <p className="text-sm text-[hsl(var(--muted-foreground))]">در اسرع وقت با شما تماس خواهیم گرفت</p>
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-4">
@@ -76,12 +80,14 @@ export default function ContactPage() {
                 </div>
                 <input value={form.subject} onChange={set('subject')} placeholder="موضوع" className={inputCls} required />
                 <textarea value={form.message} onChange={set('message')} rows={6} placeholder="متن پیام..." className={cn(inputCls, 'resize-none')} required />
-                <button type="submit"
-                  className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-white text-sm transition-all"
-                  style={{ background: 'linear-gradient(135deg, #3b82f6, #6366f1)' }}
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-white text-sm transition-all hover:opacity-90 disabled:opacity-50"
+                  style={{ background: 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)))' }}
                 >
+                  {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
                   ارسال پیام
-                  <Send className="h-4 w-4" />
                 </button>
               </form>
             )}

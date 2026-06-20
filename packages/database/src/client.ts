@@ -1,15 +1,16 @@
 import { PrismaClient } from '@prisma/client';
+import { createTenantExtension } from './tenant-extension.js';
 
 const globalForPrisma = globalThis as unknown as {
-  prisma?: PrismaClient;
+  prisma?: PrismaClient | ReturnType<typeof createExtendedPrisma>;
 };
 
-export const prisma =
-  globalForPrisma.prisma ??
-  new PrismaClient();
+function createExtendedPrisma() {
+  return new PrismaClient().$extends(createTenantExtension());
+}
+
+export const prisma = createExtendedPrisma();
 
 if (process.env.NODE_ENV !== 'production') {
   globalForPrisma.prisma = prisma;
 }
-
-// ✅ حذف تمام export typeها

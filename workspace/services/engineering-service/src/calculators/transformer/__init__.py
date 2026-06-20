@@ -10,10 +10,12 @@ from .sizing import TransformerSizingCalculator
 from .losses import TransformerLossesCalculator
 from .regulation import TransformerRegulationCalculator
 from .k_factor import KFactorCalculator
+from .efficiency import TransformerEfficiencyCalculator
 
 __all__ = [
     "TransformerSizingCalculator",
     "TransformerLossesCalculator",
     "TransformerRegulationCalculator",
     "KFactorCalculator",
+    "TransformerEfficiencyCalculator",
 ]

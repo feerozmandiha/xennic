@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import * as crypto from 'crypto';
 import type {
   IPaymentGateway,
   PaymentRequest,
@@ -18,18 +19,25 @@ export class ZarinpalGateway implements IPaymentGateway {
   private readonly baseUrl: string;
   private readonly merchantId: string;
 
+  private readonly isTestMode: boolean;
+
   constructor() {
     const config: ZarinpalConfig = {
       merchantId: process.env.ZARINPAL_MERCHANT_ID ?? 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx',
       sandbox: process.env.ZARINPAL_SANDBOX === 'true',
     };
     this.merchantId = config.merchantId;
+    this.isTestMode = config.merchantId === 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx' || process.env.BILLING_TEST_MODE === 'true';
     this.baseUrl = config.sandbox
       ? 'https://sandbox.zarinpal.com/pg/v4/payment'
       : 'https://api.zarinpal.com/pg/v4/payment';
   }
 
   async requestPayment(request: PaymentRequest): Promise<PaymentResponse> {
+    if (this.isTestMode) {
+      return this._mockRequest(request);
+    }
+
     try {
       const body = {
         merchant_id: this.merchantId,
@@ -78,6 +86,10 @@ export class ZarinpalGateway implements IPaymentGateway {
   }
 
   async verifyPayment(authority: string, amount: number): Promise<PaymentVerification> {
+    if (this.isTestMode) {
+      return this._mockVerify(authority, amount);
+    }
+
     try {
       const body = {
         merchant_id: this.merchantId,
@@ -115,5 +127,25 @@ export class ZarinpalGateway implements IPaymentGateway {
         message: `Zarinpal verification error: ${(err as Error).message}`,
       };
     }
+  }
+
+  private _mockRequest(request: PaymentRequest): PaymentResponse {
+    const authority = crypto.randomUUID();
+    const nestApiUrl = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000';
+    return {
+      success: true,
+      authority,
+      redirectUrl: `${nestApiUrl}/api/v1/billing/callback?Authority=${authority}&Status=OK`,
+    };
+  }
+
+  private _mockVerify(authority: string, amount: number): PaymentVerification {
+    return {
+      success: true,
+      referenceId: `TEST-${Date.now()}`,
+      cardNumber: '0000-****-****-0000',
+      amount,
+      message: 'Payment verified successfully (test mode)',
+    };
   }
 }

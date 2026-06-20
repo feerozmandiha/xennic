@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { prisma } from '@xennic/database';
+import * as crypto from 'crypto';
 import type { ISubscriptionRepository } from '../../domain/interfaces/subscription.repository.interface.js';
 import { PlanEntity, type PlanFeatures } from '../../domain/entities/plan.entity.js';
 import { SubscriptionEntity } from '../../domain/entities/subscription.entity.js';
@@ -13,9 +14,10 @@ export class SubscriptionRepository implements ISubscriptionRepository {
 
   async findAllPlans(): Promise<PlanEntity[]> {
     try {
-      const rows = await prisma.$queryRaw<any[]>`
-        SELECT * FROM "plans" WHERE is_active = true ORDER BY monthly_price ASC
-      `;
+      const rows = await prisma.plans.findMany({
+        where: { is_active: true },
+        orderBy: { monthly_price: 'asc' },
+      });
       return rows.map(r => this._mapPlan(r));
     } catch (err) {
       console.error('SubscriptionRepository.findAllPlans error:', (err as Error).message);
@@ -25,21 +27,17 @@ export class SubscriptionRepository implements ISubscriptionRepository {
 
   async findPlanById(id: string): Promise<PlanEntity | null> {
     try {
-      const rows = await prisma.$queryRaw<any[]>`
-        SELECT * FROM "plans" WHERE id = ${id} LIMIT 1
-      `;
-      if (!rows || rows.length === 0) return null;
-      return this._mapPlan(rows[0]);
+      const row = await prisma.plans.findUnique({ where: { id } });
+      if (!row) return null;
+      return this._mapPlan(row);
     } catch { return null; }
   }
 
   async findPlanBySlug(slug: string): Promise<PlanEntity | null> {
     try {
-      const rows = await prisma.$queryRaw<any[]>`
-        SELECT * FROM "plans" WHERE slug = ${slug} LIMIT 1
-      `;
-      if (!rows || rows.length === 0) return null;
-      return this._mapPlan(rows[0]);
+      const row = await prisma.plans.findUnique({ where: { slug } });
+      if (!row) return null;
+      return this._mapPlan(row);
     } catch { return null; }
   }
 
@@ -49,29 +47,20 @@ export class SubscriptionRepository implements ISubscriptionRepository {
 
   async save(sub: SubscriptionEntity): Promise<void> {
     try {
-      const existing = await prisma.$queryRaw<any[]>`
-        SELECT id FROM "subscriptions" WHERE id = ${sub.id} LIMIT 1
-      `;
-
-      if (existing && existing.length > 0) {
-        await prisma.$executeRaw`
-          UPDATE "subscriptions" SET
-            status       = ${sub.status},
-            ends_at      = ${sub.expiresAt},
-            cancelled_at = ${sub.cancelledAt},
-            updated_at   = ${sub.updatedAt}
-          WHERE id = ${sub.id}
-        `;
-      } else {
-        await prisma.$executeRaw`
-          INSERT INTO "subscriptions"
-            (id, workspace_id, plan_id, status, starts_at, ends_at, cancelled_at, created_at, updated_at)
-          VALUES
-            (${sub.id}, ${sub.workspaceId}, ${sub.planId}, ${sub.status},
-             ${sub.startsAt}, ${sub.expiresAt}, ${sub.cancelledAt},
-             ${sub.createdAt}, ${sub.updatedAt})
-        `;
-      }
+      const data = {
+        workspace_id: sub.workspaceId,
+        plan_id: sub.planId,
+        status: sub.status,
+        starts_at: sub.startsAt,
+        ends_at: sub.expiresAt,
+        cancelled_at: sub.cancelledAt,
+        updated_at: sub.updatedAt,
+      };
+      await prisma.subscriptions.upsert({
+        where: { id: sub.id },
+        create: { id: sub.id, ...data, created_at: sub.createdAt },
+        update: data,
+      });
     } catch (err) {
       throw new Error(`SubscriptionRepository.save failed: ${(err as Error).message}`);
     }
@@ -79,43 +68,38 @@ export class SubscriptionRepository implements ISubscriptionRepository {
 
   async findById(id: string): Promise<SubscriptionEntity | null> {
     try {
-      const rows = await prisma.$queryRaw<any[]>`
-        SELECT s.*, p.slug as plan_slug
-        FROM "subscriptions" s
-        JOIN "plans" p ON p.id = s.plan_id
-        WHERE s.id = ${id} LIMIT 1
-      `;
-      if (!rows || rows.length === 0) return null;
-      return this._mapSub(rows[0]);
+      const row = await prisma.subscriptions.findUnique({
+        where: { id },
+        include: { plan: { select: { slug: true } } },
+      });
+      if (!row) return null;
+      return this._mapSub(row);
     } catch { return null; }
   }
 
   async findActiveByWorkspace(workspaceId: string): Promise<SubscriptionEntity | null> {
     try {
-      const rows = await prisma.$queryRaw<any[]>`
-        SELECT s.*, p.slug as plan_slug
-        FROM "subscriptions" s
-        JOIN "plans" p ON p.id = s.plan_id
-        WHERE s.workspace_id = ${workspaceId}
-          AND s.status = 'active'
-          AND (s.ends_at IS NULL OR s.ends_at > NOW())
-        ORDER BY s.created_at DESC
-        LIMIT 1
-      `;
-      if (!rows || rows.length === 0) return null;
-      return this._mapSub(rows[0]);
+      const row = await prisma.subscriptions.findFirst({
+        where: {
+          workspace_id: workspaceId,
+          status: 'active',
+          OR: [{ ends_at: null }, { ends_at: { gt: new Date() } }],
+        },
+        include: { plan: { select: { slug: true } } },
+        orderBy: { created_at: 'desc' },
+      });
+      if (!row) return null;
+      return this._mapSub(row);
     } catch { return null; }
   }
 
   async findAllByWorkspace(workspaceId: string): Promise<SubscriptionEntity[]> {
     try {
-      const rows = await prisma.$queryRaw<any[]>`
-        SELECT s.*, p.slug as plan_slug
-        FROM "subscriptions" s
-        JOIN "plans" p ON p.id = s.plan_id
-        WHERE s.workspace_id = ${workspaceId}
-        ORDER BY s.created_at DESC
-      `;
+      const rows = await prisma.subscriptions.findMany({
+        where: { workspace_id: workspaceId },
+        include: { plan: { select: { slug: true } } },
+        orderBy: { created_at: 'desc' },
+      });
       return rows.map(r => this._mapSub(r));
     } catch { return []; }
   }
@@ -126,10 +110,15 @@ export class SubscriptionRepository implements ISubscriptionRepository {
 
   async logUsage(workspaceId: string, feature: string, amount = 1): Promise<void> {
     try {
-      await prisma.$executeRaw`
-        INSERT INTO "usage_logs" (id, workspace_id, feature, amount, logged_at)
-        VALUES (${crypto.randomUUID()}, ${workspaceId}, ${feature}, ${amount}, NOW())
-      `;
+      await prisma.usage_logs.create({
+        data: {
+          id: crypto.randomUUID(),
+          workspace_id: workspaceId,
+          feature,
+          amount,
+          logged_at: new Date(),
+        },
+      });
     } catch (err) {
       console.error('SubscriptionRepository.logUsage error:', (err as Error).message);
     }
@@ -137,14 +126,19 @@ export class SubscriptionRepository implements ISubscriptionRepository {
 
   async getUsageThisMonth(workspaceId: string, feature: string): Promise<number> {
     try {
-      const result = await prisma.$queryRaw<{ total: string }[]>`
-        SELECT COALESCE(SUM(amount), 0)::text as total
-        FROM "usage_logs"
-        WHERE workspace_id = ${workspaceId}
-          AND feature      = ${feature}
-          AND logged_at   >= date_trunc('month', NOW())
-      `;
-      return Number(result[0]?.total ?? 0);
+      const startOfMonth = new Date();
+      startOfMonth.setDate(1);
+      startOfMonth.setHours(0, 0, 0, 0);
+
+      const result = await prisma.usage_logs.aggregate({
+        where: {
+          workspace_id: workspaceId,
+          feature,
+          logged_at: { gte: startOfMonth },
+        },
+        _sum: { amount: true },
+      });
+      return result._sum.amount ?? 0;
     } catch { return 0; }
   }
 
@@ -183,7 +177,7 @@ export class SubscriptionRepository implements ISubscriptionRepository {
       id:          row.id,
       workspaceId: row.workspace_id,
       planId:      row.plan_id,
-      planSlug:    row.plan_slug ?? 'free',
+      planSlug:    (row.plan?.slug ?? row.plan_slug) ?? 'free',
       status:      row.status,
       startsAt:    row.starts_at,
       expiresAt:   row.ends_at     ?? null,

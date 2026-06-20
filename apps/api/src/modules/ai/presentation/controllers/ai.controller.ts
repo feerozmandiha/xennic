@@ -13,6 +13,7 @@ import { AiService }      from '../../application/services/ai.service.js';
 import {
   CreateConversationDto, SendMessageDto,
   AgentResponseDto, ConversationResponseDto,
+  ValidateCalculationDto, ValidationResponseDto,
 } from '../dtos/ai.dto.js';
 
 @ApiTags('ai')
@@ -117,6 +118,19 @@ export class AiController {
         tokens:             result.tokens,
       },
     };
+  }
+
+  // ── POST /ai/validate ─────────────────────────────────────────────────────
+
+  @Post('validate')
+  @ApiOperation({ summary: 'Validate an engineering calculation using AI' })
+  @ApiBody({ type: ValidateCalculationDto })
+  @ApiResponse({ status: 200, description: 'Validation completed' })
+  async validateCalculation(@Req() req: any, @Body() dto: ValidateCalculationDto) {
+    const result = await this.aiService.validateCalculation(
+      dto.type, dto.inputs, dto.result,
+    );
+    return { success: true, data: ValidationResponseDto.fromAiResponse(result.details, result) };
   }
 
   // ── GET /ai/usage ─────────────────────────────────────────────────────────

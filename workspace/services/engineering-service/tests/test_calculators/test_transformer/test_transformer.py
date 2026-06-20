@@ -7,11 +7,13 @@ from src.calculators.transformer.sizing import TransformerSizingCalculator
 from src.calculators.transformer.losses import TransformerLossesCalculator
 from src.calculators.transformer.regulation import TransformerRegulationCalculator
 from src.calculators.transformer.k_factor import KFactorCalculator
+from src.calculators.transformer.efficiency import TransformerEfficiencyCalculator
 from src.calculators.transformer.schemas import (
     TransformerSizingInput,
     TransformerLossesInput,
     TransformerRegulationInput,
     KFactorInput,
+    TransformerEfficiencyInput,
 )
 from src.core.exceptions import ValidationError
 
@@ -302,3 +304,124 @@ class TestKFactor:
         result = self.calc.execute(inputs)
         
         assert result.results["derating_factor"] == 1.0
+
+
+class TestTransformerEfficiency:
+    """Tests for TRF-005: Transformer Energy Efficiency (EU 548/2014)"""
+
+    def setup_method(self):
+        self.calc = TransformerEfficiencyCalculator()
+
+    def test_oil_tier_2_compliant(self):
+        """630kVA oil-immersed transformer meeting Tier 2 limits"""
+        inputs = TransformerEfficiencyInput(
+            rated_power_kva=630.0,
+            no_load_loss_w=530.0,
+            load_loss_w=6800.0,
+            transformer_type='oil',
+            voltage_level='MV',
+        )
+        result = self.calc.execute(inputs)
+        data = result.results
+        assert data["compliant_tier_1"] is True
+        assert data["compliant_tier_2"] is True
+        assert data["tier_2_no_load_max_w"] == 530.0
+        assert data["tier_2_load_max_w"] == 6800.0
+
+    def test_oil_tier_2_non_compliant(self):
+        """630kVA oil-immersed exceeding Tier 2 load loss limit"""
+        inputs = TransformerEfficiencyInput(
+            rated_power_kva=630.0,
+            no_load_loss_w=530.0,
+            load_loss_w=7500.0,
+            transformer_type='oil',
+            voltage_level='MV',
+        )
+        result = self.calc.execute(inputs)
+        data = result.results
+        assert data["compliant_tier_1"] is True
+        assert data["compliant_tier_2"] is False
+
+    def test_dry_tier_1_compliant(self):
+        """1000kVA dry-type transformer meeting Tier 1 but not Tier 2"""
+        inputs = TransformerEfficiencyInput(
+            rated_power_kva=1000.0,
+            no_load_loss_w=1700.0,
+            load_loss_w=14000.0,
+            transformer_type='dry',
+            voltage_level='MV',
+        )
+        result = self.calc.execute(inputs)
+        data = result.results
+        assert data["compliant_tier_1"] is True
+        assert data["compliant_tier_2"] is False
+
+    def test_small_oil_efficiency(self):
+        """100kVA oil-immersed — verify limits are interpolated and Tier 2 met"""
+        inputs = TransformerEfficiencyInput(
+            rated_power_kva=100.0,
+            no_load_loss_w=140.0,
+            load_loss_w=1700.0,
+            transformer_type='oil',
+            voltage_level='LV',
+        )
+        result = self.calc.execute(inputs)
+        data = result.results
+        assert data["compliant_tier_1"] is True
+        assert data["compliant_tier_2"] is True
+        assert data["tier_1_no_load_max_w"] == 180.0
+        assert data["tier_1_load_max_w"] == 2150.0
+
+    def test_extrapolated_beyond_max(self):
+        """Transformer above 2500kVA — uses last row limits"""
+        inputs = TransformerEfficiencyInput(
+            rated_power_kva=5000.0,
+            no_load_loss_w=2000.0,
+            load_loss_w=35000.0,
+            transformer_type='oil',
+            voltage_level='MV',
+        )
+        result = self.calc.execute(inputs)
+        data = result.results
+        assert "compliant_tier_1" in data
+        assert "compliant_tier_2" in data
+        assert data["tier_1_no_load_max_w"] == 1600.0
+
+    def test_efficiency_high_percent(self):
+        """A compliant transformer should have efficiency > 98%"""
+        inputs = TransformerEfficiencyInput(
+            rated_power_kva=1000.0,
+            no_load_loss_w=800.0,
+            load_loss_w=12000.0,
+            transformer_type='oil',
+            voltage_level='MV',
+        )
+        result = self.calc.execute(inputs)
+        data = result.results
+        assert data["efficiency_percent"] > 98.0
+
+    def test_loss_class_a_plus(self):
+        """Losses well below limits should give class A+"""
+        inputs = TransformerEfficiencyInput(
+            rated_power_kva=630.0,
+            no_load_loss_w=300.0,
+            load_loss_w=4000.0,
+            transformer_type='oil',
+            voltage_level='MV',
+        )
+        result = self.calc.execute(inputs)
+        data = result.results
+        assert data["loss_class"] == "A+"
+
+    def test_loss_class_c(self):
+        """Losses exceeding limits should give class C"""
+        inputs = TransformerEfficiencyInput(
+            rated_power_kva=630.0,
+            no_load_loss_w=900.0,
+            load_loss_w=12000.0,
+            transformer_type='oil',
+            voltage_level='MV',
+        )
+        result = self.calc.execute(inputs)
+        data = result.results
+        assert data["loss_class"] == "C"
