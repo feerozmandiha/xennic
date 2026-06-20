@@ -4,6 +4,8 @@ from .k_factor       import KFactorPQCalculator
 from .resonance      import ResonanceCalculator
 from .passive_filter import PassiveFilterCalculator
 from .active_filter  import ActiveFilterCalculator
+from .pfc            import PFCorrectionCalculator
+from .capacitor_bank import CapacitorBankCalculator
 
 __all__ = [
     "THDCalculator",
@@ -12,4 +14,6 @@ __all__ = [
     "ResonanceCalculator",
     "PassiveFilterCalculator",
     "ActiveFilterCalculator",
+    "PFCorrectionCalculator",
+    "CapacitorBankCalculator",
 ]

@@ -123,7 +123,10 @@ async function main(): Promise<void> {
     { slug: 'SUPPORT_ADMIN',  name: 'Support Admin',  description: 'Support operations — read-only' },
     { slug: 'OWNER',          name: 'Owner',          description: 'Workspace owner' },
     { slug: 'ADMIN',          name: 'Admin',          description: 'Workspace admin' },
-    { slug: 'ENGINEER',       name: 'Engineer',       description: 'Engineering features' },
+    { slug: 'ENGINEER',       name: 'Engineer',            description: 'Engineering features' },
+    { slug: 'EDITOR',          name: 'Editor',             description: 'Knowledge editor — full content management' },
+    { slug: 'KNOWLEDGE_WRITER',name: 'Knowledge Writer',   description: 'Knowledge base writer — create & submit for review' },
+    { slug: 'REVIEWER',        name: 'Senior Reviewer',    description: 'Senior engineer / professor — review & approve knowledge, access engineering' },
     { slug: 'CONSULTANT',     name: 'Consultant',     description: 'Consultation & analysis' },
     { slug: 'MEMBER',         name: 'Member',         description: 'Standard usage' },
     { slug: 'VIEWER',         name: 'Viewer',         description: 'Read-only access' },
@@ -164,6 +167,7 @@ async function main(): Promise<void> {
     { slug: 'workspace.update',          name: 'Update Workspace',          domain: 'workspace' },
     { slug: 'workspace.delete',          name: 'Delete Workspace',          domain: 'workspace' },
     { slug: 'workspace.members.manage',  name: 'Manage Members',            domain: 'workspace' },
+    { slug: 'workspace.settings.read',   name: 'Read Settings',             domain: 'workspace' },
     { slug: 'workspace.settings.manage', name: 'Manage Settings',           domain: 'workspace' },
     // Projects
     { slug: 'projects.read',   name: 'Read Projects',   domain: 'projects' },
@@ -200,6 +204,13 @@ async function main(): Promise<void> {
     { slug: 'files.update', name: 'Update Files', domain: 'storage' },
     { slug: 'files.delete', name: 'Delete Files', domain: 'storage' },
     { slug: 'files.share',  name: 'Share Files',  domain: 'storage' },
+    // Knowledge
+    { slug: 'knowledge.read',    name: 'Read Knowledge',      domain: 'knowledge' },
+    { slug: 'knowledge.create',  name: 'Create Knowledge',    domain: 'knowledge' },
+    { slug: 'knowledge.update',  name: 'Update Knowledge',    domain: 'knowledge' },
+    { slug: 'knowledge.delete',  name: 'Delete Knowledge',    domain: 'knowledge' },
+    { slug: 'knowledge.publish', name: 'Publish Knowledge',   domain: 'knowledge' },
+    { slug: 'knowledge.review',  name: 'Review Knowledge',    domain: 'knowledge' },
     // API
     { slug: 'api_keys.read',   name: 'Read API Keys',   domain: 'api' },
     { slug: 'api_keys.create', name: 'Create API Keys', domain: 'api' },
@@ -249,9 +260,10 @@ async function main(): Promise<void> {
       roleSlug: 'OWNER',
       perms: [
         'workspace.read', 'workspace.update', 'workspace.delete',
-        'workspace.members.manage', 'workspace.settings.manage',
+        'workspace.members.manage', 'workspace.settings.read', 'workspace.settings.manage',
         'projects.read', 'projects.create', 'projects.update', 'projects.delete', 'projects.export', 'projects.share',
         'engineering.read', 'engineering.calculate', 'engineering.export', 'engineering.reports.generate',
+        'knowledge.read', 'knowledge.create', 'knowledge.update', 'knowledge.delete', 'knowledge.publish',
         'ai.chat', 'ai.document_analysis', 'ai.drawing_analysis', 'ai.agent_access', 'ai.export',
         'files.read', 'files.upload', 'files.update', 'files.delete', 'files.share',
         'api_keys.read', 'api_keys.create', 'api_keys.delete', 'webhooks.manage',
@@ -262,9 +274,10 @@ async function main(): Promise<void> {
     {
       roleSlug: 'ADMIN',
       perms: [
-        'workspace.read', 'workspace.update', 'workspace.members.manage',
+        'workspace.read', 'workspace.update', 'workspace.members.manage', 'workspace.settings.read',
         'projects.read', 'projects.create', 'projects.update', 'projects.delete',
         'engineering.read', 'engineering.calculate', 'engineering.export', 'engineering.reports.generate',
+        'knowledge.read', 'knowledge.create', 'knowledge.update', 'knowledge.delete', 'knowledge.publish',
         'ai.chat', 'ai.document_analysis',
         'files.read', 'files.upload', 'files.update', 'files.delete',
         'api_keys.read', 'api_keys.create',
@@ -277,9 +290,41 @@ async function main(): Promise<void> {
       perms: [
         'projects.read', 'projects.create', 'projects.update',
         'engineering.read', 'engineering.calculate', 'engineering.export', 'engineering.reports.generate',
+        'knowledge.read', 'knowledge.create', 'knowledge.update',
         'ai.chat', 'ai.document_analysis', 'ai.drawing_analysis',
         'files.read', 'files.upload',
         'products.read', 'orders.read',
+      ],
+    },
+    {
+      roleSlug: 'EDITOR',
+      perms: [
+        'knowledge.read', 'knowledge.create', 'knowledge.update', 'knowledge.delete', 'knowledge.publish', 'knowledge.review',
+        'engineering.read',
+        'projects.read',
+        'ai.chat',
+        'files.read', 'files.upload',
+        'products.read',
+      ],
+    },
+    {
+      roleSlug: 'KNOWLEDGE_WRITER',
+      perms: [
+        'knowledge.read', 'knowledge.create', 'knowledge.update',
+        'engineering.read',
+        'ai.chat',
+        'files.read',
+      ],
+    },
+    {
+      roleSlug: 'REVIEWER',
+      perms: [
+        'knowledge.read', 'knowledge.review',
+        'engineering.read', 'engineering.calculate', 'engineering.export',
+        'projects.read',
+        'ai.chat', 'ai.document_analysis',
+        'files.read', 'files.upload',
+        'products.read',
       ],
     },
     {
@@ -287,6 +332,7 @@ async function main(): Promise<void> {
       perms: [
         'projects.read',
         'engineering.read',
+        'knowledge.read',
         'ai.chat', 'ai.document_analysis', 'ai.drawing_analysis', 'ai.export',
         'files.read', 'files.upload',
         'products.read', 'orders.read',
@@ -297,6 +343,7 @@ async function main(): Promise<void> {
       perms: [
         'projects.read',
         'engineering.read', 'engineering.calculate',
+        'knowledge.read',
         'ai.chat',
         'files.read', 'files.upload',
         'products.read', 'orders.read', 'orders.create',
@@ -304,7 +351,7 @@ async function main(): Promise<void> {
     },
     {
       roleSlug: 'VIEWER',
-      perms: ['projects.read', 'engineering.read', 'files.read', 'products.read'],
+      perms: ['projects.read', 'engineering.read', 'knowledge.read', 'files.read', 'products.read'],
     },
   ];
 
@@ -392,7 +439,107 @@ async function main(): Promise<void> {
   }
   console.log(`  ✅ ${standardsData.length} engineering standards seeded`);
 
-  // ── 7. AI AGENTS ──────────────────────────────────────────────────────────
+  // ── 7. TAXONOMY ──────────────────────────────────────────────────────────
+
+  console.log('\n🏷️  Seeding taxonomy...');
+
+  // Categories
+  const categoriesData = [
+    { slug: 'power-systems',           name: 'سیستم‌های قدرت',         name_en: 'Power Systems',           icon: '⚡', color: '#F59E0B', sort_order: 1 },
+    { slug: 'distribution',            name: 'توزیع',                  name_en: 'Distribution',            icon: '🔌', color: '#10B981', sort_order: 2 },
+    { slug: 'renewable-energy',        name: 'انرژی تجدیدپذیر',        name_en: 'Renewable Energy',        icon: '☀️', color: '#3B82F6', sort_order: 3 },
+    { slug: 'protection',              name: 'حفاظت',                  name_en: 'Protection',              icon: '🛡️', color: '#EF4444', sort_order: 4 },
+    { slug: 'power-quality',           name: 'کیفیت توان',             name_en: 'Power Quality',           icon: '📊', color: '#8B5CF6', sort_order: 5 },
+    { slug: 'earthing-lightning',      name: 'ارتینگ و صاعقه‌گیر',     name_en: 'Earthing & Lightning',    icon: '⛆', color: '#06B6D4', sort_order: 6 },
+    { slug: 'cable-busbar',            name: 'کابل و شین',             name_en: 'Cable & Busbar',          icon: '🔗', color: '#EC4899', sort_order: 7 },
+    { slug: 'control-automation',      name: 'کنترل و اتوماسیون',      name_en: 'Control & Automation',    icon: '🤖', color: '#14B8A6', sort_order: 8 },
+  ];
+  for (const c of categoriesData) {
+    await upsertRaw(
+      'categories', 'slug', c.slug,
+      ['slug', 'name', 'name_en', 'icon', 'color', 'sort_order', 'is_active', 'created_at'],
+      [c.slug, c.name, c.name_en, c.icon, c.color, c.sort_order, true, new Date()],
+    );
+  }
+
+  // Topics
+  const topicsData = [
+    { slug: 'short-circuit',       name: 'محاسبه اتصال کوتاه',        name_en: 'Short Circuit Calculation',    icon: '⚡' },
+    { slug: 'load-flow',           name: 'پخش بار',                   name_en: 'Load Flow Analysis',          icon: '📈' },
+    { slug: 'arc-flash',           name: 'آرک فلش',                   name_en: 'Arc Flash',                   icon: '🔥' },
+    { slug: 'harmonics',           name: 'هارمونیک‌ها',               name_en: 'Harmonics',                   icon: '〰️' },
+    { slug: 'voltage-drop',        name: 'افت ولتاژ',                 name_en: 'Voltage Drop',                icon: '📉' },
+    { slug: 'cable-sizing',        name: 'سایزینگ کابل',              name_en: 'Cable Sizing',                icon: '📏' },
+    { slug: 'transformer-design',  name: 'طراحی ترانسفورماتور',       name_en: 'Transformer Design',          icon: '🔄' },
+    { slug: 'grounding',           name: 'طراحی سیستم ارت',           name_en: 'Grounding Design',            icon: '⛆' },
+    { slug: 'protection-coordination', name: 'هماهنگی حفاظتی',        name_en: 'Protection Coordination',    icon: '🛡️' },
+    { slug: 'solar-pv',            name: 'سیستم خورشیدی',             name_en: 'Solar PV System',             icon: '☀️' },
+  ];
+  for (const t of topicsData) {
+    await upsertRaw(
+      'topics', 'slug', t.slug,
+      ['slug', 'name', 'name_en', 'icon', 'is_active', 'created_at'],
+      [t.slug, t.name, t.name_en, t.icon, true, new Date()],
+    );
+  }
+
+  // Tags
+  const tagsData = [
+    { slug: 'iec-standard',      name: 'استاندارد IEC',     name_en: 'IEC Standard' },
+    { slug: 'ieee-standard',     name: 'استاندارد IEEE',    name_en: 'IEEE Standard' },
+    { slug: 'national-code',     name: 'مبحث ملی',          name_en: 'National Code' },
+    { slug: 'tutorial',          name: 'آموزشی',            name_en: 'Tutorial' },
+    { slug: 'case-study',        name: 'مطالعه موردی',      name_en: 'Case Study' },
+    { slug: 'best-practice',     name: 'بهترین روش',        name_en: 'Best Practice' },
+    { slug: 'design-guide',      name: 'راهنمای طراحی',     name_en: 'Design Guide' },
+    { slug: 'calculation',       name: 'محاسبات',           name_en: 'Calculation' },
+    { slug: 'faq',               name: 'سوالات متداول',     name_en: 'FAQ' },
+    { slug: 'troubleshooting',   name: 'عیب‌یابی',          name_en: 'Troubleshooting' },
+  ];
+  for (const t of tagsData) {
+    await upsertRaw(
+      'tags', 'slug', t.slug,
+      ['slug', 'name', 'name_en', 'created_at'],
+      [t.slug, t.name, t.name_en, new Date()],
+    );
+  }
+
+  // Disciplines
+  const disciplinesData = [
+    { slug: 'electrical-power',    name: 'مهندسی برق قدرت',              name_en: 'Electrical Power Engineering' },
+    { slug: 'renewable-energy',    name: 'مهندسی انرژی تجدیدپذیر',       name_en: 'Renewable Energy Engineering' },
+    { slug: 'control-engineering', name: 'مهندسی کنترل',                 name_en: 'Control Engineering' },
+    { slug: 'telecom',             name: 'مهندسی مخابرات',               name_en: 'Telecommunications Engineering' },
+    { slug: 'electronics',         name: 'مهندسی الکترونیک',            name_en: 'Electronics Engineering' },
+  ];
+  for (const d of disciplinesData) {
+    await upsertRaw(
+      'disciplines', 'slug', d.slug,
+      ['slug', 'name', 'name_en', 'is_active', 'created_at'],
+      [d.slug, d.name, d.name_en, true, new Date()],
+    );
+  }
+
+  // Audiences
+  const audiencesData = [
+    { slug: 'beginner',       name: 'مبتدی',         name_en: 'Beginner',       description: '0-2 years experience' },
+    { slug: 'intermediate',   name: 'متوسط',         name_en: 'Intermediate',   description: '2-5 years experience' },
+    { slug: 'advanced',       name: 'پیشرفته',       name_en: 'Advanced',       description: '5-10 years experience' },
+    { slug: 'expert',         name: 'متخصص',         name_en: 'Expert',         description: '10+ years experience' },
+    { slug: 'student',        name: 'دانشجو',        name_en: 'Student',        description: 'University students' },
+    { slug: 'manager',        name: 'مدیر پروژه',    name_en: 'Project Manager', description: 'Project & program managers' },
+  ];
+  for (const a of audiencesData) {
+    await upsertRaw(
+      'audiences', 'slug', a.slug,
+      ['slug', 'name', 'name_en', 'description', 'is_active', 'created_at'],
+      [a.slug, a.name, a.name_en, a.description, true, new Date()],
+    );
+  }
+
+  console.log(`  ✅ ${categoriesData.length} categories, ${topicsData.length} topics, ${tagsData.length} tags, ${disciplinesData.length} disciplines, ${audiencesData.length} audiences seeded`);
+
+  // ── 8. AI AGENTS ──────────────────────────────────────────────────────────
 
   console.log('\n🤖 Seeding AI agents...');
 
@@ -416,6 +563,75 @@ async function main(): Promise<void> {
     );
   }
   console.log(`  ✅ ${agentsData.length} AI agents seeded`);
+
+  // ── 9. ADMIN USER & WORKSPACE ──────────────────────────────────────────────
+
+  console.log('\n👤 Seeding admin user and workspace...');
+
+  const adminEmail = process.env.ADMIN_EMAIL ?? 'admin@xennic.ir';
+  const adminPassword = process.env.ADMIN_PASSWORD ?? 'Admin@12345';
+
+  // Admin user
+  const userId = await upsertRaw(
+    'users',
+    'email',
+    adminEmail,
+    ['email', 'password', 'first_name', 'last_name', 'is_admin', 'is_active', 'created_at', 'updated_at'],
+    [adminEmail, '', 'Admin', 'Xennic', true, true, new Date(), new Date()],
+  );
+
+  // Hash the password separately via argon2
+  const { hash } = await import('argon2');
+  const hashedPassword = await hash(adminPassword, {
+    memoryCost: 65536,
+    timeCost: 3,
+    parallelism: 4,
+  });
+  await db.$executeRawUnsafe(
+    `UPDATE "users" SET "password" = $1 WHERE "id" = $2`,
+    hashedPassword, userId,
+  );
+
+  // Default workspace
+  const wsId = await upsertRaw(
+    'workspaces',
+    'code',
+    'XENNIC',
+    ['name', 'code', 'created_by', 'updated_by', 'created_at', 'updated_at'],
+    ['Xennic', 'XENNIC', userId, userId, new Date(), new Date()],
+  );
+
+  // Workspace membership
+  const existingMem = await db.$queryRawUnsafe<{ id: string }[]>(
+    `SELECT id FROM "workspace_members" WHERE "workspace_id" = $1 AND "user_id" = $2 LIMIT 1`,
+    wsId, userId,
+  );
+  if (existingMem.length === 0) {
+    const memId = newId();
+    await db.$executeRawUnsafe(
+      `INSERT INTO "workspace_members" ("id", "workspace_id", "user_id", "role") VALUES ($1, $2, $3, $4)`,
+      memId, wsId, userId, 'OWNER',
+    );
+  }
+
+  // Admin role assignment (SUPER_ADMIN)
+  const superAdminRoleId = roleIds['SUPER_ADMIN'];
+  if (superAdminRoleId) {
+    const existingRole = await db.$queryRawUnsafe<{ id: string }[]>(
+      `SELECT id FROM "user_roles" WHERE "user_id" = $1 AND "role_id" = $2 AND "workspace_id" = $3 LIMIT 1`,
+      userId, superAdminRoleId, wsId,
+    );
+    if (existingRole.length === 0) {
+      const urId = newId();
+      await db.$executeRawUnsafe(
+        `INSERT INTO "user_roles" ("id", "user_id", "role_id", "workspace_id") VALUES ($1, $2, $3, $4)`,
+        urId, userId, superAdminRoleId, wsId,
+      );
+    }
+  }
+
+  console.log(`  ✅ Admin user: ${adminEmail}`);
+  console.log(`  ✅ Workspace: Xennic (${wsId})`);
 
   console.log('\n✅ Xennic seed completed successfully!');
 }

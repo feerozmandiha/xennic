@@ -108,10 +108,14 @@ export class AuthController {
   @ApiOperation({ summary: 'Request password reset', description: 'Sends a password reset link to the user\'s email.' })
   @ApiBody({ type: ForgotPasswordDto })
   @ApiResponse({ status: 202, description: 'Password reset email sent if user exists' })
-  async forgotPassword(@Body() forgotPasswordDto: ForgotPasswordDto): Promise<{ success: boolean; message: string }> {
-    return { 
-      success: true, 
-      message: 'If an account with that email exists, a password reset link has been sent.' 
+  async forgotPassword(
+    @Body() forgotPasswordDto: ForgotPasswordDto,
+    @Ip() ip: string,
+  ): Promise<{ success: boolean; message: string }> {
+    await this.authService.forgotPassword(forgotPasswordDto.email, ip);
+    return {
+      success: true,
+      message: 'If an account with that email exists, a password reset link has been sent.'
     };
   }
 
@@ -121,10 +125,14 @@ export class AuthController {
   @ApiBody({ type: ResetPasswordDto })
   @ApiResponse({ status: 200, description: 'Password reset successful' })
   @ApiResponse({ status: 400, description: 'Invalid or expired token' })
-  async resetPassword(@Body() resetPasswordDto: ResetPasswordDto): Promise<{ success: boolean; message: string }> {
-    return { 
-      success: true, 
-      message: 'Password has been reset successfully.' 
+  async resetPassword(
+    @Body() resetPasswordDto: ResetPasswordDto,
+    @Ip() ip: string,
+  ): Promise<{ success: boolean; message: string }> {
+    await this.authService.resetPassword(resetPasswordDto.token, resetPasswordDto.newPassword, ip);
+    return {
+      success: true,
+      message: 'Password has been reset successfully.'
     };
   }
 
@@ -139,10 +147,12 @@ export class AuthController {
   async changePassword(
     @Req() req: any,
     @Body() changePasswordDto: ChangePasswordDto,
+    @Ip() ip: string,
   ): Promise<{ success: boolean; message: string }> {
-    return { 
-      success: true, 
-      message: 'Password changed successfully.' 
+    await this.authService.changePassword(req.user.userId, changePasswordDto.currentPassword, changePasswordDto.newPassword, ip);
+    return {
+      success: true,
+      message: 'Password changed successfully.'
     };
   }
 }

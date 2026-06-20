@@ -10,6 +10,31 @@ from pydantic import BaseModel, Field, model_validator
 from src.core.base_calculator import CalculationInput
 
 
+class TransformerEfficiencyInput(CalculationInput):
+    """
+    Input schema for Transformer Energy Efficiency (EU 548/2014)
+
+    Validates transformer losses against Tier 1 (2015) and Tier 2 (2021) limits.
+    """
+    rated_power_kva: float = Field(..., gt=0, le=50000, description="Transformer rated power (kVA)", example=630.0)
+    no_load_loss_w: float = Field(..., ge=0, description="Measured/rated no-load loss (W)", example=530.0)
+    load_loss_w: float = Field(..., ge=0, description="Measured/rated load loss at rated power (W)", example=6800.0)
+    transformer_type: Literal['oil', 'dry'] = Field(default='oil', description="Oil-immersed (oil) or Dry-type (dry)")
+    voltage_level: Literal['LV', 'MV'] = Field(default='MV', description="Low voltage (LV) or Medium voltage (MV)")
+
+
+class TransformerEfficiencyOutput(BaseModel):
+    """Output schema for Transformer Energy Efficiency"""
+    compliant_tier_1: bool = Field(..., description="Compliant with EU 548/2014 Tier 1 (2015)")
+    compliant_tier_2: bool = Field(..., description="Compliant with EU 548/2014 Tier 2 (2021)")
+    tier_1_no_load_max_w: float = Field(..., description="Max no-load loss for Tier 1 (W)")
+    tier_1_load_max_w: float = Field(..., description="Max load loss for Tier 1 (W)")
+    tier_2_no_load_max_w: float = Field(..., description="Max no-load loss for Tier 2 (W)")
+    tier_2_load_max_w: float = Field(..., description="Max load loss for Tier 2 (W)")
+    efficiency_percent: float = Field(..., description="Transformer efficiency at 100% load (%)")
+    loss_class: str = Field(..., description="Loss class (A+, A, B, C) per EU 548/2014")
+
+
 class TransformerSizingInput(CalculationInput):
     """
     Input schema for Transformer Sizing Calculation

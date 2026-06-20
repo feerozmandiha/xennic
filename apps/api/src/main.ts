@@ -28,24 +28,52 @@ async function bootstrap() {
     },
   );
 
-  // Global Validation Pipe
+  // ── Global Validation Pipe ─────────────────────────────────────────────────
   app.useGlobalPipes(
     new ValidationPipe({
       transform: true,
       whitelist: true,
       forbidNonWhitelisted: true,
       forbidUnknownValues: true,
-    })
+    }),
   );
 
-  // Global Exception Filter
+  // ── Global Exception Filter ────────────────────────────────────────────────
   app.useGlobalFilters(new AllExceptionsFilter());
 
-  // Global prefix
+  // ── Global prefix ──────────────────────────────────────────────────────────
   app.setGlobalPrefix('api/v1');
 
-  // Enable CORS
-  app.enableCors();
+  // ═════════════════════════════════════════════════════════════════════════════
+  // SEC-001A: CORS HARDENING
+  // ═════════════════════════════════════════════════════════════════════════════
+  //
+  // ❌ قبل (ناامن):
+  //   app.enableCors();
+  //
+  // ✅ بعد (امن):
+  //   فقط origins مجاز از طریق متغیر محیطی CORS_ORIGINS
+  //
+  // ═════════════════════════════════════════════════════════════════════════════
+
+  const corsOrigins = process.env.CORS_ORIGINS
+    ? process.env.CORS_ORIGINS.split(',').map(o => o.trim()).filter(Boolean)
+    : ['http://localhost:3001', 'http://localhost:3000'];
+
+  app.enableCors({
+    origin: corsOrigins,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: [
+      'Content-Type',
+      'Authorization',
+      'Accept',
+      'Origin',
+      'X-Request-ID',
+      'X-Workspace-ID',
+    ],
+    credentials: true,
+    maxAge: 86400, // 24 hours
+  });
 
   // ── Swagger Configuration ─────────────────────────────────────────────────
   const config = new DocumentBuilder()
@@ -64,7 +92,7 @@ async function bootstrap() {
       `- Error: \`{ "success": false, "error": { "code": "...", "message": "..." } }\`\n\n` +
       `### 🧪 Engineering Modules\n` +
       `- Basic, Cable, Transformer, Protection, Power Quality\n` +
-      `- Plan-based access control (Free/Pro/Enterprise)`
+      `- Plan-based access control (Free/Pro/Enterprise)`,
     )
     .setVersion('1.0.0')
     .setContact('Xennic Team', 'https://xennic.com', 'support@xennic.com')
@@ -105,7 +133,9 @@ async function bootstrap() {
     customSiteTitle: 'Xennic API Documentation',
   });
 
-  console.log(`📚 Swagger UI: http://${process.env.HOST ?? '0.0.0.0'}:${process.env.PORT ?? 3000}/api/docs`);
+  console.log(
+    `📚 Swagger UI: http://${process.env.HOST ?? '0.0.0.0'}:${process.env.PORT ?? 3000}/api/docs`,
+  );
 
   const port = Number(process.env.PORT ?? 3000);
   const host = process.env.HOST ?? '0.0.0.0';
@@ -113,6 +143,7 @@ async function bootstrap() {
   await app.listen(port, host);
 
   console.log(`🚀 API running on: http://${host}:${port}/api/v1`);
+  console.log(`🔒 CORS Origins: ${corsOrigins.join(', ')}`);
 }
 
 bootstrap();

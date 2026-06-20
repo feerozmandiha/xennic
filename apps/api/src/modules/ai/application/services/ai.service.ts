@@ -151,6 +151,83 @@ export class AiService {
     };
   }
 
+  // ── Validate Calculation ────────────────────────────────────────────────
+
+  async validateCalculation(
+    type: string,
+    inputs: Record<string, any>,
+    result?: Record<string, any>,
+  ): Promise<{
+    verified: boolean;
+    confidence: 'high' | 'medium' | 'low';
+    summary: string;
+    warnings: string[];
+    recommendations: string[];
+    standards: string[];
+    details: string;
+  }> {
+    const inputStr = JSON.stringify(inputs, null, 2);
+    const resultStr = result ? JSON.stringify(result, null, 2) : 'N/A (result not provided)';
+
+    const prompt = `You are an expert electrical engineering validator. Review the following calculation:
+
+## Calculation Type
+${type}
+
+## Input Parameters
+\`\`\`json
+${inputStr}
+\`\`\`
+
+## Calculated Result
+\`\`\`json
+${resultStr}
+\`\`\`
+
+## Task
+Validate this engineering calculation. Respond with a JSON object (no markdown, pure JSON):
+{
+  "verified": boolean,        // true if the result seems correct
+  "confidence": "high"|"medium"|"low",
+  "summary": "string",        // brief 1-2 sentence assessment in Persian
+  "warnings": ["string"],     // potential issues or assumptions
+  "recommendations": ["string"], // suggestions in Persian
+  "standards": ["string"],    // applicable standards (e.g. "IEC 60364-5-52")
+  "details": "string"         // detailed technical analysis in Persian
+}`;
+
+    const messages: ChatMessage[] = [{ role: 'user', content: prompt }];
+    const llmResult = await this.llm.chat(messages);
+
+    return this._parseValidationResponse(llmResult.content);
+  }
+
+  private _parseValidationResponse(content: string) {
+    try {
+      const cleaned = content.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+      const parsed = JSON.parse(cleaned);
+      return {
+        verified:        !!parsed.verified,
+        confidence:      (['high', 'medium', 'low'].includes(parsed.confidence) ? parsed.confidence : 'low') as 'high' | 'medium' | 'low',
+        summary:         parsed.summary ?? '',
+        warnings:        Array.isArray(parsed.warnings) ? parsed.warnings : [],
+        recommendations: Array.isArray(parsed.recommendations) ? parsed.recommendations : [],
+        standards:       Array.isArray(parsed.standards) ? parsed.standards : [],
+        details:         parsed.details ?? content,
+      };
+    } catch {
+      return {
+        verified:        false,
+        confidence:      'low' as const,
+        summary:         'AI validation completed',
+        warnings:        [],
+        recommendations: [],
+        standards:       [],
+        details:         content,
+      };
+    }
+  }
+
   // ── Usage ─────────────────────────────────────────────────────────────────
 
   async getUsageStats(workspaceId: string) {

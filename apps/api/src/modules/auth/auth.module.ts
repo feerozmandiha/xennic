@@ -8,10 +8,12 @@ import { SessionRepository } from './infrastructure/repositories/session.reposit
 import { RefreshTokenRepository } from './infrastructure/repositories/refresh-token.repository.js';
 import { UserModule } from '../user/user.module.js';
 import { Argon2Service } from '../user/infrastructure/hashing/argon2.service.js';
+import { EmailModule } from '../email/email.module.js';
 
 @Module({
   imports: [
     UserModule,
+    EmailModule,
     JwtModule.register({
       signOptions: {
         algorithm: 'RS256',

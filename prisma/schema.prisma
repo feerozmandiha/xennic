@@ -52,7 +52,15 @@ model users {
   ai_usage         ai_usage[]
   orders           orders[]
   payment_methods  payment_methods[]
-  comments         article_comments[]
+
+  // Knowledge Management System — relation names match knowledge model side
+  knowledge_author               knowledge[]                @relation("KnowledgeAuthor")
+  knowledge_reviewer             knowledge[]                @relation("KnowledgeReviewer")
+  knowledge_comments             knowledge_comments[]
+  knowledge_versions_creator     knowledge_versions[]       @relation("KnowledgeVersionCreator")
+  knowledge_workflows_assignee   knowledge_workflows[]      @relation("KnowledgeAssign")
+  knowledge_workflows_reviewer   knowledge_workflows[]      @relation("KnowledgeWorkflowReview")
+  knowledge_workflow_history     knowledge_workflow_history[]
 
   @@index([deleted_at])
   @@index([created_at])
@@ -183,6 +191,7 @@ model workspaces {
   orders       orders[]
   payment_methods      payment_methods[]
   subscription_payments subscription_payments[]
+  knowledge            knowledge[]
 
   @@index([code])
   @@index([created_by])
@@ -320,6 +329,7 @@ model payments {
   workspace_id     String
   invoice_id       String
   gateway          String
+  authority        String?
   reference_number String?
   amount           Decimal   @db.Decimal(12, 2)
   status           String    @default("pending")
@@ -514,6 +524,8 @@ model engineering_standards {
   published_at DateTime?
   status       String    @default("active")
 
+  knowledge    knowledge_standards[]
+
   @@index([code])
   @@index([organization])
 }
@@ -591,71 +603,338 @@ model ai_usage {
 // KNOWLEDGE DOMAIN
 // ============================================================
 
-model articles {
-  id           String    @id @default(uuid())
-  slug         String    @unique
-  status       String    @default("draft")
-  published_at DateTime?
-  created_at   DateTime  @default(now())
-  updated_at   DateTime  @updatedAt
-  deleted_at   DateTime?
-
-  translations article_translations[]
-  comments     article_comments[]
-
-  @@index([slug])
-  @@index([status])
-}
-
-model article_translations {
-  id         String   @id @default(uuid())
-  article_id String
-  locale     String
-  title      String
-  excerpt    String?
-  content    String
-
-  article    articles @relation(fields: [article_id], references: [id], onDelete: Cascade)
-
-  @@unique([article_id, locale])
-  @@index([article_id])
-}
-
-model article_comments {
-  id         String    @id @default(uuid())
-  article_id String
-  user_id    String
-  parent_id  String?
-  content    String
-  likes      Int       @default(0)
-  liked_by   Json?     @default("[]")
-  is_edited  Boolean   @default(false)
-  created_at DateTime  @default(now())
-  updated_at DateTime  @updatedAt
-  deleted_at DateTime?
-
-  article articles          @relation(fields: [article_id], references: [id], onDelete: Cascade)
-  user    users             @relation(fields: [user_id], references: [id])
-  parent  article_comments?  @relation("CommentReplies", fields: [parent_id], references: [id])
-  replies article_comments[] @relation("CommentReplies")
-
-  @@index([article_id])
-  @@index([user_id])
-  @@index([parent_id])
-  @@index([created_at])
-}
+// ──────────────────────────────────────────────────────────────
+// TAXONOMY — Multi-dimensional classification
+// ──────────────────────────────────────────────────────────────
 
 model categories {
-  id        String      @id @default(uuid())
-  parent_id String?
-  slug      String      @unique
-  status    String      @default("active")
+  id         String      @id @default(uuid())
+  parent_id  String?
+  slug       String      @unique
+  name       String
+  name_en    String?
+  icon       String?
+  color      String?
+  sort_order Int         @default(0)
+  is_active  Boolean     @default(true)
+  created_at DateTime    @default(now())
+  updated_at DateTime    @updatedAt
 
   parent    categories?  @relation("CategoryTree", fields: [parent_id], references: [id])
   children  categories[] @relation("CategoryTree")
 
   @@index([slug])
   @@index([parent_id])
+  @@index([is_active])
+}
+
+model topics {
+  id         String   @id @default(uuid())
+  slug       String   @unique
+  name       String
+  name_en    String?
+  icon       String?
+  is_active  Boolean  @default(true)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@index([slug])
+}
+
+model tags {
+  id         String   @id @default(uuid())
+  slug       String   @unique
+  name       String
+  name_en    String?
+  created_at DateTime @default(now())
+
+  @@index([slug])
+}
+
+model disciplines {
+  id         String   @id @default(uuid())
+  slug       String   @unique
+  name       String
+  name_en    String?
+  is_active  Boolean  @default(true)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@index([slug])
+}
+
+model audiences {
+  id          String   @id @default(uuid())
+  slug        String   @unique
+  name        String
+  name_en     String?
+  description String?
+  is_active   Boolean  @default(true)
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  @@index([slug])
+}
+
+// ═══════════════════════════════════════════════════════════════
+// KNOWLEDGE MANAGEMENT SYSTEM
+// ═══════════════════════════════════════════════════════════════
+
+model knowledge {
+  id            String    @id @default(uuid())
+  workspace_id  String
+  slug          String    @unique
+  status        String    @default("draft")
+  visibility    String    @default("public")
+  language      String    @default("fa")
+  version       Int       @default(1)
+  is_active     Boolean   @default(true)
+
+  // Block-based content (JSON)
+  content       Json      @default("{}")
+
+  // Full-text search helper (auto-populated)
+  search_text   String?
+
+  reading_time  Int?
+  difficulty    String?
+  author_id     String?
+  reviewer_id   String?
+
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+  published_at  DateTime?
+  reviewed_at   DateTime?
+  archived_at   DateTime?
+
+  author        users?                    @relation("KnowledgeAuthor", fields: [author_id], references: [id])
+  reviewer      users?                    @relation("KnowledgeReviewer", fields: [reviewer_id], references: [id])
+
+  translations  knowledge_translations[]
+  taxonomy      knowledge_taxonomy[]
+  media         knowledge_media[]
+  formulas      knowledge_formulas[]
+  examples      knowledge_examples[]
+  standards     knowledge_standards[]
+  versions      knowledge_versions[]
+  comments      knowledge_comments[]
+  workflow      knowledge_workflows?
+  analytics     knowledge_analytics?
+
+  workspace     workspaces @relation(fields: [workspace_id], references: [id])
+
+  @@index([slug])
+  @@index([workspace_id])
+  @@index([status])
+  @@index([visibility])
+  @@index([language])
+  @@index([difficulty])
+  @@index([author_id])
+}
+
+model knowledge_translations {
+  id              String   @id @default(uuid())
+  knowledge_id    String
+  language        String   @default("fa")
+  title           String
+  summary         String?
+  seo_title       String?
+  seo_description String?
+
+  // Translated block-based content
+  content         Json     @default("{}")
+
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+
+  knowledge       knowledge @relation(fields: [knowledge_id], references: [id], onDelete: Cascade)
+
+  @@unique([knowledge_id, language])
+  @@index([knowledge_id])
+  @@index([language])
+}
+
+model knowledge_taxonomy {
+  id            String   @id @default(uuid())
+  knowledge_id  String
+  taxonomy_type String   // category | topic | tag | discipline | audience
+  taxonomy_id   String
+
+  knowledge     knowledge @relation(fields: [knowledge_id], references: [id], onDelete: Cascade)
+
+  @@unique([knowledge_id, taxonomy_type, taxonomy_id])
+  @@index([knowledge_id])
+  @@index([taxonomy_type])
+  @@index([taxonomy_id])
+}
+
+model knowledge_media {
+  id          String   @id @default(uuid())
+  knowledge_id String
+  type        String   // image | pdf | video | cad | 3d | gif | svg | audio | archive
+  url         String
+  caption_fa  String?
+  caption_en  String?
+  alt_fa      String?
+  alt_en      String?
+  description String?
+  license     String?
+  source      String?
+  file_size   Int?
+  mime_type   String?
+  sort_order  Int      @default(0)
+  created_at  DateTime @default(now())
+
+  knowledge   knowledge @relation(fields: [knowledge_id], references: [id], onDelete: Cascade)
+
+  @@index([knowledge_id])
+  @@index([type])
+}
+
+model knowledge_formulas {
+  id              String   @id @default(uuid())
+  knowledge_id    String
+  latex           String
+  mathml          String?
+  description_fa  String?
+  description_en  String?
+  variables       Json     @default("[]")
+  calculator_type String?  // e.g. "BASIC-001", "CABLE-003"
+  sort_order      Int      @default(0)
+  created_at      DateTime @default(now())
+
+  knowledge       knowledge @relation(fields: [knowledge_id], references: [id], onDelete: Cascade)
+
+  @@index([knowledge_id])
+  @@index([calculator_type])
+}
+
+model knowledge_examples {
+  id              String   @id @default(uuid())
+  knowledge_id    String
+  title_fa        String
+  title_en        String?
+  difficulty      String   @default("basic")
+  steps           Json     @default("[]")
+  answer          Json?
+  calculator_type String?
+  sort_order      Int      @default(0)
+  created_at      DateTime @default(now())
+
+  knowledge       knowledge @relation(fields: [knowledge_id], references: [id], onDelete: Cascade)
+
+  @@index([knowledge_id])
+}
+
+model knowledge_standards {
+  knowledge_id String
+  standard_id  String
+
+  knowledge    knowledge             @relation(fields: [knowledge_id], references: [id], onDelete: Cascade)
+  standard     engineering_standards @relation(fields: [standard_id], references: [id], onDelete: Cascade)
+
+  @@id([knowledge_id, standard_id])
+  @@index([knowledge_id])
+  @@index([standard_id])
+}
+
+model knowledge_versions {
+  id           String   @id @default(uuid())
+  knowledge_id String
+  version      Int
+  snapshot     Json     // full content copy
+  comment      String?
+  created_by   String?
+  created_at   DateTime @default(now())
+
+  knowledge    knowledge @relation(fields: [knowledge_id], references: [id], onDelete: Cascade)
+  creator      users?    @relation("KnowledgeVersionCreator", fields: [created_by], references: [id])
+
+  @@unique([knowledge_id, version])
+  @@index([knowledge_id])
+  @@index([created_at])
+}
+
+model knowledge_comments {
+  id           String    @id @default(uuid())
+  knowledge_id String
+  user_id      String
+  parent_id    String?
+  content      String
+  likes        Int       @default(0)
+  liked_by     Json      @default("[]")
+  is_edited    Boolean   @default(false)
+  created_at   DateTime  @default(now())
+  updated_at   DateTime  @updatedAt
+  deleted_at   DateTime?
+
+  knowledge    knowledge                @relation(fields: [knowledge_id], references: [id], onDelete: Cascade)
+  user         users                    @relation(fields: [user_id], references: [id])
+  parent       knowledge_comments?      @relation("KnowledgeCommentReplies", fields: [parent_id], references: [id])
+  replies      knowledge_comments[]     @relation("KnowledgeCommentReplies")
+
+  @@index([knowledge_id])
+  @@index([user_id])
+  @@index([parent_id])
+  @@index([created_at])
+}
+
+model knowledge_workflows {
+  id             String   @id @default(uuid())
+  knowledge_id   String   @unique
+  current_status String   @default("draft")
+  assigned_to    String?
+  reviewer_id    String?
+  review_comment String?
+  reviewed_at    DateTime?
+  submitted_at   DateTime?
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
+
+  knowledge      knowledge                   @relation(fields: [knowledge_id], references: [id], onDelete: Cascade)
+  assignee       users?                      @relation("KnowledgeAssign", fields: [assigned_to], references: [id])
+  reviewer       users?                      @relation("KnowledgeWorkflowReview", fields: [reviewer_id], references: [id])
+  history        knowledge_workflow_history[]
+
+  @@index([knowledge_id])
+  @@index([current_status])
+  @@index([assigned_to])
+  @@index([reviewer_id])
+}
+
+model knowledge_workflow_history {
+  id          String   @id @default(uuid())
+  workflow_id String
+  status      String
+  comment     String?
+  user_id     String
+  created_at  DateTime @default(now())
+
+  workflow    knowledge_workflows @relation(fields: [workflow_id], references: [id], onDelete: Cascade)
+  user        users               @relation(fields: [user_id], references: [id])
+
+  @@index([workflow_id])
+  @@index([user_id])
+  @@index([created_at])
+}
+
+model knowledge_analytics {
+  id              String   @id @default(uuid())
+  knowledge_id    String   @unique
+  views           Int      @default(0)
+  unique_views    Int      @default(0)
+  likes           Int      @default(0)
+  bookmarks       Int      @default(0)
+  shares          Int      @default(0)
+  downloads       Int      @default(0)
+  avg_reading_time Int?
+  last_viewed_at  DateTime?
+  daily_stats     Json     @default("{}")
+  updated_at      DateTime @updatedAt
+
+  knowledge       knowledge @relation(fields: [knowledge_id], references: [id], onDelete: Cascade)
+
+  @@index([knowledge_id])
 }
 
 // ============================================================
@@ -676,16 +955,18 @@ model vendors {
 }
 
 model products {
-  id         String   @id @default(uuid())
-  vendor_id  String
-  type       String
-  sku        String   @unique
-  price      Decimal  @db.Decimal(12, 2)
-  currency   String   @default("USD")
-  status     String   @default("active")
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
-  deleted_at DateTime?
+  id             String   @id @default(uuid())
+  vendor_id      String
+  type           String
+  category       String?                    // engineering category: cable, transformer, mccb, fuse, switchgear, lighting, ppe, etc.
+  specifications Json?                      // key-value pairs: { "cable_size_mm2": "35", "current_rating_a": "150", "voltage_rating_v": "1000" }
+  sku            String   @unique
+  price          Decimal  @db.Decimal(12, 2)
+  currency       String   @default("USD")
+  status         String   @default("active")
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
+  deleted_at     DateTime?
 
   vendor       vendors               @relation(fields: [vendor_id], references: [id])
   translations product_translations[]
@@ -694,6 +975,7 @@ model products {
   @@index([vendor_id])
   @@index([status])
   @@index([sku])
+  @@index([category])
 }
 
 model product_translations {

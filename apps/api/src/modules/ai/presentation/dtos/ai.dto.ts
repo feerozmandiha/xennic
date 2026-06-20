@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsOptional, MaxLength, IsIn } from 'class-validator';
+import { IsString, IsNotEmpty, IsOptional, MaxLength, IsObject } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import type { AgentEntity, ConversationEntity, MessageEntity } from '../../domain/entities/conversation.entity.js';
 
@@ -50,6 +50,57 @@ export class MessageResponseDto {
       content:   e.content,
       createdAt: e.createdAt.toISOString(),
     };
+  }
+}
+
+// ── Validation DTOs ──────────────────────────────────────────────────────────
+
+export class ValidateCalculationDto {
+  @ApiProperty({ example: 'CABLE-001' })
+  @IsString() @IsNotEmpty()
+  type!: string;
+
+  @ApiProperty({ example: { load_current: 100, conductor_material: 'copper', cable_length_m: 50 } })
+  @IsNotEmpty()
+  inputs!: Record<string, any>;
+
+  @ApiPropertyOptional({ example: { recommended_size: '35mm²', voltage_drop_percent: 1.2 } })
+  @IsOptional() @IsObject()
+  result?: Record<string, any>;
+}
+
+export class ValidationResponseDto {
+  verified!:        boolean;
+  confidence!:      'high' | 'medium' | 'low';
+  summary!:         string;
+  warnings!:        string[];
+  recommendations!: string[];
+  standards!:       string[];
+  details!:         string;
+
+  static fromAiResponse(aiContent: string, parsed?: Partial<ValidationResponseDto>): ValidationResponseDto {
+    try {
+      const json = JSON.parse(aiContent);
+      return {
+        verified:        json.verified ?? false,
+        confidence:      json.confidence ?? 'low',
+        summary:         json.summary ?? '',
+        warnings:        json.warnings ?? [],
+        recommendations: json.recommendations ?? [],
+        standards:       json.standards ?? [],
+        details:         json.details ?? aiContent,
+      };
+    } catch {
+      return {
+        verified:        parsed?.verified ?? false,
+        confidence:      parsed?.confidence ?? 'low',
+        summary:         parsed?.summary ?? 'AI validation completed',
+        warnings:        parsed?.warnings ?? [],
+        recommendations: parsed?.recommendations ?? [],
+        standards:       parsed?.standards ?? [],
+        details:         aiContent,
+      };
+    }
   }
 }
 

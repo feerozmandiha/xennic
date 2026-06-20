@@ -7,6 +7,7 @@ import { RefreshTokenEntity } from '../../domain/entities/refresh-token.entity.j
 import { SessionEntity } from '../../domain/entities/session.entity.js';
 import type { IRefreshTokenRepository } from '../../domain/interfaces/refresh-token.repository.interface.js';
 import type { ISessionRepository } from '../../domain/interfaces/session.repository.interface.js';
+import { EmailService } from '../../../email/application/services/email.service.js';
 import { prisma } from '@xennic/database';
 import * as crypto from 'crypto';
 
@@ -43,6 +44,7 @@ export class AuthService {
     private readonly userService: UserService,
     private readonly jwtService: JwtService,
     private readonly hashingService: Argon2Service,
+    private readonly emailService: EmailService,
     @Inject('IRefreshTokenRepository')
     private readonly refreshTokenRepository: IRefreshTokenRepository,
     @Inject('ISessionRepository')
@@ -60,8 +62,10 @@ export class AuthService {
     const session = SessionEntity.create(user.id, ipAddress, userAgent);
     await this.sessionRepository.save(session);
 
-    // لاگ ساده در console برای MVP
-    console.log(`[AUDIT] User registered: ${user.email} from ${ipAddress}`);
+    // ارسال ایمیل خوش‌آمدگویی (non-blocking)
+    this.emailService.sendWelcome(user.email, `${user.firstName} ${user.lastName}`).catch(err =>
+      console.error(`[EMAIL] Welcome email failed: ${err.message}`),
+    );
 
     return this.formatAuthResponse(accessToken, refreshToken, user);
   }
@@ -186,7 +190,10 @@ export class AuthService {
       VALUES (${user.id}, ${tokenHash}, ${expiresAt})
     `;
 
-    console.log(`[PASSWORD RESET] Token for ${email}: ${resetToken}`);
+    // ارسال ایمیل بازیابی رمز (non-blocking)
+    this.emailService.sendPasswordReset(email, `${user.firstName} ${user.lastName}`, resetToken).catch(err =>
+      console.error(`[EMAIL] Password reset email failed: ${err.message}`),
+    );
     console.log(`[AUDIT] Password reset requested for: ${email} from ${ipAddress}`);
   }
 

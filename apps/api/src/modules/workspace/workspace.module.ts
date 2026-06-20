@@ -6,32 +6,38 @@ import {
   WorkspaceMemberController,
   InvitationAcceptController,
 } from './presentation/controllers/workspace-member.controller.js';
+import { WorkspaceSettingsController } from './presentation/controllers/workspace-settings.controller.js';
+import { DashboardController } from './presentation/controllers/dashboard.controller.js';
 
 // Application
 import { WorkspaceService } from './application/services/workspace.service.js';
+import { WorkspaceSettingsService } from './application/services/workspace-settings.service.js';
+import { DashboardService } from './application/services/dashboard.service.js';
 
 // Infrastructure
 import { WorkspaceRepository } from './infrastructure/repositories/workspace.repository.js';
 import { WorkspaceMemberRepository } from './infrastructure/repositories/workspace-member.repository.js';
+import { WorkspaceSettingsRepository } from './infrastructure/repositories/workspace-settings.repository.js';
 
 @Module({
   controllers: [
     WorkspaceController,
-    WorkspaceMemberController,   // ✅ members + invitations
-    InvitationAcceptController,  // ✅ accept invitation (public token)
+    WorkspaceMemberController,
+    InvitationAcceptController,
+    WorkspaceSettingsController,
+    DashboardController,
   ],
   providers: [
     WorkspaceService,
-    {
-      provide:  'IWorkspaceRepository',
-      useClass: WorkspaceRepository,
-    },
+    WorkspaceSettingsService,
+    DashboardService,
+    { provide: 'IWorkspaceRepository',           useClass: WorkspaceRepository },
+    { provide: 'IWorkspaceMemberRepository',       useClass: WorkspaceMemberRepository },
+    { provide: 'IWorkspaceSettingsRepository',      useClass: WorkspaceSettingsRepository },
     WorkspaceRepository,
-    {
-      provide:  'IWorkspaceMemberRepository',    // ✅ جدید
-      useClass: WorkspaceMemberRepository,
-    },
+    WorkspaceMemberRepository,
+    WorkspaceSettingsRepository,
   ],
-  exports: [WorkspaceService],
+  exports: [WorkspaceService, WorkspaceSettingsService, DashboardService],
 })
 export class WorkspaceModule {}

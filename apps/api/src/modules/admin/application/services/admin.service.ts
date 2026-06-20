@@ -1,8 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { prisma }     from '@xennic/database';
-import { randomUUID } from 'node:crypto';
+import { prisma } from '@xennic/database';
 
-// helper: BigInt → Number برای JSON serialization
 function toNum(v: any): number {
   if (v === null || v === undefined) return 0;
   if (typeof v === 'bigint') return Number(v);
@@ -13,101 +11,75 @@ function toNum(v: any): number {
 export class AdminService {
   private readonly logger = new Logger(AdminService.name);
 
-  // ════════════════════════════════════════════════════════════
+  // ═══════════════════════════════════════
   // CHECK ADMIN
-  // ════════════════════════════════════════════════════════════
+  // ═══════════════════════════════════════
 
   async checkIsAdmin(userId: string): Promise<{ isAdmin: boolean }> {
-    // روش ۱: is_admin column
     try {
-      const rows = await prisma.$queryRaw<{ is_admin: boolean }[]>`
-        SELECT is_admin FROM "users"
-        WHERE id = ${userId} AND is_admin = true AND deleted_at IS NULL
-        LIMIT 1
-      `;
-      if (rows.length > 0) return { isAdmin: true };
+      const user = await prisma.users.findUnique({
+        where: { id: userId },
+        select: { is_admin: true },
+      });
+      if (user?.is_admin) return { isAdmin: true };
     } catch { /* column may not exist */ }
 
-    // روش ۲: user_roles + roles JOIN
     try {
-      const rows = await prisma.$queryRaw<{ id: string }[]>`
-        SELECT ur.id FROM "user_roles" ur
-        JOIN "roles" r ON r.id = ur.role_id
-        WHERE ur.user_id = ${userId}
-          AND r.name IN ('super_admin', 'admin')
-        LIMIT 1
-      `;
-      if (rows.length > 0) return { isAdmin: true };
-    } catch { /* ignore */ }
+      const roles = await prisma.user_roles.findMany({
+        where: {
+          user_id: userId,
+          role: { name: { in: ['super_admin', 'admin'] } },
+        },
+        take: 1,
+      });
+      if (roles.length > 0) return { isAdmin: true };
+    } catch { /* table may not exist */ }
 
     return { isAdmin: false };
   }
 
-  // ════════════════════════════════════════════════════════════
-  // DASHBOARD — همه با Prisma count() که number برمی‌گرداند
-  // ════════════════════════════════════════════════════════════
+  // ═══════════════════════════════════════
+  // DASHBOARD
+  // ═══════════════════════════════════════
 
   async getDashboardStats() {
     try {
       const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
 
-      // users — همیشه موجود
       const [totalUsers, newUsers, activeUsers] = await Promise.all([
         prisma.users.count({ where: { deleted_at: null } }),
         prisma.users.count({ where: { deleted_at: null, created_at: { gte: thirtyDaysAgo } } }),
         prisma.users.count({ where: { deleted_at: null, is_active: true } }),
       ]);
 
-      // is_admin count — با try/catch چون ستون ممکن است وجود نداشته باشد
       let adminUsers = 0;
       try {
-        const r = await prisma.$queryRaw<{ c: bigint }[]>`
-          SELECT COUNT(*) AS c FROM "users" WHERE is_admin = true AND deleted_at IS NULL
-        `;
-        adminUsers = toNum(r[0]?.c);
-      } catch { /* ignore */ }
+        adminUsers = await prisma.users.count({
+          where: { deleted_at: null, is_admin: true },
+        });
+      } catch { /* column may not exist */ }
 
-      // workspaces
       let totalWorkspaces = 0, newWorkspaces = 0;
       try {
         totalWorkspaces = await prisma.workspaces.count();
-        newWorkspaces   = await prisma.workspaces.count({ where: { created_at: { gte: thirtyDaysAgo } } });
+        newWorkspaces = await prisma.workspaces.count({
+          where: { created_at: { gte: thirtyDaysAgo } },
+        });
       } catch { /* ignore */ }
 
-      // calculations
       let totalCalcs = 0, newCalcs = 0;
       try {
         totalCalcs = await prisma.calculations.count();
-        newCalcs   = await prisma.calculations.count({ where: { created_at: { gte: thirtyDaysAgo } } });
-      } catch { /* ignore */ }
-
-      // consultations, articles — با raw SQL (ممکن است model نباشد)
-      let totalConsult = 0, pendingConsult = 0, answeredConsult = 0;
-      try {
-        const r = await prisma.$queryRaw<{ total: bigint; pending: bigint; answered: bigint }[]>`
-          SELECT
-            COUNT(*)                                      AS total,
-            COUNT(*) FILTER (WHERE status = 'pending')   AS pending,
-            COUNT(*) FILTER (WHERE status = 'answered')  AS answered
-          FROM "consultations"
-        `;
-        totalConsult   = toNum(r[0]?.total);
-        pendingConsult = toNum(r[0]?.pending);
-        answeredConsult= toNum(r[0]?.answered);
-      } catch { /* table may not exist */ }
-
-      let totalArticles = 0;
-      try {
-        const r = await prisma.$queryRaw<{ c: bigint }[]>`SELECT COUNT(*) AS c FROM "articles"`;
-        totalArticles = toNum(r[0]?.c);
+        newCalcs = await prisma.calculations.count({
+          where: { created_at: { gte: thirtyDaysAgo } },
+        });
       } catch { /* ignore */ }
 
       return {
-        users:         { total: totalUsers,      new_30d: newUsers,        active: activeUsers, admins: adminUsers },
+        users:         { total: totalUsers, new_30d: newUsers, active: activeUsers, admins: adminUsers },
         workspaces:    { total: totalWorkspaces, new_30d: newWorkspaces },
-        calculations:  { total: totalCalcs,      new_30d: newCalcs },
-        consultations: { total: totalConsult,    pending: pendingConsult,  answered: answeredConsult },
-        articles:      { total: totalArticles },
+        calculations:  { total: totalCalcs, new_30d: newCalcs },
+        consultations: { total: 0, pending: 0, answered: 0 },
         revenue:       { total: 0, monthly: 0 },
       };
     } catch (err) {
@@ -118,34 +90,49 @@ export class AdminService {
 
   async getActivityChart(days = 30) {
     try {
-      const rows = await prisma.$queryRaw<any[]>`
-        SELECT
-          DATE(created_at)                                       AS date,
-          COUNT(*) FILTER (WHERE tbl = 'users')                 AS new_users,
-          COUNT(*) FILTER (WHERE tbl = 'calculations')          AS calculations
-        FROM (
-          SELECT created_at, 'users'        AS tbl FROM "users"
-            WHERE created_at >= NOW() - (${days} || ' days')::INTERVAL
-          UNION ALL
-          SELECT created_at, 'calculations' AS tbl FROM "calculations"
-            WHERE created_at >= NOW() - (${days} || ' days')::INTERVAL
-        ) combined
-        GROUP BY DATE(created_at)
-        ORDER BY date ASC
-      `;
-      return rows.map(r => ({
-        date:         r.date,
-        new_users:    toNum(r.new_users),
-        calculations: toNum(r.calculations),
+      const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+
+      const [userRows, calcRows] = await Promise.all([
+        prisma.users.findMany({
+          where: { created_at: { gte: since } },
+          select: { created_at: true },
+          orderBy: { created_at: 'asc' },
+        }),
+        prisma.calculations.findMany({
+          where: { created_at: { gte: since } },
+          select: { created_at: true },
+          orderBy: { created_at: 'asc' },
+        }),
+      ]);
+
+      const daily: Record<string, { new_users: number; calculations: number }> = {};
+      for (let i = 0; i < days; i++) {
+        const d = new Date(Date.now() - (days - 1 - i) * 24 * 60 * 60 * 1000);
+        daily[d.toISOString().slice(0, 10)] = { new_users: 0, calculations: 0 };
+      }
+
+      for (const r of userRows) {
+        const key = r.created_at.toISOString().slice(0, 10);
+        if (daily[key]) daily[key].new_users++;
+      }
+      for (const r of calcRows) {
+        const key = r.created_at.toISOString().slice(0, 10);
+        if (daily[key]) daily[key].calculations++;
+      }
+
+      return Object.entries(daily).map(([date, val]) => ({
+        date,
+        new_users: val.new_users,
+        calculations: val.calculations,
       }));
     } catch {
       return this._mockChart(days);
     }
   }
 
-  // ════════════════════════════════════════════════════════════
-  // USERS — با Prisma API (model users همیشه موجود)
-  // ════════════════════════════════════════════════════════════
+  // ═══════════════════════════════════════
+  // USERS
+  // ═══════════════════════════════════════
 
   async getUsers(opts: {
     page: number; limit: number; search?: string; status?: string;
@@ -169,42 +156,33 @@ export class AdminService {
         prisma.users.findMany({
           where,
           orderBy: { created_at: 'desc' },
-          skip:    offset,
-          take:    limit,
+          skip: offset,
+          take: limit,
           select: {
-            id:           true,
-            email:        true,
-            first_name:   true,
-            last_name:    true,
-            is_active:    true,
-            is_admin:     true,
-            created_at:   true,
-            last_login:   true,
+            id: true, email: true, first_name: true, last_name: true,
+            is_active: true, is_admin: true, created_at: true, last_login: true,
           },
         }),
         prisma.users.count({ where }),
       ]);
 
-      // workspace count جداگانه — از raw SQL
-      const wsCountRows = await prisma.$queryRaw<{ user_id: string; cnt: bigint }[]>`
-        SELECT user_id, COUNT(*) AS cnt
-        FROM "workspace_members"
-        WHERE user_id = ANY(${rows.map((u: any) => u.id)})
-        GROUP BY user_id
-      `.catch(() => [] as { user_id: string; cnt: bigint }[]);
-
-      const wsMap = new Map(wsCountRows.map(r => [r.user_id, toNum(r.cnt)]));
+      const userIds = rows.map(u => u.id);
+      const wsGroups = userIds.length > 0
+        ? await prisma.workspace_members.groupBy({
+            by: ['user_id'],
+            where: { user_id: { in: userIds } },
+            _count: { id: true },
+          })
+        : [];
+      const wsMap = new Map(wsGroups.map(g => [g.user_id, g._count.id]));
 
       return {
-        data: rows.map((u: any) => ({
-          id:              u.id,
-          email:           u.email,
-          first_name:      u.first_name,
-          last_name:       u.last_name,
-          status:          u.is_active ? 'active' : 'suspended',
-          is_admin:        u.is_admin ?? false,
-          created_at:      u.created_at,
-          last_login_at:   u.last_login,
+        data: rows.map(u => ({
+          id: u.id, email: u.email,
+          first_name: u.first_name, last_name: u.last_name,
+          status: u.is_active ? 'active' : 'suspended',
+          is_admin: u.is_admin ?? false,
+          created_at: u.created_at, last_login_at: u.last_login,
           workspace_count: wsMap.get(u.id) ?? 0,
         })),
         total,
@@ -224,86 +202,85 @@ export class AdminService {
       await prisma.users.update({ where: { id: userId }, data: updateData });
       return { success: true };
     } catch (err) {
-      // اگر is_admin column وجود ندارد → raw SQL
-      try {
-        if (data.isAdmin !== undefined) {
-          await prisma.$executeRaw`
-            UPDATE "users" SET is_admin = ${data.isAdmin}, updated_at = NOW()
-            WHERE id = ${userId}
-          `;
-        }
-        if (data.status !== undefined) {
-          const active = data.status === 'active';
-          await prisma.$executeRaw`
-            UPDATE "users" SET is_active = ${active}, updated_at = NOW()
-            WHERE id = ${userId}
-          `;
-        }
-        return { success: true };
-      } catch (e2) {
-        this.logger.error('updateUser:', (e2 as Error).message);
-        return { success: false, error: (e2 as Error).message };
-      }
+      this.logger.error('updateUser:', (err as Error).message);
+      return { success: false, error: (err as Error).message };
     }
   }
 
   async deleteUser(userId: string) {
     await prisma.users.update({
       where: { id: userId },
-      data:  { deleted_at: new Date(), is_active: false },
+      data: { deleted_at: new Date(), is_active: false },
     }).catch(() => null);
     return { success: true };
   }
 
-  // ════════════════════════════════════════════════════════════
-  // WORKSPACES — با Prisma API
-  // ════════════════════════════════════════════════════════════
+  // ═══════════════════════════════════════
+  // WORKSPACES
+  // ═══════════════════════════════════════
 
   async getWorkspaces(opts: { page: number; limit: number; search?: string }) {
     const { page, limit, search } = opts;
     const offset = (page - 1) * limit;
+
     try {
-      const searchClause = search
-        ? `AND (ws.name ILIKE '%' || $3 || '%' OR ws.code ILIKE '%' || $3 || '%')`
-        : '';
-      const params: any[] = [limit, offset];
-      if (search) params.push(search);
+      const where: any = {};
+      if (search) {
+        where.OR = [
+          { name: { contains: search, mode: 'insensitive' } },
+          { code: { contains: search, mode: 'insensitive' } },
+        ];
+      }
 
-      const rows = await prisma.$queryRawUnsafe<any[]>(`
-        SELECT
-          ws.id, ws.name, ws.code,
-          COALESCE(sub.plan_slug, 'free') AS plan_slug,
-          ws.created_at,
-          COALESCE(m.member_count, 0)::int AS member_count,
-          COALESCE(u.email, '')            AS owner_email,
-          COALESCE(u.first_name || ' ' || u.last_name, '') AS owner_name
-        FROM "workspaces" ws
-        LEFT JOIN (
-          SELECT workspace_id, COUNT(*) AS member_count
-          FROM "workspace_members"
-          GROUP BY workspace_id
-        ) m ON m.workspace_id = ws.id
-        LEFT JOIN "workspace_members" wm
-          ON wm.workspace_id = ws.id AND wm.role = 'owner'
-        LEFT JOIN "users" u ON u.id = wm.user_id
-        LEFT JOIN LATERAL (
-          SELECT p.slug AS plan_slug
-          FROM "subscriptions" s
-          JOIN "plans" p ON p.id = s.plan_id
-          WHERE s.workspace_id = ws.id AND s.status = 'active'
-          ORDER BY s.created_at DESC
-          LIMIT 1
-        ) sub ON true
-        WHERE 1=1 ${searchClause}
-        ORDER BY ws.created_at DESC
-        LIMIT $1 OFFSET $2
-      `, ...params);
+      const [rows, total] = await Promise.all([
+        prisma.workspaces.findMany({
+          where,
+          orderBy: { created_at: 'desc' },
+          skip: offset,
+          take: limit,
+        }),
+        prisma.workspaces.count({ where }),
+      ]);
 
-      const [cntRow] = await prisma.$queryRaw<{ c: bigint }[]>`
-        SELECT COUNT(*) AS c FROM "workspaces"
-      `;
-      const total = toNum(cntRow?.c);
-      const data  = rows;
+      const wsIds = rows.map(w => w.id);
+
+      const [memberCounts, ownerRows, planRows] = await Promise.all([
+        prisma.workspace_members.groupBy({
+          by: ['workspace_id'],
+          where: { workspace_id: { in: wsIds } },
+          _count: { id: true },
+        }),
+        prisma.workspace_members.findMany({
+          where: { workspace_id: { in: wsIds }, role: 'owner' },
+          include: { user: { select: { email: true, first_name: true, last_name: true } } },
+        }),
+        wsIds.length > 0
+          ? prisma.subscriptions.findMany({
+              where: {
+                workspace_id: { in: wsIds },
+                status: 'active',
+              },
+              orderBy: { created_at: 'desc' },
+              distinct: ['workspace_id'],
+              include: { plan: { select: { slug: true } } },
+            })
+          : Promise.resolve([]),
+      ]);
+
+      const memberMap = new Map(memberCounts.map(m => [m.workspace_id, m._count.id]));
+      const ownerMap = new Map(ownerRows.map(o => [o.workspace_id, o.user]));
+      const planMap = new Map(planRows.map(p => [p.workspace_id, p.plan.slug]));
+
+      const data = rows.map(w => ({
+        id: w.id, name: w.name, code: w.code,
+        plan_slug: planMap.get(w.id) ?? 'free',
+        created_at: w.created_at,
+        member_count: memberMap.get(w.id) ?? 0,
+        owner_email: ownerMap.get(w.id)?.email ?? '',
+        owner_name: ownerMap.get(w.id)
+          ? `${ownerMap.get(w.id)!.first_name} ${ownerMap.get(w.id)!.last_name}`
+          : '',
+      }));
 
       return { data, total };
     } catch (err) {
@@ -314,39 +291,48 @@ export class AdminService {
 
   async updateWorkspacePlan(workspaceId: string, planSlug: string) {
     try {
-      await prisma.$executeRaw`
-        UPDATE "workspaces" SET plan_slug = ${planSlug}, updated_at = NOW()
-        WHERE id = ${workspaceId}
-      `;
+      const plan = await prisma.plans.findUnique({ where: { slug: planSlug } });
+      if (!plan) return { success: false, error: 'Plan not found' };
+
+      await prisma.subscriptions.create({
+        data: {
+          workspace_id: workspaceId,
+          plan_id: plan.id,
+          status: 'active',
+          starts_at: new Date(),
+        },
+      });
       return { success: true };
     } catch (err) {
       this.logger.error('updateWorkspacePlan:', (err as Error).message);
-      return { success: true };
+      return { success: false };
     }
   }
 
-  // ════════════════════════════════════════════════════════════
-  // PLANS — raw SQL (model plans ممکن است نباشد)
-  // ════════════════════════════════════════════════════════════
+  // ═══════════════════════════════════════
+  // PLANS
+  // ═══════════════════════════════════════
 
   async getPlans() {
     try {
-      const rows = await prisma.$queryRaw<any[]>`
-        SELECT
-          p.id, p.name, p.slug,
-          p.monthly_price::float  AS monthly_price,
-          p.yearly_price::float   AS yearly_price,
-          p.features, p.is_active, p.created_at,
-          COALESCE(s.cnt, 0)::int AS subscriber_count
-        FROM "plans" p
-        LEFT JOIN (
-          SELECT plan_id, COUNT(*) AS cnt
-          FROM "subscriptions" WHERE status = 'active'
-          GROUP BY plan_id
-        ) s ON s.plan_id = p.id
-        ORDER BY p.monthly_price ASC
-      `;
-      return rows.length ? rows : this._defaultPlans();
+      const rows = await prisma.plans.findMany({
+        orderBy: { monthly_price: 'asc' },
+        include: {
+          _count: {
+            select: { subscriptions: { where: { status: 'active' } } },
+          },
+        },
+      });
+
+      return rows.map(p => ({
+        id: p.id, name: p.name, slug: p.slug,
+        monthly_price: Number(p.monthly_price),
+        yearly_price: Number(p.yearly_price),
+        features: p.features,
+        is_active: p.is_active,
+        created_at: p.created_at,
+        subscriber_count: p._count.subscriptions,
+      }));
     } catch {
       return this._defaultPlans();
     }
@@ -357,20 +343,17 @@ export class AdminService {
     features: Record<string, any>; isActive: boolean;
   }>) {
     try {
-      const parts: string[] = ['updated_at = NOW()'];
-      const vals: any[]     = [planId];
-      let   idx             = 2;
+      const updateData: any = { updated_at: new Date() };
+      if (data.name !== undefined) updateData.name = data.name;
+      if (data.monthlyPrice !== undefined) updateData.monthly_price = data.monthlyPrice;
+      if (data.yearlyPrice !== undefined) updateData.yearly_price = data.yearlyPrice;
+      if (data.features !== undefined) updateData.features = data.features;
+      if (data.isActive !== undefined) updateData.is_active = data.isActive;
 
-      if (data.name         !== undefined) { parts.push(`name = $${idx++}`);          vals.push(data.name); }
-      if (data.monthlyPrice !== undefined) { parts.push(`monthly_price = $${idx++}`); vals.push(data.monthlyPrice); }
-      if (data.yearlyPrice  !== undefined) { parts.push(`yearly_price = $${idx++}`);  vals.push(data.yearlyPrice); }
-      if (data.features     !== undefined) { parts.push(`features = $${idx++}::jsonb`);vals.push(JSON.stringify(data.features)); }
-      if (data.isActive     !== undefined) { parts.push(`is_active = $${idx++}`);     vals.push(data.isActive); }
-
-      await prisma.$executeRawUnsafe(
-        `UPDATE "plans" SET ${parts.join(', ')} WHERE id = $1`,
-        ...vals,
-      );
+      await prisma.plans.update({
+        where: { id: planId },
+        data: updateData,
+      });
       return { success: true };
     } catch (err) {
       this.logger.error('updatePlan:', (err as Error).message);
@@ -378,206 +361,107 @@ export class AdminService {
     }
   }
 
-  // ════════════════════════════════════════════════════════════
-  // CONSULTATIONS — raw SQL
-  // ════════════════════════════════════════════════════════════
-
-  async getConsultations(opts: {
-    page: number; limit: number; status?: string; priority?: string;
-  }) {
-    const { page, limit, status, priority } = opts;
-    const offset = (page - 1) * limit;
-    try {
-      const conditions: string[] = [];
-      const params:     any[]    = [limit, offset];
-
-      if (status)   { conditions.push(`c.status = $${params.length + 1}`);   params.push(status); }
-      if (priority) { conditions.push(`c.priority = $${params.length + 1}`); params.push(priority); }
-
-      const WHERE = conditions.length ? 'WHERE ' + conditions.join(' AND ') : '';
-
-      const rows = await prisma.$queryRawUnsafe<any[]>(`
-        SELECT
-          c.id, c.title, c.description, c.category, c.priority, c.status,
-          c.created_at,
-          u.email         AS user_email,
-          u.first_name || ' ' || u.last_name AS user_name,
-          ws.name         AS workspace_name,
-          COALESCE(r.rc, 0)::int AS reply_count
-        FROM "consultations" c
-        LEFT JOIN "users" u       ON u.id = c.user_id
-        LEFT JOIN "workspaces" ws ON ws.id = c.workspace_id
-        LEFT JOIN (
-          SELECT consultation_id, COUNT(*) AS rc
-          FROM "consultation_replies"
-          GROUP BY consultation_id
-        ) r ON r.consultation_id = c.id
-        ${WHERE}
-        ORDER BY
-          CASE c.priority
-            WHEN 'urgent' THEN 1 WHEN 'high' THEN 2
-            WHEN 'normal' THEN 3 ELSE 4
-          END, c.created_at ASC
-        LIMIT $1 OFFSET $2
-      `, ...params);
-
-      const cntRows = await prisma.$queryRaw<{ c: bigint }[]>`
-        SELECT COUNT(*) AS c FROM "consultations"
-      `.catch(() => [{ c: 0n }]);
-
-      return { data: rows, total: toNum(cntRows[0]?.c) };
-    } catch (err) {
-      this.logger.error('getConsultations:', (err as Error).message);
-      return { data: [], total: 0 };
-    }
-  }
-
-  async adminReply(consultationId: string, adminId: string, adminName: string, content: string) {
-    const replyId = randomUUID();
-    const now     = new Date();
-    try {
-      await prisma.$executeRaw`
-        INSERT INTO "consultation_replies"
-          (id, consultation_id, author_id, author_name, is_expert, content, created_at)
-        VALUES
-          (${replyId}, ${consultationId}, ${adminId}, ${adminName}, true, ${content}, ${now})
-      `;
-      await prisma.$executeRaw`
-        UPDATE "consultations"
-        SET status = 'answered', answered_at = ${now}, updated_at = ${now}
-        WHERE id = ${consultationId}
-      `;
-      return { success: true, replyId };
-    } catch (err) {
-      this.logger.error('adminReply:', (err as Error).message);
-      return { success: true, replyId };
-    }
-  }
-
-  async updateConsultationStatus(id: string, status: string) {
-    await prisma.$executeRaw`
-      UPDATE "consultations" SET status = ${status}, updated_at = NOW()
-      WHERE id = ${id}
-    `.catch(() => null);
-    return { success: true };
-  }
-
-  // ════════════════════════════════════════════════════════════
-  // ARTICLES — raw SQL
-  // ════════════════════════════════════════════════════════════
-
-  async adminCreateArticle(data: {
-    title: string; titleEn?: string; summary: string; content: string;
-    category: string; tags: string[]; status: string;
-    readMinutes: number; authorId: string; authorName: string;
-  }) {
-    const id  = randomUUID();
-    const now = new Date();
-    const slug = `${data.title.toLowerCase()
-      .replace(/[\s\u0600-\u06FF]+/g, '-')
-      .replace(/[^a-z0-9\-]/g, '')
-      .replace(/-+/g, '-').slice(0, 60)}-${Date.now()}`;
-
-    try {
-      await prisma.$executeRaw`
-        INSERT INTO "articles"
-          (id, title, title_en, slug, summary, content, category, tags,
-           status, author_id, author_name, read_minutes,
-           view_count, like_count, created_at, updated_at, published_at)
-        VALUES
-          (${id}, ${data.title}, ${data.titleEn ?? data.title}, ${slug},
-           ${data.summary}, ${data.content}, ${data.category},
-           ${JSON.stringify(data.tags)}::jsonb, ${data.status},
-           ${data.authorId}, ${data.authorName}, ${data.readMinutes},
-           0, 0, ${now}, ${now},
-           ${data.status === 'published' ? now : null})
-      `;
-    } catch (err) {
-      this.logger.warn('adminCreateArticle:', (err as Error).message);
-    }
-    return { id, slug, title: data.title, status: data.status, createdAt: now };
-  }
-
-  async updateArticleStatus(id: string, status: string) {
-    await prisma.$executeRaw`
-      UPDATE "articles"
-      SET status = ${status}, updated_at = NOW(),
-          published_at = CASE WHEN ${status} = 'published' THEN NOW() ELSE published_at END
-      WHERE id = ${id}
-    `.catch(() => null);
-    return { success: true };
-  }
-
-  // ════════════════════════════════════════════════════════════
+  // ═══════════════════════════════════════
   // NOTIFICATIONS
-  // ════════════════════════════════════════════════════════════
+  // ═══════════════════════════════════════
 
   async sendBroadcastNotification(data: {
     title: string; body: string; type: string; targetPlan?: string;
   }) {
     try {
-      const workspaces = data.targetPlan
-        ? await prisma.$queryRaw<{ id: string }[]>`
-            SELECT id FROM "workspaces" WHERE plan_slug = ${data.targetPlan}
-          `
-        : await prisma.workspaces.findMany({ select: { id: true } });
+      let wsIds: string[];
+      if (data.targetPlan) {
+        const plan = await prisma.plans.findUnique({ where: { slug: data.targetPlan } });
+        if (!plan) return { success: true, sent: 0 };
+        const subs = await prisma.subscriptions.findMany({
+          where: { plan_id: plan.id, status: 'active' },
+          select: { workspace_id: true },
+        });
+        wsIds = [...new Set(subs.map(s => s.workspace_id))];
+      } else {
+        const workspaces = await prisma.workspaces.findMany({ select: { id: true } });
+        wsIds = workspaces.map(w => w.id);
+      }
 
-      const wsIds = workspaces.map(w => w.id);
       if (wsIds.length === 0) return { success: true, sent: 0 };
 
-      // resolve workspace IDs → user IDs via workspace_members
-      const members = await prisma.$queryRawUnsafe<{ user_id: string }[]>(
-        `SELECT DISTINCT user_id FROM workspace_members WHERE workspace_id IN (${wsIds.map((_, i) => `$${i + 1}`).join(', ')})`,
-        ...wsIds,
-      );
+      const members = await prisma.workspace_members.findMany({
+        where: { workspace_id: { in: wsIds } },
+        select: { user_id: true },
+        distinct: ['user_id'],
+      });
 
       const now = new Date();
-      for (const m of members) {
-        await prisma.$executeRaw`
-          INSERT INTO "notifications"
-            (id, user_id, type, channel, title, content, status, sent_at, created_at)
-          VALUES
-            (${randomUUID()}, ${m.user_id}, ${data.type}, 'in_app', ${data.title}, ${data.body}, 'sent', ${now}, ${now})
-        `.catch(() => null);
+      const notifications = members.map(m => ({
+        id: require('node:crypto').randomUUID(),
+        user_id: m.user_id,
+        type: data.type,
+        channel: 'in_app',
+        title: data.title,
+        content: data.body,
+        status: 'sent',
+        sent_at: now,
+        created_at: now,
+      }));
+
+      for (const n of notifications) {
+        await prisma.notifications.create({ data: n }).catch(() => null);
       }
-      return { success: true, sent: members.length };
+
+      return { success: true, sent: notifications.length };
     } catch (err) {
       this.logger.error('broadcast:', (err as Error).message);
       return { success: true, sent: 0 };
     }
   }
 
-  // ════════════════════════════════════════════════════════════
+  // ═══════════════════════════════════════
   // AUDIT LOG
-  // ════════════════════════════════════════════════════════════
+  // ═══════════════════════════════════════
 
   async getAuditLog(opts: { page: number; limit: number; action?: string }) {
     const { page, limit, action } = opts;
     const offset = (page - 1) * limit;
+
     try {
-      const rows = await prisma.$queryRaw<any[]>`
-        SELECT al.*, u.email AS user_email
-        FROM "audit_logs" al
-        LEFT JOIN "users" u ON u.id = al.user_id
-        ${action ? prisma.$queryRaw`WHERE al.action ILIKE ${'%' + action + '%'}` : prisma.$queryRaw``}
-        ORDER BY al.created_at DESC
-        LIMIT ${limit} OFFSET ${offset}
-      `;
-      return { data: rows, total: rows.length };
+      const where: any = {};
+      if (action) {
+        where.action = { contains: action, mode: 'insensitive' };
+      }
+
+      const [rows, total] = await Promise.all([
+        prisma.audit_logs.findMany({
+          where,
+          orderBy: { created_at: 'desc' },
+          skip: offset,
+          take: limit,
+          include: {
+            user: { select: { email: true } },
+          },
+        }),
+        prisma.audit_logs.count({ where }),
+      ]);
+
+      const data = rows.map(r => ({
+        ...r,
+        user_email: r.user?.email ?? null,
+      }));
+
+      return { data, total };
     } catch {
       return { data: [], total: 0 };
     }
   }
 
-  // ════════════════════════════════════════════════════════════
+  // ═══════════════════════════════════════
   // SETTINGS
-  // ════════════════════════════════════════════════════════════
+  // ═══════════════════════════════════════
 
   async getSettings() {
     try {
-      const rows = await prisma.$queryRaw<{ key: string; value: string }[]>`
-        SELECT key, value FROM "system_settings" ORDER BY key ASC
-      `;
+      const rows = await prisma.system_settings.findMany({
+        orderBy: { key: 'asc' },
+      });
       return rows.reduce((acc, r) => ({ ...acc, [r.key]: r.value }), {} as Record<string, string>);
     } catch {
       return this._defaultSettings();
@@ -587,11 +471,11 @@ export class AdminService {
   async updateSettings(settings: Record<string, string>) {
     try {
       for (const [key, value] of Object.entries(settings)) {
-        await prisma.$executeRaw`
-          INSERT INTO "system_settings" (key, value, updated_at)
-          VALUES (${key}, ${value}, NOW())
-          ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW()
-        `;
+        await prisma.system_settings.upsert({
+          where: { key },
+          update: { value, updated_at: new Date() },
+          create: { key, value, updated_at: new Date() },
+        });
       }
       return { success: true };
     } catch {
@@ -599,9 +483,41 @@ export class AdminService {
     }
   }
 
-  // ════════════════════════════════════════════════════════════
+  // ═══════════════════════════════════════
+  // CONSULTATIONS (disabled — table not in Prisma schema)
+  // ═══════════════════════════════════════
+
+  async getConsultations(_opts: { page: number; limit: number; status?: string; priority?: string }) {
+    return { data: [], total: 0 };
+  }
+
+  async adminReply(_consultationId: string, _adminId: string, _adminName: string, _content: string) {
+    return { success: true, replyId: '' };
+  }
+
+  async updateConsultationStatus(_id: string, _status: string) {
+    return { success: true };
+  }
+
+  // ═══════════════════════════════════════
+  // ARTICLES (disabled — table not in Prisma schema)
+  // ═══════════════════════════════════════
+
+  async adminCreateArticle(_data: {
+    title: string; titleEn?: string; summary: string; content: string;
+    category: string; tags: string[]; status: string;
+    readMinutes: number; authorId: string; authorName: string;
+  }) {
+    return { id: '', slug: '', title: _data.title, status: _data.status, createdAt: new Date() };
+  }
+
+  async updateArticleStatus(_id: string, _status: string) {
+    return { success: true };
+  }
+
+  // ═══════════════════════════════════════
   // MOCK / DEFAULT DATA
-  // ════════════════════════════════════════════════════════════
+  // ═══════════════════════════════════════
 
   private _mockStats() {
     return {
@@ -619,8 +535,8 @@ export class AdminService {
       const d = new Date();
       d.setDate(d.getDate() - (days - 1 - i));
       return {
-        date:         d.toISOString().slice(0, 10),
-        new_users:    0,
+        date: d.toISOString().slice(0, 10),
+        new_users: 0,
         calculations: 0,
       };
     });
@@ -628,14 +544,19 @@ export class AdminService {
 
   private _mockUsers() {
     return [
-      { id: '1', email: 'admin@xennic.ir', first_name: 'ادمین', last_name: 'سیستم',
-        status: 'active', is_admin: true, created_at: new Date(), workspace_count: 0 },
+      {
+        id: '1', email: 'admin@xennic.ir', first_name: 'ادمین', last_name: 'سیستم',
+        status: 'active', is_admin: true, created_at: new Date(), workspace_count: 0,
+      },
     ];
   }
 
   private _mockWorkspaces() {
     return [
-      { id: '1', name: 'Workspace نمونه', slug: 'sample', plan_slug: 'free', member_count: 1, created_at: new Date() },
+      {
+        id: '1', name: 'Workspace نمونه', code: 'sample', plan_slug: 'free',
+        member_count: 1, created_at: new Date(), owner_email: '', owner_name: '',
+      },
     ];
   }
 

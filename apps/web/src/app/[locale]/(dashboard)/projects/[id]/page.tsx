@@ -7,6 +7,11 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t('title') };
 }
 
-export default function ProjectDetailPage({ params }: { params: { id: string } }) {
-  return <ProjectDetailClient projectId={params.id} />;
+export default async function ProjectDetailPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
+  return <ProjectDetailClient projectId={id} />;
 }

@@ -24,18 +24,36 @@ const CALCULATION_ROUTES: Record<string, string> = {
   'CABLE-002': '/api/v1/engineering/cable/voltage-drop',
   'CABLE-003': '/api/v1/engineering/cable/short-circuit',
   'CABLE-004': '/api/v1/engineering/cable/pe-sizing',
+  'CABLE-005': '/api/v1/engineering/cable/tray-sizing',
 
   // Transformer Engineering
   'TRF-001': '/api/v1/engineering/transformer/sizing',
   'TRF-002': '/api/v1/engineering/transformer/losses',
   'TRF-003': '/api/v1/engineering/transformer/regulation',
   'TRF-004': '/api/v1/engineering/transformer/k-factor',
+  'TRF-005': '/api/v1/engineering/transformer/efficiency',
 
   // Protection Engineering
   'PROT-001':  '/api/v1/engineering/protection/mccb-selection',
   'SC-001':    '/api/v1/engineering/protection/short-circuit',
   'PROT-002':  '/api/v1/engineering/protection/arc-flash',
   'GND-001':   '/api/v1/engineering/protection/grounding',
+  'PROT-004':  '/api/v1/engineering/protection/fuse-selection',
+  'SWT-001':   '/api/v1/engineering/switchgear/main-switch',
+  'LIGHT-001': '/api/v1/engineering/lighting/lumen-method',
+  'LIGHT-002': '/api/v1/engineering/lighting/road-lighting',
+  'GND-002':   '/api/v1/engineering/grounding/grid-design',
+  'HARM-001':  '/api/v1/engineering/power-quality/advanced-harmonic',
+  'BATTERY-002': '/api/v1/engineering/renewable/battery-charger',
+  'PROT-005':  '/api/v1/engineering/protection/coordination',
+  'ARC-001':   '/api/v1/engineering/protection/arc-incident',
+  'SOLAR-002': '/api/v1/engineering/renewable/inverter-sizing',
+  'SOLAR-003': '/api/v1/engineering/renewable/solar-battery',
+  'PFC-001':   '/api/v1/engineering/power-quality/capacitor-bank',
+  'BAT-BU-001':'/api/v1/engineering/renewable/backup-time',
+  'ECO-001':   '/api/v1/engineering/economics/roi',
+  'ECO-002':   '/api/v1/engineering/economics/npv',
+  'ECO-003':   '/api/v1/engineering/economics/irr',
 
   // Power Quality ✅
   'PQ-001': '/api/v1/engineering/power-quality/thd',
@@ -44,11 +62,19 @@ const CALCULATION_ROUTES: Record<string, string> = {
   'PQ-004': '/api/v1/engineering/power-quality/resonance',
   'PQ-005': '/api/v1/engineering/power-quality/passive-filter',
   'PQ-006': '/api/v1/engineering/power-quality/active-filter',
+  'CAP-001': '/api/v1/engineering/power-quality/power-factor',
 
   // Renewable Energy & Motors
   'PV-001':  '/api/v1/engineering/renewable/solar-pv',
   'MOT-001': '/api/v1/engineering/renewable/motor-starting',
+  'MOT-002': '/api/v1/engineering/renewable/motor-efficiency',
   'BAT-001': '/api/v1/engineering/renewable/battery-storage',
+
+  // Power System Studies
+  'PS-001': '/api/v1/engineering/power-system/load-flow',
+  'PS-002': '/api/v1/engineering/power-system/short-circuit',
+  'PS-003': '/api/v1/engineering/power-system/motor-starting',
+  'PS-004': '/api/v1/engineering/power-system/busbar-sizing',
 
   // Energy Analyzer
   'EA-001':  '/api/v1/engineering/energy/analyze',
@@ -56,15 +82,26 @@ const CALCULATION_ROUTES: Record<string, string> = {
 
 // ─── Plan limits ──────────────────────────────────────────────────────────────
 
-// calculator های که فقط PRO+ می‌توانند استفاده کنند (بر اساس Authorization Spec)
+// تمام محاسباتی که نیاز به پلن Pro+ دارند
 const PRO_ONLY_CALCULATIONS = new Set([
-  'PROT-001', // Protection Coordination
-  // Power Quality (آینده)
+  // Cable
+  'CABLE-003', 'CABLE-004', 'CABLE-005',
+  // Transformer
+  'TRF-002', 'TRF-003', 'TRF-004', 'TRF-005',
+  // Protection
+  'PROT-001', 'SC-001', 'PROT-002', 'ARC-001',
+  'PROT-003', 'PROT-005', 'SWT-001', 'GND-001', 'GND-002',
+  // Power Quality
   'PQ-001', 'PQ-002', 'PQ-003', 'PQ-004', 'PQ-005', 'PQ-006',
-  // Power System Studies (آینده)
-  'PS-001', 'PS-002',
-  // Arc Flash (آینده)
-  'ARC-001',
+  'HARM-001', 'PFC-001',
+  // Power System Studies
+  'PS-001', 'PS-002', 'PS-003', 'PS-004',
+  // Renewable Energy
+  'BAT-001', 'BAT-BU-001', 'BATTERY-002', 'SOLAR-002', 'SOLAR-003', 'MOT-002',
+  // Lighting
+  'LIGHT-002',
+  // Economics
+  'ECO-001', 'ECO-002', 'ECO-003',
 ]);
 
 export interface RunCalculationInput {

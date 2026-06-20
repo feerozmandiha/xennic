@@ -19,6 +19,7 @@ export interface IBillingRepository {
   savePayment(payment: PaymentEntity): Promise<void>;
   findPaymentById(id: string): Promise<PaymentEntity | null>;
   findPaymentsByInvoice(invoiceId: string): Promise<PaymentEntity[]>;
+  findPaymentByAuthority(authority: string): Promise<PaymentEntity | null>;
   findAllPaymentsByWorkspace(
     workspaceId: string,
     offset?: number,

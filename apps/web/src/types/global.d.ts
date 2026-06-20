@@ -16,3 +16,13 @@ declare module '*.jpg'  { const src: string; export default src; }
 declare module '*.jpeg' { const src: string; export default src; }
 declare module '*.webp' { const src: string; export default src; }
 declare module '*.gif'  { const src: string; export default src; }
+
+declare module 'arabic-reshaper' {
+  interface ArabicReshaper {
+    convertArabic(text: string): string;
+    convertArabicBack(text: string): string;
+  }
+  const reshaper: ArabicReshaper;
+  export default reshaper;
+}
+

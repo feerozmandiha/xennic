@@ -5,6 +5,7 @@ import { InvoiceEntity } from '../../domain/entities/invoice.entity.js';
 import { PaymentEntity } from '../../domain/entities/payment.entity.js';
 import { TransactionEntity } from '../../domain/entities/transaction.entity.js';
 import { PaymentMethodEntity } from '../../domain/entities/payment-method.entity.js';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class BillingRepository implements IBillingRepository {
@@ -15,26 +16,28 @@ export class BillingRepository implements IBillingRepository {
 
   async saveInvoice(invoice: InvoiceEntity): Promise<void> {
     try {
-      const existing = await prisma.$queryRaw<any[]>`
-        SELECT id FROM "invoices" WHERE id = ${invoice.id} LIMIT 1
-      `;
-      if (existing && existing.length > 0) {
-        await prisma.$executeRaw`
-          UPDATE "invoices" SET
-            status       = ${invoice.status},
-            paid_at      = ${invoice.paidAt},
-            due_at       = ${invoice.dueAt},
-            updated_at   = ${invoice.updatedAt}
-          WHERE id = ${invoice.id}
-        `;
-      } else {
-        await prisma.$executeRaw`
-          INSERT INTO "invoices" (id, workspace_id, invoice_number, status, currency, subtotal, tax_amount, total_amount, issued_at, due_at, paid_at, created_at, updated_at)
-          VALUES (${invoice.id}, ${invoice.workspaceId}, ${invoice.invoiceNumber}, ${invoice.status},
-                  ${invoice.currency}, ${invoice.subtotal}, ${invoice.taxAmount}, ${invoice.totalAmount},
-                  ${invoice.issuedAt}, ${invoice.dueAt}, ${invoice.paidAt}, ${invoice.createdAt}, ${invoice.updatedAt})
-        `;
-      }
+      const data = {
+        invoice_number: invoice.invoiceNumber,
+        workspace_id: invoice.workspaceId,
+        status: invoice.status,
+        currency: invoice.currency,
+        subtotal: invoice.subtotal,
+        tax_amount: invoice.taxAmount,
+        total_amount: invoice.totalAmount,
+        issued_at: invoice.issuedAt,
+        due_at: invoice.dueAt,
+        paid_at: invoice.paidAt,
+        updated_at: invoice.updatedAt,
+      };
+      await prisma.invoices.upsert({
+        where: { id: invoice.id },
+        create: {
+          id: invoice.id,
+          ...data,
+          created_at: invoice.createdAt,
+        },
+        update: data,
+      });
     } catch (err) {
       throw new Error(`BillingRepository.saveInvoice failed: ${(err as Error).message}`);
     }
@@ -42,21 +45,17 @@ export class BillingRepository implements IBillingRepository {
 
   async findInvoiceById(id: string): Promise<InvoiceEntity | null> {
     try {
-      const rows = await prisma.$queryRaw<any[]>`
-        SELECT * FROM "invoices" WHERE id = ${id} LIMIT 1
-      `;
-      if (!rows || rows.length === 0) return null;
-      return this._mapInvoice(rows[0]);
+      const row = await prisma.invoices.findUnique({ where: { id } });
+      if (!row) return null;
+      return this._mapInvoice(row);
     } catch { return null; }
   }
 
   async findInvoiceByNumber(number: string): Promise<InvoiceEntity | null> {
     try {
-      const rows = await prisma.$queryRaw<any[]>`
-        SELECT * FROM "invoices" WHERE invoice_number = ${number} LIMIT 1
-      `;
-      if (!rows || rows.length === 0) return null;
-      return this._mapInvoice(rows[0]);
+      const row = await prisma.invoices.findUnique({ where: { invoice_number: number } });
+      if (!row) return null;
+      return this._mapInvoice(row);
     } catch { return null; }
   }
 
@@ -64,22 +63,19 @@ export class BillingRepository implements IBillingRepository {
     workspaceId: string, offset = 0, limit = 20,
   ): Promise<InvoiceEntity[]> {
     try {
-      const rows = await prisma.$queryRaw<any[]>`
-        SELECT * FROM "invoices"
-        WHERE workspace_id = ${workspaceId}
-        ORDER BY created_at DESC
-        LIMIT ${limit} OFFSET ${offset}
-      `;
+      const rows = await prisma.invoices.findMany({
+        where: { workspace_id: workspaceId },
+        orderBy: { created_at: 'desc' },
+        skip: offset,
+        take: limit,
+      });
       return rows.map(r => this._mapInvoice(r));
     } catch { return []; }
   }
 
   async countInvoicesByWorkspace(workspaceId: string): Promise<number> {
     try {
-      const result = await prisma.$queryRaw<any[]>`
-        SELECT COUNT(*)::text as count FROM "invoices" WHERE workspace_id = ${workspaceId}
-      `;
-      return Number(result[0]?.count ?? 0);
+      return await prisma.invoices.count({ where: { workspace_id: workspaceId } });
     } catch { return 0; }
   }
 
@@ -89,25 +85,21 @@ export class BillingRepository implements IBillingRepository {
 
   async savePayment(payment: PaymentEntity): Promise<void> {
     try {
-      const existing = await prisma.$queryRaw<any[]>`
-        SELECT id FROM "payments" WHERE id = ${payment.id} LIMIT 1
-      `;
-      if (existing && existing.length > 0) {
-        await prisma.$executeRaw`
-          UPDATE "payments" SET
-            status           = ${payment.status},
-            reference_number = ${payment.gatewayReference},
-            paid_at          = ${payment.paidAt}
-          WHERE id = ${payment.id}
-        `;
-      } else {
-        await prisma.$executeRaw`
-          INSERT INTO "payments" (id, workspace_id, invoice_id, gateway, reference_number, amount, status, paid_at, created_at)
-          VALUES (${payment.id}, ${payment.workspaceId}, ${payment.invoiceId}, ${payment.gateway},
-                  ${payment.gatewayReference}, ${payment.amount}, ${payment.status},
-                  ${payment.paidAt}, ${payment.createdAt})
-        `;
-      }
+      const data = {
+        workspace_id: payment.workspaceId,
+        invoice_id: payment.invoiceId,
+        gateway: payment.gateway,
+        authority: payment.authority,
+        reference_number: payment.gatewayReference,
+        amount: payment.amount,
+        status: payment.status,
+        paid_at: payment.paidAt,
+      };
+      await prisma.payments.upsert({
+        where: { id: payment.id },
+        create: { id: payment.id, ...data, created_at: payment.createdAt },
+        update: data,
+      });
     } catch (err) {
       throw new Error(`BillingRepository.savePayment failed: ${(err as Error).message}`);
     }
@@ -115,43 +107,47 @@ export class BillingRepository implements IBillingRepository {
 
   async findPaymentById(id: string): Promise<PaymentEntity | null> {
     try {
-      const rows = await prisma.$queryRaw<any[]>`
-        SELECT * FROM "payments" WHERE id = ${id} LIMIT 1
-      `;
-      if (!rows || rows.length === 0) return null;
-      return this._mapPayment(rows[0]);
+      const row = await prisma.payments.findUnique({ where: { id } });
+      if (!row) return null;
+      return this._mapPayment(row);
     } catch { return null; }
   }
 
   async findPaymentsByInvoice(invoiceId: string): Promise<PaymentEntity[]> {
     try {
-      const rows = await prisma.$queryRaw<any[]>`
-        SELECT * FROM "payments" WHERE invoice_id = ${invoiceId} ORDER BY created_at DESC
-      `;
+      const rows = await prisma.payments.findMany({
+        where: { invoice_id: invoiceId },
+        orderBy: { created_at: 'desc' },
+      });
       return rows.map(r => this._mapPayment(r));
     } catch { return []; }
+  }
+
+  async findPaymentByAuthority(authority: string): Promise<PaymentEntity | null> {
+    try {
+      const row = await prisma.payments.findFirst({ where: { authority } });
+      if (!row) return null;
+      return this._mapPayment(row);
+    } catch { return null; }
   }
 
   async findAllPaymentsByWorkspace(
     workspaceId: string, offset = 0, limit = 20,
   ): Promise<PaymentEntity[]> {
     try {
-      const rows = await prisma.$queryRaw<any[]>`
-        SELECT * FROM "payments"
-        WHERE workspace_id = ${workspaceId}
-        ORDER BY created_at DESC
-        LIMIT ${limit} OFFSET ${offset}
-      `;
+      const rows = await prisma.payments.findMany({
+        where: { workspace_id: workspaceId },
+        orderBy: { created_at: 'desc' },
+        skip: offset,
+        take: limit,
+      });
       return rows.map(r => this._mapPayment(r));
     } catch { return []; }
   }
 
   async countPaymentsByWorkspace(workspaceId: string): Promise<number> {
     try {
-      const result = await prisma.$queryRaw<any[]>`
-        SELECT COUNT(*)::text as count FROM "payments" WHERE workspace_id = ${workspaceId}
-      `;
-      return Number(result[0]?.count ?? 0);
+      return await prisma.payments.count({ where: { workspace_id: workspaceId } });
     } catch { return 0; }
   }
 
@@ -161,12 +157,18 @@ export class BillingRepository implements IBillingRepository {
 
   async saveTransaction(transaction: TransactionEntity): Promise<void> {
     try {
-      await prisma.$executeRaw`
-        INSERT INTO "transactions" (id, workspace_id, payment_id, type, amount, status, metadata, created_at)
-        VALUES (${transaction.id}, ${transaction.workspaceId}, ${transaction.paymentId},
-                ${transaction.type}, ${transaction.amount}, ${transaction.status},
-                ${JSON.stringify(transaction.metadata)}::jsonb, ${transaction.createdAt})
-      `;
+      await prisma.transactions.create({
+        data: {
+          id: transaction.id,
+          workspace_id: transaction.workspaceId,
+          payment_id: transaction.paymentId,
+          type: transaction.type,
+          amount: transaction.amount,
+          status: transaction.status,
+          metadata: transaction.metadata as Prisma.InputJsonValue,
+          created_at: transaction.createdAt,
+        },
+      });
     } catch (err) {
       throw new Error(`BillingRepository.saveTransaction failed: ${(err as Error).message}`);
     }
@@ -174,9 +176,10 @@ export class BillingRepository implements IBillingRepository {
 
   async findTransactionsByPayment(paymentId: string): Promise<TransactionEntity[]> {
     try {
-      const rows = await prisma.$queryRaw<any[]>`
-        SELECT * FROM "transactions" WHERE payment_id = ${paymentId} ORDER BY created_at DESC
-      `;
+      const rows = await prisma.transactions.findMany({
+        where: { payment_id: paymentId },
+        orderBy: { created_at: 'desc' },
+      });
       return rows.map(r => this._mapTransaction(r));
     } catch { return []; }
   }
@@ -185,12 +188,12 @@ export class BillingRepository implements IBillingRepository {
     workspaceId: string, offset = 0, limit = 20,
   ): Promise<TransactionEntity[]> {
     try {
-      const rows = await prisma.$queryRaw<any[]>`
-        SELECT * FROM "transactions"
-        WHERE workspace_id = ${workspaceId}
-        ORDER BY created_at DESC
-        LIMIT ${limit} OFFSET ${offset}
-      `;
+      const rows = await prisma.transactions.findMany({
+        where: { workspace_id: workspaceId },
+        orderBy: { created_at: 'desc' },
+        skip: offset,
+        take: limit,
+      });
       return rows.map(r => this._mapTransaction(r));
     } catch { return []; }
   }
@@ -201,25 +204,23 @@ export class BillingRepository implements IBillingRepository {
 
   async savePaymentMethod(method: PaymentMethodEntity): Promise<void> {
     try {
-      const existing = await prisma.$queryRaw<any[]>`
-        SELECT id FROM "payment_methods" WHERE id = ${method.id} LIMIT 1
-      `;
-      if (existing && existing.length > 0) {
-        await prisma.$executeRaw`
-          UPDATE "payment_methods" SET
-            is_default       = ${method.isDefault},
-            updated_at       = ${method.updatedAt},
-            deleted_at       = ${method.deletedAt}
-          WHERE id = ${method.id}
-        `;
-      } else {
-        await prisma.$executeRaw`
-          INSERT INTO "payment_methods" (id, workspace_id, user_id, gateway, gateway_customer_id, masked_number, card_holder_name, is_default, expires_at, created_at, updated_at)
-          VALUES (${method.id}, ${method.workspaceId}, ${method.userId}, ${method.gateway},
-                  ${method.gatewayCustomerId}, ${method.maskedNumber}, ${method.cardHolderName},
-                  ${method.isDefault}, ${method.expiresAt}, ${method.createdAt}, ${method.updatedAt})
-        `;
-      }
+      const data = {
+        workspace_id: method.workspaceId,
+        user_id: method.userId,
+        gateway: method.gateway,
+        gateway_customer_id: method.gatewayCustomerId,
+        masked_number: method.maskedNumber,
+        card_holder_name: method.cardHolderName,
+        is_default: method.isDefault,
+        expires_at: method.expiresAt,
+        updated_at: method.updatedAt,
+        deleted_at: method.deletedAt,
+      };
+      await prisma.payment_methods.upsert({
+        where: { id: method.id },
+        create: { id: method.id, ...data, created_at: method.createdAt },
+        update: data,
+      });
     } catch (err) {
       throw new Error(`BillingRepository.savePaymentMethod failed: ${(err as Error).message}`);
     }
@@ -227,50 +228,49 @@ export class BillingRepository implements IBillingRepository {
 
   async findPaymentMethodById(id: string): Promise<PaymentMethodEntity | null> {
     try {
-      const rows = await prisma.$queryRaw<any[]>`
-        SELECT * FROM "payment_methods" WHERE id = ${id} AND deleted_at IS NULL LIMIT 1
-      `;
-      if (!rows || rows.length === 0) return null;
-      return this._mapPaymentMethod(rows[0]);
+      const row = await prisma.payment_methods.findFirst({
+        where: { id, deleted_at: null },
+      });
+      if (!row) return null;
+      return this._mapPaymentMethod(row);
     } catch { return null; }
   }
 
   async findPaymentMethodsByWorkspace(workspaceId: string): Promise<PaymentMethodEntity[]> {
     try {
-      const rows = await prisma.$queryRaw<any[]>`
-        SELECT * FROM "payment_methods"
-        WHERE workspace_id = ${workspaceId} AND deleted_at IS NULL
-        ORDER BY is_default DESC, created_at DESC
-      `;
+      const rows = await prisma.payment_methods.findMany({
+        where: { workspace_id: workspaceId, deleted_at: null },
+        orderBy: [{ is_default: 'desc' }, { created_at: 'desc' }],
+      });
       return rows.map(r => this._mapPaymentMethod(r));
     } catch { return []; }
   }
 
   async findDefaultPaymentMethod(workspaceId: string): Promise<PaymentMethodEntity | null> {
     try {
-      const rows = await prisma.$queryRaw<any[]>`
-        SELECT * FROM "payment_methods"
-        WHERE workspace_id = ${workspaceId} AND is_default = true AND deleted_at IS NULL
-        LIMIT 1
-      `;
-      if (!rows || rows.length === 0) return null;
-      return this._mapPaymentMethod(rows[0]);
+      const row = await prisma.payment_methods.findFirst({
+        where: { workspace_id: workspaceId, is_default: true, deleted_at: null },
+      });
+      if (!row) return null;
+      return this._mapPaymentMethod(row);
     } catch { return null; }
   }
 
   async unsetAllDefaultMethods(workspaceId: string): Promise<void> {
     try {
-      await prisma.$executeRaw`
-        UPDATE "payment_methods" SET is_default = false WHERE workspace_id = ${workspaceId}
-      `;
-    } catch {} // silent
+      await prisma.payment_methods.updateMany({
+        where: { workspace_id: workspaceId },
+        data: { is_default: false },
+      });
+    } catch { /* silent */ }
   }
 
   async deletePaymentMethod(id: string): Promise<void> {
     try {
-      await prisma.$executeRaw`
-        UPDATE "payment_methods" SET deleted_at = NOW() WHERE id = ${id}
-      `;
+      await prisma.payment_methods.update({
+        where: { id },
+        data: { deleted_at: new Date() },
+      });
     } catch (err) {
       throw new Error(`BillingRepository.deletePaymentMethod failed: ${(err as Error).message}`);
     }
@@ -287,22 +287,23 @@ export class BillingRepository implements IBillingRepository {
     totalOverdue: number;
   }> {
     try {
-      const rows = await prisma.$queryRaw<any[]>`
-        SELECT
-          COALESCE(SUM(total_amount) FILTER (WHERE status != 'cancelled'), 0)::text as total_invoiced,
-          COALESCE(SUM(total_amount) FILTER (WHERE status = 'paid'), 0)::text as total_paid,
-          COALESCE(SUM(total_amount) FILTER (WHERE status = 'pending'), 0)::text as total_pending,
-          COALESCE(SUM(total_amount) FILTER (WHERE status = 'overdue'), 0)::text as total_overdue
-        FROM "invoices"
-        WHERE workspace_id = ${workspaceId}
-      `;
-      const r = rows[0];
-      return {
-        totalInvoiced: Number(r?.total_invoiced ?? 0),
-        totalPaid:     Number(r?.total_paid ?? 0),
-        totalPending:  Number(r?.total_pending ?? 0),
-        totalOverdue:  Number(r?.total_overdue ?? 0),
-      };
+      const rows = await prisma.invoices.findMany({
+        where: { workspace_id: workspaceId },
+        select: { status: true, total_amount: true },
+      });
+      let totalInvoiced = 0;
+      let totalPaid = 0;
+      let totalPending = 0;
+      let totalOverdue = 0;
+      for (const r of rows) {
+        const amount = Number(r.total_amount);
+        if (r.status === 'cancelled') continue;
+        totalInvoiced += amount;
+        if (r.status === 'paid') totalPaid += amount;
+        else if (r.status === 'pending') totalPending += amount;
+        else if (r.status === 'overdue') totalOverdue += amount;
+      }
+      return { totalInvoiced, totalPaid, totalPending, totalOverdue };
     } catch {
       return { totalInvoiced: 0, totalPaid: 0, totalPending: 0, totalOverdue: 0 };
     }
@@ -336,6 +337,7 @@ export class BillingRepository implements IBillingRepository {
       workspaceId: row.workspace_id,
       invoiceId: row.invoice_id,
       gateway: row.gateway,
+      authority: row.authority ?? null,
       referenceNumber: row.reference_number ?? null,
       status: row.status,
       amount: Number(row.amount),

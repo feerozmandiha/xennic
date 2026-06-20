@@ -12,6 +12,7 @@ from src.calculators.cable.schemas import (
     VoltageDropInput,
     ShortCircuitInput,
     PEConductorInput,
+    CableTrayInput,
 )
 
 
@@ -108,3 +109,19 @@ async def pe_sizing(request: Request, inputs: PEConductorInput) -> Dict[str, Any
     Protective Earth Conductor Sizing according to IEC 60364-5-54 Table 54.3
     """
     return execute_calculation(request, "CABLE-004", inputs.model_dump(), PEConductorInput)
+
+
+# ============================================================================
+# CABLE-005: Cable Tray / Ladder Sizing
+# ============================================================================
+
+@router.post(
+    "/tray-sizing",
+    summary="Cable Tray/Ladder Sizing",
+    description="Calculate fill ratio and recommend tray size per IEC 61915 / NEC 392.",
+)
+async def cable_tray_sizing(request: Request, inputs: CableTrayInput) -> Dict[str, Any]:
+    """
+    Cable Tray/Ladder Sizing according to IEC 61915 / IEC 61537
+    """
+    return execute_calculation(request, "CABLE-005", inputs.model_dump(), CableTrayInput)

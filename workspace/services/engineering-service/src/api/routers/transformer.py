@@ -10,6 +10,7 @@ from src.calculators.transformer.schemas import (
     TransformerLossesInput,
     TransformerRegulationInput,
     KFactorInput,
+    TransformerEfficiencyInput,
 )
 
 router = APIRouter()
@@ -46,3 +47,8 @@ async def transformer_regulation(request: Request, inputs: TransformerRegulation
 @router.post("/k-factor", summary="K-Factor Calculator", description="Calculate K-Factor for non-linear loads")
 async def k_factor(request: Request, inputs: KFactorInput) -> Dict[str, Any]:
     return execute_calculation(request, "TRF-004", inputs.model_dump(), KFactorInput)
+
+
+@router.post("/efficiency", summary="Transformer Energy Efficiency", description="Validate losses against EU 548/2014 Tier 1 & Tier 2 limits")
+async def transformer_efficiency(request: Request, inputs: TransformerEfficiencyInput) -> Dict[str, Any]:
+    return execute_calculation(request, "TRF-005", inputs.model_dump(), TransformerEfficiencyInput)

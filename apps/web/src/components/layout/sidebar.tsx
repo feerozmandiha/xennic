@@ -8,19 +8,24 @@ import { useQuery } from '@tanstack/react-query';
 import {
   LayoutDashboard, FolderKanban, Zap,
   HardDrive, Bell, Settings, ChevronLeft, Cpu,
-  Menu, X, FileBarChart, BookOpen, MessageSquare, Shield,
+  Menu, X, FileBarChart, MessageSquare, Shield, Network,
+  Building2, Library, ShoppingCart, Search,
 } from 'lucide-react';
 import { useAuthStore } from '@/stores/auth.store';
 import { apiClient }    from '@/lib/api/client';
 import { cn }           from '@/lib/utils';
 
 const NAV_ITEMS = [
+  { key: 'search',        icon: Search,           adminOnly: false },
   { key: 'dashboard',     icon: LayoutDashboard, adminOnly: false },
   { key: 'projects',      icon: FolderKanban,    adminOnly: false },
+  { key: 'workspace',     icon: Building2,       adminOnly: false },
   { key: 'engineering',   icon: Zap,             adminOnly: false },
+  { key: 'power-system',  icon: Network,         adminOnly: false },
   { key: 'ai',            icon: Cpu,             adminOnly: false },
   { key: 'energy',        icon: FileBarChart,    adminOnly: false },
-  { key: 'articles',      icon: BookOpen,        adminOnly: false },
+  { key: 'knowledge',     icon: Library,         adminOnly: false },
+  { key: 'marketplace',   icon: ShoppingCart,    adminOnly: false },
   { key: 'consultations', icon: MessageSquare,   adminOnly: false },
   { key: 'storage',       icon: HardDrive,       adminOnly: false },
   { key: 'notifications', icon: Bell,            adminOnly: false },

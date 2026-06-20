@@ -4,7 +4,7 @@ Cable Engineering - Pydantic Schemas
 Input and output schemas for all cable calculations
 """
 
-from typing import Literal, Optional
+from typing import Dict, Literal, Optional
 from pydantic import BaseModel, Field, model_validator
 from src.core.base_calculator import CalculationInput
 
@@ -138,6 +138,56 @@ class PEConductorInput(CalculationInput):
         default='copper',
         description="Phase conductor material"
     )
+
+
+class CableTrayInput(CalculationInput):
+    """
+    Input schema for Cable Tray/Ladder Sizing
+
+    Based on IEC 61915 / IEC 61537
+    """
+    tray_width_mm: float = Field(..., gt=0, description="Tray width in mm")
+    tray_depth_mm: float = Field(..., gt=0, description="Tray depth/height in mm (side rail height)")
+    tray_type: Literal['perforated', 'ladder', 'solid_bottom', 'wire_mesh'] = Field(
+        default='perforated',
+        description="Tray type affecting fill ratio limits"
+    )
+    cables: Dict[str, int] = Field(
+        ...,
+        description="Mapping of cable outer diameter (mm) -> quantity, e.g. {'15': 6, '25': 3}"
+    )
+    spare_percent: float = Field(
+        default=20.0,
+        ge=0,
+        le=100,
+        description="Spare capacity percentage (usually 20-30%)"
+    )
+
+    @model_validator(mode='after')
+    def validate_cables(self):
+        if not self.cables:
+            raise ValueError("At least one cable type must be provided")
+        for diam_str, qty in self.cables.items():
+            try:
+                diam = float(diam_str)
+            except ValueError:
+                raise ValueError(f"Invalid cable diameter key: '{diam_str}'. Must be a number.")
+            if diam <= 0:
+                raise ValueError(f"Cable diameter must be positive, got {diam}")
+            if qty <= 0:
+                raise ValueError(f"Cable quantity must be positive, got {qty} for diameter {diam}")
+        return self
+
+
+class CableTrayOutput(BaseModel):
+    """Output schema for Cable Tray/Ladder Sizing"""
+    tray_area_mm2: float = Field(..., description="Total cross-sectional area of tray (mm²)")
+    total_cable_area_mm2: float = Field(..., description="Total cable cross-sectional area (mm²)")
+    fill_ratio_percent: float = Field(..., description="Current fill ratio (%)")
+    max_fill_ratio_percent: float = Field(..., description="Maximum allowed fill ratio for tray type (%)")
+    within_limit: bool = Field(..., description="Whether fill ratio is within permissible limit")
+    recommended_tray_width_mm: Optional[float] = Field(None, description="Recommended minimum tray width (mm)")
+    remaining_area_mm2: float = Field(..., description="Remaining usable area (mm²)")
 
 
 class PEConductorOutput(BaseModel):

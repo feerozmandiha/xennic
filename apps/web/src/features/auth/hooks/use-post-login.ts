@@ -7,7 +7,7 @@ const WS_KEY    = 'xennic_workspace_id';
  * بعد از login/register موفق:
  * 1. workspace کاربر را پیدا یا می‌سازد
  * 2. وضعیت ادمین را بررسی می‌کند
- * 3. اگر plan مشخص شده، اشتراک ایجاد می‌کند
+ * توجه: اشتراک فقط بعد از پرداخت موفق ایجاد می‌شود
  */
 export async function handlePostLogin(
   setWorkspace: (id: string) => void,
@@ -49,42 +49,11 @@ export async function handlePostLogin(
 
     if (json.success && Array.isArray(json.data) && json.data.length > 0) {
       workspaceId = json.data[0].id as string;
-    } else {
-      // کاربر workspace ندارد — بساز
-      const createRes  = await fetch(`${apiBase}/workspaces`, {
-        method:  'POST',
-        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ name: 'My Workspace' }),
-      });
-      const createJson = await createRes.json();
-      workspaceId = createJson?.data?.id ?? createJson?.id ?? null;
     }
+    // کاربر workspace ندارد — کاربر از طریق صفحه خوش‌آمدگویی خودش می‌سازد
 
     if (workspaceId) {
       _saveWorkspace(workspaceId, setWorkspace);
-
-      // ── اگر plan مشخص شده (و رایگان نیست)، اشتراک ایجاد کن ──────────
-      if (plan && plan !== 'free') {
-        try {
-          // دریافت لیست پلن‌ها برای پیدا کردن UUID
-          const plansRes  = await fetch(`${apiBase}/subscriptions/plans`, {
-            headers: { 'Authorization': `Bearer ${token}` },
-          });
-          const plansJson = await plansRes.json();
-          const plans: any[] = plansJson?.data ?? [];
-
-          const selectedPlan = plans.find((p: any) => p.slug === plan);
-          if (selectedPlan) {
-            await fetch(`${apiBase}/workspaces/${workspaceId}/subscription`, {
-              method:  'POST',
-              headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-              body:    JSON.stringify({ planId: selectedPlan.id }),
-            });
-          }
-        } catch (err) {
-          console.error('Post-login subscription creation failed:', err);
-        }
-      }
     }
   } catch (err) {
     console.error('Post-login workspace setup failed:', err);

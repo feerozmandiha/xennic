@@ -3,30 +3,11 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import { Zap, Menu, X, Sun, Moon } from 'lucide-react';
-import { useTheme } from 'next-themes';
+import { Zap, Menu, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { UserStatus } from '@/components/layout/user-status';
 import { LanguageSwitcher } from '@/components/layout/language-switcher';
-
-function ThemeToggleDark() {
-  const [mounted, setMounted] = useState(false);
-  const { theme, setTheme } = useTheme();
-  useEffect(() => { setMounted(true); }, []);
-  if (!mounted) return <div className="w-8 h-8" />;
-  const cycle = () => {
-    if (theme === 'light') setTheme('dark');
-    else if (theme === 'dark') setTheme('system');
-    else setTheme('light');
-  };
-  return (
-    <button onClick={cycle}
-      className="w-8 h-8 flex items-center justify-center rounded-lg text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] hover:bg-[hsl(var(--secondary))] transition-all relative overflow-hidden">
-      <Sun  className={cn('h-4 w-4 absolute transition-all duration-200', theme !== 'light' && 'opacity-0 scale-50')} />
-      <Moon className={cn('h-4 w-4 absolute transition-all duration-200', theme !== 'dark' && 'opacity-0 scale-50')} />
-    </button>
-  );
-}
+import { ThemeToggle } from '@/components/layout/theme-toggle';  // ✅ استفاده از کامپوننت اصلی
 
 export default function PublicLayout({ children }: { children: React.ReactNode }) {
   const params = useParams();
@@ -41,7 +22,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
   }, []);
 
   const links = [
-    { label: 'مقالات',    href: `/${locale}/articles` },
+    { label: 'دانشنامه', href: `/${locale}/knowledge` },
     { label: 'درباره ما', href: `/${locale}/about` },
     { label: 'تماس',      href: `/${locale}/contact` },
   ];
@@ -56,7 +37,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
       )}>
         <div className="max-w-7xl mx-auto px-5 h-16 flex items-center justify-between gap-4">
           <Link href={`/${locale}`} className="flex items-center gap-2.5 shrink-0">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#3b82f6] to-[#6366f1] flex items-center justify-center shadow-[0_0_16px_rgba(99,102,241,0.5)]">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--accent))] flex items-center justify-center shadow-[0_0_16px_hsl(var(--primary)/0.3)]">
               <Zap className="h-4 w-4 text-white" />
             </div>
             <span className="font-bold text-[hsl(var(--foreground))] tracking-wide text-lg">Xennic</span>
@@ -73,7 +54,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
 
           <div className="hidden md:flex items-center gap-2">
             <LanguageSwitcher />
-            <ThemeToggleDark />
+            <ThemeToggle />  {/* ✅ استفاده از کامپوننت اصلی */}
             <UserStatus />
           </div>
 
@@ -93,7 +74,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
             ))}
             <div className="pt-3 flex items-center gap-2 border-t border-[hsl(var(--border))]">
               <LanguageSwitcher />
-              <ThemeToggleDark />
+              <ThemeToggle />  {/* ✅ استفاده از کامپوننت اصلی */}
             </div>
             <UserStatus variant="mobile" />
           </div>
@@ -107,7 +88,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
         <div className="max-w-7xl mx-auto px-5 py-12">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#3b82f6] to-[#6366f1] flex items-center justify-center">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--accent))] flex items-center justify-center">
                 <Zap className="h-4 w-4 text-white" />
               </div>
               <span className="font-bold text-[hsl(var(--foreground))] tracking-wide">Xennic</span>

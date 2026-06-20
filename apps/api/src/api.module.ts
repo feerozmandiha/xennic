@@ -1,3 +1,4 @@
+import { ThrottlerModule } from '@nestjs/throttler';
 import { Module } from '@nestjs/common';
 import { ApiController }       from './api.controller.js';
 import { ApiService }          from './api.service.js';
@@ -12,11 +13,17 @@ import { SubscriptionModule }  from './modules/subscription/subscription.module.
 import { StorageModule }       from './modules/storage/storage.module.js';
 import { NotificationModule }  from './modules/notification/notification.module.js';
 import { AiModule }            from './modules/ai/ai.module.js';
-import { ArticlesModule }      from './modules/articles/articles.module.js';
 import { ConsultationsModule } from './modules/consultations/consultations.module.js';
-import { CommentsModule }      from './modules/comments/comments.module.js';
 import { BillingModule }       from './modules/billing/billing.module.js';   // ✅ صورتحساب
 import { AdminModule }         from './modules/admin/admin.module.js';         // ✅ ادمین
+import { SearchModule }        from './modules/search/search.module.js';       // ✅ جستجوی سراسری
+import { KnowledgeModule }     from './modules/knowledge/knowledge.module.js';  // ✅ سیستم دانش
+import { StandardsModule }     from './modules/standards/standards.module.js';   // ✅ استانداردها
+import { MarketplaceModule }   from './modules/marketplace/marketplace.module.js'; // ✅ بازارگاه
+import { ApiKeysModule }       from './modules/api-keys/api-keys.module.js';         // ✅ کلید API
+import { WebhooksModule }      from './modules/webhooks/webhooks.module.js';         // ✅ وب‌هوک
+import { EmailModule }         from './modules/email/email.module.js';               // ✅ ایمیل
+import { FeatureFlagsModule }  from './modules/feature-flags/feature-flags.module.js'; // ✅ Feature Flags
 
 @Module({
   imports: [
@@ -32,10 +39,34 @@ import { AdminModule }         from './modules/admin/admin.module.js';         /
     StorageModule,
     NotificationModule,
     AiModule,
-    ArticlesModule,
     ConsultationsModule,
-    CommentsModule,
     AdminModule,         // ✅ مدیریت پلتفرم
+    SearchModule,        // ✅ جستجوی سراسری
+    KnowledgeModule,     // ✅ سیستم دانش
+    StandardsModule,     // ✅ استانداردهای مهندسی
+    MarketplaceModule,   // ✅ بازارگاه
+    ApiKeysModule,       // ✅ کلید API
+    WebhooksModule,      // ✅ وب‌هوک
+    EmailModule,         // ✅ ایمیل
+    FeatureFlagsModule,  // ✅ Feature Flags
+    // ✅ SEC-001C: Rate Limiting
+    ThrottlerModule.forRoot([
+      {
+        name: 'short',
+        ttl: 10000,
+        limit: 10,
+      },
+      {
+        name: 'medium',
+        ttl: 60000,
+        limit: 100,
+      },
+      {
+        name: 'long',
+        ttl: 3600000,
+        limit: 1000,
+      },
+    ]),
   ],
   controllers: [ApiController],
   providers:   [ApiService],

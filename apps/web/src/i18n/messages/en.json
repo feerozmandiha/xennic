@@ -14,6 +14,7 @@
     "next": "Next",
     "search": "Search...",
     "noData": "No data found",
+    "searchMinChars": "Type at least 2 characters to search",
     "total": "Total",
     "actions": "Actions"
   },
@@ -48,6 +49,7 @@
     "dashboard": "Dashboard",
     "projects": "Projects",
     "engineering": "Engineering",
+    "power-system": "Power System",
     "storage": "Files",
     "notifications": "Notifications",
     "settings": "Settings",
@@ -55,8 +57,11 @@
     "subscription": "Subscription",
     "ai": "AI Assistant",
     "energy": "Energy Analysis",
-    "articles": "Articles",
     "consultations": "Consultations",
+    "knowledge": "Technical Encyclopedia",
+    "marketplace": "Marketplace",
+    "search": "Search",
+    "billing": "Billing & Subscription",
     "admin": "Admin"
   },
   "dashboard": {
@@ -104,6 +109,116 @@
       "power_quality": "Power Quality"
     },
     "proRequired": "This calculation requires a Pro plan"
+  },
+  "powerSystem": {
+    "title": "Power System Studies",
+    "description": "IEC 60909 Load Flow, Short Circuit, Motor Starting & Busbar Sizing",
+    "authRequired": "Please sign in to run Power System Studies",
+    "tabLabels": {
+      "PS-001": "Load Flow",
+      "PS-002": "Short Circuit",
+      "PS-003": "Motor Starting",
+      "PS-004": "Busbar Sizing"
+    },
+    "tabStandards": {
+      "PS-001": "IEC 60909 / Newton-Raphson",
+      "PS-002": "IEC 60909-0:2016",
+      "PS-003": "IEC 60034 / IEEE 399",
+      "PS-004": "IEC 61439-1 / IEC 60865"
+    },
+    "network": {
+      "buses": "Buses",
+      "lines": "Lines",
+      "transformers": "Transformers",
+      "loads": "Loads",
+      "generators": "Generators",
+      "addBus": "Add Bus",
+      "addLine": "Add Line",
+      "addTransformer": "Add Transformer",
+      "addLoad": "Add Load",
+      "addGenerator": "Add Generator",
+      "fields": {
+        "name": "Name",
+        "vn_kv": "Vn (kV)",
+        "type": "Type",
+        "fromBus": "From Bus",
+        "toBus": "To Bus",
+        "length_km": "Length (km)",
+        "r_ohm_per_km": "R (Ω/km)",
+        "x_ohm_per_km": "X (Ω/km)",
+        "c_nf_per_km": "C (nF/km)",
+        "max_i_ka": "Max I (kA)",
+        "hvBus": "HV Bus",
+        "lvBus": "LV Bus",
+        "sn_mva": "Sn (MVA)",
+        "vn_hv_kv": "HV (kV)",
+        "vn_lv_kv": "LV (kV)",
+        "vkr_pct": "Vkr (%)",
+        "vk_pct": "Vk (%)",
+        "bus": "Bus",
+        "p_mw": "P (MW)",
+        "q_mvar": "Q (MVAr)",
+        "p_mw_short": "P (MW)",
+        "sn_mva_gen": "Sn (MVA)"
+      },
+      "types": {
+        "slack": "Slack",
+        "load": "Load",
+        "gen": "Generator"
+      }
+    },
+    "motor": {
+      "title": "Motor Parameters",
+      "motor_kw": "Motor Power (kW)",
+      "motor_vn_kv": "Motor Vn (kV)",
+      "startingMethod": "Starting Method",
+      "startingCurrent": "Starting Current (×In)",
+      "allowableDip": "Allowable Dip (%)",
+      "transformerKva": "Transformer (kVA)",
+      "transformerZ": "TRF Z (%)",
+      "methods": {
+        "DOL": "DOL",
+        "StarDelta": "Star-Delta",
+        "Autotransformer": "Autotransformer",
+        "SoftStarter": "Soft Starter",
+        "VFD": "VFD"
+      }
+    },
+    "busbar": {
+      "title": "Busbar Parameters",
+      "material": "Material",
+      "shape": "Shape",
+      "width": "Width (mm)",
+      "thickness": "Thickness (mm)",
+      "spacing": "Spacing (mm)",
+      "ambientTemp": "Ambient Temp (°C)",
+      "loadCurrent": "Load Current (A)",
+      "faultCurrent": "Fault Current (kA)",
+      "faultDuration": "Fault Duration (s)",
+      "length": "Length (m)",
+      "materials": {
+        "copper": "Copper",
+        "aluminum": "Aluminum"
+      },
+      "shapes": {
+        "rectangular": "Rectangular",
+        "round": "Round"
+      }
+    },
+    "run": "Run {type}",
+    "calcFailed": "Calculation failed",
+    "results": {
+      "title": "Results",
+      "warnings": "Warnings",
+      "networkSummary": "Network Summary",
+      "yes": "Yes",
+      "no": "No",
+      "buses": "Buses",
+      "lines": "Lines",
+      "transformers": "Transformers",
+      "loads": "Loads",
+      "generators": "Generators"
+    }
   },
   "storage": {
     "title": "Files",
@@ -155,6 +270,46 @@
     "workspace": "Workspace",
     "plan": "Subscription",
     "appearance": "Appearance"
+  },
+  "knowledge": {
+    "title": "Technical Encyclopedia",
+    "slug": "Slug",
+    "content": "Content",
+    "newArticle": "New Article",
+    "editArticle": "Edit Article",
+    "newArticleDescription": "Create a new technical knowledge article."
+  },
+  "marketplace": {
+    "title": "Marketplace",
+    "description": "Manage products, orders and vendors",
+    "products": "Products",
+    "orders": "Orders",
+    "vendors": "Vendors",
+    "newProduct": "New Product",
+    "newVendor": "New Vendor",
+    "editProduct": "Edit Product",
+    "productDeleted": "Product deleted",
+    "productCreated": "Product created",
+    "productUpdated": "Product updated",
+    "vendorCreated": "Vendor created",
+    "noProducts": "No products found",
+    "noOrders": "No orders found",
+    "noVendors": "No vendors found",
+    "notFound": "Not found",
+    "backToMarketplace": "Back to marketplace",
+    "vendor": "Vendor",
+    "vendorName": "Vendor name",
+    "selectVendor": "Select vendor",
+    "type": "Type",
+    "price": "Price",
+    "currency": "Currency",
+    "items": "Items",
+    "createdAt": "Created at",
+    "create": "Create",
+    "update": "Update",
+    "cancel": "Cancel",
+    "error": "Operation failed",
+    "selectVendorFirst": "Please select a vendor first"
   },
   "errors": {
     "required": "This field is required",

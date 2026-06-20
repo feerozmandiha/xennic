@@ -3,7 +3,7 @@ import { IsEmail, IsEnum, IsNotEmpty, IsUUID } from 'class-validator';
 import { WorkspaceMemberEntity, type WorkspaceMemberRole } from '../../domain/entities/workspace-member.entity.js';
 import { WorkspaceInvitationEntity } from '../../domain/entities/workspace-invitation.entity.js';
 
-const ROLES = ['OWNER', 'ADMIN', 'ENGINEER', 'CONSULTANT', 'MEMBER', 'VIEWER'] as const;
+const ROLES = ['OWNER', 'ADMIN', 'EDITOR', 'KNOWLEDGE_WRITER', 'REVIEWER', 'ENGINEER', 'CONSULTANT', 'MEMBER', 'VIEWER'] as const;
 
 // ─── Request DTOs ─────────────────────────────────────────────────────────────
 
