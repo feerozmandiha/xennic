@@ -71,7 +71,6 @@ export function LoginForm({ redirectTo, plan: initialPlan }: { redirectTo?: stri
           API_BASE,
           res.data.accessToken,
           useAuthStore.getState().setIsAdmin,
-          effectivePlan,
         );
 
         // پاک کردن پلن ذخیره شده

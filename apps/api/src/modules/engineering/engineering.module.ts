@@ -30,6 +30,6 @@ import { SubscriptionModule } from '../subscription/subscription.module.js';
       useClass: CalculationRepository,
     },
   ],
-  exports: [EngineeringService, EngineeringClientService],
+  exports: [EngineeringService, EngineeringClientService, 'ICalculationRepository'],
 })
 export class EngineeringModule {}

@@ -756,12 +756,11 @@ export function BillAnalyzer() {
       const data = await res.json();
       setOcrRaw(data);
 
-      if (data.analysis && data.ocr?.kwh_found) {
-        setFinalResult(data);
-        toast.success('تحلیل قبض برق با موفقیت انجام شد');
+      if (data.ocr?.kwh_found) {
+        setShowManualForm(true);
+        toast.success('OCR با موفقیت انجام شد — لطفاً اطلاعات را تأیید کنید');
       } else {
         setShowManualForm(true);
-        // ← fix: استفاده از info به جای warning که وجود ندارد
         toast.info('OCR مصرف kWh را نیافت — لطفاً دستی وارد کنید');
       }
     } catch (err: any) {
@@ -787,6 +786,7 @@ export function BillAnalyzer() {
   function buildPrefill(): Partial<FormState> {
     const norm = ocrRaw?.ocr?.normalized ?? {};
     return {
+      kwh_consumed:    norm.kwh_consumed    ? String(norm.kwh_consumed)    : '',
       billing_days:    String(norm.billing_days ?? 30),
       subscriber_type: norm.subscriber_type === 'industrial' ? 'industrial_mv' : (norm.subscriber_type ?? 'residential'),
       current_peak_kw: norm.current_peak_kw ? String(norm.current_peak_kw) : '',

@@ -15,7 +15,7 @@ from fastapi.responses import JSONResponse
 
 # ── API Routers ───────────────────────────────────────────────────────────────
 from src.api.routers.basic import router as basic_router
-from src.api.routers.bill_ocr import router as bill_ocr_router
+
 from src.api.routers.cable import router as cable_router
 from src.api.routers.energy_analyzer import router as energy_analyzer_router
 from src.api.routers.power_quality import router as power_quality_router
@@ -358,9 +358,6 @@ app.include_router(power_quality_router,
 
 app.include_router(energy_analyzer_router,
     tags=["Energy Analyzer"])
-
-app.include_router(bill_ocr_router,
-    tags=["Bill OCR"])
 
 app.include_router(renewable_router,
     tags=["Renewable & Motors"])

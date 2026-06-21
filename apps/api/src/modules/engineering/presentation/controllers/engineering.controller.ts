@@ -169,57 +169,91 @@ export class EngineeringController {
   }
 
   // ─── POST /engineering/energy/ocr-bill ────────────────────────────────────
-  // Proxy به Python service — حل CORS
+  // OCR via vision-service (PaddleOCR + Vision LLM), سپس تحلیل
 
   @Post('energy/ocr-bill')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
-    summary: 'OCR + تحلیل قبض برق (Proxy)',
-    description: 'آپلود قبض PDF/تصویر → OCR → تحلیل pandapower',
+    summary: 'OCR + تحلیل قبض برق',
+    description: 'آپلود قبض PDF/تصویر → OCR (vision-service) → تحلیل pandapower',
   })
   async ocrBill(@Req() req: any, @Res() reply: any) {
-    const PYTHON_URL = process.env['ENGINEERING_SERVICE_URL'] ?? 'http://localhost:8001';
-    const targetUrl  = `${PYTHON_URL}/api/v1/engineering/energy/ocr-bill`;
-
     try {
-      // خواندن multipart از request
       if (!req.isMultipart || !req.isMultipart()) {
         return reply.status(400).send({ success: false, error: 'multipart/form-data required' });
       }
 
-      // forward کامل multipart به Python
-      const FormData = (await import('node:stream')).Readable;
+      // خواندن raw body (multipart: file + run_analysis)
       const chunks: Buffer[] = [];
-      const contentType = req.headers['content-type'] ?? '';
-
-      // خواندن raw body
       for await (const chunk of req.raw) {
         chunks.push(Buffer.from(chunk));
       }
       const rawBody = Buffer.concat(chunks);
+      const contentType = req.headers['content-type'] ?? '';
 
-      const pythonRes = await fetch(targetUrl, {
-        method:  'POST',
-        headers: {
-          'Content-Type': contentType,
-          'Content-Length': String(rawBody.length),
-        },
+      // 1. OCR via vision-service
+      const VISION_URL = process.env['VISION_SERVICE_URL'] ?? 'http://localhost:8003';
+      const visionRes = await fetch(`${VISION_URL}/api/v1/vision/bill/read`, {
+        method: 'POST',
         body: rawBody,
-        signal: AbortSignal.timeout(60_000),
+        headers: { 'Content-Type': contentType },
+        signal: AbortSignal.timeout(120_000),
       });
 
-      const data = await pythonRes.json();
+      if (!visionRes.ok) {
+        const errBody = await visionRes.json().catch(() => ({}));
+        return reply.status(visionRes.status).send({
+          success: false,
+          error: 'Vision service OCR failed',
+          detail: errBody,
+        });
+      }
 
-      reply
-        .status(pythonRes.ok ? 200 : pythonRes.status)
+      const visionData = await visionRes.json();
+      const bill = visionData.data?.bill ?? {};
+      const confidence = visionData.confidence ?? 0;
+
+      // 2. Transform vision-service response → old format
+      const normalized: Record<string, any> = {
+        kwh_consumed: bill.consumption_kwh ?? null,
+        amount_rials: bill.total_amount ?? null,
+        billing_days: null,
+        subscriber_type: null,
+        current_peak_kw: null,
+        kvarh_consumed: null,
+        contract_kw: null,
+        power_factor: null,
+      };
+
+      if (bill.extra_fields) {
+        for (const [k, v] of Object.entries(bill.extra_fields)) {
+          normalized[k] = v;
+        }
+      }
+
+      const response: Record<string, any> = {
+        success: true,
+        ocr: {
+          raw_text: visionData.data?.combined_text ?? '',
+          kwh_found: bill.consumption_kwh != null,
+          confidence,
+          normalized,
+          extracted: bill,
+        },
+        engine: 'vision-service',
+        engine_version: visionData.engine_version ?? '1.0.0',
+      };
+
+      return reply
+        .status(200)
         .header('Content-Type', 'application/json')
-        .send(data);
+        .send(response);
 
     } catch (err) {
       const msg = (err as Error).message;
       reply.status(503).send({
         success: false,
-        error:   'Engineering service unavailable',
+        error:   'Bill OCR service unavailable',
         detail:  msg,
       });
     }

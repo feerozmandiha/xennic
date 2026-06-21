@@ -9,7 +9,7 @@ import {
   LayoutDashboard, FolderKanban, Zap,
   HardDrive, Bell, Settings, ChevronLeft, Cpu,
   Menu, X, FileBarChart, MessageSquare, Shield, Network,
-  Building2, Library, ShoppingCart, Search,
+  Building2, Library, ShoppingCart, Search, ScanEye,
 } from 'lucide-react';
 import { useAuthStore } from '@/stores/auth.store';
 import { apiClient }    from '@/lib/api/client';
@@ -23,6 +23,7 @@ const NAV_ITEMS = [
   { key: 'engineering',   icon: Zap,             adminOnly: false },
   { key: 'power-system',  icon: Network,         adminOnly: false },
   { key: 'ai',            icon: Cpu,             adminOnly: false },
+  { key: 'vision',        icon: ScanEye,         adminOnly: false },
   { key: 'energy',        icon: FileBarChart,    adminOnly: false },
   { key: 'knowledge',     icon: Library,         adminOnly: false },
   { key: 'marketplace',   icon: ShoppingCart,    adminOnly: false },

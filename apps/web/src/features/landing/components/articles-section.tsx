@@ -21,12 +21,25 @@ const FALLBACK_ARTICLES: Article[] = [
 export function ArticlesSection({ locale }: { locale: string }) {
   const { data, isLoading } = useQuery({
     queryKey: ['landing-articles'],
-    queryFn: () => apiClient.get<{ success: boolean; data: Article[] }>('/articles?limit=3'),
+    queryFn: () => apiClient.get<{ success: boolean; data: any[]; meta: any }>('/public/knowledge?limit=3'),
     retry: 1,
     staleTime: 5 * 60 * 1000,
+    select: (res) => ({
+      articles: (res.data ?? []).slice(0, 3).map((a: any) => ({
+        id: a.id,
+        title: a.content?.title ?? a.slug,
+        slug: a.slug,
+        summary: a.content?.summary ?? '',
+        category: a.content?.category ?? a.difficulty ?? 'general',
+        authorName: a.content?.author ?? 'تیم فنی Xennic',
+        readMinutes: a.readingTime ?? 5,
+        viewCount: 0,
+        publishedAt: a.publishedAt,
+      })) as Article[],
+    }),
   });
 
-  const articles = data?.data?.length ? data.data.slice(0, 3) : FALLBACK_ARTICLES;
+  const articles = data?.articles?.length ? data.articles : FALLBACK_ARTICLES;
 
   return (
     <section id="articles" className="relative py-28 bg-[#050b14]">

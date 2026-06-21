@@ -98,18 +98,46 @@ services:
         max-size: "10m"
         max-file: "3"
 
-  # Future services:
-  # api-service (NestJS) - will connect to engineering-service
-  # ai-service - will use engineering results
-  # web-service (Next.js) - frontend
+  # Vision Service - Document & Nameplate Reader
+  vision-service:
+    build:
+      context: ../../../../workspace/services/vision-service
+      dockerfile: Dockerfile
+    container_name: xennic-vision-service
+    ports:
+      - "${VISION_SERVICE_PORT:-8003}:8003"
+    environment:
+      - SERVICE_PORT=8003
+      - OCR_ENGINE_MODE=${VISION_OCR_ENGINE_MODE:-hybrid}
+      - VISION_LLM_PROVIDER=${VISION_LLM_PROVIDER:-groq}
+      - GROQ_API_KEY=${GROQ_API_KEY:-}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8003/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+    networks:
+      - xennic-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
 networks:
   xennic-network:
     driver: bridge
     name: xennic-network
 
-# AI Service - Intelligent Engineering Agents
-ai-service:
+  # AI Service - Intelligent Engineering Agents
+  ai-service:
     build:
       context: ./services/ai-service
       dockerfile: Dockerfile
