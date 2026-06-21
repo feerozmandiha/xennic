@@ -24,6 +24,7 @@ import { ApiKeysModule }       from './modules/api-keys/api-keys.module.js';    
 import { WebhooksModule }      from './modules/webhooks/webhooks.module.js';         // ✅ وب‌هوک
 import { EmailModule }         from './modules/email/email.module.js';               // ✅ ایمیل
 import { FeatureFlagsModule }  from './modules/feature-flags/feature-flags.module.js'; // ✅ Feature Flags
+import { VisionModule }        from './modules/vision/vision.module.js';                // ✅ بینایی ماشین
 
 @Module({
   imports: [
@@ -49,6 +50,7 @@ import { FeatureFlagsModule }  from './modules/feature-flags/feature-flags.modul
     WebhooksModule,      // ✅ وب‌هوک
     EmailModule,         // ✅ ایمیل
     FeatureFlagsModule,  // ✅ Feature Flags
+    VisionModule,        // ✅ Vision
     // ✅ SEC-001C: Rate Limiting
     ThrottlerModule.forRoot([
       {

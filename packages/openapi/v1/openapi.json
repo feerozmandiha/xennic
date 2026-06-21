@@ -1347,6 +1347,42 @@
         ]
       }
     },
+    "/email/test": {
+      "post": {
+        "operationId": "EmailController_sendTest",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SendTestEmailDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Test email sent"
+          },
+          "403": {
+            "description": "فقط SUPER_ADMIN مجاز به انجام این عملیات است"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          },
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Send a test email (admin only)",
+        "tags": [
+          "email"
+        ]
+      }
+    },
     "/roles": {
       "get": {
         "description": "Returns list of all roles.",
@@ -2419,7 +2455,7 @@
     },
     "/engineering/energy/ocr-bill": {
       "post": {
-        "description": "آپلود قبض PDF/تصویر → OCR → تحلیل pandapower",
+        "description": "آپلود قبض PDF/تصویر → OCR (vision-service) → تحلیل pandapower",
         "operationId": "EngineeringController_ocrBill",
         "parameters": [],
         "responses": {
@@ -2432,7 +2468,7 @@
             "JWT-auth": []
           }
         ],
-        "summary": "OCR + تحلیل قبض برق (Proxy)",
+        "summary": "OCR + تحلیل قبض برق",
         "tags": [
           "engineering"
         ]
@@ -4898,6 +4934,34 @@
             "description": "Search query (min 2 characters)",
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Page number (default: 1)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Items per page (default: 10)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "type",
+            "required": false,
+            "in": "query",
+            "description": "Filter by type (can repeat)",
+            "schema": {
+              "type": "array",
+              "items": {}
             }
           }
         ],
@@ -7460,22 +7524,353 @@
           "webhooks"
         ]
       }
+    },
+    "/admin/feature-flags": {
+      "post": {
+        "operationId": "FeatureFlagAdminController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateFeatureFlagDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Feature flag created"
+          },
+          "409": {
+            "description": "Feature flag already exists"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Create a new feature flag",
+        "tags": [
+          "admin / feature-flags"
+        ]
+      },
+      "get": {
+        "operationId": "FeatureFlagAdminController_findAll",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": 50,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "List all feature flags",
+        "tags": [
+          "admin / feature-flags"
+        ]
+      }
+    },
+    "/admin/feature-flags/{id}": {
+      "get": {
+        "operationId": "FeatureFlagAdminController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Feature flag UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get feature flag details",
+        "tags": [
+          "admin / feature-flags"
+        ]
+      },
+      "patch": {
+        "operationId": "FeatureFlagAdminController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Feature flag UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateFeatureFlagDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Update feature flag metadata",
+        "tags": [
+          "admin / feature-flags"
+        ]
+      },
+      "delete": {
+        "operationId": "FeatureFlagAdminController_delete",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Feature flag UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Delete a feature flag",
+        "tags": [
+          "admin / feature-flags"
+        ]
+      }
+    },
+    "/admin/feature-flags/{id}/toggle": {
+      "patch": {
+        "operationId": "FeatureFlagAdminController_toggle",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Feature flag UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ToggleFeatureFlagDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Enable or disable a feature flag",
+        "tags": [
+          "admin / feature-flags"
+        ]
+      }
+    },
+    "/feature-flags/enabled": {
+      "get": {
+        "operationId": "FeatureFlagController_getEnabledFeatures",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get all enabled features for the current workspace",
+        "tags": [
+          "feature-flags"
+        ]
+      }
+    },
+    "/vision/upload": {
+      "post": {
+        "description": "Upload a file — system auto-detects if it is an electricity bill or equipment nameplate. Runs OCR + extraction and saves to workspace history.",
+        "operationId": "VisionUploadController_upload",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "PDF or image (jpg, png, bmp, tiff)"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Analysis complete"
+          },
+          "503": {
+            "description": "Vision service unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Upload & auto-detect document (bill / nameplate / generic)",
+        "tags": [
+          "vision"
+        ]
+      }
+    },
+    "/vision/health": {
+      "get": {
+        "operationId": "VisionUploadController_health",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Vision upload health check",
+        "tags": [
+          "vision"
+        ]
+      }
     }
   },
   "info": {
     "title": "Xennic Platform API",
     "description": "Xennic Engineering Platform API Documentation",
     "version": "1.0.0",
-    "contact": {}
+    "contact": {
+      "name": "Xennic Team",
+      "url": "https://xennic.com",
+      "email": "support@xennic.com"
+    },
+    "license": {
+      "name": "Proprietary",
+      "url": "https://xennic.com/terms"
+    }
   },
-  "tags": [],
+  "tags": [
+    {
+      "name": "health",
+      "description": "Health check endpoints"
+    },
+    {
+      "name": "workspaces",
+      "description": "Workspace management (multi-tenant isolation)"
+    },
+    {
+      "name": "auth",
+      "description": "Authentication and user management"
+    },
+    {
+      "name": "users",
+      "description": "User profile management"
+    },
+    {
+      "name": "roles",
+      "description": "Role management and assignment"
+    },
+    {
+      "name": "permissions",
+      "description": "Permission management"
+    },
+    {
+      "name": "projects",
+      "description": "Project management"
+    },
+    {
+      "name": "engineering",
+      "description": "Engineering calculations"
+    }
+  ],
   "servers": [],
   "components": {
     "securitySchemes": {
       "JWT-auth": {
         "scheme": "bearer",
         "bearerFormat": "JWT",
-        "type": "http"
+        "type": "http",
+        "name": "JWT",
+        "description": "Enter JWT token",
+        "in": "header"
       }
     },
     "schemas": {
@@ -8167,6 +8562,18 @@
         "required": [
           "currentPassword",
           "newPassword"
+        ]
+      },
+      "SendTestEmailDto": {
+        "type": "object",
+        "properties": {
+          "to": {
+            "type": "string",
+            "example": "user@example.com"
+          }
+        },
+        "required": [
+          "to"
         ]
       },
       "RoleResponseDto": {
@@ -10086,6 +10493,65 @@
           "isActive": {
             "type": "boolean",
             "description": "Enable or disable the webhook"
+          }
+        }
+      },
+      "CreateFeatureFlagDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Unique name (alphanumeric, underscores allowed)",
+            "example": "ai_advanced_chat"
+          },
+          "description": {
+            "type": "string",
+            "description": "Human-readable description"
+          },
+          "enabled": {
+            "type": "boolean",
+            "description": "Enable immediately",
+            "default": false
+          },
+          "planId": {
+            "type": "string",
+            "description": "Scope to a plan ID (null = global)"
+          },
+          "workspaceId": {
+            "type": "string",
+            "description": "Scope to a workspace ID (overrides plan scope)"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "ToggleFeatureFlagDto": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "description": "New enabled state"
+          }
+        },
+        "required": [
+          "enabled"
+        ]
+      },
+      "UpdateFeatureFlagDto": {
+        "type": "object",
+        "properties": {
+          "description": {
+            "type": "string",
+            "description": "Updated description"
+          },
+          "planId": {
+            "type": "object",
+            "description": "New plan scope (null = remove plan scope)"
+          },
+          "workspaceId": {
+            "type": "object",
+            "description": "New workspace scope (null = remove workspace scope)"
           }
         }
       }

@@ -14,7 +14,6 @@ export async function handlePostLogin(
   apiBase: string,
   token: string,
   setIsAdmin?: (v: boolean) => void,
-  plan?: string | null,
 ) {
   // ── پاک کردن workspace قبلی ────────────────────────────────────────────
   if (typeof window !== 'undefined') {

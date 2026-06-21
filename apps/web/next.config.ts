@@ -8,11 +8,19 @@ const nextConfig: NextConfig = {
   typescript: { ignoreBuildErrors: false },
   output: 'standalone',
 
-  // API proxy به NestJS
+  // API proxy
   async rewrites() {
     return [
       {
-        source:      '/api/:path*',
+        source: '/api/v1/vision/:path*',
+        destination: `${process.env.NEXT_PUBLIC_VISION_API_URL ?? 'http://localhost:8003'}/api/v1/vision/:path*`,
+      },
+      {
+        source: '/api/v1/engineering/energy/:path*',
+        destination: `${process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000'}/api/v1/engineering/energy/:path*`,
+      },
+      {
+        source: '/api/:path*',
         destination: `${process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000'}/api/:path*`,
       },
     ];

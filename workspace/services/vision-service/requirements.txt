@@ -1,0 +1,39 @@
+# Core
+fastapi==0.115.0
+uvicorn[standard]==0.30.0
+pydantic==2.9.0
+pydantic-settings==2.5.0
+python-multipart==0.0.12
+
+# PDF Processing
+PyMuPDF==1.27.2
+
+# Image Processing
+opencv-contrib-python==4.10.0.84
+Pillow==11.0.0
+scikit-image==0.24.0
+scipy==1.14.0
+numpy==2.1.0
+
+# OCR
+pytesseract==0.3.13
+# PaddleOCR (optional — heavy GPU dependency)
+# paddlepaddle==3.0.0b1
+# paddleocr==2.9.0
+
+# LLM Integration
+httpx==0.28.0
+
+# Async
+anyio==4.6.0
+
+# Monitoring
+prometheus-client==0.21.0
+
+# Development / Testing
+pytest==8.3.0
+pytest-asyncio==0.24.0
+pytest-cov==5.0.0
+ruff==0.6.0
+mypy==1.11.0
+httpx>=0.28.0

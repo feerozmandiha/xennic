@@ -81,7 +81,6 @@ export function RegisterForm({ plan: initialPlan }: { plan?: string | null }) {
           API_BASE,
           json.data.accessToken,
           useAuthStore.getState().setIsAdmin,
-          initialPlan,
         );
 
         router.push(
