@@ -35,6 +35,13 @@ async def health() -> dict:
     }
 
 
+@app.get("/metrics")
+async def metrics():
+    from prometheus_client import generate_latest, REGISTRY
+    from starlette.responses import Response
+    return Response(generate_latest(REGISTRY), media_type="text/plain; version=0.0.4; charset=utf-8")
+
+
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception) -> JSONResponse:
     return JSONResponse(

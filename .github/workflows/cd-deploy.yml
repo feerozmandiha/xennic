@@ -1,0 +1,88 @@
+name: CD — Deploy Production
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*.*.*"]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_TAG: ${{ github.sha }}
+
+jobs:
+  deploy:
+    name: Build & Deploy
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build & Push API
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/api/Dockerfile
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ github.repository }}/api:${{ env.IMAGE_TAG }},${{ env.REGISTRY }}/${{ github.repository }}/api:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build & Push Web
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/web/Dockerfile
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ github.repository }}/web:${{ env.IMAGE_TAG }},${{ env.REGISTRY }}/${{ github.repository }}/web:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build & Push Engineering Service
+        uses: docker/build-push-action@v6
+        with:
+          context: workspace/services/engineering-service
+          file: workspace/services/engineering-service/Dockerfile
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ github.repository }}/engineering-service:${{ env.IMAGE_TAG }},${{ env.REGISTRY }}/${{ github.repository }}/engineering-service:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build & Push Vision Service
+        uses: docker/build-push-action@v6
+        with:
+          context: workspace/services/vision-service
+          file: workspace/services/vision-service/Dockerfile
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ github.repository }}/vision-service:${{ env.IMAGE_TAG }},${{ env.REGISTRY }}/${{ github.repository }}/vision-service:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build & Push AI Service
+        uses: docker/build-push-action@v6
+        with:
+          context: workspace/services/ai-service
+          file: workspace/services/ai-service/Dockerfile
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ github.repository }}/ai-service:${{ env.IMAGE_TAG }},${{ env.REGISTRY }}/${{ github.repository }}/ai-service:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          script: |
+            cd /opt/xennic
+            docker compose pull
+            docker compose up -d --remove-orphans
+            docker image prune -f

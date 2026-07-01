@@ -1,0 +1,148 @@
+docs
+├── ai
+│   ├── AI_AGENTS.md
+│   ├── AI_ENGINE.md
+│   ├── DOCUMENT_ANALYSIS.md
+│   ├── EMBEDDING_PIPELINE.md
+│   ├── LLM_INTEGRATION.md
+│   ├── MODEL_SELECTION.md
+│   ├── OCR_PIPELINE.md
+│   ├── PROMPT_ENGINEERING.md
+│   ├── RAG_ARCHITECTURE.md
+│   ├── VECTOR_DATABASE.md
+│   ├── VISION_AI.md
+│   └── VISION_PIPELINE.md
+├── api
+│   └── API_REFERENCE.md
+├── architecture
+│   ├── EVENT_FLOW.md
+│   ├── MICROSERVICES.md
+│   ├── NESTJS_MODULES.md
+│   ├── PACKAGES_REFERENCE.md
+│   ├── REQUEST_FLOW.md
+│   ├── SEQUENCE_DIAGRAMS.md
+│   ├── SERVICE_ARCHITECTURE.md
+│   ├── SYSTEM_ARCHITECTURE.md
+│   ├── XENNIC_ARCHITECTURE_SPEC_v1.md
+│   ├── XENNIC_AUTHORIZATION_SPEC_v1.md
+│   ├── XENNIC_CURRENT_ARCHITECTURE.md
+│   ├── XENNIC_DATABASE_SPEC_v2.md
+│   ├── XENNIC_ERD_v1.md
+│   ├── XENNIC_MASTER_ARCHITECTURE.md
+│   └── XENNIC_MONOREPO_STRUCTURE_v2.md
+├── backend
+│   ├── API_DESIGN.md
+│   ├── AUTHENTICATION.md
+│   ├── AUTHORIZATION.md
+│   ├── BACKGROUND_JOBS.md
+│   ├── CACHE.md
+│   ├── ERROR_HANDLING.md
+│   └── LOGGING.md
+├── database
+│   ├── BACKUP_STRATEGY.md
+│   ├── DATABASE_ARCHITECTURE.md
+│   ├── DATABASE_DESIGN.md
+│   ├── ERD.md
+│   ├── INDEXING.md
+│   └── MIGRATIONS.md
+├── decisions
+│   ├── ADR-006-dependency-management.md
+│   └── ADR-007-database-migration-strategy.md
+├── deployment
+│   ├── DOCKER_COMPOSE.md
+│   ├── DOCKER.md
+│   ├── DOMAIN_CONFIGURATION.md
+│   ├── ENVIRONMENT_VARIABLES.md
+│   ├── HTTPS.md
+│   ├── NGINX.md
+│   ├── PRODUCTION_CHECKLIST.md
+│   ├── REVERSE_PROXY.md
+│   ├── SCALING.md
+│   ├── SERVER_SETUP.md
+│   ├── XENNIC_API_SPEC_v1.md
+│   ├── XENNIC_DEVELOPMENT_RULES_v1.md
+│   └── XENNIC_INFRASTRUCTURE_SPEC_v1.md
+├── development
+│   ├── DEVELOPER_GUIDE.md
+│   └── SCRIPTS_REFERENCE.md
+├── devops
+│   ├── BACKUP_PLAN.md
+│   ├── CI_CD.md
+│   ├── DISASTER_RECOVERY.md
+│   ├── GITHUB_ACTIONS.md
+│   ├── LOGGING_INFRASTRUCTURE.md
+│   └── MONITORING.md
+├── diagrams
+├── DOCUMENTATION_STATUS.md
+├── engineering
+│   ├── CALCULATION_ENGINE.md
+│   ├── ENGINEERING_ENGINE.md
+│   ├── FORMULAS.md
+│   ├── NESTJS_CALCULATORS.md
+│   ├── VALIDATION_RULES.md
+│   ├── XENNIC_CALCULATION_CATALOG_v1.md
+│   └── XENNIC_ENGINEERING_ENGINE_SPEC_v1.md
+├── frontend
+│   ├── COMPONENT_GUIDE.md
+│   ├── FEATURES_CATALOG.md
+│   ├── FRONTEND_ARCHITECTURE.md
+│   ├── ROUTING.md
+│   ├── STATE_MANAGEMENT.md
+│   └── UI_ARCHITECTURE.md
+├── infrastructure
+│   └── INFRASTRUCTURE.md
+├── knowledge
+│   ├── KNOWLEDGE_MANAGEMENT.md
+│   └── KNOWLEDGE_PLATFORM.md
+├── product
+│   └── PRODUCT_VISION.md
+├── project
+│   ├── CHANGELOG.md
+│   ├── KNOWN_LIMITATIONS.md
+│   ├── RELEASE_PROCESS.md
+│   ├── TECHNICAL_DEBT.md
+│   ├── TODO.md
+│   └── VERSIONING.md
+├── project-management
+│   ├── XENNIC_DEVELOPMENT_GOVERNANCE_v1.md
+│   └── XENNIC_MASTER_ROADMAP_v1.md
+├── README.md
+├── reference
+│   ├── DEPENDENCIES.md
+│   ├── GLOSSARY.md
+│   └── NAMING_CONVENTIONS.md
+├── roadmap
+│   └── ROADMAP.md
+├── security
+│   ├── ACCESS_CONTROL.md
+│   ├── DATA_ENCRYPTION.md
+│   ├── JWT.md
+│   ├── RATE_LIMITING.md
+│   ├── SECRETS_MANAGEMENT.md
+│   └── SECURITY_MODEL.md
+├── services
+│   ├── ai-service.md
+│   ├── api-gateway.md
+│   ├── consultations.md
+│   ├── ENGINEERING_ENGINE.md
+│   ├── engineering-service.md
+│   ├── marketplace.md
+│   ├── subscription-billing.md
+│   └── vision-service.md
+├── standards
+│   └── XENNIC_CODING_STANDARDS_v1.md
+├── testing
+│   ├── E2E_TESTS.md
+│   ├── INTEGRATION_TESTS.md
+│   ├── PERFORMANCE_TESTING.md
+│   ├── TEST_STRATEGY.md
+│   └── UNIT_TESTS.md
+├── user
+│   ├── ADMIN_GUIDE.md
+│   ├── FAQ.md
+│   ├── INSTALLATION_GUIDE.md
+│   ├── TROUBLESHOOTING.md
+│   └── USER_GUIDE.md
+└── XENNIC_MASTER_PROJECT_PROMPT.md
+
+25 directories, 121 files

@@ -15,9 +15,65 @@
         ]
       }
     },
+    "/metrics": {
+      "get": {
+        "operationId": "MetricsController_getMetrics",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Metrics"
+        ]
+      }
+    },
     "/health": {
       "get": {
         "operationId": "HealthController_getHealth",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Health"
+        ]
+      }
+    },
+    "/health/live": {
+      "get": {
+        "operationId": "HealthController_checkLiveness",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Health"
+        ]
+      }
+    },
+    "/health/ready": {
+      "get": {
+        "operationId": "HealthController_checkReadiness",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Health"
+        ]
+      }
+    },
+    "/health/startup": {
+      "get": {
+        "operationId": "HealthController_checkStartup",
         "parameters": [],
         "responses": {
           "200": {
@@ -7811,6 +7867,603 @@
           "vision"
         ]
       }
+    },
+    "/knowledge-factory/ingest": {
+      "post": {
+        "description": "Accepts a multipart file upload, processes and ingests it into the knowledge factory.",
+        "operationId": "KnowledgeIntakeController_ingest",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "Document file (PDF, DOCX, MD, TXT)"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Document ingested successfully"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Upload and ingest a document",
+        "tags": [
+          "knowledge-factory"
+        ]
+      }
+    },
+    "/knowledge-factory/search": {
+      "get": {
+        "description": "Performs hybrid (vector + keyword) search with RRF ranking and citation generation.",
+        "operationId": "KnowledgeSearchController_search",
+        "parameters": [
+          {
+            "name": "query",
+            "required": true,
+            "in": "query",
+            "description": "Search query text",
+            "schema": {
+              "minLength": 2,
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "offset",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 0,
+              "type": "number"
+            }
+          },
+          {
+            "name": "types",
+            "required": false,
+            "in": "query",
+            "description": "Filter by source types",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "minScore",
+            "required": false,
+            "in": "query",
+            "description": "Minimum score threshold (0-1)",
+            "schema": {
+              "default": 0,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Search results returned",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Hybrid search across ingested knowledge documents",
+        "tags": [
+          "knowledge-factory"
+        ]
+      }
+    },
+    "/knowledge-factory/pipeline": {
+      "post": {
+        "operationId": "KnowledgePipelineController_executePipeline",
+        "parameters": [],
+        "responses": {
+          "202": {
+            "description": "Pipeline accepted"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Execute full knowledge pipeline on a document",
+        "tags": [
+          "knowledge-factory"
+        ]
+      }
+    },
+    "/knowledge-factory/pipeline/{documentId}": {
+      "get": {
+        "operationId": "KnowledgePipelineController_getPipelineHistory",
+        "parameters": [
+          {
+            "name": "documentId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Audit history returned"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get pipeline audit history for a document",
+        "tags": [
+          "knowledge-factory"
+        ]
+      }
+    },
+    "/rag/query": {
+      "post": {
+        "description": "Retrieves relevant engineering knowledge, builds context, generates evidence-backed answers.",
+        "operationId": "RagController_query",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RagQueryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "RAG response with citations",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RagResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid query",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RagErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Query the Engineering RAG Engine",
+        "tags": [
+          "rag-engine"
+        ]
+      }
+    },
+    "/engineering-intelligence/execute": {
+      "post": {
+        "description": "Decomposes a goal, plans execution, runs reasoning steps, and produces decisions with audit trail.",
+        "operationId": "EngineeringIntelligenceController_execute",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EiQueryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Execution result with decisions and audit"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Execute engineering intelligence workflow",
+        "tags": [
+          "engineering-intelligence"
+        ]
+      }
+    },
+    "/enterprise-agents/execute": {
+      "post": {
+        "description": "Routes a query to the specified AI agent, executes relevant tools, and returns analysis with safety validation.",
+        "operationId": "EnterpriseAgentsController_execute",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AgentQueryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Agent execution result"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Execute an enterprise agent",
+        "tags": [
+          "enterprise-agents"
+        ]
+      }
+    },
+    "/enterprise-agents/agents": {
+      "get": {
+        "operationId": "EnterpriseAgentsController_listAgents",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "List of registered agents"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "List available agents",
+        "tags": [
+          "enterprise-agents"
+        ]
+      }
+    },
+    "/calculation-engine/execute": {
+      "post": {
+        "description": "Deterministic, auditable calculation execution with validation, sensitivity, and uncertainty analysis.",
+        "operationId": "CalculationEngineController_execute",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CalculationQueryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Calculation result with full audit trail"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Execute an engineering calculation",
+        "tags": [
+          "calculation-engine"
+        ]
+      }
+    },
+    "/calculation-engine/formulas": {
+      "get": {
+        "operationId": "CalculationEngineController_listFormulas",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "List all available formulas",
+        "tags": [
+          "calculation-engine"
+        ]
+      }
+    },
+    "/calculation-engine/formulas/{id}": {
+      "get": {
+        "operationId": "CalculationEngineController_getFormula",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get formula details",
+        "tags": [
+          "calculation-engine"
+        ]
+      }
+    },
+    "/calculation-engine/units": {
+      "get": {
+        "operationId": "CalculationEngineController_listUnits",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "List supported engineering units",
+        "tags": [
+          "calculation-engine"
+        ]
+      }
+    },
+    "/security/encrypt": {
+      "post": {
+        "operationId": "SecurityController_encrypt",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EncryptDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Encrypt data",
+        "tags": [
+          "security"
+        ]
+      }
+    },
+    "/security/decrypt": {
+      "post": {
+        "operationId": "SecurityController_decrypt",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DecryptDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Decrypt data",
+        "tags": [
+          "security"
+        ]
+      }
+    },
+    "/security/audit-logs": {
+      "get": {
+        "operationId": "SecurityController_queryAuditLogs",
+        "parameters": [
+          {
+            "name": "actorId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "resourceType",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "resourceId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "action",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "severity",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "workspaceId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "fromDate",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "toDate",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "default": 1,
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Object"
+                }
+              ]
+            }
+          },
+          {
+            "name": "limit",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "default": 50,
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Object"
+                }
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Query audit logs",
+        "tags": [
+          "security"
+        ]
+      }
+    },
+    "/security/signed-url": {
+      "post": {
+        "operationId": "SecurityController_generateSignedUrl",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SignedUrlRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Generate signed URL",
+        "tags": [
+          "security"
+        ]
+      }
     }
   },
   "info": {
@@ -10554,6 +11207,421 @@
             "description": "New workspace scope (null = remove workspace scope)"
           }
         }
+      },
+      "CitationDto": {
+        "type": "object",
+        "properties": {
+          "sourceDocumentName": {
+            "type": "string",
+            "description": "Name of the source document"
+          },
+          "chunkTextExcerpt": {
+            "type": "string",
+            "description": "Excerpt of the matching chunk text"
+          },
+          "pageReference": {
+            "type": "object",
+            "description": "Page reference if available",
+            "nullable": true
+          },
+          "relevanceScore": {
+            "type": "number",
+            "description": "Relevance score for this citation"
+          }
+        },
+        "required": [
+          "sourceDocumentName",
+          "chunkTextExcerpt",
+          "pageReference",
+          "relevanceScore"
+        ]
+      },
+      "SearchResultItemDto": {
+        "type": "object",
+        "properties": {
+          "chunkId": {
+            "type": "string"
+          },
+          "documentId": {
+            "type": "string"
+          },
+          "documentName": {
+            "type": "string"
+          },
+          "excerpt": {
+            "type": "string"
+          },
+          "score": {
+            "type": "number"
+          },
+          "confidence": {
+            "type": "number"
+          },
+          "metadata": {
+            "type": "object"
+          },
+          "sourceType": {
+            "type": "string"
+          },
+          "citation": {
+            "$ref": "#/components/schemas/CitationDto"
+          }
+        },
+        "required": [
+          "chunkId",
+          "documentId",
+          "documentName",
+          "excerpt",
+          "score",
+          "confidence",
+          "metadata",
+          "sourceType",
+          "citation"
+        ]
+      },
+      "SearchResponseDto": {
+        "type": "object",
+        "properties": {
+          "results": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SearchResultItemDto"
+            }
+          },
+          "total": {
+            "type": "number"
+          },
+          "query": {
+            "type": "string"
+          },
+          "took": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "results",
+          "total",
+          "query",
+          "took"
+        ]
+      },
+      "RagQueryDto": {
+        "type": "object",
+        "properties": {
+          "question": {
+            "type": "string",
+            "description": "Engineering question"
+          },
+          "tiers": {
+            "description": "Filter by knowledge tiers",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "languages": {
+            "description": "Filter by languages",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "categoryIds": {
+            "description": "Filter by category IDs",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "ontologyEntityIds": {
+            "description": "Filter by ontology entity IDs",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "versionStatus": {
+            "type": "string",
+            "description": "Filter by version status"
+          },
+          "minAuthorityScore": {
+            "type": "number",
+            "description": "Minimum authority score (0-1)"
+          },
+          "maxTokens": {
+            "type": "number",
+            "description": "Max tokens for context",
+            "default": 4000
+          },
+          "topK": {
+            "type": "number",
+            "description": "Top K results",
+            "default": 10
+          },
+          "includeEvidenceChain": {
+            "type": "boolean",
+            "description": "Include evidence chain in response",
+            "default": false
+          }
+        },
+        "required": [
+          "question"
+        ]
+      },
+      "RagResponseDto": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "type": "object"
+          }
+        },
+        "required": [
+          "success",
+          "data"
+        ]
+      },
+      "RagErrorDto": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "default": false
+          },
+          "error": {
+            "type": "object"
+          }
+        },
+        "required": [
+          "success",
+          "error"
+        ]
+      },
+      "EiQueryDto": {
+        "type": "object",
+        "properties": {
+          "goal": {
+            "type": "string",
+            "description": "Engineering goal description"
+          },
+          "goalType": {
+            "type": "string",
+            "description": "Goal type",
+            "enum": [
+              "calculation",
+              "selection",
+              "verification",
+              "analysis",
+              "estimation",
+              "compliance"
+            ]
+          },
+          "domain": {
+            "type": "string",
+            "description": "Engineering domain"
+          },
+          "maxSteps": {
+            "type": "number",
+            "description": "Max reasoning steps",
+            "default": 50
+          },
+          "timeout": {
+            "type": "number",
+            "description": "Timeout in ms"
+          },
+          "includeReport": {
+            "type": "boolean",
+            "description": "Include generated report",
+            "default": true
+          },
+          "format": {
+            "type": "string",
+            "description": "Report format",
+            "default": "markdown"
+          },
+          "constraints": {
+            "description": "Constraints",
+            "type": "array",
+            "items": {
+              "type": "array"
+            }
+          }
+        },
+        "required": [
+          "goal",
+          "goalType",
+          "domain"
+        ]
+      },
+      "AgentQueryDto": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Query or request for the agent"
+          },
+          "agentSlug": {
+            "type": "string",
+            "description": "Agent slug (e.g. electrical-engineer, solar-consultant)",
+            "example": "electrical-engineer"
+          },
+          "sessionId": {
+            "type": "string",
+            "description": "Existing session ID for continuing conversation"
+          },
+          "workspaceId": {
+            "type": "string",
+            "description": "Workspace ID"
+          },
+          "context": {
+            "type": "object",
+            "description": "Additional context parameters"
+          },
+          "maxSteps": {
+            "type": "number",
+            "description": "Max execution steps",
+            "default": 50
+          },
+          "includeMemory": {
+            "type": "boolean",
+            "description": "Include memory context",
+            "default": true
+          },
+          "timeout": {
+            "type": "number",
+            "description": "Timeout in ms"
+          }
+        },
+        "required": [
+          "query",
+          "agentSlug",
+          "workspaceId"
+        ]
+      },
+      "CalculationQueryDto": {
+        "type": "object",
+        "properties": {
+          "formulaId": {
+            "type": "string",
+            "description": "Formula ID to execute"
+          },
+          "inputs": {
+            "type": "object",
+            "description": "Input parameters for the formula"
+          },
+          "workspaceId": {
+            "type": "string",
+            "description": "Workspace ID"
+          },
+          "precision": {
+            "type": "number",
+            "description": "Decimal precision for results",
+            "default": 6
+          },
+          "sensitivityAnalysis": {
+            "type": "boolean",
+            "description": "Run sensitivity analysis",
+            "default": false
+          },
+          "uncertaintyAnalysis": {
+            "type": "boolean",
+            "description": "Run uncertainty analysis",
+            "default": false
+          },
+          "sensitivityVariation": {
+            "type": "number",
+            "description": "Sensitivity variation percent",
+            "default": 10
+          },
+          "confidenceLevel": {
+            "type": "number",
+            "description": "Confidence level for uncertainty",
+            "default": 0.95
+          }
+        },
+        "required": [
+          "formulaId",
+          "inputs",
+          "workspaceId"
+        ]
+      },
+      "EncryptDto": {
+        "type": "object",
+        "properties": {
+          "plaintext": {
+            "type": "string"
+          },
+          "context": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "plaintext"
+        ]
+      },
+      "DecryptDto": {
+        "type": "object",
+        "properties": {
+          "ciphertext": {
+            "type": "string"
+          },
+          "iv": {
+            "type": "string"
+          },
+          "tag": {
+            "type": "string"
+          },
+          "algorithm": {
+            "type": "string"
+          },
+          "keyId": {
+            "type": "string"
+          },
+          "context": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "ciphertext",
+          "iv",
+          "tag",
+          "algorithm",
+          "keyId"
+        ]
+      },
+      "Object": {
+        "type": "object",
+        "properties": {}
+      },
+      "SignedUrlRequestDto": {
+        "type": "object",
+        "properties": {
+          "operation": {
+            "type": "string",
+            "enum": [
+              "upload",
+              "download",
+              "delete"
+            ]
+          },
+          "bucket": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          },
+          "expiresIn": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "operation",
+          "bucket",
+          "path",
+          "expiresIn"
+        ]
       }
     }
   }

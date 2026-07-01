@@ -1,0 +1,464 @@
+================================================================================
+SPRINT K1.5 REPORT — ENGINEERING KNOWLEDGE MODEL & ACQUISITION GOVERNANCE
+================================================================================
+
+Date: Tir 1405 (June 2026)
+Status: ✅ COMPLETED — 8/8 deliverables
+Author: Xennic AI Agent
+Review: For Xennic Chief Architect
+
+================================================================================
+1. CREATED DIRECTORIES
+================================================================================
+
+docs/knowledge/concepts/         # Engineering Knowledge Model domain
+    (8 files, 3,385 lines, 162.9 KB)
+
+================================================================================
+2. CREATED FILES
+================================================================================
+
+1.  README.md                    6.9 KB   — Concepts domain overview, directory map,
+                                            Graph RAG compatibility requirements (R1-R8),
+                                            relationship to governance docs, roadmap
+
+2.  concept-model.md             41.0 KB  — **Core document of the sprint.**
+                                            Defines the Engineering Concept Model:
+                                            - What is a concept (6 properties, identity pattern)
+                                            - 6 concept types: Fact, Rule, Constraint,
+                                              Assumption, Calculation, Conclusion
+                                              (each with definition, validation, example)
+                                            - Component relationships (mermaid diagram,
+                                              8 typed edges with weights)
+                                            - Engineering Truth Model (5 mandatory elements:
+                                              Source, Evidence, Reasoning, Confidence, Version)
+                                            - Truth decay function, conflict resolution
+                                            - Graph RAG readiness (RDF/OWL, SPARQL, Property
+                                              Graph, multi-hop reasoning)
+                                            - 3 complete worked examples (20kV SC calculation,
+                                              400V cable sizing, transformer protection)
+
+3.  engineering-entities.md      32.0 KB  — Canonical Entity Architecture with 20 entities:
+                                            Standard, Regulation, Tariff, Equipment,
+                                            Manufacturer, Transformer, Generator, Motor,
+                                            Cable, Busbar, Relay, Circuit Breaker,
+                                            Protection Function, Calculation, Fault,
+                                            Measurement, Project, Substation, Customer,
+                                            Energy Source
+                                            Each entity has: description, attributes table,
+                                            relationships table, metadata requirements.
+                                            Also includes entity inheritance model and
+                                            Graph Node mapping specification.
+
+4.  engineering-relations.md     8.0 KB   — Relationship Model with 5 categories:
+                                            - Hierarchical (belongs_to, contains, part_of,
+                                              subclass_of, instance_of)
+                                            - Functional (protects, supplies, connects_to,
+                                              controls, measured_by)
+                                            - Regulatory (governs, regulates, adopts,
+                                              supersedes, referenced_by)
+                                            - Operational (operates_at, applied_to,
+                                              scheduled_for, owned_by)
+                                            - Dependency (depends_on, requires, produces,
+                                              validates, constrains)
+                                            Direction rules (5 rules), cardinality
+                                            constraints, Graph Edge mapping.
+
+5.  canonical-concepts.md        17.0 KB  — First-generation canonical concepts library:
+                                            Short Circuit Current, Load Flow, Voltage Drop,
+                                            Protection Coordination, Earthing System,
+                                            Power Quality, Harmonic Distortion, Transformer
+                                            Sizing, Cable Sizing, Demand Calculation, Energy
+                                            Consumption, Fault Diagnosis
+                                            Each has: concept_id, bilingual name, aliases,
+                                            definition, domains, type, related standards/
+                                            calculations/equipment/regulations/tariffs,
+                                            relationships. Includes inter-concept matrix.
+
+6.  concept-governance.md        14.0 KB  — Concept governance framework:
+                                            - 7 lifecycle states (Proposed→Retired)
+                                            - Creation process (8 steps)
+                                            - Review process (3 review types, qualifications)
+                                            - Approval workflow (3 authority levels)
+                                            - Versioning (MAJOR.MINOR.PATCH)
+                                            - Retirement policy (triggers, process)
+                                            - 8 roles & responsibilities
+
+7.  knowledge-lifecycle.md       17.0 KB  — Knowledge lifecycle management:
+                                            - 6 stages: Draft → Review → Approved →
+                                              Published → Superseded → Archived
+                                            - Each stage: owner, authority, entry/exit
+                                              criteria, activities, visibility, max duration
+                                            - Stage transition rules matrix (8 transitions)
+                                            - 4 quality gates with scoring
+                                            - Timeline SLAs with escalation
+                                            - Full audit trail requirements
+
+8.  acquisition-policy.md        27.0 KB  — Knowledge acquisition policy:
+                                            - Allowed sources per Tier (1-5) with restrictions
+                                            - Prohibited sources (8 categories)
+                                            - 8-step acquisition workflow
+                                            - Validation workflow (automated, metadata,
+                                              content, expert)
+                                            - Approval workflow per tier
+                                            - Retention policy (Tier 1: indefinite to
+                                              Tier 5: 5 years)
+                                            - Update and deprecation policies
+                                            - Copyright and licensing considerations
+                                            - Special Iranian section: ISIRI, Tavanir
+                                              regulations, Tavanir tariffs, Regional
+                                              Distribution Companies (all in Persian)
+
+================================================================================
+3. ENGINEERING CONCEPT DECISIONS
+================================================================================
+
+ECD-001: Six-Concept-Type Architecture
+---------------------------------------
+Decision: Engineering knowledge is decomposed into 6 fundamental types:
+Fact, Rule, Constraint, Assumption, Calculation, Conclusion.
+Rationale: These 6 types cover the complete engineering reasoning cycle.
+A fact is the atomic unit of truth. Rules encode normative knowledge.
+Constraints define boundaries. Assumptions enable tractable analysis.
+Calculations produce results. Conclusions derive insights.
+Aristotelian categories were considered (entity/relation/attribute)
+but found insufficient for capturing engineering reasoning dynamics.
+
+ECD-002: Unified Concept Identity
+----------------------------------
+Decision: Every concept has a persistent UUID identifier
+(XEN-CON-{TYPE}-{DOMAIN}-{SEQ}) independent of its name or version.
+Rationale: Enables stable references across versions, relationships,
+and graph representations. Names may change; IDs do not.
+
+ECD-003: Concept-Type-Specific Validation
+------------------------------------------
+Decision: Each concept type has its own validation criteria:
+- Facts: Must cite Tier 1-2 source
+- Rules: Must cite standard reference
+- Constraints: Source must match jurisdiction
+- Assumptions: Must document validity bounds
+- Calculations: Input/output schema required
+- Conclusions: Full evidence chain required
+Rationale: A generic validation approach cannot capture the different
+epistemic requirements of each type. Facts need authority; assumptions
+need justification; conclusions need full traceability.
+
+ECD-004: Concept Relationship as First-Class Construct
+-------------------------------------------------------
+Decision: Relationships between concepts are explicitly typed, directed,
+and versioned (not implicit or inferred).
+Rationale: Enables graph traversal, reasoning path construction, and
+evidence chain building. Implicit relationships cannot be audited.
+
+================================================================================
+4. ENGINEERING ENTITY DECISIONS
+================================================================================
+
+EED-001: 20 Canonical Entities as Foundation
+----------------------------------------------
+Decision: The entity model starts with exactly 20 entities, balancing
+coverage (standards through energy sources) with manageability.
+Rationale: This is the minimum viable set that covers the full engineering
+knowledge lifecycle: standards define it, regulations require it, tariffs
+price it, manufacturers make it, equipment implements it, projects build it,
+faults break it, calculations analyze it, measurements verify it.
+
+EED-002: Entity Inheritance Model
+-----------------------------------
+Decision: Entities support simple inheritance:
+- Equipment (abstract) → Transformer, Generator, Motor, Cable, Busbar
+- Protection Device (abstract) → Relay, Circuit Breaker
+- Document (abstract) → Standard, Regulation, Tariff
+Rationale: Reduces duplication and enables polymorphic relationships.
+A "protects" relationship can target Equipment or any of its subtypes.
+
+EED-003: Entity Attributes are Structured Per Type
+---------------------------------------------------
+Decision: Every entity type has a fixed set of required and optional
+attributes defined in a schema (table format in engineering-entities.md).
+Rationale: Structured attributes enable precise querying, filtering, and
+graph property storage. Free-form attributes would make consistent AI
+reasoning impossible.
+
+EED-004: Graph Node Mapping Specified
+---------------------------------------
+Decision: Each entity explicitly maps to a Knowledge Graph node format:
+entity_id → node URI, entity_type → node label, attributes → properties,
+relationships → edges.
+Rationale: Forward-compatibility with Graph RAG. Prevents costly
+re-mapping later.
+
+================================================================================
+5. ENGINEERING RELATIONSHIP DECISIONS
+================================================================================
+
+ERD-001: Five-Category Relationship System
+--------------------------------------------
+Decision: Relationships are categorized into 5 groups: Hierarchical,
+Functional, Regulatory, Operational, Dependency.
+Rationale: Each category has different semantics, direction rules, and
+cardinality patterns. Mixing them would create confusion. Hierarchical
+relationships are structural; functional are operational; regulatory are
+normative; operational are contextual; dependency are procedural.
+
+ERD-002: Explicit Direction Rules
+-----------------------------------
+Decision: 5 formal direction rules: unidirectional, bidirectional,
+inverse pairs, transitive chains, symmetric.
+Rationale: Graph traversal algorithms depend on direction knowledge.
+Enables correct pathfinding for multi-hop reasoning.
+
+ERD-003: Cardinality Constraints
+----------------------------------
+Decision: All relationships have defined cardinality (1:1, 1:M, M:1, M:M).
+Rationale: Validates data integrity. A transformer can belong to exactly
+one substation (M:1), but a substation can contain many transformers (1:M).
+
+ERD-004: Relationship Metadata
+--------------------------------
+Decision: Relationships carry their own metadata (source reference,
+confidence, weight, constraints).
+Rationale: The same two entities may have different relationships in
+different contexts. A standard "governs" equipment with high confidence
+in one jurisdiction but lower in another.
+
+================================================================================
+6. KNOWLEDGE LIFECYCLE DECISIONS
+================================================================================
+
+KLD-001: Six-Stage Lifecycle
+------------------------------
+Decision: Draft → Review → Approved → Published → Superseded → Archived.
+With Rejected as a possible exit from Review.
+Rationale: Covers the full lifecycle from creation through obsolescence.
+5 active states + archived. No "Deleted" state — knowledge is never
+permanently removed (audit/legal requirement).
+
+KLD-002: Explicit Quality Gates at Each Transition
+----------------------------------------------------
+Decision: Every stage transition requires passing a quality gate with
+measurable criteria and minimum scores.
+Rationale: Prevents low-quality knowledge from reaching AI services.
+The Draft→Review gate catches incomplete submissions. Review→Approved
+catches technical errors. Approved→Published catches metadata gaps.
+
+KLD-003: Time-Bounded Stages with Escalation
+----------------------------------------------
+Decision: Each stage has a maximum duration (e.g., Draft: 30 days,
+Review: 10 business days). Exceeded durations trigger escalation.
+Rationale: Prevents knowledge items from being stuck indefinitely.
+If a concept draft languishes for 30 days, it's either completed or
+returned to the author for action.
+
+KLD-004: Full Audit Trail
+---------------------------
+Decision: Every lifecycle transition is logged with timestamp, actor,
+states, reason, and evidence.
+Rationale: Required for engineering rigor. Enables forensic analysis
+of how knowledge entered the system and why. Critical for safety-related
+engineering knowledge.
+
+================================================================================
+7. ACQUISITION POLICY DECISIONS
+================================================================================
+
+APD-001: Tier-Indexed Approval Workflow
+-----------------------------------------
+Decision: Approval requirements vary by source tier:
+- Tier 1 (Standards): Knowledge Board + Legal (5 days)
+- Tier 2 (Regulations): Domain Lead (3 days)
+- Tier 3 (Manufacturer): Automated + spot-check (1 day)
+- Tier 4 (Research): Domain Lead (3 days)
+- Tier 5 (Community): Knowledge Board + Expert (5 days)
+Rationale: Higher-authority sources require more rigorous review.
+Lower-tier sources can be ingested faster but with less authority.
+
+APD-002: Prohibited Sources List
+----------------------------------
+Decision: 8 categories of prohibited sources, including:
+AI-generated content (no recursive training data), unlicensed/pirated
+content, confidential documents without permission, outdated standards.
+Rationale: Critical for quality and legal compliance. AI-generated content
+in the training base would create feedback loops. Pirated content exposes
+legal risk.
+
+APD-003: Retention Policy per Tier
+------------------------------------
+Decision: Retention varies by tier: Tier 1-2 indefinite (standards and
+regulations are historical records), Tier 3: 10 years, Tier 4: 15 years,
+Tier 5: 5 years with annual review.
+Rationale: Engineering standards and regulations have permanent historical
+value. Manufacturer data becomes outdated. Community knowledge has the
+shortest shelf life.
+
+APD-004: Copyright Compliance Framework
+-----------------------------------------
+Decision: All ingested content must comply with copyright law. Source URL
+and access type recorded. Paywalled content: metadata only with purchase
+link. Licensed content: license terms tracked. Iranian standards and
+regulations: generally public domain.
+Rationale: Legal compliance is non-negotiable. The framework protects
+Xennic from copyright infringement while maximizing useful knowledge.
+
+APD-005: Iranian Engineering Knowledge Section
+------------------------------------------------
+Decision: Dedicated section covering ISIRI standards, Tavanir regulations,
+Tavanir tariffs, and Regional Distribution Company documents. All Persian
+documentation with specific update cycles.
+Rationale: Iranian engineering knowledge is a primary use case for Xennic.
+Treating it as a special category ensures proper handling of language,
+jurisdiction, and update requirements.
+
+================================================================================
+8. ENGINEERING TRUTH MODEL DECISIONS
+================================================================================
+
+ETD-001: Truth = {Source, Evidence, Reasoning, Confidence, Version}
+---------------------------------------------------------------------
+Decision: Engineering Truth is defined as a 5-tuple of Source (authoritative
+document), Evidence (specific excerpt), Reasoning (logical derivation),
+Confidence (0.0-1.0 score), Version (concept version at time of conclusion).
+All 5 elements are mandatory. AI services MUST NOT generate engineering
+conclusions without all five.
+Rationale: This is the core innovation of the Xennic knowledge model.
+Without all five elements, an AI output is opinion, not engineering
+knowledge. The mandatory requirement is enforced at the architecture level.
+
+ETD-002: Truth Decay Function
+-------------------------------
+Decision: Truth confidence decays with time per source tier:
+- Tier 1: decays 0.02/year (standards are stable)
+- Tier 2: decays 0.04/year (regulations change more frequently)
+- Tier 3-4: decays 0.10/year
+- Tier 5: decays 0.20/year
+Rationale: A standard from 2021 is more trustworthy than one from 1998,
+even if both are technically "valid." The decay function models this.
+
+ETD-003: Conflict Resolution via Source Hierarchy
+---------------------------------------------------
+Decision: When sources conflict, Tier 1 overrides all. Tier 2 overrides
+3-5. Within the same tier, more recent wins. For Iran, Tier 2 (national)
+overrides Tier 1 (international) on jurisdictional matters.
+Rationale: Extends the source-hierarchy rules to the truth model.
+Jurisdictional override is critical for Iranian engineering use cases.
+
+================================================================================
+9. GRAPH RAG READINESS ASSESSMENT
+================================================================================
+
+Assessment: READY for Graph RAG implementation
+
+| Requirement | Status | Notes |
+|-------------|--------|-------|
+| Concepts as Nodes | ✅ Designed | concept-model.md defines node structure |
+| Entities as Nodes | ✅ Designed | engineering-entities.md defines 20 entity types |
+| Relationships as Edges | ✅ Designed | engineering-relations.md defines 5 categories, direction, cardinality |
+| RDF/OWL Serialization | ✅ Specified | JSON-LD and RDF/XML serialization in concept-model.md |
+| SPARQL Query Support | ✅ Specified | SPARQL query patterns in concept-model.md |
+| Property Graph Support | ✅ Specified | Node/edge property mapping in both entity and relation docs |
+| Graph Traversal Operations | ✅ Specified | BFS, DFS, shortest path, k-hop neighbors, multi-hop (up to 5 hops) |
+| Multi-Hop Reasoning | ✅ Specified | 5-hop reasoning chains with evidence accumulation |
+| Sub-graph Extraction | ✅ Specified | Context building via k-hop neighbor extraction |
+
+Readiness score: 9/9 requirements satisfied at architecture level.
+
+What remains for implementation:
+1. Neo4j or Apache Age graph database selection
+2. Graph population scripts (entity extraction → graph nodes/edges)
+3. Graph RAG algorithm design (Graph + Vector hybrid retrieval)
+4. Query translation layer (natural language → graph query → SPARQL)
+5. Performance optimization for multi-hop traversal at scale
+
+================================================================================
+10. RISKS AND FUTURE CONSIDERATIONS
+================================================================================
+
+RISK-01: Entity Completeness
+-------------------------------
+The 20 entities cover the core domain but may not cover all use cases.
+Specialist domains (e.g., renewable energy, EV charging, smart grids) may
+require additional entities.
+Mitigation: Entity model is extensible. New entities can be added via
+governance process defined in concept-governance.md.
+
+RISK-02: Concept Modeling Complexity
+--------------------------------------
+The 6-type concept model (Fact/Rule/Constraint/Assumption/Calculation/
+Conclusion) may be difficult for domain experts to apply consistently.
+A "Fact" and a "Rule" may blur in some engineering contexts.
+Mitigation: Create clear decision tree in concept-governance.md for type
+classification. Provide extensive examples as in concept-model.md §6.
+
+RISK-03: Truth Model Enforcement in AI
+----------------------------------------
+Requiring all 5 truth elements (Source, Evidence, Reasoning, Confidence,
+Version) in every AI response is architecturally challenging. Current
+LLMs do not natively produce structured truth-tagged output.
+Mitigation: Constrained generation (JSON mode + schema validation),
+post-generation verification layer, and rejection sampling for responses
+that lack required truth elements.
+
+RISK-04: Graph RAG Implementation Gap
+---------------------------------------
+The architecture is Graph RAG-ready, but implementation has not started.
+Without the graph layer, the concept model remains a theoretical document.
+Mitigation: Prioritize Graph RAG implementation in the next sprint (K2).
+
+RISK-05: Iranian Knowledge Acquisition
+----------------------------------------
+Acquiring and maintaining Iranian engineering knowledge (ISIRI, Tavanir)
+requires Persian-language domain expertise. Automated ingestion is limited.
+Mitigation: Plan for human-in-the-loop acquisition pipeline for Iranian
+content. Partner with Iranian engineering organizations.
+
+RISK-06: Compliance Burden
+----------------------------
+The strict governance model (quality gates, approvals, audit trail) may
+slow knowledge ingestion and discourage contribution.
+Mitigation: Automated validation for Tier 3-5 content reduces friction.
+Tier 1-2 content deserves the rigor given its authority.
+
+================================================================================
+11. RECOMMENDED NEXT SPRINT
+================================================================================
+
+Sprint K2: Taxonomy Implementation & Knowledge Graph Foundation
+
+Priority: HIGH
+
+Phase: K2 (Taxonomy Implementation) + Graph RAG (initial implementation)
+
+Key Deliverables:
+1. Implement taxonomy seeding in NestJS API based on taxonomy.md
+2. Design and document the Chunking Strategy (rag/ directory)
+3. Create the Embedding Pipeline specification for engineering content
+4. Begin Knowledge Graph implementation (Neo4j or Apache Age)
+5. Graph node/edge population PoC (10 documents → graph)
+6. Entity extraction pipeline specification
+7. Hybrid retrieval strategy (vector + graph) design
+
+Depends On: Sprint K1.1 governance docs, Sprint K1.5 concept model,
+Existing: NestJS API, Qdrant, AI Service, Vision Service
+
+Effort: 4-5 weeks for team of 3 (1 backend, 1 data engineer, 1 ML engineer)
+
+================================================================================
+12. FILE INVENTORY SUMMARY
+================================================================================
+
+Category             | Files | Lines  | Size
+---------------------|-------|--------|------
+Concepts Root        |     2 |    310 |  47.9 KB
+Concept Model        |     1 |    805 |  41.0 KB
+Entity Model         |     1 |    689 |  32.0 KB
+Relationship Model   |     1 |    184 |   8.0 KB
+Canonical Concepts   |     1 |    397 |  17.0 KB
+Governance/Lifecycle |     2 |    607 |  31.0 KB
+Acquisition Policy   |     1 |    393 |  27.0 KB
+---------------------|-------|--------|------
+TOTAL                |     8 |  3,385 | 162.9 KB
+
+================================================================================
+END OF SPRINT K1.5 REPORT
+================================================================================

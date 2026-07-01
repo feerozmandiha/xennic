@@ -1,0 +1,15 @@
+node_modules
+.next
+.git
+.venv
+venv
+*.md
+.env
+.env.*
+coverage
+logs
+*.log
+.gitkeep
+.turbo
+__pycache__
+*.pyc

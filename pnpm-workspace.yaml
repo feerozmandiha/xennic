@@ -4,3 +4,7 @@ packages:
   - services/*
   - workers/*
   - workspace/*
+allowBuilds:
+  '0': argon2
+  '1': bcrypt
+  '2': esbuild

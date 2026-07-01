@@ -10,7 +10,5 @@
     "typecheck": "tsc -p tsconfig.base.json --noEmit",
     "lint": "eslint src"
   },
-  "devDependencies": {
-    "@nestjs/throttler": "^6.5.0"
-  }
+  "devDependencies": {}
 }

@@ -1,0 +1,319 @@
+===============================================================================
+                    XENNIC MASTER REFERENCE ARCHITECTURE (XRA)
+                    SPRINT K3.1 — COMPLETION REPORT
+                    Date: 2026-06-26
+===============================================================================
+
+1. FILES CREATED
+───────────────────────────────────────────────────────────────────────────────
+
+  All files reside under `docs/reference-architecture/`.
+
+  File                               Lines    Mermaid   Purpose
+  ────────────────────────────────  ───────  ────────  ──────────────────────
+  01-system-landscape.md              428       5      Context, actors, zones,
+                                                        data flow overview
+  02-service-catalog.md             1,993       4      27 services with full
+                                                        definitions
+  03-data-flow.md                     320      13      End-to-end data flows
+                                                        with sequence diagrams
+  04-domain-map.md                    415       3      15 business domains
+                                                        with entities, APIs
+  05-dependency-map.md                721      10      Complete dependency
+                                                        graph across 10 categories
+  06-runtime-topology.md              329       3      Ports, networks, volumes,
+                                                        secrets, monitoring
+  07-technology-matrix.md             412       0      30 technologies with
+                                                        rationale
+  08-implementation-matrix.md         367       0      Implementation status
+                                                        per component
+  09-gap-analysis.md                  255       0      53 gaps across 10
+                                                        categories
+  10-reference-index.md               276       0      Master navigation with
+                                                        ADR index, glossary
+  ────────────────────────────────  ───────  ────────
+  Total: 10 files                   5,516      35
+
+
+2. CROSS-REFERENCES
+───────────────────────────────────────────────────────────────────────────────
+
+  Documents cross-referenced from the XRA:
+
+  ┌──────────────────────────────────────┬─────────────────────────────────┐
+  │ Referenced Location                  │ Times Referenced Across XRA    │
+  ├──────────────────────────────────────┼─────────────────────────────────┤
+  │ docs/knowledge/governance/*          │ 15+                             │
+  │ docs/knowledge/concepts/*            │ 10+                             │
+  │ docs/knowledge/runtime/*             │ 12+                             │
+  │ docs/knowledge/reasoning/*           │ 8+                              │
+  │ docs/knowledge/ai-intelligence/*     │ 6+                              │
+  │ docs/knowledge-factory/*             │ 8+                              │
+  │ apps/api/src/* (NestJS modules)      │ 24 direct references            │
+  │ apps/web/src/* (Next.js pages)       │ 20+                             │
+  │ workspace/services/*                 │ 6+                              │
+  │ infrastructure/docker/compose/*      │ 5+                              │
+  │ infrastructure/monitoring/*          │ 4+                              │
+  │ prisma/schema.prisma                  │ 61 models referenced            │
+  │ packages/* (shared libs)             │ 8+                              │
+  └──────────────────────────────────────┴─────────────────────────────────┘
+
+
+3. ARCHITECTURE DIAGRAMS COUNT
+───────────────────────────────────────────────────────────────────────────────
+
+  Total Mermaid diagrams: 35
+
+  Per document:
+  ┌────────────────────────────┬────────┐
+  │ Document                   │ Count  │
+  ├────────────────────────────┼────────┤
+  │ 01-system-landscape.md     │   5    │
+  │ 02-service-catalog.md      │   4    │
+  │ 03-data-flow.md            │  13    │
+  │ 04-domain-map.md           │   3    │
+  │ 05-dependency-map.md       │  10    │
+  │ 06-runtime-topology.md     │   3    │
+  │ 07-technology-matrix.md    │   0    │
+  │ 08-implementation-matrix.md│   0    │
+  │ 09-gap-analysis.md         │   0    │
+  │ 10-reference-index.md      │   0    │
+  └────────────────────────────┴────────┘
+
+
+4. DOMAINS DOCUMENTED
+───────────────────────────────────────────────────────────────────────────────
+
+  15 domains fully documented in 04-domain-map.md:
+
+   1. Authentication
+   2. Authorization (RBAC)
+   3. Workspace (Multi-tenancy)
+   4. Projects
+   5. Engineering
+   6. Knowledge
+   7. AI
+   8. Vision/OCR
+   9. Marketplace
+  10. Billing/Subscription
+  11. Storage/Files
+  12. Notifications
+  13. Search
+  14. Administration
+  15. API Management
+
+
+5. SERVICES DOCUMENTED
+───────────────────────────────────────────────────────────────────────────────
+
+  27 services fully documented in 02-service-catalog.md:
+
+  Operational (17):
+   1. NestJS API
+   2. Next.js Web
+   3. Engineering Service
+   4. AI Service
+   5. Vision Service
+   6. API Gateway (placeholder)
+   7. PostgreSQL
+   8. Redis
+   9. RabbitMQ
+  10. MinIO
+  11. Qdrant
+  12. Nginx
+  13. PgBouncer
+  14. Prometheus
+  15. Grafana
+  16. Loki
+  17. Promtail
+
+  Planned Knowledge Factory (10):
+  18. Intake Service
+  19. Classify Service
+  20. Parse Service
+  21. Extract Service
+  22. Resolve Service
+  23. Normalize Service
+  24. Chunk Service
+  25. Embed Service
+  26. Enrich Service
+  27. Publish Service / Quality Gate
+
+
+6. APIS DOCUMENTED
+───────────────────────────────────────────────────────────────────────────────
+
+  Total API endpoints documented: ~180+
+
+  Breakdown by module (from 04-domain-map.md):
+  ┌─────────────────────┬──────────┐
+  │ Module              │ Endpoints│
+  ├─────────────────────┼──────────┤
+  │ Auth                │    8     │
+  │ Users               │    7     │
+  │ Workspaces          │   15     │
+  │ Roles/Permissions   │   10     │
+  │ Projects            │    7     │
+  │ Engineering         │   15     │
+  │ Knowledge           │   20     │
+  │ AI                  │   10     │
+  │ Notifications       │    5     │
+  │ Storage             │    7     │
+  │ Marketplace         │   15     │
+  │ Billing             │    5     │
+  │ Search              │    3     │
+  │ Admin               │   10     │
+  │ ApiKeys/Webhooks    │    8     │
+  │ Health/Metrics      │    3     │
+  │ Vision              │    2     │
+  │ Python Services     │   15     │
+  │ Other               │   10     │
+  └─────────────────────┴──────────┘
+
+
+7. EVENTS DOCUMENTED
+───────────────────────────────────────────────────────────────────────────────
+
+  Total events defined: ~30+
+
+  ┌──────────────────────────────────┬──────────────┬──────────────────────┐
+  │ Event                            │ Publisher     │ Consumer(s)          │
+  ├──────────────────────────────────┼──────────────┼──────────────────────┤
+  │ doc.uploaded                     │ NestJS        │ Intake Service       │
+  │ doc.staged                       │ Intake        │ Classify Service     │
+  │ doc.classified                   │ Classify      │ Parse Service        │
+  │ doc.parsed                       │ Parse         │ Extract Service      │
+  │ extraction.complete              │ Extract       │ Resolve Service      │
+  │ resolution.complete              │ Resolve       │ Normalize Service    │
+  │ normalization.complete           │ Normalize     │ Chunk Service        │
+  │ chunks.ready                     │ Chunk         │ Embed Service        │
+  │ embedding.complete               │ Embed         │ Enrich Service       │
+  │ enrichment.complete              │ Enrich        │ Publish Service      │
+  │ eko.published                    │ Publish       │ NestJS,Reasoning     │
+  │ eko.failed                       │ Any Factory   │ NestJS, DLQ          │
+  │ quality.escalated                │ Quality Gate  │ Human Review         │
+  │ review.completed                 │ Human Review  │ Publish Service      │
+  │ eko.superseded                   │ Version Mgr   │ All Stores           │
+  │ eko.archived                     │ Lifecycle Mgr │ All Stores           │
+  │ calculation.completed            │ Engineering   │ NestJS               │
+  │ ai.conversation.created          │ AI Service    │ NestJS               │
+  │ vision.processing.complete       │ Vision Svc    │ NestJS               │
+  │ workspace.deleted                │ Workspaces    │ All Factory Svcs     │
+  └──────────────────────────────────┴──────────────┴──────────────────────┘
+
+
+8. RISKS DISCOVERED
+───────────────────────────────────────────────────────────────────────────────
+
+  #  Risk                                     Severity   Gap Ref
+  ── ──────────────────────────────────────── ─────────  ─────────────
+  1  Missing JWT dependencies in NestJS API    CRITICAL  09-gap:CRIT-1
+  2  Web Docker build fails (npm timeout)      CRITICAL  09-gap:CRIT-2
+  3  jspdf CVE in lockfile                     CRITICAL  09-gap:CRIT-3
+  4  Zero frontend tests (60+ components)      CRITICAL  09-gap:CRIT-4
+  5  API Gateway is empty placeholder          HIGH      09-gap:HIGH-1
+  6  Billing module not implemented            HIGH      09-gap:HIGH-2
+  7  Only 1/24 Prisma repositories built       HIGH      09-gap:HIGH-3
+  8  Monitoring exporters not deployed         HIGH      09-gap:HIGH-4
+  9  Two doc roots diverged                    HIGH      09-gap:HIGH-5
+  10 ADR numbering collision                   HIGH      09-gap:HIGH-6
+  11 Weak dev credentials in .env              HIGH      09-gap:HIGH-7
+  12 PostgreSQL UUID→TEXT migration            HIGH      09-gap:HIGH-8
+  13 Self-signed SSL certificate               HIGH      09-gap:HIGH-9
+  14 Knowledge Factory: 0% implemented         MEDIUM   09-gap:MED-1
+  15 Redis not wired in NestJS                 MEDIUM   09-gap:MED-2
+  16 RabbitMQ not wired in NestJS              MEDIUM   09-gap:MED-3
+  17 No Grafana dashboards                     MEDIUM   09-gap:MED-4
+  18 No load testing                           MEDIUM   09-gap:MED-5
+  19 Knowledge sub-models not tenant-isolated  MEDIUM   09-gap:MED-6
+  20 No backup automation                      MEDIUM   09-gap:MED-7
+
+
+9. INCONSISTENCIES FOUND
+───────────────────────────────────────────────────────────────────────────────
+
+  1. **ADR Numbering Collision**: Project ADRs 001-010 in docs/decisions/ and
+     Knowledge Runtime ADRs 001-010 in docs/knowledge/runtime/ use the same
+     numbers for completely different decisions.
+
+  2. **Doc Root Divergence**: docs/ and xennic-docs/ contain 32 files that
+     have diverged in content and file count.
+
+  3. **Outdated Status Reports**: DOCUMENTATION_STATUS.md claims 120 files
+     when actual is 276. REVIEW_REPORT.md claims 149 files.
+
+  4. **TypeScript Version Mismatch**: Root TypeScript dependency ^6.0.3 vs
+     apps/web TypeScript dependency ^5.8.3.
+
+  5. **@nestjs/throttler Everywhere**: All 5 packages include @nestjs/throttler
+     as a devDependency despite it being irrelevant to their purpose.
+
+  6. **Package Consumption Inconsistency**: @xennic/database's main points to
+     dist/ (compiled) while all other packages point to raw .ts source.
+
+  7. **Naming Collision**: TenantContext is both an interface (in @xennic/types)
+     and a class (in @xennic/database).
+
+  8. **Runtime README Broken Reference**: Line 19 references
+     governance/acquisition-policy.md but the file is at concepts/.
+
+  9. **Duplicate package.json**: packages/config/src/package.json duplicates
+     the outer package.json.
+
+  10. **pnpm-workspace.yaml Corruption**: The allowBuilds section contains
+      spaces, quotes, commas, and single letters instead of valid package names.
+
+  11. **Missing ADR Files**: ADR-001 to ADR-005 exist only inline in
+      XENNIC_MASTER_ARCHITECTURE.md — no separate files.
+
+  12. **Knowledge FTS**: search_text GIN index exists but no trigger or
+      application code populates it automatically.
+
+
+10. RECOMMENDED NEXT SPRINT (K3.2)
+───────────────────────────────────────────────────────────────────────────────
+
+  Based on the gap analysis, the recommended focus for Sprint K3.2 is:
+
+  **Sprint K3.2 — ALPHA CRITICAL PATH CLOSURE**
+
+  Objective: Resolve all CRITICAL and top HIGH gaps blocking Alpha deployment.
+
+  Priority tasks:
+
+  1. **Fix Missing Dependencies** (2h, CRITICAL)
+     Add @nestjs/jwt, @nestjs/passport, class-transformer to apps/api.
+
+  2. **Fix Web Docker Build** (4h, CRITICAL)
+     Configure npm registry mirror or use CI build cache.
+
+  3. **Resolve jspdf CVE** (1h, CRITICAL)
+     Update or override the vulnerable package.
+
+  4. **Add Frontend Test Infrastructure** (16h, HIGH)
+     Set up Jest + React Testing Library, target 5% initial coverage.
+
+  5. **Add Monitoring Exporter Containers** (2h, HIGH)
+     Deploy postgres-exporter, redis-exporter, pgbouncer-exporter.
+
+  6. **Replace Self-Signed SSL** (4h, HIGH)
+     Configure Let's Encrypt + certbot with auto-renewal.
+
+  7. **Generate Strong Production Credentials** (1h, HIGH)
+     Replace all weak dev passwords.
+
+  8. **Reconcile Doc Roots** (8h, MEDIUM)
+     Merge xennic-docs/ into docs/, update references.
+
+  9. **Create First Grafana Dashboard** (4h, MEDIUM)
+     Ship at least one dashboard JSON for system overview.
+
+  10. **Wire Redis into NestJS** (8h, MEDIUM)
+      Add Redis client usage for rate limiting and session caching.
+
+  Estimated sprint effort: ~50 hours (approximately 1.5 weeks for 1 engineer).
+
+
+===============================================================================
+                    END OF SPRINT K3.1 REPORT
+===============================================================================

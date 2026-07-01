@@ -192,6 +192,7 @@ model workspaces {
   payment_methods      payment_methods[]
   subscription_payments subscription_payments[]
   knowledge            knowledge[]
+  knowledge_objects    knowledge_objects[]
 
   @@index([code])
   @@index([created_by])
@@ -620,11 +621,13 @@ model categories {
   created_at DateTime    @default(now())
   updated_at DateTime    @updatedAt
 
+  level      Int         @default(1)
   parent    categories?  @relation("CategoryTree", fields: [parent_id], references: [id])
   children  categories[] @relation("CategoryTree")
 
   @@index([slug])
   @@index([parent_id])
+  @@index([level])
   @@index([is_active])
 }
 
@@ -935,6 +938,154 @@ model knowledge_analytics {
   knowledge       knowledge @relation(fields: [knowledge_id], references: [id], onDelete: Cascade)
 
   @@index([knowledge_id])
+}
+
+// ═══════════════════════════════════════════════════════════════
+// KNOWLEDGE OBJECTS — UMS (Universal Metadata Schema)
+// ═══════════════════════════════════════════════════════════════
+
+model knowledge_objects {
+  id                String    @id @default(uuid())
+  xid               String    @unique
+  workspace_id      String
+  title             String
+  slug              String    @unique
+  language          String    @default("fa")
+  tier              String    @default("bronze") // platinum | gold | silver | bronze
+  taxonomy          Json      @default("[]")
+  ontology_refs     Json      @default("[]")
+  document_version  Int       @default(1)
+  checksum          String?
+  publication_date  DateTime?
+  effective_date    DateTime?
+  status            String    @default("active") // active | superseded | deprecated | withdrawn | archived
+  license           String?
+  authority_score   Float     @default(0.0)
+  engineering_domain String?
+  semantic_tags     Json      @default("[]")
+  citations         Json      @default("[]")
+  source_url        String?
+  storage_path      String?
+  content           Json      @default("{}")
+  search_text       String?
+  created_at        DateTime  @default(now())
+  updated_at        DateTime  @updatedAt
+
+  workspace         workspaces          @relation(fields: [workspace_id], references: [id])
+  provenance        provenance_records[]
+  versions          knowledge_object_versions[]
+
+  @@index([xid])
+  @@index([slug])
+  @@index([workspace_id])
+  @@index([status])
+  @@index([language])
+  @@index([tier])
+  @@index([engineering_domain])
+  @@index([authority_score])
+}
+
+model knowledge_object_versions {
+  id                  String              @id @default(uuid())
+  knowledge_object_id String
+  version             Int
+  status              String              @default("active") // active | superseded | deprecated | withdrawn | archived
+  snapshot            Json
+  comment             String?
+  created_by          String?
+  created_at          DateTime            @default(now())
+
+  knowledge_object    knowledge_objects   @relation(fields: [knowledge_object_id], references: [id], onDelete: Cascade)
+
+  @@unique([knowledge_object_id, version])
+  @@index([knowledge_object_id])
+  @@index([status])
+  @@index([created_at])
+}
+
+// ═══════════════════════════════════════════════════════════════
+// PROVENANCE STORAGE
+// ═══════════════════════════════════════════════════════════════
+
+model provenance_records {
+  id                  String   @id @default(uuid())
+  knowledge_object_id String
+  source_document     String?
+  page                Int?
+  section             String?
+  paragraph           String?
+  chunk_id            String?
+  pipeline_version    String?
+  parser_version      String?
+  embedding_version   String?
+  citation_chain      Json     @default("[]")
+  trace_id            String?
+  created_at          DateTime @default(now())
+
+  knowledge_object    knowledge_objects @relation(fields: [knowledge_object_id], references: [id], onDelete: Cascade)
+
+  @@index([knowledge_object_id])
+  @@index([trace_id])
+  @@index([source_document])
+  @@index([chunk_id])
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ONTOLOGY STORAGE
+// ═══════════════════════════════════════════════════════════════
+
+model ontology_entities {
+  id            String   @id @default(uuid())
+  iri           String   @unique
+  canonical_id  String   @unique
+  label         String
+  description   String?
+  entity_type   String?
+  confidence    Float    @default(0.0)
+  evidence      Json     @default("{}")
+  metadata      Json     @default("{}")
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+
+  synonyms      ontology_synonyms[]
+  source_rels   ontology_relationships[] @relation("OntologySource")
+  target_rels   ontology_relationships[] @relation("OntologyTarget")
+
+  @@index([iri])
+  @@index([canonical_id])
+  @@index([entity_type])
+  @@index([label])
+}
+
+model ontology_synonyms {
+  id           String            @id @default(uuid())
+  entity_id    String
+  alias        String
+  language     String            @default("fa")
+  is_preferred Boolean           @default(false)
+
+  entity       ontology_entities @relation(fields: [entity_id], references: [id], onDelete: Cascade)
+
+  @@unique([entity_id, alias, language])
+  @@index([entity_id])
+  @@index([alias])
+}
+
+model ontology_relationships {
+  id                String            @id @default(uuid())
+  source_entity_id  String
+  target_entity_id  String
+  relationship_type String
+  confidence        Float             @default(0.0)
+  evidence          Json              @default("{}")
+  created_at        DateTime          @default(now())
+
+  source_entity     ontology_entities @relation("OntologySource", fields: [source_entity_id], references: [id], onDelete: Cascade)
+  target_entity     ontology_entities @relation("OntologyTarget", fields: [target_entity_id], references: [id], onDelete: Cascade)
+
+  @@index([source_entity_id])
+  @@index([target_entity_id])
+  @@index([relationship_type])
 }
 
 // ============================================================

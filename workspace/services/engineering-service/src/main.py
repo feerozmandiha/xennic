@@ -334,6 +334,13 @@ async def health_check():
     }
 
 
+@app.get("/metrics", tags=["System"])
+async def metrics():
+    from prometheus_client import generate_latest, REGISTRY
+    from starlette.responses import Response
+    return Response(generate_latest(REGISTRY), media_type="text/plain; version=0.0.4; charset=utf-8")
+
+
 # ── Routers ───────────────────────────────────────────────────────────────────
 
 app.include_router(basic_router,

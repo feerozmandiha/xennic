@@ -1,6 +1,6 @@
-  # Qdrant Vector Database
+services:
   qdrant:
-    image: qdrant/qdrant:latest
+    image: qdrant/qdrant:v1.13.0
     container_name: xennic-qdrant
     ports:
       - "6333:6333"
@@ -19,6 +19,11 @@
         max-size: "10m"
         max-file: "3"
 
-  volumes:
-    qdrant_storage:
-      driver: local
+volumes:
+  qdrant_storage:
+    driver: local
+
+networks:
+  xennic-network:
+    driver: bridge
+    name: xennic-network

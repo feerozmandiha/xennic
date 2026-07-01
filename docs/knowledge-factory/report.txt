@@ -1,0 +1,255 @@
+===============================================================================
+                    XENNIC KNOWLEDGE FACTORY (XKF)
+                    SPRINT K3.0 — MASTER ARCHITECTURE REPORT
+                    Date: 2026-06-26
+===============================================================================
+
+1. FILES CREATED
+───────────────────────────────────────────────────────────────────────────────
+
+  All files reside under `docs/knowledge-factory/`.
+
+  File                             Lines    Purpose
+  ───────────────────────────────  ──────   ─────────────────────────────────
+  XKF-VISION.md                      166    Vision, philosophy, design
+                                            principles, factory metaphor,
+                                            success criteria
+  XKF-ARCHITECTURE.md                349    7-layer architecture, service
+                                            boundaries, event contracts,
+                                            pipeline orchestration,
+                                            multi-tenancy, cost model
+  XKF-LIFECYCLE.md                   195    EKO structure (6 kinds, 16 fields),
+                                            document lifecycle (9 states),
+                                            EKO lifecycle (7 states),
+                                            quality gates (5),
+                                            versioning, retention
+  XKF-INTEGRATION.md                 187    Integration with: Governance,
+                                            AI Service, Engineering Runtime,
+                                            Graph RAG, Vector Search,
+                                            Metadata System, Future Sources,
+                                            NestJS Modules
+  XKF-SCALABILITY.md                 197    Horizontal scaling model, resource
+                                            estimation, availability targets,
+                                            failure modes & recovery,
+                                            circuit breakers, security model
+                                            (authN, authZ, data protection,
+                                            audit, secrets), observability
+  XKF-DEPLOYMENT.md                  157    Deployment stages (Alpha/Beta/GA),
+                                            container strategy, resource
+                                            requirements, CI/CD extension,
+                                            network architecture, port
+                                            allocation, backup & DR
+  XKF-ROADMAP.md                     195    6-phase roadmap (Foundation →
+                                            Core Pipeline → Graph RAG →
+                                            Reasoning → Autonomous →
+                                            Federation), dependency map,
+                                            risks, cost estimation
+  ───────────────────────────────  ──────
+  Total: 7 files                    1,446
+
+
+2. ARCHITECTURE DECISIONS
+───────────────────────────────────────────────────────────────────────────────
+
+  ADR-K3.0-001  Event-Driven Pipeline
+  ────────────  The factory pipeline is event-driven, not orchestrator-driven.
+                Each stage subscribes to the previous stage's events via
+                RabbitMQ. An Orchestrator Service is deferred until Phase 2.
+
+  ADR-K3.0-002  EKO as Universal Knowledge Unit
+  ────────────  Every piece of engineering knowledge is represented as an
+                Engineering Knowledge Object (EKO) with 6 kinds (FACT, RULE,
+                CONSTRAINT, ASSUMPTION, CALCULATION, CONCLUSION) and a
+                standardized 16-field structure.
+
+  ADR-K3.0-003  CloudEvents Specification
+  ────────────  All inter-service events conform to the CloudEvents 1.0
+                specification with the `com.xennic.factory.*` type prefix.
+
+  ADR-K3.0-004  Hybrid Search (Vector + Graph)
+  ────────────  Retrieval uses Reciprocal Rank Fusion (RRF) to combine dense
+                vector search (Qdrant) with knowledge graph traversal, with
+                query-type-aware routing.
+
+  ADR-K3.0-005  Factory Services are Stateless
+  ────────────  Every factory service is stateless and scales horizontally.
+                State is stored in the event stream and the knowledge stores.
+
+  ADR-K3.0-006  Quality Gates Before Publication
+  ────────────  Every EKO passes through 5 automated quality gates before
+                publication. Scores below 0.3 are rejected; 0.3-0.6 are
+                escalated for human review.
+
+  ADR-K3.0-007  Policy Engine from Governance Documents
+  ────────────  Quality gates and pipeline policies are derived directly from
+                the published governance documents (metadata-schema, taxonomy,
+                source-hierarchy, data-quality-policy). No separate policy
+                language.
+
+  ADR-K3.0-008  Adapter Pattern for Knowledge Sources
+  ────────────  Every future knowledge source implements a common
+                `KnowledgeSourceAdapter` interface, enabling pluggable intake
+                from any source type.
+
+  ADR-K3.0-009  AI is a Service, Not a Layer
+  ────────────  AI capabilities (extraction, classification, enrichment) are
+                consumed as services by the factory, not embedded as a layer.
+                The AI Service can be replaced without factory changes.
+
+  ADR-K3.0-010  Deployment Progression: Docker → Swarm → K8s
+  ────────────  The factory starts on Docker Compose alongside the existing
+                stack, graduates to Docker Swarm for Beta, and targets
+                Kubernetes for GA.
+
+
+3. INTEGRATION POINTS
+───────────────────────────────────────────────────────────────────────────────
+
+  ┌─────────────────────┬────────────────────────────┬──────────────────────┐
+  │ System              │ Integration Mechanism       │ Status               │
+  ├─────────────────────┼────────────────────────────┼──────────────────────┤
+  │ NestJS API          │ HTTP (sync) + Events (async)│ Design complete      │
+  │ AI Service          │ HTTP POST endpoints         │ Endpoints defined    │
+  │ Engineering Service │ HTTP + shared EKO schema    │ Interface defined    │
+  │ Qdrant (vector)     │ gRPC client                 │ Collection strategy  │
+  │ Knowledge Graph     │ Bolt/HTTP (Neo4j or custom) │ TBD (Phase 3)       │
+  │ PostgreSQL          │ Prisma (via @xennic/database)│ Existing             │
+  │ MinIO (docs)        │ S3-compatible API            │ Existing             │
+  │ RabbitMQ (events)   │ AMQP 0-9-1                   │ Exchange defined     │
+  │ Redis (cache)       │ RESP protocol                │ TBD (Phase 1)       │
+  │ Governance docs     │ Policy Engine (code)         │ Mapped to QG 1-5    │
+  │ Concept Registry    │ PostgreSQL tables            │ TBD (Phase 2)       │
+  │ Web Frontend        │ NestJS API (UI calls API)    │ No direct integration│
+  └─────────────────────┴────────────────────────────┴──────────────────────┘
+
+
+4. DEPENDENCIES
+───────────────────────────────────────────────────────────────────────────────
+
+  External Dependencies (Existing):
+  ──────────────────────────────────────────────────────────────────────
+  PostgreSQL 17         Database for metadata, governance, concept registry
+  RabbitMQ 4            Event bus for pipeline communication
+  Qdrant 1.13+          Vector database for chunk embeddings
+  MinIO                 Document storage
+  Redis 8               Cache for AI responses, session state
+  Python 3.12           Factory service runtime
+  Node.js 22            Human Review Service runtime
+
+  External Dependencies (New):
+  ──────────────────────────────────────────────────────────────────────
+  LLM Provider          For AI extraction, classification, enrichment
+                        (OpenAI API / self-hosted / open-source)
+  Graph Database        For knowledge graph (Phase 3)
+                        (Neo4j / Apache TinkerPop / custom)
+
+  Internal Dependencies (Existing):
+  ──────────────────────────────────────────────────────────────────────
+  @xennic/database      Prisma client with tenant isolation
+  @xennic/shared        Result type, AppError, logger
+  @xennic/types         BaseEntity, TenantContext
+
+  Internal Dependencies (To Build):
+  ──────────────────────────────────────────────────────────────────────
+  Factory SDK           Shared library for factory service boilerplate
+                        (event publishing, health checks, metrics)
+  EKO Validation Lib    EKO structure validation against governance schema
+  Pipeline Version Lib  Pipeline version tracking and migration
+
+
+5. ASSUMPTIONS
+───────────────────────────────────────────────────────────────────────────────
+
+  1. The existing NestJS API will remain the synchronous gateway for all
+     user-facing operations.
+
+  2. RabbitMQ will be available and stable with at-least-once delivery and
+     dead-letter queue support.
+
+  3. Qdrant can scale to the target vector count with acceptable query
+     latency. Collection sharding strategy will be validated in Alpha.
+
+  4. LLM providers (API or self-hosted) will be available and maintain
+     acceptable extraction quality for engineering content.
+
+  5. The concept registry will be populated iteratively, starting with
+     ~100 core concepts and growing to 1,000+.
+
+  6. Human reviewers with engineering domain expertise will be available
+     for quality escalation.
+
+  7. The bilingual requirement (FA + EN) will be maintained at every
+     pipeline stage — not treated as a translation problem.
+
+  8. Pipeline versioning will follow the strategy defined in
+     `runtime/pipeline-versioning.md`.
+
+
+6. IDENTIFIED RISKS
+───────────────────────────────────────────────────────────────────────────────
+
+  #  Risk                              L    I    Mitigation
+  ── ────────────────────────────────  ───  ───  ──────────────────────────
+  1  LLM extraction quality below      M    H    Rule-based fallback,
+     threshold for engineering docs          hybrid approach, human review
+  2  Concept registry incomplete        H    M    Start minimal, grow
+     delays pipeline maturity                 organically with usage
+  3  Human review becomes bottleneck    M    H    Target <10% escalation;
+                                                  batch review interface
+  4  Bilingual extraction performs      M    M    Separate FA/EN pipelines;
+     worse for Persian than English           cross-lingual evaluation
+  5  Qdrant performance degrades at     L    H    Sharding plan; read
+     scale                                    replica standby
+  6  Pipeline latency too high for      M    M    Async processing; progress
+     real-time document upload                 indicators for users
+  7  Embedding model deprecated         L    H    Abstraction layer;
+     by vendor                                  migration plan per ADR
+  8  Storage (vector + graph + docs)    M    M    Retention policies;
+     exceeds budget                            tiered storage strategy
+  9  No dedicated GPU for embedding     M    M    CPU embedding is slower
+     and AI extraction in Alpha               but functional; plan GPU
+
+
+7. FUTURE IMPLEMENTATION ROADMAP
+───────────────────────────────────────────────────────────────────────────────
+
+  Phase 1: Foundation (Q3 2026) — ~4.5 person-months
+  ──────────────────────────────────────────────────────────────────────
+  Build: Intake, Classify, Parse, Chunk, Embed, Publish services
+  Build: Quality Gate (basic)
+  Integrate: RabbitMQ event wiring, Qdrant write path
+  Milestone: Single document end-to-end pipeline
+  Cost: ~$450/mo infrastructure
+
+  Phase 2: Core Pipeline (Q4 2026) — ~6.5 person-months
+  ──────────────────────────────────────────────────────────────────────
+  Build: Extract, Resolve, Normalize, Enrich services
+  Build: Human Review API + UI, Version Manager
+  Build: Quality Gate (full, all 5 gates)
+  Integrate: Concept registry, AI extraction endpoints
+  Milestone: Full 10-service pipeline with human review
+
+  Phase 3: Graph RAG (Q1 2027) — ~6.0 person-months
+  ──────────────────────────────────────────────────────────────────────
+  Build: Knowledge Graph, Graph Traversal, Hybrid Fusion, Re-ranker
+  Integrate: Graph DB, cross-encoder model
+  Milestone: Hybrid search outperforming vector-only
+
+  Phase 4: Reasoning (Q2 2027) — ~7.0 person-months
+  ──────────────────────────────────────────────────────────────────────
+  Build: Full 11-stage reasoning pipeline
+  Build: Confidence engine, citation generation, conflict resolution
+  Milestone: Engineering question → cited answer
+
+  Phase 5: Autonomous (Q3 2027) — ~4.0 person-months
+  ──────────────────────────────────────────────────────────────────────
+  Build: Active learning, auto-re-embedding, quality feedback loop
+  Milestone: <5% human review rate, <1% hallucination rate
+
+  Total Development: ~28 person-months (approximately 9 months calendar
+  time with 2-3 full-time engineers)
+
+
+===============================================================================
+                    END OF SPRINT K3.0 REPORT
+===============================================================================

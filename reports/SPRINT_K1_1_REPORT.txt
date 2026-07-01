@@ -1,0 +1,349 @@
+================================================================================
+SPRINT K1.1 REPORT — KNOWLEDGE GOVERNANCE & ENGINEERING INTELLIGENCE FOUNDATION
+================================================================================
+
+Date: Tir 1405 (June 2026)
+Status: ✅ COMPLETED — 15/15 deliverables
+Author: Xennic AI Agent
+Review: For Xennic Chief Architect
+
+================================================================================
+1. CREATED DIRECTORIES
+================================================================================
+
+docs/knowledge/                          # Root knowledge domain
+├── governance/                          # Governance & policy documents
+├── standards/                           # Standards ingestion (empty — Phase K3)
+├── tariffs/                             # Tariff documents (empty — Phase K3)
+├── manufacturers/                       # Manufacturer data (empty — Phase K3)
+├── catalogs/                            # Technical catalogs (empty — Phase K3)
+├── rag/                                 # RAG pipeline docs (empty — Phase K5)
+├── ai-intelligence/                     # AI reasoning & intelligence layer
+└── roadmap/                             # Knowledge roadmap
+
+Total: 9 directories (4 populated, 5 empty for future phases)
+
+================================================================================
+2. CREATED FILES (15 new files, 2 pre-existing)
+================================================================================
+
+=== KNOWLEDGE ROOT ===
+
+1. docs/knowledge/README.md                     12.0 KB  — Knowledge domain overview,
+                                                           architecture, directory map,
+                                                           key principles, status
+
+=== GOVERNANCE (6 files) ===
+
+2. docs/knowledge/governance/metadata-schema.md   6.3 KB  — Universal metadata schema
+                                                           with 5 categories (Core,
+                                                           Electrical Engineering, AI
+                                                           Intelligence, RAG, Traceability)
+                                                           50+ field definitions
+
+3. docs/knowledge/governance/taxonomy.md          8.4 KB  — 4-dimensional classification:
+                                                           Engineering Domain (10 domains),
+                                                           Document Type (12 types),
+                                                           Source Tier (5 levels),
+                                                           Application (6 categories)
+
+4. docs/knowledge/governance/ontology.md          7.4 KB  — Entity-relationship model:
+                                                           15 entity types, 3 relationship
+                                                           types (hierarchical/associative/
+                                                           temporal), RDF triples, mermaid
+                                                           graph
+
+5. docs/knowledge/governance/naming-conventions   5.7 KB  — Naming standards: file naming
+   .md                                                     pattern, document/chunk IDs,
+                                                           field naming (snake_case API vs
+                                                           camelCase DB), tag conventions,
+                                                           versioning strategy
+
+6. docs/knowledge/governance/data-quality-        6.8 KB  — 5 quality dimensions (Accuracy,
+   policy.md                                                Completeness, Consistency,
+                                                           Timeliness, Traceability) with
+                                                           weighted scoring formula,
+                                                           4 quality gates, remediation
+                                                           process
+
+7. docs/knowledge/governance/source-hierarchy     7.8 KB  — Engineering Source Trust
+   .md                                                     Hierarchy: 5 tiers (International
+                                                           Standards → National Regulations →
+                                                           Manufacturer Docs → Peer Reviewed
+                                                           Papers → Community Knowledge),
+                                                           6 authority rules with examples
+
+=== AI INTELLIGENCE (6 files) ===
+
+8. docs/knowledge/ai-intelligence/engineering-    12.0 KB  — Engineering AI Architecture:
+   ai-architecture.md                                       component diagram, query flow
+                                                            (6 steps), integration points
+                                                            with AI Service/RAG/LLM
+
+9. docs/knowledge/ai-intelligence/source-of-       6.9 KB  — Source of Truth Policy:
+   truth-policy.md                                          5 core principles (Primary Source
+                                                            Rule, No Speculation, Source
+                                                            Precedence, Conflict Resolution,
+                                                            Unavailable Information Protocol)
+
+10. docs/knowledge/ai-intelligence/reasoning-      9.2 KB  — Engineering Reasoning Framework:
+    framework.md                                             4 reasoning modes (Deductive,
+                                                             Inductive, Abductive, Case-Based)
+                                                             with engineering examples,
+                                                             mandatory output structure
+                                                             (Answer/Reasoning/Evidence/
+                                                             Confidence/Limitations)
+
+11. docs/knowledge/ai-intelligence/evidence-      11.0 KB  — Evidence Chain Architecture:
+    chain.md                                                 evidence nodes, reasoning links,
+                                                             acyclic chain rules, confidence
+                                                             propagation, JSON serialization
+                                                             format for API responses
+
+12. docs/knowledge/ai-intelligence/confidence-     9.9 KB  — Confidence Scoring System:
+    scoring.md                                               5 weighted components (Source 30%,
+                                                             Retrieval 25%, Reasoning 25%,
+                                                             Temporal 10%, Consensus 10%),
+                                                             5-tier score interpretation
+
+13. docs/knowledge/ai-intelligence/hallucination- 16.0 KB  — Hallucination Prevention:
+    prevention.md                                            5 prevention layers (Knowledge
+                                                             Boundary, Source Verification,
+                                                             Constraint Enforcement,
+                                                             Confidence Thresholds, Human
+                                                             Escalation), detection
+                                                             techniques, response templates
+                                                             by confidence level
+
+=== ROADMAP (1 file) ===
+
+14. docs/knowledge/roadmap/knowledge-roadmap      13.0 KB  — 7-phase roadmap (K1-K7):
+    .md                                                     Governance → Taxonomy →
+                                                             Knowledge Acquisition →
+                                                             Metadata Enrichment →
+                                                             Vectorization → AI Intelligence
+                                                             → Production. Each phase has
+                                                             objective, deliverables table,
+                                                             dependencies, success criteria,
+                                                             effort estimate. Includes
+                                                             mermaid dependency graph.
+
+=== PRE-EXISTING (not created this sprint) ===
+
+    docs/knowledge/KNOWLEDGE_MANAGEMENT.md         4.9 KB  — NestJS API knowledge module
+                                                            (16 Prisma models, block-based
+                                                            content, workflow, endpoints)
+    docs/knowledge/KNOWLEDGE_PLATFORM.md           1.9 KB  — High-level knowledge platform
+                                                            overview (components, domains,
+                                                            API)
+
+================================================================================
+3. ARCHITECTURE DECISIONS
+================================================================================
+
+AD-001: Knowledge Base as the AI Source of Truth
+-------------------------------------------------
+Decision: The knowledge base (docs/knowledge/) is designated as the PRIMARY
+source of truth for all engineering AI responses. No AI-generated engineering
+answer may be presented without source evidence from this knowledge base.
+Rationale: Prevents hallucination, ensures traceability, and establishes
+Xennic as an authoritative engineering platform rather than a generic LLM
+chatbot.
+
+AD-002: Layered Governance Structure
+-------------------------------------
+Decision: Governance is split into 6 complementary documents (metadata-schema,
+taxonomy, ontology, naming-conventions, data-quality-policy, source-hierarchy)
+rather than one monolithic document.
+Rationale: Each document addresses a distinct concern. Metadata defines WHAT
+to store, taxonomy defines HOW to classify, ontology defines HOW entities
+relate, naming defines HOW to reference, quality defines HOW to validate,
+and hierarchy defines HOW to trust.
+
+AD-003: 5-Category Metadata Architecture
+-----------------------------------------
+Decision: Metadata is decomposed into 5 orthogonal categories:
+  A. Core — universal fields for all document types
+  B. Electrical Engineering — domain-specific technical parameters
+  C. AI Intelligence — confidence, reasoning, verification metadata
+  D. RAG — retrieval, chunking, embedding parameters
+  E. Traceability — provenance, source chain, supersession
+Rationale: Separation allows independent evolution of each category. Core
+metadata is stable across all document types; Electrical metadata is specific
+to engineering domain; AI/RAG/Traceability metadata support the AI
+intelligence layer without polluting base document metadata.
+
+AD-004: Source Tier System (Tier 1-5)
+--------------------------------------
+Decision: Engineering sources are ranked in a 5-tier hierarchy:
+  Tier 1: International Standards (IEC, IEEE, ISO)
+  Tier 2: National Regulations (ISIRI, Tavanir)
+  Tier 3: Manufacturer Documentation
+  Tier 4: Peer Reviewed Papers
+  Tier 5: Community Knowledge
+Rationale: This hierarchy enables automated authority-based filtering during
+RAG retrieval. AI can prioritize higher-tier sources and flag when only
+low-tier sources exist. It also enables the "No Tier N citation when Tier
+N-1 exists" rule.
+
+AD-005: 4-Mode Reasoning Framework
+-----------------------------------
+Decision: The AI employs 4 reasoning modes depending on query type:
+  - Deductive: Standards application, code compliance
+  - Inductive: Fault diagnosis, pattern recognition
+  - Abductive: Troubleshooting, root cause analysis
+  - Case-Based: Design assistance, equipment selection
+Rationale: Engineering problems require different reasoning approaches.
+A single reasoning mode cannot cover all use cases. The framework allows
+the AI to select the appropriate mode and document which mode was used.
+
+AD-006: Mandatory Response Structure
+--------------------------------------
+Decision: Every AI response must contain 5 sections:
+  1. Answer (direct response)
+  2. Reasoning Path (step-by-step derivation)
+  3. Evidence (sources with tiers)
+  4. Confidence (numerical score)
+  5. Limitations (what the answer does NOT address)
+Rationale: Forces transparency. Users can verify every claim. The reasoning
+path enables audit of AI decision-making. Limitations prevent over-reach.
+
+AD-007: Weighted Confidence Scoring
+-------------------------------------
+Decision: Confidence = 0.30×Source + 0.25×Retrieval + 0.25×Reasoning
+                    + 0.10×Temporal + 0.10×Consensus
+Rationale: Source authority and retrieval relevance are the most important
+factors (combined 55%). Reasoning adds another 25%. Temporal recency and
+multi-source consensus are supporting factors. The formula is documented
+and auditable.
+
+AD-008: Hallucination Prevention as Multi-Layer Defense
+---------------------------------------------------------
+Decision: 5 prevention layers applied sequentially:
+  1. Knowledge Boundary Detection (can the KB answer this?)
+  2. Source Verification (every claim mapped to source chunk)
+  3. Constraint Enforcement (no numbers/designs/safety without source)
+  4. Confidence Threshold Gates (flags at <0.5 and <0.3)
+  5. Human Escalation (safety-critical, conflicting Tier 1, low confidence)
+Rationale: No single technique prevents all hallucination. Defense-in-depth
+with escalating strictness catches failures at each layer.
+
+================================================================================
+4. METADATA DECISIONS
+================================================================================
+
+MD-001: Field naming — snake_case for internal storage, camelCase for API
+MD-002: Document ID format — XEN-KB-{TYPE}-{YYYY}-{NNNN}
+MD-003: Chunk ID format — XEN-CHK-{DOC_ID}-{NNNN}
+MD-004: File naming — {lang}_{domain}_{doc_type}_{identifier}_{version}.{ext}
+MD-005: UUID for all document IDs (not auto-increment)
+MD-006: Workspace-aware (workspace_id) for multi-tenant isolation
+MD-007: Bilingual titles (title_fa, title_en) required for all documents
+MD-008: Version field uses semver for governance docs, date-based for tariffs
+MD-009: Quality score computed on ingestion, stored in AI metadata
+MD-010: Checksum (SHA-256) required for all ingested documents
+
+================================================================================
+5. AI INTELLIGENCE DECISIONS
+================================================================================
+
+AID-001: AI cannot cite Tier N when Tier N-1 source exists on same topic
+AID-002: Conflicting sources: Tier 1 overrides all, Tier 2 overrides 3-5
+AID-003: Missing source: AI must state "No authoritative source found"
+AID-004: Confidence threshold: <0.3 entire response flagged as unreliable
+AID-005: Evidence chain must be acyclic — circular reasoning prohibited
+AID-006: Every conclusion node must reference ≥1 evidence node
+AID-007: Human escalation for: safety-critical, conflicting Tier 1, <0.3 confidence
+AID-008: Response templates vary by confidence level (5 tiers)
+AID-009: Source chaining trust = min(source_tier_of_all_chain_links)
+AID-010: Post-generation verification: LLM re-checks against retrieved chunks
+
+================================================================================
+6. RECOMMENDED NEXT SPRINT
+================================================================================
+
+Sprint K2: Taxonomy Implementation & Knowledge Acquisition Infrastructure
+
+Phase: K2 (Taxonomy) + K3 (Knowledge Acquisition — initial)
+
+Priority: HIGH
+
+Key Deliverables:
+1. Implement the taxonomy tree in the NestJS API (categories, topics, tags
+   seeding based on governance/taxonomy.md)
+2. Design and document the Ingestion Pipeline architecture in rag/ directory
+3. Create document parser specifications for PDF, DOCX, HTML, image-based
+   documents (integrating with Vision Service OCR)
+4. Begin standards ingestion: identify initial set of IEC and ISIRI standards
+   for the knowledge base
+5. Implement source-tier field in the knowledge Prisma models
+6. Create the Chunking Strategy document (chunk_size, overlap, strategy
+   per document type)
+
+Estimated Effort: 3-4 weeks for a team of 2 (1 backend + 1 data engineer)
+Depends on: Knowledge API module (existing), Qdrant (existing), AI Service
+(existing), Vision Service (existing)
+
+================================================================================
+7. RISKS AND FUTURE CONSIDERATIONS
+================================================================================
+
+RISK-01: Standards Copyright
+----------------------------
+Most IEC and IEEE standards are paywalled. Xennic cannot legally ingest
+full-text standards without licensing. Mitigation: Focus on publicly
+available abstracts, summaries, and open standards. For paywalled content,
+provide citation metadata and purchase links rather than full text.
+
+RISK-02: Persian Language NLP Quality
+-------------------------------------
+Persian embedding models may not match English model quality. The taxonomy
+and ontology assume bilingual capability. Mitigation: Evaluate multilingual
+embedding models (e.g., paraphrase-multilingual-MiniLM-L12-v2) and consider
+hybrid Persian-English retrieval.
+
+RISK-03: Source Hierarchy Enforcement Complexity
+-------------------------------------------------
+Automated enforcement of "no Tier N when Tier N-1 exists" requires
+sophisticated query understanding and source mapping. This may be difficult
+to implement correctly. Mitigation: Implement as a soft warning initially,
+then hard enforcement after validation.
+
+RISK-04: Maintenance Burden of Governance Docs
+-----------------------------------------------
+The 6 governance documents must stay synchronized with implementation.
+If the API changes field names or taxonomy structure, governance docs must
+be updated. Mitigation: Reference governance docs in CI/CD review process.
+Add links in Prisma model comments to governance document sections.
+
+RISK-05: Confidence Scoring Calibration
+----------------------------------------
+The weighted formula (0.30/0.25/0.25/0.10/0.10) is a starting point. It
+may not reflect actual answer quality across all engineering domains.
+Mitigation: Plan calibration sprint after initial deployment; collect user
+feedback on confidence accuracy; adjust weights based on real data.
+
+RISK-06: Empty Directories
+---------------------------
+5 directories (standards, tariffs, manufacturers, catalogs, rag) are
+currently empty. Future sprints must populate these or remove them to
+avoid confusion. Mitigation: Populate standards/ and rag/ in Sprint K2-K3;
+tariffs/, manufacturers/, catalogs/ are medium-term (K4).
+
+================================================================================
+8. FILE INVENTORY SUMMARY
+================================================================================
+
+Category        | Files | Lines  | Size
+----------------|-------|--------|------
+Knowledge Root  |     3 |   265  |  18.8 KB
+Governance      |     6 |   925  |  42.4 KB
+AI Intelligence |     6 |   933  |  65.0 KB
+Roadmap         |     1 |   251  |  13.0 KB
+Empty dirs      |     5 |     0  |   0.0 KB
+----------------|-------|--------|------
+TOTAL           |    16 |  2973  | 139.7 KB
+
+================================================================================
+END OF SPRINT K1.1 REPORT
+================================================================================

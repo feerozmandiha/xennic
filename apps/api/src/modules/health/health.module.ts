@@ -1,9 +1,15 @@
-import { Module } from '@nestjs/common';
+import { Module, OnModuleInit } from '@nestjs/common';
 import { HealthController } from './health.controller.js';
 import { HealthService } from './health.service.js';
 
 @Module({
   controllers: [HealthController],
-  providers: [HealthService]
+  providers: [HealthService],
 })
-export class HealthModule {}
+export class HealthModule implements OnModuleInit {
+  constructor(private readonly healthService: HealthService) {}
+
+  onModuleInit() {
+    this.healthService.startupComplete = true;
+  }
+}

@@ -9,8 +9,16 @@ export class JwtService {
   private publicKey: string;
 
   constructor(private readonly jwtService: NestJwtService) {
-    this.privateKey = readFileSync(process.env.JWT_PRIVATE_KEY_PATH!, 'utf8');
-    this.publicKey = readFileSync(process.env.JWT_PUBLIC_KEY_PATH!, 'utf8');
+    if (process.env.JWT_PRIVATE_KEY_PATH) {
+      this.privateKey = readFileSync(process.env.JWT_PRIVATE_KEY_PATH, 'utf8');
+    } else {
+      this.privateKey = process.env.JWT_PRIVATE_KEY!;
+    }
+    if (process.env.JWT_PUBLIC_KEY_PATH) {
+      this.publicKey = readFileSync(process.env.JWT_PUBLIC_KEY_PATH, 'utf8');
+    } else {
+      this.publicKey = process.env.JWT_PUBLIC_KEY!;
+    }
   }
 
   async sign(payload: JwtPayloadVO): Promise<string> {

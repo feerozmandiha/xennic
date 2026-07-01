@@ -273,7 +273,7 @@ async function main() {
   for (const [slug, name, active] of agents) {
     await db.agents.upsert({
       where: { slug },
-      update: { name, version: '1.0', is_active: active, updated_at: new Date() },
+      update: { name, version: '1.0', is_active: active },
       create: {
         id: randomUUID(), name, slug,
         version: '1.0', is_active: active, created_at: new Date(),
