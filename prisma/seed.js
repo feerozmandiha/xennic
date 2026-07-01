@@ -273,7 +273,11 @@ async function main() {
   for (const [slug, name, active] of agents) {
     await db.agents.upsert({
       where: { slug },
+<<<<<<< HEAD
       update: { name, version: '1.0', is_active: active },
+=======
+      update: { name, version: '1.0', is_active: active, updated_at: new Date() },
+>>>>>>> 224dcab25526dff14bfe3eb02e4a18e7cb25853a
       create: {
         id: randomUUID(), name, slug,
         version: '1.0', is_active: active, created_at: new Date(),
@@ -286,7 +290,11 @@ async function main() {
   console.log('\n👤 Seeding admin user and workspace...');
 
   const adminEmail = process.env.ADMIN_EMAIL || 'admin@xennic.ir';
+<<<<<<< HEAD
   const adminPassword = process.env.ADMIN_PASSWORD || 'ADMIN_PASSWORD_FROM_ENV';
+=======
+  const adminPassword = process.env.ADMIN_PASSWORD || 'Admin@12345';
+>>>>>>> 224dcab25526dff14bfe3eb02e4a18e7cb25853a
 
   const user = await db.users.upsert({
     where: { email: adminEmail },

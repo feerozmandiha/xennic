@@ -1,10 +1,18 @@
 #!/bin/bash
 # ============================================================
+<<<<<<< HEAD
 # Xennic — Database Apply (migrate deploy + generate + seed)
 # اجرا از ریشه monorepo: bash scripts/db-apply.sh
 #
 # این script migration‌های pending را اعمال کرده و seed را اجرا می‌کند
 # برای reset کامل از pnpm db:reset استفاده کنید
+=======
+# Xennic — Full Database Reset & Apply
+# اجرا از ریشه monorepo: bash scripts/db-reset-apply.sh
+#
+# ⚠️  این script همه داده‌های دیتابیس را پاک می‌کند
+#     فقط در محیط development استفاده کنید
+>>>>>>> 224dcab25526dff14bfe3eb02e4a18e7cb25853a
 # ============================================================
 
 set -e
@@ -22,9 +30,16 @@ npx prisma migrate reset --force --skip-seed
 echo "✅ Database reset"
 echo ""
 
+<<<<<<< HEAD
 echo "🔄 Step 2: Applying migrations..."
 npx prisma migrate deploy
 echo "✅ Migrations applied"
+=======
+echo "🔄 Step 2: Applying full migration..."
+# Drop قدیمی و apply جدید
+npx prisma db push
+echo "✅ Schema applied"
+>>>>>>> 224dcab25526dff14bfe3eb02e4a18e7cb25853a
 echo ""
 
 echo "⚙️  Step 3: Generating Prisma client..."

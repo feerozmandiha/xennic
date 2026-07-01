@@ -6,7 +6,11 @@
   "scripts": {
     "dev": "nest start --watch",
     "typecheck": "tsc --noEmit",
+<<<<<<< HEAD
     "test": "jest --forceExit",
+=======
+    "test": "jest",
+>>>>>>> 224dcab25526dff14bfe3eb02e4a18e7cb25853a
     "test:cov": "jest --coverage",
     "test:e2e": "jest -c test/jest-e2e.json",
     "build": "tsc && pnpm generate:openapi",
@@ -14,6 +18,7 @@
     "generate:openapi": "node --import tsx scripts/generate-openapi.ts"
   },
   "dependencies": {
+<<<<<<< HEAD
     "@fastify/compress": "^9.0.0",
     "@fastify/helmet": "^13.0.2",
     "@fastify/multipart": "^10.0.0",
@@ -54,11 +59,27 @@
     "redis": "^6.0.1",
     "reflect-metadata": "^0.2.2",
     "zod": "^4.4.3"
+=======
+    "@fastify/multipart": "^10.0.0",
+    "@nestjs/common": "^11.1.24",
+    "@nestjs/config": "^4.0.4",
+    "@nestjs/core": "^11.1.24",
+    "@nestjs/platform-express": "^11.1.24",
+    "@nestjs/platform-fastify": "^11.1.24",
+    "@prisma/client": "^6.19.3",
+    "@xennic/database": "workspace:*",
+    "@xennic/shared": "workspace:*",
+    "@xennic/types": "workspace:*",
+    "minio": "^8.0.7",
+    "nodemailer": "^9.0.1",
+    "reflect-metadata": "^0.2.2"
+>>>>>>> 224dcab25526dff14bfe3eb02e4a18e7cb25853a
   },
   "devDependencies": {
     "@nestjs/cli": "^11.0.21",
     "@nestjs/schematics": "^11.1.0",
     "@nestjs/testing": "^11.1.26",
+<<<<<<< HEAD
     "@types/amqplib": "^0.10.8",
     "@types/jest": "^30.0.0",
     "@types/node": "^25.9.1",
@@ -66,6 +87,13 @@
     "@types/passport-jwt": "^4.0.1",
     "@types/supertest": "^7.2.0",
     "@types/uuid": "^11.0.0",
+=======
+    "@nestjs/throttler": "^6.5.0",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^25.9.1",
+    "@types/nodemailer": "^8.0.1",
+    "@types/supertest": "^7.2.0",
+>>>>>>> 224dcab25526dff14bfe3eb02e4a18e7cb25853a
     "jest": "^29.7.0",
     "prisma": "^6.19.3",
     "supertest": "^7.2.2",

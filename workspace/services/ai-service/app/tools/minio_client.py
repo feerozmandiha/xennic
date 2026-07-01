@@ -31,8 +31,13 @@ class MinIOClient:
     
     def __init__(self):
         self.endpoint = os.getenv('MINIO_ENDPOINT', 'localhost:9000')
+<<<<<<< HEAD
         self.access_key = os.getenv('MINIO_ACCESS_KEY', 'MINIO_CREDENTIALS_FROM_ENV')
         self.secret_key = os.getenv('MINIO_SECRET_KEY', 'MINIO_CREDENTIALS_FROM_ENV')
+=======
+        self.access_key = os.getenv('MINIO_ACCESS_KEY', 'minioadmin')
+        self.secret_key = os.getenv('MINIO_SECRET_KEY', 'minioadmin')
+>>>>>>> 224dcab25526dff14bfe3eb02e4a18e7cb25853a
         self.secure = os.getenv('MINIO_SECURE', 'false').lower() == 'true'
         
         self._client = None

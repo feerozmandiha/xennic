@@ -1,3 +1,7 @@
+<<<<<<< HEAD
+=======
+# services/engineering-service/src/calculators/basic/ohms_law.py
+>>>>>>> 224dcab25526dff14bfe3eb02e4a18e7cb25853a
 """
 BASIC-001: Ohm's Law Calculator
 Standard: IEC 60050-131:2023

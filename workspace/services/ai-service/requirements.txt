@@ -13,7 +13,10 @@ langgraph==0.2.72
 
 # HTTP Client
 httpx==0.28.1
+<<<<<<< HEAD
 prometheus-client==0.21.0
+=======
+>>>>>>> 224dcab25526dff14bfe3eb02e4a18e7cb25853a
 
 # Testing
 pytest==8.3.5

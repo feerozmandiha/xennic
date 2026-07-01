@@ -334,6 +334,7 @@ async def health_check():
     }
 
 
+<<<<<<< HEAD
 @app.get("/metrics", tags=["System"])
 async def metrics():
     from prometheus_client import generate_latest, REGISTRY
@@ -341,6 +342,8 @@ async def metrics():
     return Response(generate_latest(REGISTRY), media_type="text/plain; version=0.0.4; charset=utf-8")
 
 
+=======
+>>>>>>> 224dcab25526dff14bfe3eb02e4a18e7cb25853a
 # ── Routers ───────────────────────────────────────────────────────────────────
 
 app.include_router(basic_router,

@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+<<<<<<< HEAD
 import { prisma } from '@xennic/database';
 
 @Injectable()
@@ -83,3 +84,16 @@ export class HealthService {
     }
   }
 }
+=======
+
+@Injectable()
+export class HealthService {
+  getHealth() {
+    return {
+      status: 'ok',
+      service: 'xennic-api',
+      timestamp: new Date(),
+    };
+  }
+}
+>>>>>>> 224dcab25526dff14bfe3eb02e4a18e7cb25853a

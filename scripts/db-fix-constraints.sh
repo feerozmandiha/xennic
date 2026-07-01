@@ -1,6 +1,10 @@
 #!/bin/bash
 # ============================================================
+<<<<<<< HEAD
 # Fix existing database constraints before migrate deploy
+=======
+# Fix existing database constraints before db push
+>>>>>>> 224dcab25526dff14bfe3eb02e4a18e7cb25853a
 # اجرا از ریشه monorepo: bash scripts/db-fix-constraints.sh
 # ============================================================
 
@@ -37,8 +41,13 @@ SQL
 echo "✅ Constraints fixed"
 echo ""
 
+<<<<<<< HEAD
 echo "🔄 Applying migrations..."
 npx prisma migrate deploy
+=======
+echo "🔄 Applying schema..."
+npx prisma db push --accept-data-loss
+>>>>>>> 224dcab25526dff14bfe3eb02e4a18e7cb25853a
 echo "✅ Schema applied"
 echo ""
 

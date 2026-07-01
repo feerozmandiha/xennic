@@ -1,7 +1,10 @@
+<<<<<<< HEAD
 jest.mock('@xennic/database', () => ({
   prisma: { $queryRaw: jest.fn().mockResolvedValue([{ 1: 1 }]) },
 }));
 
+=======
+>>>>>>> 224dcab25526dff14bfe3eb02e4a18e7cb25853a
 import { Test, TestingModule } from '@nestjs/testing';
 import { HealthService } from './health.service';
 
@@ -19,6 +22,7 @@ describe('HealthService', () => {
   it('should be defined', () => {
     expect(service).toBeDefined();
   });
+<<<<<<< HEAD
 
   it('should return health status', async () => {
     const result = await service.getHealth();
@@ -52,4 +56,6 @@ describe('HealthService', () => {
     const result = service.checkStartup();
     expect(result).toEqual({ status: 'ok' });
   });
+=======
+>>>>>>> 224dcab25526dff14bfe3eb02e4a18e7cb25853a
 });

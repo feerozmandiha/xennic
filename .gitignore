@@ -12,9 +12,13 @@ coverage
 
 .env.*
 
+<<<<<<< HEAD
 *.log
 
 infrastructure/docker/secrets/*.key
+=======
+*.loginfrastructure/docker/secrets/*.key
+>>>>>>> 224dcab25526dff14bfe3eb02e4a18e7cb25853a
 infrastructure/docker/secrets/*.pem
 
 .pytest_cache
@@ -29,8 +33,12 @@ packages/openapi/v1/openapi.json
 
 .env*
 *.pem
+<<<<<<< HEAD
 *.key
 *.pub
 node_modules
 node_modules
 node_modules
+=======
+*.key
+>>>>>>> 224dcab25526dff14bfe3eb02e4a18e7cb25853a

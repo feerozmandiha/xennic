@@ -36,7 +36,11 @@ PostgreSQL 17, Prisma ORM. Schema at `prisma/schema.prisma`.
 All entity IDs are UUIDs, multi-tenant via `workspace_id`.
 
 ```bash
+<<<<<<< HEAD
 pnpm db:apply    # prisma migrate deploy && prisma generate && node prisma/seed.js
+=======
+pnpm db:apply    # prisma db push && prisma generate && node prisma/seed.js
+>>>>>>> 224dcab25526dff14bfe3eb02e4a18e7cb25853a
 pnpm db:reset    # prisma migrate reset --force && node prisma/seed.js
 pnpm db:generate # prisma generate
 pnpm db:studio   # prisma studio

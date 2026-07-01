@@ -12,12 +12,18 @@ const __dirname = join(__filename, '..');
 async function generateOpenAPI() {
   console.log('📝 Generating OpenAPI specification...');
   
+<<<<<<< HEAD
   process.env.SKIP_INFRA_CONNECT = 'true';
 
   try {
     const { ApiModule } = await import(resolve(process.cwd(), 'dist/api.module.js'));
     const app = await NestFactory.create(ApiModule, { logger: false, abortOnError: false });
     await app.enableShutdownHooks();
+=======
+  try {
+    const { ApiModule } = await import(resolve(process.cwd(), 'dist/api.module.js'));
+    const app = await NestFactory.create(ApiModule, { logger: false });
+>>>>>>> 224dcab25526dff14bfe3eb02e4a18e7cb25853a
 
     const config = new DocumentBuilder()
       .setTitle('Xennic Platform API')

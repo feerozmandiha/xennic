@@ -25,6 +25,7 @@
     ".next/types/**/*.ts",
     "src/types/**/*.d.ts"
   ],
+<<<<<<< HEAD
   "exclude": [
     "node_modules",
     "jest.config.ts",
@@ -36,4 +37,7 @@
     "**/*.spec.tsx",
     "**/__tests__/**"
   ]
+=======
+  "exclude": ["node_modules"]
+>>>>>>> 224dcab25526dff14bfe3eb02e4a18e7cb25853a
 }

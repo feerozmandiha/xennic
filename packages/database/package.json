@@ -12,5 +12,11 @@
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
+<<<<<<< HEAD
   "devDependencies": {}
+=======
+  "devDependencies": {
+    "@nestjs/throttler": "^6.5.0"
+  }
+>>>>>>> 224dcab25526dff14bfe3eb02e4a18e7cb25853a
 }

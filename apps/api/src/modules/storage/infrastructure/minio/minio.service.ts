@@ -7,8 +7,13 @@ import type { FileBucket } from '../../domain/entities/file.entity.js';
  *
  * Connection via env vars:
  *   MINIO_ENDPOINT   (default: localhost:9000)
+<<<<<<< HEAD
  *   MINIO_ACCESS_KEY (default: MINIO_CREDENTIALS_FROM_ENV)
  *   MINIO_SECRET_KEY (default: MINIO_CREDENTIALS_FROM_ENV)
+=======
+ *   MINIO_ACCESS_KEY (default: minioadmin)
+ *   MINIO_SECRET_KEY (default: minioadmin)
+>>>>>>> 224dcab25526dff14bfe3eb02e4a18e7cb25853a
  *   MINIO_USE_SSL    (default: false)
  */
 @Injectable()
@@ -30,8 +35,13 @@ export class MinioService {
       endPoint:  host ?? 'localhost',
       port,
       useSSL:    process.env.MINIO_USE_SSL === 'true',
+<<<<<<< HEAD
       accessKey: process.env.MINIO_ACCESS_KEY ?? 'MINIO_CREDENTIALS_FROM_ENV',
       secretKey: process.env.MINIO_SECRET_KEY ?? 'MINIO_CREDENTIALS_FROM_ENV',
+=======
+      accessKey: process.env.MINIO_ACCESS_KEY ?? 'minioadmin',
+      secretKey: process.env.MINIO_SECRET_KEY ?? 'minioadmin',
+>>>>>>> 224dcab25526dff14bfe3eb02e4a18e7cb25853a
     });
   }
 

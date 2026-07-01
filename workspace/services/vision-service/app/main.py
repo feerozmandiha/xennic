@@ -35,6 +35,7 @@ async def health() -> dict:
     }
 
 
+<<<<<<< HEAD
 @app.get("/metrics")
 async def metrics():
     from prometheus_client import generate_latest, REGISTRY
@@ -42,6 +43,8 @@ async def metrics():
     return Response(generate_latest(REGISTRY), media_type="text/plain; version=0.0.4; charset=utf-8")
 
 
+=======
+>>>>>>> 224dcab25526dff14bfe3eb02e4a18e7cb25853a
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception) -> JSONResponse:
     return JSONResponse(

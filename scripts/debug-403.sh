@@ -30,7 +30,11 @@ if [ -z "$USER_ID" ] || [ -z "$WS_ID" ]; then
   exit 0
 fi
 
+<<<<<<< HEAD
 DB_URL="${DATABASE_URL:-DATABASE_URL_FROM_ENV}"
+=======
+DB_URL="${DATABASE_URL:-postgresql://xennic:xennic@localhost:5432/xennic}"
+>>>>>>> 224dcab25526dff14bfe3eb02e4a18e7cb25853a
 
 echo "═══════════════════════════════════════════════════"
 echo "Debug 403 — User: $USER_ID | Workspace: $WS_ID"

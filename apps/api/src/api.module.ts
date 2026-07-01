@@ -1,5 +1,6 @@
 import { ThrottlerModule } from '@nestjs/throttler';
 import { Module } from '@nestjs/common';
+<<<<<<< HEAD
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { ApiController }       from './api.controller.js';
 import { ApiService }          from './api.service.js';
@@ -11,6 +12,10 @@ import { TracingModule }       from './shared/tracing/index.js';
 import { RedisModule }         from './shared/redis/index.js';
 import { EventModule }         from './shared/events/index.js';
 import { RepositoryModule }    from './shared/repositories/index.js';
+=======
+import { ApiController }       from './api.controller.js';
+import { ApiService }          from './api.service.js';
+>>>>>>> 224dcab25526dff14bfe3eb02e4a18e7cb25853a
 import { HealthModule }        from './modules/health/health.module.js';
 import { WorkspaceModule }     from './modules/workspace/workspace.module.js';
 import { UserModule }          from './modules/user/user.module.js';
@@ -34,6 +39,7 @@ import { WebhooksModule }      from './modules/webhooks/webhooks.module.js';    
 import { EmailModule }         from './modules/email/email.module.js';               // ✅ ایمیل
 import { FeatureFlagsModule }  from './modules/feature-flags/feature-flags.module.js'; // ✅ Feature Flags
 import { VisionModule }        from './modules/vision/vision.module.js';                // ✅ بینایی ماشین
+<<<<<<< HEAD
 import { KnowledgeFactoryModule } from './modules/knowledge-factory/knowledge-factory.module.js'; // ✅ کارخانه دانش
 import { RagEngineModule } from './modules/rag-engine/rag-engine.module.js'; // ✅ موتور RAG مهندسی
 import { EngineeringIntelligenceModule } from './modules/engineering-intelligence/engineering-intelligence.module.js'; // ✅ لایه هوش مهندسی
@@ -55,6 +61,11 @@ import { EnterprisePerformanceModule } from './modules/enterprise-performance/en
     RedisModule,
     EventModule,
     RepositoryModule,
+=======
+
+@Module({
+  imports: [
+>>>>>>> 224dcab25526dff14bfe3eb02e4a18e7cb25853a
     HealthModule,
     WorkspaceModule,
     UserModule,
@@ -78,6 +89,7 @@ import { EnterprisePerformanceModule } from './modules/enterprise-performance/en
     EmailModule,         // ✅ ایمیل
     FeatureFlagsModule,  // ✅ Feature Flags
     VisionModule,        // ✅ Vision
+<<<<<<< HEAD
     KnowledgeFactoryModule, // ✅ کارخانه دانش
     RagEngineModule, // ✅ موتور RAG مهندسی
     EngineeringIntelligenceModule, // ✅ لایه هوش مهندسی
@@ -89,6 +101,8 @@ import { EnterprisePerformanceModule } from './modules/enterprise-performance/en
     EnterpriseConfigModule, // ✅ تنظیمات سازمانی
     EnterpriseBackupModule, // ✅ پشتیبان سازمانی
     EnterprisePerformanceModule, // ✅ عملکرد سازمانی
+=======
+>>>>>>> 224dcab25526dff14bfe3eb02e4a18e7cb25853a
     // ✅ SEC-001C: Rate Limiting
     ThrottlerModule.forRoot([
       {
@@ -109,6 +123,7 @@ import { EnterprisePerformanceModule } from './modules/enterprise-performance/en
     ]),
   ],
   controllers: [ApiController],
+<<<<<<< HEAD
   providers:   [
     ApiService,
     {
@@ -116,5 +131,8 @@ import { EnterprisePerformanceModule } from './modules/enterprise-performance/en
       useClass: CorrelationIdInterceptor,
     },
   ],
+=======
+  providers:   [ApiService],
+>>>>>>> 224dcab25526dff14bfe3eb02e4a18e7cb25853a
 })
 export class ApiModule {}

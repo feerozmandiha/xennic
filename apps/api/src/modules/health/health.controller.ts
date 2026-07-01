@@ -10,6 +10,7 @@ export class HealthController {
   ) {}
 
   @Get()
+<<<<<<< HEAD
   async getHealth() {
     return this.healthService.getHealth();
   }
@@ -29,3 +30,9 @@ export class HealthController {
     return this.healthService.checkStartup();
   }
 }
+=======
+  getHealth() {
+    return this.healthService.getHealth();
+  }
+}
+>>>>>>> 224dcab25526dff14bfe3eb02e4a18e7cb25853a

@@ -192,7 +192,10 @@ model workspaces {
   payment_methods      payment_methods[]
   subscription_payments subscription_payments[]
   knowledge            knowledge[]
+<<<<<<< HEAD
   knowledge_objects    knowledge_objects[]
+=======
+>>>>>>> 224dcab25526dff14bfe3eb02e4a18e7cb25853a
 
   @@index([code])
   @@index([created_by])
@@ -621,13 +624,19 @@ model categories {
   created_at DateTime    @default(now())
   updated_at DateTime    @updatedAt
 
+<<<<<<< HEAD
   level      Int         @default(1)
+=======
+>>>>>>> 224dcab25526dff14bfe3eb02e4a18e7cb25853a
   parent    categories?  @relation("CategoryTree", fields: [parent_id], references: [id])
   children  categories[] @relation("CategoryTree")
 
   @@index([slug])
   @@index([parent_id])
+<<<<<<< HEAD
   @@index([level])
+=======
+>>>>>>> 224dcab25526dff14bfe3eb02e4a18e7cb25853a
   @@index([is_active])
 }
 
@@ -940,6 +949,7 @@ model knowledge_analytics {
   @@index([knowledge_id])
 }
 
+<<<<<<< HEAD
 // ═══════════════════════════════════════════════════════════════
 // KNOWLEDGE OBJECTS — UMS (Universal Metadata Schema)
 // ═══════════════════════════════════════════════════════════════
@@ -1088,6 +1098,8 @@ model ontology_relationships {
   @@index([relationship_type])
 }
 
+=======
+>>>>>>> 224dcab25526dff14bfe3eb02e4a18e7cb25853a
 // ============================================================
 // MARKETPLACE DOMAIN
 // ============================================================
