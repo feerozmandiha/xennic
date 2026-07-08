@@ -159,7 +159,7 @@ export class ProjectService {
     workspaceId: string,
     userId: string,
     role: ProjectMemberRole,
-    addedBy: string,
+    _addedBy: string,
   ): Promise<ProjectMember> {
     await this.findOne(projectId, workspaceId);
 

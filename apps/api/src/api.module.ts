@@ -25,6 +25,9 @@ import { WebhooksModule }      from './modules/webhooks/webhooks.module.js';    
 import { EmailModule }         from './modules/email/email.module.js';               // ✅ ایمیل
 import { FeatureFlagsModule }  from './modules/feature-flags/feature-flags.module.js'; // ✅ Feature Flags
 import { VisionModule }        from './modules/vision/vision.module.js';                // ✅ بینایی ماشین
+import { AiProviderManagementModule } from './modules/ai-provider-management/ai-provider-management.module.js'; // ✅ مدیریت ارائه‌دهندگان AI
+import { MonitoringModule } from './modules/monitoring/monitoring.module.js'; // ✅ مانیتورینگ
+import { CalculationPlatformModule } from './modules/calculation-platform/calculation-platform.module.js'; // ✅ Sprint C1
 
 @Module({
   imports: [
@@ -51,6 +54,9 @@ import { VisionModule }        from './modules/vision/vision.module.js';        
     EmailModule,         // ✅ ایمیل
     FeatureFlagsModule,  // ✅ Feature Flags
     VisionModule,        // ✅ Vision
+    AiProviderManagementModule, // ✅ مدیریت ارائه‌دهندگان AI
+    MonitoringModule,           // ✅ مانیتورینگ (OpenTelemetry + Prometheus + logging)
+    CalculationPlatformModule,  // ✅ Sprint C1 — Enterprise Calculation Platform
     // ✅ SEC-001C: Rate Limiting
     ThrottlerModule.forRoot([
       {

@@ -33,15 +33,9 @@ import {
   AssignReviewerDto,
   AddTaxonomyDto,
   KnowledgeResponseDto,
-  KnowledgeVersionDto,
   CreateCommentDto,
   UpdateCommentDto,
-  CommentResponseDto,
   CreateWorkflowCommentDto,
-  WorkflowResponseDto,
-  KnowledgeAnalyticsDto,
-  KnowledgeDashboardStatsDto,
-  RelatedCalculationDto,
 } from '../dtos/knowledge.dto.js';
 
 @ApiTags('knowledge')

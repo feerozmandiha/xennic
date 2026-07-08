@@ -10,6 +10,11 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 
 import { ApiModule } from './api.module.js';
 import { AllExceptionsFilter } from './shared/filters/all-exceptions.filter.js';
+import { initializeOpenTelemetry } from './modules/monitoring/infrastructure/otel/opentelemetry-sdk.js';
+import { setupInstrumentations } from './modules/monitoring/infrastructure/otel/opentelemetry.instrumentation.js';
+
+initializeOpenTelemetry();
+setupInstrumentations();
 
 async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(

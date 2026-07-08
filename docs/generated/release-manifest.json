@@ -1,0 +1,27 @@
+{
+  "commit": "8e27711fcead9053d0cbceb08405a2ed3bd0b0c9",
+  "timestamp": "2026-07-08T07:38:44.104Z",
+  "bootstrapVersion": "1.2.0",
+  "architectureValidatorVersion": "1.2.0",
+  "adrVersions": {
+    "012-enterprise-messaging-bus": "0.1",
+    "013-enterprise-event-schema-registry": "0.1",
+    "014-distributed-saga-orchestration": "0.1",
+    "015-unified-cache-invalidation": "0.1",
+    "016-enterprise-observability": "0.1",
+    "017-enterprise-intelligence-platform": "0.1",
+    "018-enterprise-orchestration-platform": "0.1",
+    "ADR-011-knowledge-factory": "0.1",
+    "ADR-012-knowledge-intelligence-layer": "0.1",
+    "ADR-019-bootstrap-enforcement": "0.1",
+    "ADR-020-architecture-governance-automation": "0.1"
+  },
+  "moduleVersions": {},
+  "databaseSchemaChecksum": "43477e5267798b00ee41a9304c3f4c0b2711888ef902a1cd59dc9c53fdcc62ab",
+  "openapiChecksum": "6c4ef84ea0b6fea3334ab9e83ed65922dfc09aaad5dd0bdb2d170edd7c5bdc10",
+  "mermaidChecksum": "c508f9c2d3f52aa3c84f59edf76da6b9568455a82c185ae17268915e3780e7b9",
+  "testCount": 0,
+  "coverage": "N/A (run pnpm test:cov)",
+  "dependencyGraphChecksum": "2b77480b93b1acc92a372f069e62cb77f7ce9f1b63b03e6171a3ee4285adbf12",
+  "version": "1.2.0"
+}

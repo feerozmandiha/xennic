@@ -7,7 +7,6 @@ import {
 import { JwtAuthGuard } from '../../../auth/infrastructure/guards/jwt-auth.guard.js';
 import { WorkspaceGuard } from '../../../rbac/infrastructure/guards/workspace.guard.js';
 import { RequirePermissions } from '../../../rbac/infrastructure/decorators/permissions.decorator.js';
-import { CurrentUser } from '../../../rbac/infrastructure/decorators/current-user.decorator.js';
 import { WorkspaceSettingsService } from '../../application/services/workspace-settings.service.js';
 import {
   WorkspaceSettingsResponseDto,

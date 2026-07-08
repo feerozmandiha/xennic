@@ -1,6 +1,6 @@
 import { Injectable, Inject, NotFoundException } from '@nestjs/common';
 import type { IWorkspaceSettingsRepository } from '../../domain/interfaces/workspace-settings.repository.interface.js';
-import { WorkspaceSettingsEntity, DEFAULT_WORKSPACE_SETTINGS } from '../../domain/entities/workspace-settings.entity.js';
+import { WorkspaceSettingsEntity} from '../../domain/entities/workspace-settings.entity.js';
 import type { WorkspaceSettingsData } from '../../domain/entities/workspace-settings.entity.js';
 import type { UpdateWorkspaceSettingsDto } from '../../presentation/dtos/workspace-settings.dto.js';
 

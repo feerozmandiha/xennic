@@ -1,0 +1,16 @@
+{
+  "name": "production",
+  "description": "Production-grade load profile simulating real traffic patterns",
+  "stages": [
+    { "duration": "5m", "target": 50 },
+    { "duration": "10m", "target": 200 },
+    { "duration": "10m", "target": 500 },
+    { "duration": "10m", "target": 1000 },
+    { "duration": "5m", "target": 0 }
+  ],
+  "thresholds": {
+    "http_req_duration": ["p(50)<500", "p(95)<2000", "p(99)<5000"],
+    "http_req_failed": ["rate<0.01"],
+    "errors": ["rate<0.01"]
+  }
+}

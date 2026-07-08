@@ -29,7 +29,7 @@ const WS_ID = 'ws-123';
 const USER_ID = 'user-456';
 const ARTICLE_ID = 'article-789';
 
-function makeEntity(overrides?: Partial<KnowledgeEntity>): KnowledgeEntity {
+function makeEntity(_overrides?: Partial<KnowledgeEntity>): KnowledgeEntity {
   const entity = KnowledgeEntity.create({ workspaceId: WS_ID, slug: 'test-article', authorId: USER_ID });
   Object.defineProperty(entity, 'id', { value: ARTICLE_ID });
   return entity;

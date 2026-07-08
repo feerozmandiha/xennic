@@ -1,0 +1,97 @@
+# Module Boundary Rules
+
+- id: MOD-001
+  severity: critical
+  description: "Modules must not import from other module's domain/ layer"
+  profile:
+    appliesTo: [production, test]
+  validation:
+    type: import-check
+    pattern: "**/modules/**/domain/**/*.ts"
+    forbidden: ["../../modules/", "../modules/"]
+  examples:
+    - good: "Module A uses Module B's application service (public API)"
+    - bad: "Module A imports from Module B's domain layer"
+  autofix: false
+
+- id: MOD-002
+  severity: high
+  description: "Cross-module communication must go through public APIs (application services)"
+  profile:
+    appliesTo: [production]
+  validation:
+    type: import-check
+    pattern: "**/modules/*/application/**/*.ts"
+    forbidden: ["../infrastructure/", "../domain/"]
+  examples:
+    - good: "import { OtherModuleService } from '../other/application/services/other.service.js'"
+    - bad: "import { OtherRepository } from '../other/infrastructure/repositories/other.repository.js'"
+  autofix: false
+
+- id: MOD-003
+  severity: high
+  description: "Every module must have a module.ts file registered in api.module.ts"
+  profile:
+    appliesTo: [production]
+  validation:
+    type: file-exists
+    pattern: "**/modules/*/module.ts"
+  examples:
+    - good: "All 30+ modules have *.module.ts files"
+    - bad: "Module directory without module.ts registration"
+  autofix: false
+
+- id: MOD-004
+  severity: medium
+  description: "@Global() modules should only be used for cross-cutting infrastructure"
+  profile:
+    appliesTo: [production]
+  validation:
+    type: count-check
+    pattern: "@Global()"
+    expected: "3 modules (semantic-integration, enterprise-intelligence, enterprise-orchestration)"
+  examples:
+    - good: "SemanticIntegrationModule is @Global()"
+    - bad: "Business module marked @Global()"
+  autofix: false
+
+- id: MOD-005
+  severity: medium
+  description: "Module directories must follow the standard structure: domain/, application/, infrastructure/, presentation/"
+  profile:
+    appliesTo: [production]
+  validation:
+    type: dir-structure
+    pattern: "**/modules/*/"
+    expected: ["domain/", "application/", "infrastructure/", "presentation/"]
+  examples:
+    - good: "auth/ has domain/, application/, infrastructure/, presentation/"
+    - bad: "vision/ has no domain/ directory"
+  autofix: false
+
+- id: MOD-006
+  severity: low
+  description: "Module names in filenames must match directory name (kebab-case)"
+  profile:
+    appliesTo: [production]
+  validation:
+    type: naming-check
+    pattern: "**/modules/*/*.ts"
+  examples:
+    - good: "knowledge-factory/knowledge-factory.module.ts"
+    - bad: "knowledge-factory/KnowledgeFactoryModule.ts"
+  autofix: false
+
+- id: MOD-007
+  severity: low
+  description: "Module exports should be explicit (no barrel/index.ts re-exports)"
+  profile:
+    appliesTo: [production]
+  validation:
+    type: file-exists
+    pattern: "**/modules/*/index.ts"
+    forbid: true
+  examples:
+    - good: "No index.ts in module directories"
+    - bad: "knowledge/index.ts that re-exports everything"
+  autofix: false

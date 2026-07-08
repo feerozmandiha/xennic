@@ -1,0 +1,88 @@
+# Import Rules
+
+- id: IMP-001
+  severity: critical
+  description: "All relative imports must use .js extension for ESM compatibility"
+  profile:
+    appliesTo: [production, test]
+  validation:
+    type: regex-check
+    pattern: "**/*.ts"
+    required: ["from '\\./"]
+    exclude: ["**/node_modules/**"]
+    check: "from '\\.[a-zA-Z/]+\\.js"
+  examples:
+    - good: "import { Foo } from './foo.js'"
+    - bad: "import { Foo } from './foo'"
+  autofix:
+    command: "sed -i \"s/from '\\.\\([^']*\\)'/from '.\\1.js'/g\""
+
+- id: IMP-002
+  severity: high
+  description: "No barrel/index.ts re-exports allowed"
+  profile:
+    appliesTo: [production]
+  validation:
+    type: file-exists
+    pattern: "**/modules/**/index.ts"
+    forbid: true
+  examples:
+    - good: "No index.ts files in module directories"
+    - bad: "modules/knowledge/index.ts re-exporting all classes"
+  autofix: false
+
+- id: IMP-003
+  severity: high
+  description: "No deep imports across module boundaries (must use public API)"
+  profile:
+    appliesTo: [production, test]
+  validation:
+    type: regex-check
+    pattern: "**/modules/*/src/**/*.ts"
+    forbidden: ["../modules/"]
+  examples:
+    - good: "Import from module root via dependency injection"
+    - bad: "import { Thing } from '../other-module/infrastructure/thing.js'"
+  autofix: false
+
+- id: IMP-004
+  severity: medium
+  description: "Import statements should not use relative paths that go up more than 3 levels"
+  profile:
+    appliesTo: [production, test]
+  validation:
+    type: regex-check
+    pattern: "**/modules/**/*.ts"
+    forbidden: ["../../../.."]
+  examples:
+    - good: "import { Foo } from '../common/foo.js'"
+    - bad: "import { Foo } from '../../../../../common/foo.js'"
+  autofix: false
+
+- id: IMP-005
+  severity: medium
+  description: "Prefer workspace package imports (@xennic/*) over relative paths for shared code"
+  profile:
+    appliesTo: [production, test]
+  validation:
+    type: regex-check
+    pattern: "**/modules/**/*.ts"
+    preferred: "@xennic/"
+  examples:
+    - good: "import { Result } from '@xennic/shared'"
+    - bad: "import { Result } from '../../../shared/result.js'"
+  autofix: false
+
+- id: IMP-006
+  severity: low
+  description: "Type-only imports should use 'import type' syntax"
+  profile:
+    appliesTo: [production, test]
+  validation:
+    type: regex-check
+    pattern: "**/*.ts"
+    required: ["import type"]
+  examples:
+    - good: "import type { IRepository } from './interfaces/repository.interface.js'"
+    - bad: "import { IRepository } from './interfaces/repository.interface.js'  // interface imported as value"
+  autofix: false

@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
-  IsString, IsNotEmpty, IsObject, IsOptional, IsUUID, IsEnum,
+  IsNotEmpty, IsObject, IsOptional, IsUUID, IsEnum,
 } from 'class-validator';
 import type { CalculationEntity } from '../../domain/entities/calculation.entity.js';
 

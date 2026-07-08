@@ -1,0 +1,114 @@
+# Entity Rules
+
+- id: ENT-001
+  severity: critical
+  description: "All entity files must be in domain/entities/ directory"
+  profile:
+    appliesTo: [production]
+  validation:
+    type: file-location
+    pattern: "**/*.entity.ts"
+    expected: "domain/entities/"
+  examples:
+    - good: "knowledge/domain/entities/knowledge.entity.ts"
+    - bad: "knowledge/infrastructure/knowledge.entity.ts"
+  autofix: false
+
+- id: ENT-002
+  severity: high
+  description: "All entity IDs must be typed as strings (UUID)"
+  profile:
+    appliesTo: [production]
+  validation:
+    type: content-check
+    pattern: "**/domain/**/*.entity.ts"
+    required: ["id:", "id=", "string"]
+    forbidden: ["number", "int", "Integer"]
+  examples:
+    - good: "constructor(private readonly id: string) {}"
+    - bad: "constructor(private readonly id: number) {}"
+  autofix: false
+
+- id: ENT-003
+  severity: high
+  description: "Entities must have soft-delete support (deletedAt field)"
+  profile:
+    appliesTo: [production]
+  validation:
+    type: content-check
+    pattern: "**/domain/**/*.entity.ts"
+    required: ["deletedAt"]
+  examples:
+    - good: "readonly deletedAt?: Date"
+    - bad: "// no soft delete field"
+  autofix: false
+
+- id: ENT-004
+  severity: high
+  description: "Entities must have createdAt and updatedAt timestamps"
+  profile:
+    appliesTo: [production]
+  validation:
+    type: content-check
+    pattern: "**/domain/**/*.entity.ts"
+    required: ["createdAt", "updatedAt"]
+  examples:
+    - good: "readonly createdAt: Date; readonly updatedAt: Date;"
+    - bad: "// missing timestamps"
+  autofix: false
+
+- id: ENT-005
+  severity: medium
+  description: "Entities should have a static reconstitute/create factory method"
+  profile:
+    appliesTo: [production]
+  validation:
+    type: content-check
+    pattern: "**/domain/**/*.entity.ts"
+    required: ["static", "reconstitute"]
+  examples:
+    - good: "static reconstitute(props: EntityProps): Entity { ... }"
+    - bad: "constructor(props: EntityProps) { ... }  // no factory"
+  autofix: false
+
+- id: ENT-006
+  severity: medium
+  description: "Entities should encapsulate state changes through behavior methods, not public property setters"
+  profile:
+    appliesTo: [production]
+  validation:
+    type: content-check
+    pattern: "**/domain/**/*.entity.ts"
+    forbidden: ["set ", "public set"]
+  examples:
+    - good: "activate() { this.status = 'active'; }"
+    - bad: "set status(value: string) { this._status = value; }"
+  autofix: false
+
+- id: ENT-007
+  severity: medium
+  description: "Entities should extend or implement BaseEntity (id, timestamps, soft-delete)"
+  profile:
+    appliesTo: [production]
+  validation:
+    type: content-check
+    pattern: "**/domain/**/*.entity.ts"
+    required: ["extends", "BaseEntity"]
+  examples:
+    - good: "export class UserEntity extends BaseEntity { ... }"
+    - bad: "export class UserEntity { ... }"
+  autofix: false
+
+- id: ENT-008
+  severity: low
+  description: "Entities should validate invariants in constructor"
+  profile:
+    appliesTo: [production]
+  validation:
+    type: content-check
+    pattern: "**/domain/**/*.entity.ts"
+    required: ["if", "throw", "validate", "assert"]
+  examples:
+    - good: "constructor(props: UserProps) { if (!props.email) throw new Error('Email required'); }"
+    - bad: "constructor(props: UserProps) { this.email = props.email; } // no validation"
+  autofix: false

@@ -1,0 +1,118 @@
+# Repository Layer Rules
+
+- id: REPO-001
+  severity: critical
+  description: "Repository interfaces must be defined in domain/interfaces/ and implementations in infrastructure/persistence/"
+  profile:
+    appliesTo: [production]
+  validation:
+    type: pair-check
+    interfacePattern: "**/domain/interfaces/*.repository.interface.ts"
+    implPattern: "**/infrastructure/persistence/*.repository.ts"
+  examples:
+    - good: "domain/interfaces/user.repository.interface.ts + infrastructure/persistence/user.repository.ts"
+    - bad: "No matching implementation for a defined interface"
+  autofix: false
+
+- id: REPO-002
+  severity: critical
+  description: "Repositories must never be accessed directly from controllers"
+  profile:
+    appliesTo: [production]
+  validation:
+    type: import-check
+    pattern: "**/presentation/controllers/*.controller.ts"
+    forbidden: ["repository", "Repository", "@prisma/", "PrismaClient", "prisma."]
+  examples:
+    - good: "Controller -> Service -> Repository"
+    - bad: "Controller -> Repository (bypasses Service layer)"
+  autofix: false
+
+- id: REPO-003
+  severity: critical
+  description: "PrismaClient must not be used outside infrastructure layer"
+  profile:
+    appliesTo: [production]
+  validation:
+    type: import-check
+    pattern: "**/*.ts"
+    exclude: ["**/infrastructure/**"]
+    forbidden: ["PrismaClient", "prisma", "@prisma/client"]
+  examples:
+    - good: "Prisma access only in infrastructure/repositories/"
+    - bad: "import { PrismaClient } from '@prisma/client' in application service"
+  autofix: false
+
+- id: REPO-004
+  severity: high
+  description: "Repositories must return domain entities, not Prisma models"
+  profile:
+    appliesTo: [production]
+  validation:
+    type: content-check
+    pattern: "**/infrastructure/persistence/*.repository.ts"
+    required:
+      - "reconstitute"
+      - "toDomain"
+      - "fromPersistence"
+      - "mapTo"
+  examples:
+    - good: "return this.userMapper.toDomain(prismaUser)"
+    - bad: "return prismaUser  // returns Prisma type directly"
+  autofix: false
+
+- id: REPO-005
+  severity: high
+  description: "Each aggregate root must have exactly one repository"
+  profile:
+    appliesTo: [production]
+  validation:
+    type: count-check
+    pattern: "**/infrastructure/persistence/*.repository.ts"
+    expected: "one per aggregate root"
+  examples:
+    - good: "One UserRepository for User aggregate"
+    - bad: "UserRepository + UserReadRepository + UserWriteRepository"
+  autofix: false
+
+- id: REPO-006
+  severity: medium
+  description: "Repository methods should follow standard naming: find*, create*, update*, delete*, save*"
+  profile:
+    appliesTo: [production]
+  validation:
+    type: naming-check
+    pattern: "**/infrastructure/persistence/*.repository.ts"
+    allowedPrefixes: ["find", "create", "update", "delete", "save", "count", "exists"]
+  examples:
+    - good: "findById(), createUser(), updateProfile(), deleteById()"
+    - bad: "getUser(), insertUser(), removeUser()"
+  autofix: false
+
+- id: REPO-007
+  severity: medium
+  description: "Repositories must implement workspace_id filtering for multi-tenant queries"
+  profile:
+    appliesTo: [production]
+  validation:
+    type: content-check
+    pattern: "**/infrastructure/persistence/*.repository.ts"
+    required: ["workspaceId", "workspace_id", "where: { workspaceId"]
+  examples:
+    - good: "findAll(workspaceId: string) { return this.prisma.user.findMany({ where: { workspaceId } }) }"
+    - bad: "findAll() { return this.prisma.user.findMany() }"
+  autofix: false
+
+- id: REPO-008
+  severity: low
+  description: "Repository implementations should not throw raw exceptions; use domain exceptions"
+  profile:
+    appliesTo: [production]
+  validation:
+    type: content-check
+    pattern: "**/infrastructure/persistence/*.repository.ts"
+    forbidden: ["throw new Error"]
+  examples:
+    - good: "throw new UserNotFoundException(userId)"
+    - bad: "throw new Error('User not found')"
+  autofix: false

@@ -1,0 +1,174 @@
+# Naming Rules
+
+- id: NAME-001
+  severity: high
+  description: "Files must use kebab-case naming"
+  profile:
+    appliesTo: [production, test]
+  validation:
+    type: naming-check
+    pattern: "**/modules/**/*.ts"
+    exclude: ["**/*.spec.ts", "**/*.e2e-spec.ts"]
+    required: "kebab-case"
+  examples:
+    - good: "knowledge-factory.service.ts, domain-event-publisher.service.ts"
+    - bad: "KnowledgeFactoryService.ts, domainEventPublisher.ts"
+  autofix: false
+
+- id: NAME-002
+  severity: high
+  description: "Classes must use PascalCase naming"
+  profile:
+    appliesTo: [production, test]
+  validation:
+    type: naming-check
+    content: true
+    pattern: "**/modules/**/*.ts"
+    required: "PascalCase class"
+  examples:
+    - good: "class KnowledgeFactoryService { }"
+    - bad: "class knowledgeFactoryService { }"
+  autofix: false
+
+- id: NAME-003
+  severity: high
+  description: "Methods and functions must use camelCase naming"
+  profile:
+    appliesTo: [production, test]
+  validation:
+    type: naming-check
+    content: true
+    pattern: "**/modules/**/*.ts"
+    required: "camelCase method"
+  examples:
+    - good: "getDocumentById(), publishEvent()"
+    - bad: "GetDocumentById(), publish_event()"
+  autofix: false
+
+- id: NAME-004
+  severity: medium
+  description: "Interface names should use I prefix"
+  profile:
+    appliesTo: [production, test]
+  validation:
+    type: naming-check
+    content: true
+    pattern: "**/domain/interfaces/*.ts"
+    required: "I prefix"
+  examples:
+    - good: "IUserRepository, IEventHandler"
+    - bad: "UserRepositoryInterface, EventHandler"
+  autofix: false
+
+- id: NAME-005
+  severity: medium
+  description: "Entity files must end with .entity.ts"
+  profile:
+    appliesTo: [production, test]
+  validation:
+    type: naming-check
+    pattern: "**/entities/*.ts"
+    required: "*.entity.ts"
+  examples:
+    - good: "user.entity.ts, session.entity.ts"
+    - bad: "user.ts, session-model.ts"
+  autofix: false
+
+- id: NAME-006
+  severity: medium
+  description: "Value Object files must end with .vo.ts"
+  profile:
+    appliesTo: [production, test]
+  validation:
+    type: naming-check
+    pattern: "**/value-objects/*.ts"
+    required: "*.vo.ts"
+  examples:
+    - good: "email.vo.ts, jwt-payload.vo.ts"
+    - bad: "email.ts, jwt-payload.ts"
+  autofix: false
+
+- id: NAME-007
+  severity: medium
+  description: "Service files must end with .service.ts"
+  profile:
+    appliesTo: [production, test]
+  validation:
+    type: naming-check
+    pattern: "**/services/*.ts"
+    required: "*.service.ts"
+    specAllowed: true
+  examples:
+    - good: "auth.service.ts, domain-event-publisher.service.ts"
+    - bad: "auth.ts, domain-event-publisher.ts"
+  autofix: false
+
+- id: NAME-008
+  severity: medium
+  description: "Controller files must end with .controller.ts"
+  profile:
+    appliesTo: [production, test]
+  validation:
+    type: naming-check
+    pattern: "**/controllers/*.ts"
+    required: "*.controller.ts"
+  examples:
+    - good: "auth.controller.ts, knowledge.controller.ts"
+    - bad: "auth.ts, knowledge-ctrl.ts"
+  autofix: false
+
+- id: NAME-009
+  severity: low
+  description: "DTO files must end with .dto.ts"
+  profile:
+    appliesTo: [production, test]
+  validation:
+    type: naming-check
+    pattern: "**/dtos/*.ts"
+    required: "*.dto.ts"
+  examples:
+    - good: "auth.dto.ts, create-user.dto.ts"
+    - bad: "auth.ts, create-user.ts"
+  autofix: false
+
+- id: NAME-010
+  severity: low
+  description: "Guard files must end with .guard.ts"
+  profile:
+    appliesTo: [production, test]
+  validation:
+    type: naming-check
+    pattern: "**/guards/*.ts"
+    required: "*.guard.ts"
+  examples:
+    - good: "jwt-auth.guard.ts, workspace.guard.ts"
+    - bad: "jwt-auth.ts, workspace-guard.ts"
+  autofix: false
+
+- id: NAME-011
+  severity: low
+  description: "Spec files must end with .spec.ts (unit) or .e2e-spec.ts (e2e)"
+  profile:
+    appliesTo: [production, test]
+  validation:
+    type: naming-check
+    pattern: "**/__tests__/*.ts"
+    required: "*.spec.ts"
+  examples:
+    - good: "auth.service.spec.ts"
+    - bad: "auth.service.test.ts"
+  autofix: false
+
+- id: NAME-012
+  severity: low
+  description: "Constants files must end with .constants.ts"
+  profile:
+    appliesTo: [production, test]
+  validation:
+    type: naming-check
+    pattern: "**/constants/*.ts"
+    required: "*.constants.ts"
+  examples:
+    - good: "semantic-integration.constants.ts"
+    - bad: "semantic-integration-config.ts"
+  autofix: false

@@ -289,6 +289,9 @@
         "responses": {
           "204": {
             "description": "Workspace permanently deleted"
+          },
+          "403": {
+            "description": "Forbidden — not workspace owner"
           }
         },
         "security": [
@@ -491,6 +494,50 @@
           }
         ],
         "summary": "Remove member",
+        "tags": [
+          "workspaces"
+        ]
+      }
+    },
+    "/workspaces/{workspaceId}/transfer-ownership": {
+      "post": {
+        "description": "Transfers workspace ownership to another member. Current owner becomes ADMIN.",
+        "operationId": "WorkspaceMemberController_transferOwnership",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TransferOwnershipDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Ownership transferred"
+          },
+          "403": {
+            "description": "Only the workspace owner can transfer ownership"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Transfer ownership",
         "tags": [
           "workspaces"
         ]
@@ -2434,12 +2481,19 @@
     },
     "/engineering/health": {
       "get": {
-        "description": "Checks if the Python engineering engine is running.",
+        "description": "Checks if the Python engineering engine is running, including circuit breaker status.",
         "operationId": "EngineeringController_health",
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Health status"
+            "description": "Health status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EngineeringHealthResponseDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -4021,6 +4075,104 @@
         "summary": "AI usage stats for current month",
         "tags": [
           "ai"
+        ]
+      }
+    },
+    "/ai-runtime/info": {
+      "get": {
+        "operationId": "AiRuntimeController_getInfo",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Runtime info"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "AI Runtime information and stats",
+        "tags": [
+          "ai-runtime"
+        ]
+      }
+    },
+    "/ai-runtime/execute": {
+      "post": {
+        "operationId": "AiRuntimeController_execute",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExecuteDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Execution result"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Execute a request through the AI pipeline",
+        "tags": [
+          "ai-runtime"
+        ]
+      }
+    },
+    "/ai-runtime/tools": {
+      "get": {
+        "operationId": "AiRuntimeController_listTools",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Tools list"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "List all registered tools",
+        "tags": [
+          "ai-runtime"
+        ]
+      },
+      "post": {
+        "operationId": "AiRuntimeController_registerTool",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterToolDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Tool registered"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Register a new tool",
+        "tags": [
+          "ai-runtime"
         ]
       }
     },
@@ -7811,6 +7963,1066 @@
           "vision"
         ]
       }
+    },
+    "/knowledge-factory/documents/upload": {
+      "post": {
+        "operationId": "DocumentsController_uploadDocument",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/UploadDocumentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Upload a knowledge document",
+        "tags": [
+          "Knowledge Factory - Documents"
+        ]
+      }
+    },
+    "/knowledge-factory/documents/{id}": {
+      "get": {
+        "operationId": "DocumentsController_getDocument",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get document by ID",
+        "tags": [
+          "Knowledge Factory - Documents"
+        ]
+      },
+      "delete": {
+        "operationId": "DocumentsController_deleteDocument",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Soft delete a document",
+        "tags": [
+          "Knowledge Factory - Documents"
+        ]
+      }
+    },
+    "/knowledge-factory/documents": {
+      "get": {
+        "operationId": "DocumentsController_listDocuments",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List documents",
+        "tags": [
+          "Knowledge Factory - Documents"
+        ]
+      }
+    },
+    "/knowledge-factory/documents/{id}/process": {
+      "post": {
+        "operationId": "DocumentsController_processDocument",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Run pipeline on a document",
+        "tags": [
+          "Knowledge Factory - Documents"
+        ]
+      }
+    },
+    "/knowledge-factory/documents/{id}/publish": {
+      "post": {
+        "operationId": "DocumentsController_publishDocument",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Publish a processed document",
+        "tags": [
+          "Knowledge Factory - Documents"
+        ]
+      }
+    },
+    "/knowledge-factory/pipeline/status/{documentId}": {
+      "get": {
+        "operationId": "PipelineStatusController_getPipelineStatus",
+        "parameters": [
+          {
+            "name": "documentId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get pipeline status for a document",
+        "tags": [
+          "Knowledge Factory - Pipeline"
+        ]
+      }
+    },
+    "/knowledge-factory/pipeline/{documentId}/retry": {
+      "post": {
+        "operationId": "PipelineStatusController_retryPipeline",
+        "parameters": [
+          {
+            "name": "documentId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Retry failed pipeline",
+        "tags": [
+          "Knowledge Factory - Pipeline"
+        ]
+      }
+    },
+    "/knowledge-factory/search/documents": {
+      "get": {
+        "operationId": "SearchController_searchDocuments",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Hybrid search (BM25 + vector) across processed documents",
+        "tags": [
+          "Knowledge Factory - Search"
+        ]
+      }
+    },
+    "/knowledge-factory/search/suggestions": {
+      "get": {
+        "operationId": "SearchController_getSuggestions",
+        "parameters": [
+          {
+            "name": "q",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get search suggestions",
+        "tags": [
+          "Knowledge Factory - Search"
+        ]
+      }
+    },
+    "/knowledge-factory/search/analytics": {
+      "get": {
+        "operationId": "SearchController_getAnalytics",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get knowledge analytics",
+        "tags": [
+          "Knowledge Factory - Search"
+        ]
+      }
+    },
+    "/knowledge-intelligence/graph/shortest-path/{sourceId}/{targetId}": {
+      "get": {
+        "operationId": "GraphController_shortestPath",
+        "parameters": [
+          {
+            "name": "sourceId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "targetId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Find shortest path between two graph nodes",
+        "tags": [
+          "knowledge-intelligence"
+        ]
+      }
+    },
+    "/knowledge-intelligence/graph/neighbors/{nodeId}": {
+      "get": {
+        "operationId": "GraphController_neighbors",
+        "parameters": [
+          {
+            "name": "nodeId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "direction",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "edgeType",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get neighbors of a graph node",
+        "tags": [
+          "knowledge-intelligence"
+        ]
+      }
+    },
+    "/knowledge-intelligence/graph/subgraph": {
+      "get": {
+        "operationId": "GraphController_subgraph",
+        "parameters": [
+          {
+            "name": "nodeIds",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get subgraph for a set of node IDs",
+        "tags": [
+          "knowledge-intelligence"
+        ]
+      }
+    },
+    "/knowledge-intelligence/graph/ancestors/{nodeId}": {
+      "get": {
+        "operationId": "GraphController_ancestors",
+        "parameters": [
+          {
+            "name": "nodeId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get all ancestors of a node",
+        "tags": [
+          "knowledge-intelligence"
+        ]
+      }
+    },
+    "/knowledge-intelligence/graph/descendants/{nodeId}": {
+      "get": {
+        "operationId": "GraphController_descendants",
+        "parameters": [
+          {
+            "name": "nodeId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get all descendants of a node",
+        "tags": [
+          "knowledge-intelligence"
+        ]
+      }
+    },
+    "/knowledge-intelligence/graph/provenance/{nodeId}": {
+      "get": {
+        "operationId": "GraphController_provenance",
+        "parameters": [
+          {
+            "name": "nodeId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Build provenance chain for a node",
+        "tags": [
+          "knowledge-intelligence"
+        ]
+      }
+    },
+    "/knowledge-intelligence/graph/dependencies/{nodeId}": {
+      "get": {
+        "operationId": "GraphController_dependencies",
+        "parameters": [
+          {
+            "name": "nodeId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "direction",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Resolve dependency tree for a node",
+        "tags": [
+          "knowledge-intelligence"
+        ]
+      }
+    },
+    "/knowledge-intelligence/graph/conflicts/{nodeId}": {
+      "get": {
+        "operationId": "GraphController_conflicts",
+        "parameters": [
+          {
+            "name": "nodeId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Detect conflicts for a node",
+        "tags": [
+          "knowledge-intelligence"
+        ]
+      }
+    },
+    "/knowledge-intelligence/graph/connected-components": {
+      "get": {
+        "operationId": "GraphController_connectedComponents",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Find connected components in workspace graph",
+        "tags": [
+          "knowledge-intelligence"
+        ]
+      }
+    },
+    "/knowledge-intelligence/ontologies": {
+      "get": {
+        "operationId": "OntologyController_listOntologies",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "List active ontologies for workspace",
+        "tags": [
+          "knowledge-intelligence"
+        ]
+      },
+      "post": {
+        "operationId": "OntologyController_registerOntology",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Register a new ontology",
+        "tags": [
+          "knowledge-intelligence"
+        ]
+      }
+    },
+    "/knowledge-intelligence/ontologies/{ontologyId}/classes": {
+      "get": {
+        "operationId": "OntologyController_listClasses",
+        "parameters": [
+          {
+            "name": "ontologyId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "List classes in an ontology",
+        "tags": [
+          "knowledge-intelligence"
+        ]
+      }
+    },
+    "/knowledge-intelligence/taxonomy/hierarchy": {
+      "get": {
+        "operationId": "OntologyController_getTaxonomyHierarchy",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get taxonomy hierarchy for workspace",
+        "tags": [
+          "knowledge-intelligence"
+        ]
+      }
+    },
+    "/knowledge-intelligence/taxonomy/classify/{nodeId}": {
+      "post": {
+        "operationId": "OntologyController_classifyNode",
+        "parameters": [
+          {
+            "name": "nodeId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Classify a graph node into an ontology class",
+        "tags": [
+          "knowledge-intelligence"
+        ]
+      }
+    },
+    "/knowledge-intelligence/citations/graph": {
+      "get": {
+        "operationId": "CitationsController_getCitationGraph",
+        "parameters": [
+          {
+            "name": "sourceId",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "targetId",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get citation graph visualization data",
+        "tags": [
+          "knowledge-intelligence"
+        ]
+      }
+    },
+    "/knowledge-intelligence/citations/expand/{nodeId}": {
+      "get": {
+        "operationId": "CitationsController_expandCitations",
+        "parameters": [
+          {
+            "name": "nodeId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Expand citations from a node",
+        "tags": [
+          "knowledge-intelligence"
+        ]
+      }
+    },
+    "/knowledge-intelligence/search/graph": {
+      "get": {
+        "operationId": "GraphSearchController_semanticSearch",
+        "parameters": [
+          {
+            "name": "q",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Semantic search over the knowledge graph",
+        "tags": [
+          "knowledge-intelligence"
+        ]
+      }
+    },
+    "/knowledge-intelligence/search/related/{nodeId}": {
+      "get": {
+        "operationId": "GraphSearchController_relatedDocuments",
+        "parameters": [
+          {
+            "name": "nodeId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Find related documents via graph traversal",
+        "tags": [
+          "knowledge-intelligence"
+        ]
+      }
+    },
+    "/knowledge-intelligence/metrics/{nodeId}": {
+      "get": {
+        "operationId": "MetricsController_getMetrics",
+        "parameters": [
+          {
+            "name": "nodeId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get metrics for a graph node",
+        "tags": [
+          "knowledge-intelligence"
+        ]
+      }
+    },
+    "/knowledge-intelligence/metrics/{nodeId}/access": {
+      "post": {
+        "operationId": "MetricsController_recordAccess",
+        "parameters": [
+          {
+            "name": "nodeId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Record access for a node",
+        "tags": [
+          "knowledge-intelligence"
+        ]
+      }
+    },
+    "/knowledge-intelligence/metrics/workspace/top/{metric}": {
+      "get": {
+        "operationId": "MetricsController_topNodes",
+        "parameters": [
+          {
+            "name": "metric",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get top nodes by metric for workspace",
+        "tags": [
+          "knowledge-intelligence"
+        ]
+      }
+    },
+    "/knowledge-intelligence/metrics/workspace/authority": {
+      "get": {
+        "operationId": "MetricsController_rankAuthority",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Rank nodes by authority",
+        "tags": [
+          "knowledge-intelligence"
+        ]
+      }
+    },
+    "/knowledge-intelligence/metrics/workspace/completeness": {
+      "get": {
+        "operationId": "MetricsController_analyzeCompleteness",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Analyze workspace knowledge completeness",
+        "tags": [
+          "knowledge-intelligence"
+        ]
+      }
+    },
+    "/knowledge-intelligence/metrics/workspace/freshness": {
+      "get": {
+        "operationId": "MetricsController_refreshFreshness",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Refresh freshness scores for stale nodes",
+        "tags": [
+          "knowledge-intelligence"
+        ]
+      }
+    },
+    "/knowledge-intelligence/metrics/workspace/confidence/recompute": {
+      "post": {
+        "operationId": "MetricsController_recomputeConfidence",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Batch recompute confidence scores",
+        "tags": [
+          "knowledge-intelligence"
+        ]
+      }
+    },
+    "/knowledge-intelligence/clusters/compute": {
+      "post": {
+        "operationId": "ClustersController_computeClusters",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Auto-compute knowledge clusters",
+        "tags": [
+          "knowledge-intelligence"
+        ]
+      }
+    },
+    "/knowledge-intelligence/clusters": {
+      "get": {
+        "operationId": "ClustersController_listClusters",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "List clusters for workspace",
+        "tags": [
+          "knowledge-intelligence"
+        ]
+      }
+    },
+    "/knowledge-intelligence/duplicates/{nodeId}": {
+      "get": {
+        "operationId": "ClustersController_findDuplicates",
+        "parameters": [
+          {
+            "name": "nodeId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Find duplicates and near-duplicates for a node",
+        "tags": [
+          "knowledge-intelligence"
+        ]
+      }
     }
   },
   "info": {
@@ -8036,6 +9248,18 @@
         },
         "required": [
           "role"
+        ]
+      },
+      "TransferOwnershipDto": {
+        "type": "object",
+        "properties": {
+          "newOwnerId": {
+            "type": "string",
+            "description": "UUID of the user to become the new owner"
+          }
+        },
+        "required": [
+          "newOwnerId"
         ]
       },
       "WorkspaceInvitationResponseDto": {
@@ -9086,6 +10310,43 @@
           "result"
         ]
       },
+      "EngineeringHealthResponseDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "example": "healthy"
+          },
+          "calculatorsRegistered": {
+            "type": "number",
+            "example": 80
+          },
+          "version": {
+            "type": "string",
+            "example": "2.0.0"
+          },
+          "circuitState": {
+            "type": "string",
+            "example": "CLOSED",
+            "enum": [
+              "CLOSED",
+              "OPEN",
+              "HALF_OPEN"
+            ]
+          },
+          "circuitFailures": {
+            "type": "number",
+            "example": 0
+          }
+        },
+        "required": [
+          "status",
+          "calculatorsRegistered",
+          "version",
+          "circuitState",
+          "circuitFailures"
+        ]
+      },
       "PlanFeaturesDto": {
         "type": "object",
         "properties": {
@@ -9847,6 +11108,56 @@
           "inputs"
         ]
       },
+      "ExecuteDto": {
+        "type": "object",
+        "properties": {
+          "input": {
+            "type": "string",
+            "example": "محاسبه جریان نامی موتور"
+          },
+          "metadata": {
+            "type": "object",
+            "example": {
+              "conversationId": "uuid"
+            }
+          }
+        },
+        "required": [
+          "input"
+        ]
+      },
+      "RegisterToolDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "calculate_cable_size"
+          },
+          "description": {
+            "type": "string",
+            "example": "محاسبه سایز کابل بر اساس جریان و طول"
+          },
+          "parameters": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "tags": {
+            "default": [
+              "engineering"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "name",
+          "description"
+        ]
+      },
       "CreateTaxonomyItemDto": {
         "type": "object",
         "properties": {
@@ -10554,6 +11865,10 @@
             "description": "New workspace scope (null = remove workspace scope)"
           }
         }
+      },
+      "UploadDocumentDto": {
+        "type": "object",
+        "properties": {}
       }
     }
   }

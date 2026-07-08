@@ -1,6 +1,6 @@
 import { Injectable, NestInterceptor, ExecutionContext, CallHandler, BadRequestException } from '@nestjs/common';
 import { Observable } from 'rxjs';
-import { TenantContext, tenantStorage } from '@xennic/database';
+import { tenantStorage } from '@xennic/database';
 
 @Injectable()
 export class TenantInterceptor implements NestInterceptor {

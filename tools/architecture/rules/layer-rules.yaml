@@ -1,0 +1,141 @@
+# Layer Architecture Rules
+
+- id: LAYER-001
+  severity: critical
+  description: "Infrastructure layer must never call Presentation layer"
+  profile:
+    appliesTo: [production]
+  validation:
+    type: import-check
+    pattern: "**/infrastructure/**/*.ts"
+    forbidden: ["../presentation/"]
+  examples:
+    - good: "Infrastructure only depends on domain"
+    - bad: "Infrastructure imports controller or DTO"
+  autofix: false
+
+- id: LAYER-002
+  severity: critical
+  description: "Presentation layer must never call Infrastructure layer directly"
+  profile:
+    appliesTo: [production]
+  validation:
+    type: import-check
+    pattern: "**/presentation/**/*.ts"
+    forbidden: ["../infrastructure/"]
+  examples:
+    - good: "Presentation -> Application -> Domain -> Infrastructure"
+    - bad: "Presentation directly imports repository"
+  autofix: false
+
+- id: LAYER-003
+  severity: critical
+  description: "Domain layer must have zero framework dependencies"
+  profile:
+    appliesTo: [production]
+  validation:
+    type: import-check
+    pattern: "**/domain/**/*.ts"
+    forbidden: ["@nestjs/", "fastify", "express", "@prisma/"]
+  examples:
+    - good: "Domain imports only pure TypeScript/types"
+    - bad: "Domain class has @nestjs/common import"
+  autofix: false
+
+- id: LAYER-004
+  severity: high
+  description: "Application layer should use dependency injection for repositories"
+  profile:
+    appliesTo: [production]
+  validation:
+    type: content-check
+    pattern: "**/application/**/*.service.ts"
+    required: ["constructor", "private", "readonly", "I"]
+  examples:
+    - good: "constructor(private readonly repo: IUserRepository)"
+    - bad: "const repo = new UserRepository()"
+  autofix: false
+
+- id: LAYER-005
+  severity: high
+  description: "Application services must not import PrismaClient or use raw database queries"
+  profile:
+    appliesTo: [production]
+  validation:
+    type: import-check
+    pattern: "**/application/**/*.ts"
+    forbidden: ["PrismaClient", "@prisma/client", "prisma."]
+  examples:
+    - good: "Application uses repository interfaces"
+    - bad: "Application calls prisma.user.findMany()"
+  autofix: false
+
+- id: LAYER-006
+  severity: high
+  description: "DTOs must only be defined in presentation/dtos/ (not in domain or application)"
+  profile:
+    appliesTo: [production]
+  validation:
+    type: file-location
+    pattern: "**/*.dto.ts"
+    expected: "presentation/dtos/"
+  examples:
+    - good: "auth/presentation/dtos/login.dto.ts"
+    - bad: "auth/domain/login.dto.ts"
+  autofix: false
+
+- id: LAYER-007
+  severity: medium
+  description: "Guards must only be defined in presentation/guards/ or common/guards/"
+  profile:
+    appliesTo: [production]
+  validation:
+    type: file-location
+    pattern: "**/*.guard.ts"
+    expected: ["presentation/guards/", "common/guards/"]
+  examples:
+    - good: "auth/presentation/guards/jwt-auth.guard.ts"
+    - bad: "auth/domain/jwt-auth.guard.ts"
+  autofix: false
+
+- id: LAYER-008
+  severity: medium
+  description: "Interceptors must be in presentation/interceptors/ or common/interceptors/"
+  profile:
+    appliesTo: [production]
+  validation:
+    type: file-location
+    pattern: "**/*.interceptor.ts"
+    expected: ["presentation/interceptors/", "common/interceptors/"]
+  examples:
+    - good: "common/interceptors/hard-delete-audit.interceptor.ts"
+    - bad: "application/interceptors/hard-delete-audit.interceptor.ts"
+  autofix: false
+
+- id: LAYER-009
+  severity: medium
+  description: "Decorators must be in presentation/decorators/ or common/decorators/"
+  profile:
+    appliesTo: [production]
+  validation:
+    type: file-location
+    pattern: "**/*.decorator.ts"
+    expected: ["presentation/decorators/", "common/decorators/"]
+  examples:
+    - good: "common/decorators/super-admin-only.decorator.ts"
+    - bad: "domain/decorators/super-admin-only.decorator.ts"
+  autofix: false
+
+- id: LAYER-010
+  severity: medium
+  description: "Exception filters must be in common/filters/ or presentation/filters/"
+  profile:
+    appliesTo: [production]
+  validation:
+    type: file-location
+    pattern: "**/*.filter.ts"
+    expected: ["common/filters/", "presentation/filters/"]
+  examples:
+    - good: "shared/filters/all-exceptions.filter.ts"
+    - bad: "domain/filters/all-exceptions.filter.ts"
+  autofix: false

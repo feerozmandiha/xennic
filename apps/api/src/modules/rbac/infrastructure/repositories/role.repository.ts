@@ -142,7 +142,7 @@ export class RoleRepository implements IRoleRepository {
     userId: string,
     roleId: string,
     workspaceId: string,
-    assignedBy?: string,
+    _assignedBy?: string,
   ): Promise<void> {
     try {
       // جلوگیری از duplicate

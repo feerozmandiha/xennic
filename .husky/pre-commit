@@ -1,0 +1,14 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+pnpm lint-staged 2>&1 || {
+  echo "⚠️  Lint issues found — review before committing"
+}
+
+npx tsx tools/architecture/validate.ts --light --changed 2>&1
+if [ $? -ne 0 ]; then
+  echo "❌ Commit blocked: Critical architecture violations in changed files."
+  exit 1
+fi
+
+echo "✅ Architecture validation passed"

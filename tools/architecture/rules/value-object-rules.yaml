@@ -1,0 +1,71 @@
+# Value Object Rules
+
+- id: VO-001
+  severity: high
+  description: "Value Objects must be immutable (all properties readonly)"
+  profile:
+    appliesTo: [production]
+  validation:
+    type: content-check
+    pattern: "**/*.vo.ts"
+    required: ["readonly"]
+  examples:
+    - good: "export class EmailVO { constructor(readonly value: string) {} }"
+    - bad: "export class Email { value: string; }"
+  autofix: false
+
+- id: VO-002
+  severity: high
+  description: "Value Objects must be in domain/value-objects/ directory"
+  profile:
+    appliesTo: [production]
+  validation:
+    type: file-location
+    pattern: "**/*.vo.ts"
+    expected: "domain/value-objects/"
+  examples:
+    - good: "auth/domain/value-objects/jwt-payload.vo.ts"
+    - bad: "auth/infrastructure/jwt-payload.vo.ts"
+  autofix: false
+
+- id: VO-003
+  severity: medium
+  description: "Value Objects must implement equals() method for value comparison"
+  profile:
+    appliesTo: [production]
+  validation:
+    type: content-check
+    pattern: "**/*.vo.ts"
+    required: ["equals"]
+  examples:
+    - good: "equals(other: EmailVO): boolean { return this.value === other.value; }"
+    - bad: "// no equals method"
+  autofix: false
+
+- id: VO-004
+  severity: medium
+  description: "Value Objects should not extend BaseEntity (VOs have no identity)"
+  profile:
+    appliesTo: [production]
+  validation:
+    type: content-check
+    pattern: "**/*.vo.ts"
+    forbidden: ["extends BaseEntity"]
+  examples:
+    - good: "export class EmailVO { ... }"
+    - bad: "export class EmailVO extends BaseEntity { ... }"
+  autofix: false
+
+- id: VO-005
+  severity: low
+  description: "Value Objects should be stored as JSON in the database (not separate tables)"
+  profile:
+    appliesTo: [production]
+  validation:
+    type: content-check
+    pattern: "**/*.vo.ts"
+    required: ["toJSON", "toPersistence"]
+  examples:
+    - good: "toJSON(): object { return { value: this.value }; }"
+    - bad: "// no serialization method"
+  autofix: false

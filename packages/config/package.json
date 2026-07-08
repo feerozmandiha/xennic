@@ -8,9 +8,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.base.json",
     "typecheck": "tsc -p tsconfig.base.json --noEmit",
-    "lint": "eslint src"
+    "lint": "eslint 'src/**/*.ts'"
   },
-  "devDependencies": {
-    "@nestjs/throttler": "^6.5.0"
-  }
+  "devDependencies": {}
 }

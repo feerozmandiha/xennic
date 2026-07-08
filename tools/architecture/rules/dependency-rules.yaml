@@ -1,0 +1,119 @@
+# Dependency Rules
+
+- id: DEP-001
+  severity: critical
+  description: "Domain layer must have zero dependencies on external frameworks or libraries"
+  profile:
+    appliesTo: [production, test]
+  validation:
+    type: import-check
+    pattern: "**/domain/**/*.ts"
+    forbidden:
+      - "@nestjs/"
+      - "fastify"
+      - "express"
+      - "@prisma/"
+      - "PrismaClient"
+      - "class-validator"
+      - "class-transformer"
+  examples:
+    - good: "Domain imports only from domain layer or standard library"
+    - bad: "Domain class imports @nestjs/common"
+  autofix: false
+
+- id: DEP-002
+  severity: critical
+  description: "Presentation layer must not directly depend on Infrastructure layer"
+  profile:
+    appliesTo: [production, test]
+  validation:
+    type: import-check
+    pattern: "**/presentation/**/*.ts"
+    forbidden: ["../infrastructure/", "../infrastructure"]
+  examples:
+    - good: "Controller -> Service (in application layer)"
+    - bad: "Controller directly imports repository"
+  autofix: false
+
+- id: DEP-003
+  severity: critical
+  description: "Infrastructure layer must not depend on Presentation layer"
+  profile:
+    appliesTo: [production, test]
+  validation:
+    type: import-check
+    pattern: "**/infrastructure/**/*.ts"
+    forbidden: ["../presentation/", "../presentation"]
+  examples:
+    - good: "Infrastructure implements domain interfaces"
+    - bad: "Infrastructure imports controller or DTO"
+  autofix: false
+
+- id: DEP-004
+  severity: high
+  description: "Application services must not depend on HTTP-specific constructs (req, res, @Req, @Res)"
+  profile:
+    appliesTo: [production, test]
+  validation:
+    type: import-check
+    pattern: "**/application/**/*.ts"
+    forbidden: ["@Req", "@Res", "Request", "Response", "FastifyRequest", "FastifyReply"]
+  examples:
+    - good: "Application service receives DTOs and returns results"
+    - bad: "Application service receives FastifyRequest"
+  autofix: false
+
+- id: DEP-005
+  severity: high
+  description: "No circular dependencies between modules"
+  profile:
+    appliesTo: [production, test]
+  validation:
+    type: circular-check
+    exclude: ["**/node_modules/**"]
+  examples:
+    - good: "Module A depends on Module B, Module B depends on Module C"
+    - bad: "Module A depends on Module B, Module B depends on Module A"
+  autofix: false
+
+- id: DEP-006
+  severity: high
+  description: "Infrastructure layer must implement domain interfaces (not the other way around)"
+  profile:
+    appliesTo: [production, test]
+  validation:
+    type: content-check
+    pattern: "**/infrastructure/**/*.repository.ts"
+    required: ["implements"]
+  examples:
+    - good: "class PostgresUserRepository implements IUserRepository"
+    - bad: "class PostgresUserRepository without implementing interface"
+  autofix: false
+
+- id: DEP-007
+  severity: medium
+  description: "Event handlers must check idempotency before processing"
+  profile:
+    appliesTo: [production, test]
+  validation:
+    type: content-check
+    pattern: "**/event-handlers/*.handler.ts"
+    required: ["event_process_log", "processLog", "idempotency", "already processed"]
+  examples:
+    - good: "check event_process_log before processing"
+    - bad: "handler processes event without idempotency check"
+  autofix: false
+
+- id: DEP-008
+  severity: medium
+  description: "HTTP clients to microservices must use circuit breaker pattern"
+  profile:
+    appliesTo: [production, test]
+  validation:
+    type: content-check
+    pattern: "**/*.service.ts"
+    required: ["CircuitBreaker", "circuitBreaker", "circuit-breaker"]
+  examples:
+    - good: "EngineeringClientService uses CircuitBreaker"
+    - bad: "Raw fetch() to microservice"
+  autofix: false

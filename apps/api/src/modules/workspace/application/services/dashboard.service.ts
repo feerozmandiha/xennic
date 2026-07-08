@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { prisma } from '@xennic/database';
 import { WorkspaceService } from './workspace.service.js';
 

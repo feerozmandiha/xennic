@@ -308,6 +308,12 @@ async def value_error_handler(request: Request, exc: ValueError):
 async def request_validation_error_handler(
     request: Request, exc: RequestValidationError
 ):
+    safe_errors = []
+    for err in exc.errors():
+        safe_err = {k: v for k, v in err.items() if k != 'ctx'}
+        if 'ctx' in err and 'error' in err['ctx']:
+            safe_err['msg'] = str(err['ctx']['error'])
+        safe_errors.append(safe_err)
     return JSONResponse(
         status_code=422,
         content={
@@ -315,7 +321,7 @@ async def request_validation_error_handler(
             "error": {
                 "code":    "REQUEST_VALIDATION_ERROR",
                 "message": "Invalid request parameters",
-                "details": exc.errors(),
+                "details": safe_errors,
             },
         },
     )

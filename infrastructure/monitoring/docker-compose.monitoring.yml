@@ -1,0 +1,149 @@
+services:
+  prometheus:
+    image: prom/prometheus:v2.55.1
+    container_name: xennic-prometheus
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./prometheus/alerts:/etc/prometheus/alerts:ro
+      - prometheus_data:/prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.retention.time=30d"
+      - "--storage.tsdb.retention.size=10GB"
+      - "--web.console.libraries=/usr/share/prometheus/console_libraries"
+      - "--web.console.templates=/usr/share/prometheus/consoles"
+      - "--web.enable-lifecycle"
+    networks:
+      - xennic-network
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  grafana:
+    image: grafana/grafana:11.3.0
+    container_name: xennic-grafana
+    restart: unless-stopped
+    ports:
+      - "3002:3000"
+    volumes:
+      - ./grafana/datasources:/etc/grafana/provisioning/datasources:ro
+      - ./grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - grafana_data:/var/lib/grafana
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-admin}
+      - GF_SERVER_ROOT_URL=http://localhost:3002
+      - GF_INSTALL_PLUGINS=grafana-piechart-panel
+    networks:
+      - xennic-network
+
+  loki:
+    image: grafana/loki:3.2.0
+    container_name: xennic-loki
+    restart: unless-stopped
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./loki/loki-config.yml:/etc/loki/config.yml:ro
+      - loki_data:/loki
+    command:
+      - "-config.file=/etc/loki/config.yml"
+    networks:
+      - xennic-network
+
+  tempo:
+    image: grafana/tempo:2.6.1
+    container_name: xennic-tempo
+    restart: unless-stopped
+    ports:
+      - "3200:3200"
+      - "4317:4317"
+      - "4318:4318"
+    volumes:
+      - ./tempo/tempo-config.yml:/etc/tempo/config.yml:ro
+      - tempo_data:/var/tempo
+    command:
+      - "-config.file=/etc/tempo/config.yml"
+    networks:
+      - xennic-network
+
+  alertmanager:
+    image: prom/alertmanager:v0.27.0
+    container_name: xennic-alertmanager
+    restart: unless-stopped
+    ports:
+      - "9093:9093"
+    volumes:
+      - ./alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+      - ./alertmanager/templates:/etc/alertmanager/templates:ro
+      - alertmanager_data:/alertmanager
+    command:
+      - "--config.file=/etc/alertmanager/alertmanager.yml"
+      - "--storage.path=/alertmanager"
+    environment:
+      - ALERTMANAGER_SLACK_WEBHOOK=${ALERTMANAGER_SLACK_WEBHOOK:-}
+      - ALERTMANAGER_PAGERDUTY_KEY=${ALERTMANAGER_PAGERDUTY_KEY:-}
+    networks:
+      - xennic-network
+
+  node-exporter:
+    image: prom/node-exporter:v1.8.2
+    container_name: xennic-node-exporter
+    restart: unless-stopped
+    ports:
+      - "9100:9100"
+    command:
+      - "--path.rootfs=/host"
+      - "--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)"
+    volumes:
+      - /:/host:ro,rslave
+    networks:
+      - xennic-network
+
+  postgres-exporter:
+    image: prometheuscommunity/postgres-exporter:v0.16.0
+    container_name: xennic-postgres-exporter
+    restart: unless-stopped
+    ports:
+      - "9187:9187"
+    environment:
+      - DATA_SOURCE_NAME=postgresql://${POSTGRES_USER:-xennic}:${POSTGRES_PASSWORD:-xennic}@xennic-postgres:5432/${POSTGRES_DB:-xennic}?sslmode=disable
+    networks:
+      - xennic-network
+
+  redis-exporter:
+    image: oliver006/redis_exporter:v1.67.0
+    container_name: xennic-redis-exporter
+    restart: unless-stopped
+    ports:
+      - "9121:9121"
+    environment:
+      - REDIS_ADDR=xennic-redis:6379
+    networks:
+      - xennic-network
+
+  rabbitmq-exporter:
+    image: kbudde/rabbitmq-exporter:latest
+    container_name: xennic-rabbitmq-exporter
+    restart: unless-stopped
+    ports:
+      - "9419:9419"
+    environment:
+      - RABBITMQ_URL=http://xennic-rabbitmq:15672
+      - RABBITMQ_USER=${RABBITMQ_DEFAULT_USER:-xennic}
+      - RABBITMQ_PASSWORD=${RABBITMQ_DEFAULT_PASS:-xennic}
+      - PUBLISH_PORT=9419
+    networks:
+      - xennic-network
+
+volumes:
+  prometheus_data:
+  grafana_data:
+  loki_data:
+  tempo_data:
+  alertmanager_data:
+
+networks:
+  xennic-network:
+    external: true

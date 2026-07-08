@@ -1,6 +1,6 @@
 import type { VendorEntity } from '../entities/vendor.entity.js';
 import type { ProductEntity } from '../entities/product.entity.js';
-import type { OrderEntity, OrderItemData } from '../entities/order.entity.js';
+import type { OrderEntity} from '../entities/order.entity.js';
 
 export interface VendorSearchParams {
   query?: string;

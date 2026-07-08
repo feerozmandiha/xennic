@@ -1,4 +1,4 @@
-import { KnowledgeEntity, VALID_STATUS_TRANSITIONS } from './knowledge.entity.js';
+import { KnowledgeEntity} from './knowledge.entity.js';
 
 const WS_ID = 'ws-123';
 const AUTHOR_ID = 'user-456';

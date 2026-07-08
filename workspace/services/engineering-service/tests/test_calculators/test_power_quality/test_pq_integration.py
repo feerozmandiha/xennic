@@ -157,10 +157,10 @@ class TestResonanceAPI:
 
     def test_resonance_low_risk(self):
         """h_r away from common harmonics → LOW"""
-        # sqrt(5000/800) ≈ 2.5 → not near common harmonics
+        # sqrt(5000/2500) ≈ 1.41 → not within 1.5 of harmonics 3, 5, 7, ...
         resp = client.post(f"{BASE}/resonance", json={
             "system_kva_sc": 5000.0,
-            "capacitor_kvar": 800.0,
+            "capacitor_kvar": 2500.0,
         })
         assert resp.status_code == 200
         result = resp.json()["data"]["results"]

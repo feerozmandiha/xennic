@@ -16,8 +16,6 @@ const TAXONOMY_MODELS: Record<string, string> = {
   audience:   'audiences',
 } as const;
 
-const VALID_TYPES = ['category', 'topic', 'tag', 'discipline', 'audience'];
-
 @ApiTags('admin-taxonomy')
 @ApiBearerAuth('JWT-auth')
 @UseGuards(JwtAuthGuard, AdminGuard)

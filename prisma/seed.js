@@ -273,7 +273,7 @@ async function main() {
   for (const [slug, name, active] of agents) {
     await db.agents.upsert({
       where: { slug },
-      update: { name, version: '1.0', is_active: active, updated_at: new Date() },
+      update: { name, version: '1.0', is_active: active },
       create: {
         id: randomUUID(), name, slug,
         version: '1.0', is_active: active, created_at: new Date(),
@@ -493,6 +493,41 @@ async function main() {
     productCount++;
   }
   console.log(`  ✅ ${productCount} products`);
+
+  // ── FEATURE FLAGS ───────────────────────────────────────────────────────────
+  console.log('\n🚩 Seeding feature flags...');
+  const featureFlags = [
+    { name: 'audit_logging',         description: 'Enable audit trail for all actions',                          enabled: true,  planSlug: 'enterprise' },
+    { name: 'advanced_security',     description: 'Enable advanced security features (SSO, MFA, IP whitelisting)', enabled: true,  planSlug: 'enterprise' },
+    { name: 'custom_branding',       description: 'Allow custom branding for workspace',                         enabled: true,  planSlug: 'enterprise' },
+    { name: 'api_access',            description: 'Enable REST API access',                                      enabled: true,  planSlug: 'pro' },
+    { name: 'webhooks',              description: 'Enable outgoing webhooks',                                    enabled: true,  planSlug: 'pro' },
+    { name: 'knowledge_base',        description: 'Enable knowledge base feature',                               enabled: true,  planSlug: 'pro' },
+    { name: 'ai_agents',             description: 'Enable AI agents',                                            enabled: true,  planSlug: 'pro' },
+    { name: 'engineering_tools',     description: 'Enable engineering calculation tools',                         enabled: true,  planSlug: 'free' },
+    { name: 'marketplace',           description: 'Enable marketplace access',                                    enabled: true,  planSlug: 'free' },
+    { name: 'collaboration',         description: 'Enable team collaboration',                                    enabled: true,  planSlug: 'free' },
+    { name: 'storage_integration',   description: 'Enable file storage and management',                           enabled: true,  planSlug: 'free' },
+    { name: 'analytics_dashboard',   description: 'Enable analytics dashboard',                                   enabled: false, planSlug: 'enterprise' },
+    { name: 'reporting',             description: 'Enable custom reporting',                                      enabled: false, planSlug: 'enterprise' },
+    { name: 'data_export',           description: 'Enable data export (CSV, PDF, Excel)',                         enabled: true,  planSlug: 'pro' },
+    { name: 'vision_analysis',       description: 'Enable AI vision analysis for drawings',                       enabled: true,  planSlug: 'pro' },
+    { name: 'billing_integration',   description: 'Enable billing and invoicing',                                 enabled: false, planSlug: 'enterprise' },
+  ];
+  const planBySlug = {};
+  for (const p of await db.plans.findMany()) {
+    planBySlug[p.slug] = p.id;
+  }
+  let flagCount = 0;
+  for (const ff of featureFlags) {
+    await db.feature_flags.upsert({
+      where: { name: ff.name },
+      update: { description: ff.description, enabled: ff.enabled, plan_id: planBySlug[ff.planSlug] },
+      create: { id: randomUUID(), name: ff.name, description: ff.description, enabled: ff.enabled, plan_id: planBySlug[ff.planSlug] },
+    });
+    flagCount++;
+  }
+  console.log(`  ✅ ${flagCount} feature flags`);
 
   console.log('\n✅ Xennic seed completed successfully!');
 }

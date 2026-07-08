@@ -61,6 +61,7 @@ model users {
   knowledge_workflows_assignee   knowledge_workflows[]      @relation("KnowledgeAssign")
   knowledge_workflows_reviewer   knowledge_workflows[]      @relation("KnowledgeWorkflowReview")
   knowledge_workflow_history     knowledge_workflow_history[]
+  knowledge_documents_creator    knowledge_documents[]      @relation("KnowledgeDocumentCreator")
 
   @@index([deleted_at])
   @@index([created_at])
@@ -192,6 +193,7 @@ model workspaces {
   payment_methods      payment_methods[]
   subscription_payments subscription_payments[]
   knowledge            knowledge[]
+  knowledge_documents  knowledge_documents[]
 
   @@index([code])
   @@index([created_by])
@@ -730,6 +732,7 @@ model knowledge {
   @@index([language])
   @@index([difficulty])
   @@index([author_id])
+  factory_documents                 knowledge_documents[]    @relation("FactoryPublishedKnowledge")
 }
 
 model knowledge_translations {
@@ -935,6 +938,98 @@ model knowledge_analytics {
   knowledge       knowledge @relation(fields: [knowledge_id], references: [id], onDelete: Cascade)
 
   @@index([knowledge_id])
+}
+
+// ============================================================
+// KNOWLEDGE FACTORY DOMAIN
+// ============================================================
+
+model knowledge_documents {
+  id                    String    @id @default(uuid())
+  workspace_id          String
+  filename              String
+  original_name         String
+  mime_type             String
+  size_bytes            Int
+  storage_path          String?
+  document_type         String    @default("pdf")
+  status                String    @default("uploaded")
+  classification        Json      @default("{}")
+  metadata              Json      @default("{}")
+  error_message         String?
+  retry_count           Int       @default(0)
+  published_knowledge_id String?
+  created_by            String?
+  created_at            DateTime  @default(now())
+  updated_at            DateTime  @updatedAt
+  deleted_at            DateTime?
+
+  workspace             workspaces                   @relation(fields: [workspace_id], references: [id])
+  creator               users?                       @relation("KnowledgeDocumentCreator", fields: [created_by], references: [id])
+  published_knowledge   knowledge?                   @relation("FactoryPublishedKnowledge", fields: [published_knowledge_id], references: [id])
+  chunks                knowledge_document_chunks[]
+  pipeline_runs         knowledge_pipeline_runs[]
+  extractions           knowledge_extractions[]
+
+  @@index([workspace_id])
+  @@index([status])
+  @@index([document_type])
+  @@index([created_at])
+}
+
+model knowledge_document_chunks {
+  id           String   @id @default(uuid())
+  document_id  String
+  chunk_index  Int
+  text         String
+  token_count  Int
+  page_number  Int?
+  section      String?
+  metadata     Json     @default("{}")
+  embedding_id String?
+  created_at   DateTime @default(now())
+
+  document     knowledge_documents @relation(fields: [document_id], references: [id], onDelete: Cascade)
+
+  @@index([document_id])
+  @@index([embedding_id])
+}
+
+model knowledge_pipeline_runs {
+  id          String   @id @default(uuid())
+  document_id String
+  stage       String
+  status      String   @default("running")
+  input       Json
+  output      Json?
+  error       String?
+  started_at  DateTime @default(now())
+  finished_at DateTime?
+  duration_ms Int?
+
+  document    knowledge_documents @relation(fields: [document_id], references: [id], onDelete: Cascade)
+
+  @@index([document_id])
+  @@index([stage])
+  @@index([status])
+  @@index([started_at])
+}
+
+model knowledge_extractions {
+  id          String   @id @default(uuid())
+  document_id String
+  method      String
+  text        String
+  confidence  Float?
+  language    String?
+  metadata    Json     @default("{}")
+  created_at  DateTime @default(now())
+
+  document    knowledge_documents @relation(fields: [document_id], references: [id], onDelete: Cascade)
+
+  @@index([document_id])
+  @@index([method])
+  @@index([confidence])
 }
 
 // ============================================================
@@ -1147,7 +1242,7 @@ model feature_flags {
 }
 
 model audit_logs {
-  id           String   @id @default(uuid())
+  id           String    @id @default(uuid())
   workspace_id String?
   user_id      String?
   ip_address   String?
@@ -1158,7 +1253,7 @@ model audit_logs {
   old_values   Json?
   new_values   Json?
   metadata     Json?
-  created_at   DateTime @default(now())
+  created_at   DateTime  @default(now())
 
   workspace    workspaces? @relation(fields: [workspace_id], references: [id])
   user         users?      @relation(fields: [user_id], references: [id])
@@ -1167,4 +1262,1237 @@ model audit_logs {
   @@index([user_id])
   @@index([action])
   @@index([created_at])
+}
+
+// ============================================================
+// KNOWLEDGE INTELLIGENCE DOMAIN
+// ============================================================
+
+model knowledge_graph_nodes {
+  id           String    @id @default(uuid())
+  workspace_id String
+  type         String    // document | entity | concept | standard | formula | calculation | person | organization | equipment
+  entity_type  String    // knowledge | knowledge_document | engineering_standard | calculation | user | tag | discipline
+  entity_id    String
+  label        String?
+  properties   Json      @default("{}")
+  embedding_id String?
+  created_at   DateTime  @default(now())
+  updated_at   DateTime  @updatedAt
+
+  outgoing_edges         knowledge_graph_edges[]  @relation("GraphNodeSource")
+  incoming_edges         knowledge_graph_edges[]  @relation("GraphNodeTarget")
+  graph_metrics          knowledge_graph_metrics?
+
+  @@index([workspace_id])
+  @@index([entity_type, entity_id])
+  @@index([type])
+  @@index([workspace_id, type])
+}
+
+model knowledge_graph_edges {
+  id           String   @id @default(uuid())
+  workspace_id String
+  source_id    String
+  target_id    String
+  type         String   // cites | depends_on | related_to | regulates | supersedes | equivalent_to | part_of | derived_from | references | includes
+  weight       Float    @default(1.0)
+  properties   Json     @default("{}")
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+
+  source   knowledge_graph_nodes @relation("GraphNodeSource", fields: [source_id], references: [id], onDelete: Cascade)
+  target   knowledge_graph_nodes @relation("GraphNodeTarget", fields: [target_id], references: [id], onDelete: Cascade)
+
+  @@unique([source_id, target_id, type])
+  @@index([workspace_id])
+  @@index([source_id])
+  @@index([target_id])
+  @@index([type])
+}
+
+model knowledge_graph_metrics {
+  id               String    @id @default(uuid())
+  node_id          String    @unique
+  confidence       Float     @default(0.5)
+  freshness        Float     @default(0.5)
+  authority        Float     @default(0.5)
+  completeness     Float     @default(0.5)
+  access_count     Int       @default(0)
+  last_accessed_at DateTime?
+  computed_at      DateTime  @default(now())
+  updated_at       DateTime  @updatedAt
+
+  node knowledge_graph_nodes @relation(fields: [node_id], references: [id], onDelete: Cascade)
+
+  @@index([node_id])
+  @@index([confidence])
+  @@index([freshness])
+  @@index([authority])
+  @@index([completeness])
+}
+
+model ontologies {
+  id           String   @id @default(uuid())
+  workspace_id String
+  name         String
+  slug         String
+  version      String
+  description  String?
+  is_active    Boolean  @default(true)
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+
+  classes   ontology_classes[]
+  relations ontology_relations[]
+
+  @@unique([workspace_id, slug, version])
+  @@index([workspace_id])
+  @@index([slug])
+}
+
+model ontology_classes {
+  id          String   @id @default(uuid())
+  ontology_id String
+  parent_id   String?
+  uri         String   @unique
+  label       String
+  description String?
+  properties  Json     @default("{}")
+  sort_order  Int      @default(0)
+  is_abstract Boolean  @default(false)
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  ontology ontologies         @relation(fields: [ontology_id], references: [id], onDelete: Cascade)
+  parent   ontology_classes? @relation("OntologyClassTree", fields: [parent_id], references: [id])
+  children ontology_classes[] @relation("OntologyClassTree")
+
+  @@index([ontology_id])
+  @@index([parent_id])
+  @@index([uri])
+}
+
+model ontology_relations {
+  id          String   @id @default(uuid())
+  ontology_id String
+  source_uri  String
+  target_uri  String
+  relation    String   // subclass_of | equivalent_to | disjoint_with | part_of | has_part
+  properties  Json     @default("{}")
+  created_at  DateTime @default(now())
+
+  ontology ontologies @relation(fields: [ontology_id], references: [id], onDelete: Cascade)
+
+  @@unique([ontology_id, source_uri, target_uri, relation])
+  @@index([ontology_id])
+  @@index([source_uri])
+  @@index([target_uri])
+}
+
+model knowledge_citations {
+  id           String   @id @default(uuid())
+  workspace_id String
+  source_id    String
+  target_id    String
+  context      String?
+  location     String?  // page number, section
+  method       String   // explicit | implicit | inferred
+  confidence   Float    @default(1.0)
+  created_at   DateTime @default(now())
+
+  @@unique([source_id, target_id, location])
+  @@index([workspace_id])
+  @@index([source_id])
+  @@index([target_id])
+}
+
+model document_similarities {
+  id           String   @id @default(uuid())
+  workspace_id String
+  source_id    String
+  target_id    String
+  similarity   Float
+  method       String   // cosine | jaccard | semantic | graph_overlap
+  computed_at  DateTime @default(now())
+
+  @@unique([source_id, target_id, method])
+  @@index([workspace_id])
+  @@index([similarity])
+}
+
+model knowledge_clusters {
+  id           String   @id @default(uuid())
+  workspace_id String
+  name         String
+  description  String?
+  node_ids     Json     @default("[]")
+  properties   Json     @default("{}")
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+
+  @@index([workspace_id])
+}
+
+// ============================================================
+// SEMANTIC INTEGRATION DOMAIN
+// ============================================================
+
+model event_outbox {
+  id              String    @id @default(uuid())
+  event_id        String    @unique
+  event_type      String
+  event_version   Int       @default(1)
+  correlation_id  String
+  causation_id    String?
+  tracing_id      String
+  source          String
+  payload         Json
+  metadata        Json      @default("{}")
+  workspace_id    String
+  status          String    @default("pending") // pending | delivered | failed | dead_letter
+  retry_count     Int       @default(0)
+  max_retries     Int       @default(3)
+  last_error      String?
+  created_at      DateTime  @default(now())
+  last_attempt_at DateTime?
+
+  @@index([status, created_at])
+  @@index([event_id])
+  @@index([correlation_id])
+  @@index([workspace_id])
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// AI Provider Management Platform (Sprint P2)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+model ai_providers {
+  id            String   @id @default(uuid())
+  name          String   @unique
+  display_name  String
+  provider_type String   // openai | anthropic | gemini | mistral | groq | openrouter | together | deepseek | cohere | voyageai | ollama | lm_studio | azure_openai | openai_compatible | custom
+  base_url      String?
+  org_id        String?
+  status        String   @default("active") // active | inactive | error
+  enabled       Boolean  @default(true)
+  priority      Int      @default(0)
+  default_weight Float   @default(1.0)
+  visibility    String   @default("global") // global | admin_only | workspace
+  headers       Json     @default("{}")
+  metadata      Json     @default("{}")
+  created_by    String
+  updated_by    String?
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+  deleted_at    DateTime?
+
+  models      ai_models[]
+  credentials ai_provider_credentials[]
+  health      ai_provider_health[]
+  usage       ai_provider_usage[]
+  statistics  ai_provider_statistics[]
+  quotas      ai_provider_quotas[]
+  rules       ai_routing_rules[]
+
+  @@index([status])
+  @@index([enabled])
+  @@index([provider_type])
+  @@index([priority])
+  @@index([deleted_at])
+}
+
+model ai_models {
+  id                      String   @id @default(uuid())
+  provider_id             String
+  model_id                String   // e.g. "gpt-4", "claude-3-opus"
+  display_name            String
+  model_type              String   // chat | embedding | vision | reasoning | image | audio | transcription | translation | reranking
+  context_window          Int?
+  max_output_tokens       Int?
+  supports_tools          Boolean  @default(false)
+  supports_json           Boolean  @default(false)
+  supports_streaming      Boolean  @default(true)
+  supports_reasoning      Boolean  @default(false)
+  supports_temperature    Boolean  @default(true)
+  supports_top_p          Boolean  @default(true)
+  supports_seed           Boolean  @default(false)
+  supports_structured_outputs Boolean @default(false)
+  supports_vision         Boolean  @default(false)
+  supports_embedding      Boolean  @default(false)
+  supports_function_calling Boolean @default(false)
+  supports_image_input    Boolean  @default(false)
+  supports_audio_input    Boolean  @default(false)
+  supports_transcription  Boolean  @default(false)
+  supports_translation    Boolean  @default(false)
+  supports_reranking      Boolean  @default(false)
+  pricing_input           Float?
+  pricing_output          Float?
+  status                  String   @default("active") // active | deprecated | disabled
+  enabled                 Boolean  @default(true)
+  created_at              DateTime @default(now())
+  updated_at              DateTime @updatedAt
+  deleted_at              DateTime?
+
+  provider     ai_providers @relation(fields: [provider_id], references: [id])
+  capabilities ai_provider_model_capabilities[]
+  usage        ai_provider_usage[]
+  rules        ai_routing_rules[]
+
+  @@unique([provider_id, model_id])
+  @@index([provider_id])
+  @@index([model_type])
+  @@index([status])
+  @@index([enabled])
+  @@index([deleted_at])
+}
+
+model ai_provider_credentials {
+  id              String   @id @default(uuid())
+  provider_id     String
+  credential_type String   // api_key | org_id | tenant_id | custom_header
+  encrypted_value String   // AES-256-GCM encrypted blob
+  masked_value    String   // e.g. "sk-...abcd" — last 4 chars visible
+  expires_at      DateTime?
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+  deleted_at      DateTime?
+
+  provider ai_providers @relation(fields: [provider_id], references: [id])
+
+  @@index([provider_id])
+  @@index([deleted_at])
+}
+
+model ai_provider_health {
+  id          String   @id @default(uuid())
+  provider_id String
+  status      String   // healthy | degraded | unhealthy
+  latency_ms  Int?
+  error_msg   String?
+  checked_at  DateTime  @default(now())
+  created_at  DateTime  @default(now())
+
+  provider ai_providers @relation(fields: [provider_id], references: [id])
+
+  @@index([provider_id])
+  @@index([status])
+  @@index([checked_at])
+}
+
+model ai_provider_usage {
+  id             String   @id @default(uuid())
+  provider_id    String
+  model_id       String?
+  request_count  Int      @default(0)
+  prompt_tokens  BigInt   @default(0)
+  completion_tokens BigInt @default(0)
+  total_tokens   BigInt   @default(0)
+  estimated_cost Float?
+  period_start   DateTime
+  period_end     DateTime
+  workspace_id   String?
+  created_at     DateTime @default(now())
+
+  provider ai_providers @relation(fields: [provider_id], references: [id])
+  model    ai_models?   @relation(fields: [model_id], references: [id])
+
+  @@index([provider_id])
+  @@index([workspace_id])
+  @@index([period_start, period_end])
+}
+
+model ai_provider_statistics {
+  id               String   @id @default(uuid())
+  provider_id      String
+  success_count    Int      @default(0)
+  failure_count    Int      @default(0)
+  total_requests   Int      @default(0)
+  avg_latency_ms   Float?
+  p50_latency_ms   Float?
+  p95_latency_ms   Float?
+  p99_latency_ms   Float?
+  success_rate     Float?
+  time_period      String   // 1m | 5m | 1h | 24h | 7d | 30d
+  recorded_at      DateTime @default(now())
+  created_at       DateTime @default(now())
+
+  provider ai_providers @relation(fields: [provider_id], references: [id])
+
+  @@index([provider_id])
+  @@index([time_period])
+  @@index([recorded_at])
+}
+
+model ai_provider_quotas {
+  id                 String   @id @default(uuid())
+  provider_id        String   @unique
+  requests_per_min   Int      @default(60)
+  tokens_per_min     Int      @default(100000)
+  concurrent_max     Int      @default(10)
+  created_at         DateTime @default(now())
+  updated_at         DateTime @updatedAt
+
+  provider ai_providers @relation(fields: [provider_id], references: [id])
+}
+
+model ai_provider_model_capabilities {
+  id          String   @id @default(uuid())
+  model_id    String
+  capability  String   // chat | embedding | vision | reasoning | image | audio | transcription | translation | reranking | tool_call | json_mode | streaming | function_calling | temperature | top_p | seed | structured_output
+  supported   Boolean  @default(true)
+  created_at  DateTime @default(now())
+
+  model ai_models @relation(fields: [model_id], references: [id])
+
+  @@unique([model_id, capability])
+  @@index([model_id])
+  @@index([capability])
+}
+
+model ai_routing_policies {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  policy_type String   // manual | priority | round_robin | least_latency | lowest_cost | highest_quality | random | weighted | capability_based | fallback_chain
+  config      Json     @default("{}")
+  enabled     Boolean  @default(true)
+  workspace_id String?
+  feature_flag String?
+  created_by  String
+  updated_by  String?
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+  deleted_at  DateTime?
+
+  rules ai_routing_rules[]
+
+  @@index([policy_type])
+  @@index([enabled])
+  @@index([workspace_id])
+  @@index([deleted_at])
+}
+
+model ai_routing_rules {
+  id          String   @id @default(uuid())
+  policy_id   String
+  provider_id String
+  model_id    String?
+  priority    Int      @default(0)
+  weight      Float    @default(1.0)
+  conditions  Json     @default("{}")
+  created_at  DateTime @default(now())
+
+  policy   ai_routing_policies @relation(fields: [policy_id], references: [id])
+  provider ai_providers       @relation(fields: [provider_id], references: [id])
+  model    ai_models?   @relation(fields: [model_id], references: [id])
+
+  @@index([policy_id])
+  @@index([provider_id])
+  @@index([priority])
+}
+
+model ai_feature_flags {
+  id           String   @id @default(uuid())
+  workspace_id String?
+  provider_id  String?
+  model_id     String?
+  feature      String   // vision | embedding | reasoning | audio | ocr | image_generation | translation | tools | json_mode
+  enabled      Boolean  @default(true)
+  created_by   String
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+
+  @@unique([workspace_id, provider_id, model_id, feature])
+  @@index([workspace_id])
+  @@index([feature])
+  @@index([enabled])
+}
+
+model ai_audit_log {
+  id            String   @id @default(uuid())
+  action        String   // created | updated | deleted | tested | discovered | health_changed | failover | key_rotated | policy_changed
+  entity_type   String   // provider | model | credential | policy | feature_flag
+  entity_id     String
+  old_value     Json?
+  new_value     Json?
+  performed_by  String
+  performed_at  DateTime @default(now())
+  workspace_id  String?
+  ip_address    String?
+  user_agent    String?
+
+  @@index([entity_type, entity_id])
+  @@index([action])
+  @@index([performed_by])
+  @@index([performed_at])
+  @@index([workspace_id])
+}
+
+model event_process_log {
+  id             String   @id @default(uuid())
+  event_id       String
+  handler_name   String
+  event_type     String
+  status         String   // completed | failed
+  error_message  String?
+  duration_ms    Int?
+  processed_at   DateTime @default(now())
+
+  @@unique([event_id, handler_name])
+  @@index([event_id])
+  @@index([event_type])
+  @@index([handler_name])
+  @@index([status])
+}
+
+// ============================================================
+// ENTERPRISE INTELLIGENCE — Persistence Models
+// ============================================================
+
+model context_cache {
+  id         String   @id @default(uuid())
+  workspace_id String?
+  scope      String
+  scope_id   String
+  source     String
+  key        String
+  value      Json
+  version    Int      @default(1)
+  created_by String
+  created_at DateTime @default(now())
+
+  @@index([scope, scope_id])
+  @@index([scope, scope_id, source])
+  @@index([scope, scope_id, key])
+}
+
+model memories {
+  id         String   @id @default(uuid())
+  workspace_id String?
+  type       String
+  scope      String
+  scope_id   String
+  key        String
+  value      Json
+  tags       String[]
+  embedding  Float[]
+  version    Int      @default(1)
+  created_by String
+  updated_by String?
+  expires_at DateTime?
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@index([type, scope, scope_id])
+  @@index([scope, scope_id])
+  @@index([key])
+  @@index([expires_at])
+}
+
+model memory_indexes {
+  id         String   @id @default(uuid())
+  memory_id  String
+  entity_id  String
+  content    String
+  embedding  Float[]
+  created_at DateTime @default(now())
+
+  @@index([memory_id])
+  @@index([entity_id])
+}
+
+model prompt_registry {
+  id          String   @id @default(uuid())
+  workspace_id String?
+  name        String
+  description String
+  content     String
+  variables   String[]
+  version     Int      @default(1)
+  status      String   @default("draft")
+  tags        String[]
+  created_by  String
+  updated_by  String?
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  @@unique([name, version])
+  @@index([status])
+}
+
+model prompt_templates {
+  id          String   @id @default(uuid())
+  workspace_id String?
+  name        String
+  description String
+  content     String
+  variables   Json
+  version     Int      @default(1)
+  created_by  String
+  updated_by  String?
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  @@unique([name, version])
+}
+
+model prompt_policies {
+  id          String   @id @default(uuid())
+  workspace_id String?
+  name        String
+  description String
+  rules       Json
+  effect      String
+  priority    Int      @default(0)
+  created_by  String
+  updated_by  String?
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  @@index([effect])
+  @@index([priority])
+}
+
+model tool_registry {
+  id          String   @id @default(uuid())
+  workspace_id String?
+  name        String
+  description String
+  version     Int      @default(1)
+  schema      Json
+  permissions String[]
+  status      String   @default("active")
+  health      String   @default("unknown")
+  endpoint    String?
+  metadata    Json
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  @@unique([name, version])
+  @@index([status])
+}
+
+model skill_registry {
+  id           String   @id @default(uuid())
+  workspace_id  String?
+  name         String
+  description  String
+  version      Int      @default(1)
+  dependencies Json
+  inputs       Json
+  outputs      Json
+  policies     String[]
+  tags         String[]
+  status       String   @default("draft")
+  metadata     Json
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+
+  @@unique([name, version])
+  @@index([status])
+  @@index([tags])
+}
+
+model policies {
+  id          String   @id @default(uuid())
+  workspace_id String?
+  name        String
+  description String
+  scope       String
+  scope_id    String?
+  resource    String
+  action      String
+  effect      String
+  priority    Int      @default(0)
+  conditions  Json?
+  enabled     Boolean  @default(true)
+  created_by  String
+  updated_by  String?
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  @@index([resource, scope])
+  @@index([action])
+  @@index([effect])
+  @@index([enabled])
+}
+
+model reasoning_plans {
+  id          String   @id @default(uuid())
+  workspace_id String?
+  goal        String
+  steps       Json
+  status      String   @default("pending")
+  metadata    Json
+  version     Int      @default(1)
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  @@index([status])
+}
+
+model reasoning_graphs {
+  id          String   @id @default(uuid())
+  plan_id     String
+  workspace_id String?
+  nodes       Json
+  edges       Json
+  status      String   @default("pending")
+  metadata    Json
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  @@index([plan_id])
+}
+
+model evaluation_benchmarks {
+  id          String   @id @default(uuid())
+  workspace_id String?
+  name        String
+  description String
+  dataset_id  String
+  metrics     String[]
+  tags        String[]
+  version     Int      @default(1)
+  status      String   @default("draft")
+  metadata    Json
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  @@index([status])
+}
+
+model evaluation_datasets {
+  id          String   @id @default(uuid())
+  workspace_id String?
+  name        String
+  description String
+  version     Int      @default(1)
+  items       Json
+  tags        String[]
+  metadata    Json
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+}
+
+model evaluation_runs {
+  id            String   @id @default(uuid())
+  workspace_id   String?
+  benchmark_id  String
+  target_type   String
+  target_id     String
+  target_version Int     @default(1)
+  status        String   @default("pending")
+  results       Json
+  score         Float?
+  started_at    DateTime?
+  completed_at  DateTime?
+  metadata      Json
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+
+  @@index([benchmark_id])
+  @@index([status])
+  @@index([target_type, target_id])
+}
+
+// ============================================================
+// Knowledge Factory Event Store
+// ============================================================
+// ENTERPRISE ORCHESTRATION — Persistence Models
+// ============================================================
+
+model workflow_definitions {
+  id          String   @id @default(uuid())
+  workspace_id String?
+  name        String
+  description String
+  version     Int      @default(1)
+  status      String   @default("draft")
+  triggers    Json
+  steps       Json
+  metadata    Json
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  @@unique([name, version])
+  @@index([status])
+}
+
+model workflow_templates {
+  id          String   @id @default(uuid())
+  workspace_id String?
+  name        String
+  description String
+  category    String?
+  tags        String[]
+  definition  Json
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  @@index([category])
+  @@index([tags])
+}
+
+model workflow_executions {
+  id           String   @id @default(uuid())
+  workspace_id  String?
+  workflow_id  String
+  workflow_name String
+  workflow_version Int @default(1)
+  status       String   @default("pending")
+  input        Json
+  output       Json?
+  error        String?
+  started_at   DateTime?
+  completed_at DateTime?
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+
+  @@index([workflow_id])
+  @@index([status])
+}
+
+model compensation_entries {
+  id           String   @id @default(uuid())
+  workspace_id  String?
+  execution_id String
+  step_id      String
+  action       String
+  status       String   @default("pending")
+  payload      Json?
+  error        String?
+  executed_at  DateTime?
+  created_at   DateTime @default(now())
+
+  @@index([execution_id])
+}
+
+model execution_contexts {
+  id           String   @id @default(uuid())
+  workspace_id  String?
+  execution_id String   @unique
+  variables    Json
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+
+  @@index([execution_id])
+}
+
+model execution_artifacts {
+  id           String   @id @default(uuid())
+  workspace_id  String?
+  execution_id String
+  name         String
+  type         String
+  content      Json
+  metadata     Json?
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+
+  @@index([execution_id])
+}
+
+model execution_memories {
+  id           String   @id @default(uuid())
+  workspace_id  String?
+  execution_id String   @unique(map: "execution_memories_unique_execution_id")
+  entries      Json
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+}
+
+model execution_plans {
+  id          String   @id @default(uuid())
+  workspace_id String?
+  goal        String
+  steps       Json
+  status      String   @default("pending")
+  metadata    Json?
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  @@index([status])
+}
+
+model plan_steps {
+  id          String   @id @default(uuid())
+  plan_id     String
+  workspace_id String?
+  order       Int
+  description String
+  status      String   @default("pending")
+  input       Json?
+  output      Json?
+  depends_on  String[]
+  assigned_to String?
+  started_at  DateTime?
+  completed_at DateTime?
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  @@index([plan_id])
+  @@index([status])
+}
+
+model conversation_stores {
+  id              String   @id @default(uuid())
+  workspace_id     String?
+  conversation_id String   @unique
+  execution_id    String?
+  session_id      String?
+  status          String   @default("active")
+  metadata        Json?
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+
+  @@index([execution_id])
+  @@index([session_id])
+}
+
+model cost_entries {
+  id           String   @id @default(uuid())
+  workspace_id  String?
+  execution_id String
+  source_type  String
+  source_id    String
+  amount       Float
+  currency     String   @default("USD")
+  description  String?
+  metadata     Json?
+  created_at   DateTime @default(now())
+
+  @@index([execution_id])
+  @@index([source_type, source_id])
+}
+
+model approval_requests {
+  id           String   @id @default(uuid())
+  workspace_id  String?
+  execution_id String
+  step_id      String
+  status       String   @default("pending")
+  requested_by String
+  assigned_to  String?
+  reason       String?
+  metadata     Json?
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+
+  @@index([execution_id])
+  @@index([assigned_to, status])
+}
+
+model review_tasks {
+  id           String   @id @default(uuid())
+  workspace_id  String?
+  execution_id String
+  step_id      String
+  status       String   @default("pending")
+  reviewer_id  String
+  feedback     String?
+  metadata     Json?
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+
+  @@index([execution_id])
+  @@index([reviewer_id, status])
+}
+
+model coordination_plans {
+  id           String   @id @default(uuid())
+  workspace_id  String?
+  execution_id String
+  plan         Json
+  status       String   @default("pending")
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+
+  @@index([execution_id])
+}
+
+model coordination_tasks {
+  id           String   @id @default(uuid())
+  plan_id      String
+  workspace_id  String?
+  agent_role   String?
+  task_type    String
+  input        Json?
+  output       Json?
+  status       String   @default("pending")
+  assigned_to  String?
+  started_at   DateTime?
+  completed_at DateTime?
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+
+  @@index([plan_id])
+  @@index([status])
+  @@index([agent_role, status])
+}
+
+model decision_logs {
+  id           String   @id @default(uuid())
+  workspace_id  String?
+  execution_id String
+  step_id      String?
+  decision_type String
+  input        Json
+  output       Json
+  confidence   Float?
+  metadata     Json?
+  created_at   DateTime @default(now())
+
+  @@index([execution_id])
+  @@index([decision_type])
+}
+
+model confidence_scores {
+  id           String   @id @default(uuid())
+  workspace_id  String?
+  execution_id String
+  step_id      String?
+  score        Float
+  details      Json?
+  created_at   DateTime @default(now())
+
+  @@index([execution_id])
+}
+
+// ============================================================
+// AI RUNTIME — Persistence Models
+// ============================================================
+
+model agent_sessions {
+  id           String   @id @default(uuid())
+  workspace_id String
+  agent_id     String
+  user_id      String
+  status       String   @default("idle")
+  metadata     Json
+  expires_at   DateTime
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+
+  @@index([workspace_id, user_id])
+  @@index([expires_at])
+}
+
+model agent_runtime_memories {
+  id           String   @id @default(uuid())
+  session_id   String
+  workspace_id String?
+  key          String
+  value        Json
+  created_at   DateTime @default(now())
+
+  @@index([session_id])
+  @@index([key])
+}
+
+// === CALCULATION PLATFORM (Sprint C1) ===
+
+model calculation_categories {
+  id          String   @id @default(uuid())
+  name        String
+  slug        String   @unique
+  description String?
+  parent_id   String?
+  icon        String?
+  sort_order  Int      @default(0)
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  parent      calculation_categories?  @relation("CategoryTree", fields: [parent_id], references: [id])
+  children    calculation_categories[] @relation("CategoryTree")
+  definitions calculation_definitions[]
+}
+
+model calculation_definitions {
+  id            String   @id @default(uuid())
+  category_id   String
+  slug          String   @unique
+  name          String
+  description   String?
+  standard      String?
+  standard_ref  String?
+  enabled       Boolean  @default(true)
+  ai_review     Boolean  @default(false)
+  certificate   Boolean  @default(false)
+  metadata      Json     @default("{}")
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+
+  category calculation_categories @relation(fields: [category_id], references: [id])
+  versions calculation_versions[]
+}
+
+model calculation_versions {
+  id              String   @id @default(uuid())
+  definition_id   String
+  version         String
+  status          String   @default("draft")
+  dsl_definition  Json
+  change_log      String?
+  published_at    DateTime?
+  created_by      String
+  created_at      DateTime @default(now())
+
+  definition calculation_definitions @relation(fields: [definition_id], references: [id])
+
+  @@index([definition_id])
+  @@index([status])
+}
+
+model formula_definitions {
+  id              String   @id @default(uuid())
+  definition_id   String?
+  version_id      String?
+  name            String
+  expression      String
+  description     String?
+  return_type     String   @default("number")
+  metadata        Json     @default("{}")
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+
+  variables formula_variables[]
+
+  @@index([definition_id])
+}
+
+model formula_variables {
+  id            String   @id @default(uuid())
+  formula_id    String
+  name          String
+  label         String?
+  type          String   @default("number")
+  unit_id       String?
+  required      Boolean  @default(true)
+  default_value Json?
+  min_value     Float?
+  max_value     Float?
+  enum_values   Json?
+  description   String?
+  sort_order    Int      @default(0)
+  created_at    DateTime @default(now())
+
+  formula formula_definitions @relation(fields: [formula_id], references: [id])
+  unit    unit_definitions?   @relation(fields: [unit_id], references: [id])
+
+  @@index([formula_id])
+}
+
+model unit_definitions {
+  id          String   @id @default(uuid())
+  category    String
+  name        String
+  symbol      String
+  base_unit   String
+  factor      Float
+  offset      Float    @default(0)
+  description String?
+  created_at  DateTime @default(now())
+
+  conversions_from unit_conversions[] @relation("FromUnit")
+  conversions_to   unit_conversions[] @relation("ToUnit")
+  variables        formula_variables[]
+}
+
+model unit_conversions {
+  id           String   @id @default(uuid())
+  from_unit_id String
+  to_unit_id   String
+  factor       Float
+  offset       Float    @default(0)
+  formula      String?
+  created_at   DateTime @default(now())
+
+  from_unit unit_definitions @relation("FromUnit", fields: [from_unit_id], references: [id])
+  to_unit   unit_definitions @relation("ToUnit", fields: [to_unit_id], references: [id])
+
+  @@index([from_unit_id])
+  @@index([to_unit_id])
+}
+
+model calculation_results {
+  id              String   @id @default(uuid())
+  workspace_id    String
+  definition_id   String?
+  version_id      String?
+  user_id         String
+  inputs          Json
+  outputs         Json
+  status          String   @default("completed")
+  error_message   String?
+  engine_version  String
+  duration_ms     Int?
+  ai_review       Json?
+  confidence      Float?
+  correlation_id  String?
+  executed_at     DateTime @default(now())
+  created_at      DateTime @default(now())
+
+  @@index([workspace_id])
+  @@index([definition_id])
+  @@index([user_id])
+  @@index([status])
+  @@index([executed_at])
+}
+
+model calculation_certificates {
+  id                String   @id @default(uuid())
+  result_id         String   @unique
+  certificate_id    String   @unique
+  calculation_hash  String
+  input_hash        String
+  formula_version   String
+  standard_version  String
+  ai_provider       String?
+  confidence        Float?
+  operator          String
+  workspace_id      String
+  status            String   @default("valid")
+  generated_at      DateTime @default(now())
+
+  @@index([result_id])
+  @@index([certificate_id])
+  @@index([workspace_id])
+  @@index([status])
+}
+
+model calculation_audit {
+  id              String   @id @default(uuid())
+  workspace_id    String
+  user_id         String
+  action          String
+  entity_type     String
+  entity_id       String?
+  inputs          Json?
+  outputs         Json?
+  formula_version String?
+  ai_response     Json?
+  execution_path  Json?
+  error_message   String?
+  duration_ms     Int?
+  correlation_id  String?
+  created_at      DateTime @default(now())
+
+  @@index([workspace_id])
+  @@index([user_id])
+  @@index([action])
+  @@index([entity_type])
+  @@index([created_at])
+}
+
+model calculation_plugins {
+  id          String   @id @default(uuid())
+  slug        String   @unique
+  name        String
+  description String?
+  version     String
+  enabled     Boolean  @default(true)
+  config      Json     @default("{}")
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
 }

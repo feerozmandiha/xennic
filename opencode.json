@@ -3,8 +3,8 @@
   "references": {
     "docs": {
       "type": "local",
-      "path": "/home/ahmad/xennic-docs/docs",
-      "description": "اسناد معماری، مستندات فنی، الزامات و نقشه راه توسعه پلتفرم مهندسی برق"
+      "path": "/home/ahmad/xennic/docs",
+      "description": "اسناد پروژه: TEST_GUIDE.md (راهنمای تست API), STATUS_REPORT.md (وضعیت ماژول‌ها), LANDING-PATCH.md (صفحه فرود), diagrams/, knowledge/"
     }
   }
 }

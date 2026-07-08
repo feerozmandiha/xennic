@@ -22,7 +22,6 @@ import {
   ApiBody,
 } from '@nestjs/swagger';
 import { UserService } from '../../application/services/user.service.js';
-import type { CreateUserDto, UpdateUserDto } from '../../application/services/user.service.js';
 import { UserResponseDto } from '../dtos/user-response.dto.js';
 
 // برای Swagger نیاز به کلاس داریم، بنابراین کلاس‌های مجزا ایجاد می‌کنیم

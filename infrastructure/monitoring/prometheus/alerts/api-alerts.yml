@@ -1,0 +1,122 @@
+groups:
+  - name: xennic-api
+    interval: 30s
+    rules:
+      - alert: ApiHighErrorRate
+        expr: |
+          rate(xennic_http_request_errors_total[5m])
+          /
+          rate(xennic_http_request_total[5m])
+          > 0.05
+        for: 5m
+        labels:
+          severity: critical
+          team: backend
+        annotations:
+          summary: "API error rate above 5%"
+          description: "Error rate is {{ $value | humanizePercentage }} over the last 5 minutes."
+
+      - alert: ApiHighLatency
+        expr: |
+          histogram_quantile(0.99, rate(xennic_http_request_duration_ms_bucket[5m]))
+          > 2000
+        for: 5m
+        labels:
+          severity: warning
+          team: backend
+        annotations:
+          summary: "API P99 latency above 2s"
+          description: "P99 latency is {{ $value }}ms over the last 5 minutes."
+
+      - alert: ApiDown
+        expr: xennic_app_up == 0
+        for: 1m
+        labels:
+          severity: critical
+          team: backend
+        annotations:
+          summary: "API instance is down"
+          description: "API has been unreachable for more than 1 minute."
+
+      - alert: HighMemoryUsage
+        expr: xennic_app_memory_bytes{type="heapUsed"} / xennic_app_memory_bytes{type="heapTotal"} > 0.85
+        for: 10m
+        labels:
+          severity: warning
+          team: backend
+        annotations:
+          summary: "High memory usage (>85%)"
+          description: "Heap usage is at {{ $value | humanizePercentage }}."
+
+  - name: xennic-ai
+    interval: 30s
+    rules:
+      - alert: AiProviderErrorRate
+        expr: |
+          rate(xennic_ai_provider_errors_total[5m])
+          /
+          rate(xennic_ai_provider_request_total[5m])
+          > 0.1
+        for: 5m
+        labels:
+          severity: critical
+          team: ai
+        annotations:
+          summary: "AI provider error rate above 10%"
+          description: "Error rate for {{ $labels.provider }}/{{ $labels.model }} is {{ $value | humanizePercentage }}."
+
+      - alert: AiCircuitBreakerOpen
+        expr: xennic_ai_provider_circuit_state < 1
+        for: 1m
+        labels:
+          severity: critical
+          team: ai
+        annotations:
+          summary: "AI provider circuit breaker open"
+          description: "Circuit breaker for {{ $labels.provider }} is open."
+
+  - name: xennic-slo
+    interval: 1m
+    rules:
+      - alert: SloBudgetExhausted
+        expr: xennic_slo_availability < 99.0
+        for: 5m
+        labels:
+          severity: critical
+          team: backend
+        annotations:
+          summary: "SLO budget exhausted"
+          description: "Availability is {{ $value }}% over the {{ $labels.window }} window."
+
+      - alert: SloLatencyBreach
+        expr: xennic_slo_latency_p99_ms > 3000
+        for: 5m
+        labels:
+          severity: warning
+          team: backend
+        annotations:
+          summary: "SLO latency breached"
+          description: "P99 latency is {{ $value }}ms over the {{ $labels.window }} window."
+
+  - name: xennic-infra
+    interval: 30s
+    rules:
+      - alert: DiskSpaceLow
+        expr: (node_filesystem_avail_bytes / node_filesystem_size_bytes) < 0.1
+        for: 5m
+        labels:
+          severity: critical
+          team: devops
+        annotations:
+          summary: "Disk space below 10%"
+          description: "Instance {{ $labels.instance }} mount {{ $labels.mountpoint }} has {{ $value | humanizePercentage }} free."
+
+      - alert: PostgresDown
+        expr: pg_up == 0
+        for: 1m
+        labels:
+          severity: critical
+          team: backend
+        annotations:
+          summary: "PostgreSQL is down"
+          description: "PostgreSQL instance {{ $labels.instance }} is unreachable."

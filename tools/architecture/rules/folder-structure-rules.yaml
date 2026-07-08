@@ -1,0 +1,98 @@
+# Folder Structure Rules
+
+- id: FOLDER-001
+  severity: critical
+  description: "Every module must have domain/ directory with entities/, value-objects/, interfaces/"
+  profile:
+    appliesTo: [production]
+  validation:
+    type: dir-exists
+    pattern: "**/modules/*/"
+    required: ["domain/entities/", "domain/value-objects/", "domain/interfaces/"]
+  examples:
+    - good: "auth/domain/entities/, auth/domain/value-objects/, auth/domain/interfaces/"
+    - bad: "vision/domain/ missing (vision has no domain/ layer)"
+  autofix: false
+
+- id: FOLDER-002
+  severity: high
+  description: "Repository implementations must be in infrastructure/persistence/"
+  profile:
+    appliesTo: [production]
+  validation:
+    type: dir-exists
+    pattern: "**/modules/*/"
+    required: ["infrastructure/persistence/"]
+  examples:
+    - good: "auth/infrastructure/persistence/auth.repository.ts"
+    - bad: "auth/infrastructure/auth.repository.ts"
+  autofix: false
+
+- id: FOLDER-003
+  severity: high
+  description: "Presentation layer must have controllers/ and dtos/ directories"
+  profile:
+    appliesTo: [production]
+  validation:
+    type: dir-exists
+    pattern: "**/modules/*/presentation/"
+    required: ["controllers/", "dtos/"]
+  examples:
+    - good: "auth/presentation/controllers/, auth/presentation/dtos/"
+    - bad: "auth/presentation/ without dtos/"
+  autofix: false
+
+- id: FOLDER-004
+  severity: high
+  description: "Application layer must have services/ directory"
+  profile:
+    appliesTo: [production]
+  validation:
+    type: dir-exists
+    pattern: "**/modules/*/application/"
+    required: ["services/"]
+  examples:
+    - good: "auth/application/services/auth.service.ts"
+    - bad: "auth/application/ without services/"
+  autofix: false
+
+- id: FOLDER-005
+  severity: medium
+  description: "Test files must be co-located with source files or in __tests__/ directory"
+  profile:
+    appliesTo: [production]
+  validation:
+    type: dir-exists
+    pattern: "**/modules/*/application/"
+    required: ["__tests__/"]
+  examples:
+    - good: "context-engine/application/__tests__/context-assembler.service.spec.ts"
+    - bad: "Test files in separate test directory"
+  autofix: false
+
+- id: FOLDER-006
+  severity: low
+  description: "No empty directories should remain in the module structure"
+  profile:
+    appliesTo: [production]
+  validation:
+    type: content-check
+    pattern: "**/infrastructure/persistence/"
+    required: ["*.ts"]
+  examples:
+    - good: "All directories contain at least one .ts file"
+    - bad: "infrastructure/persistence/ is empty"
+  autofix: false
+
+- id: FOLDER-007
+  severity: low
+  description: "Enterprise sub-modules should follow the same structure as top-level modules"
+  profile:
+    appliesTo: [production]
+  validation:
+    type: dir-structure
+    pattern: "**/enterprise-*/**/"
+  examples:
+    - good: "context-engine/ has domain/, application/, infrastructure/, presentation/"
+    - bad: "Enterprise sub-module missing standard directories"
+  autofix: false

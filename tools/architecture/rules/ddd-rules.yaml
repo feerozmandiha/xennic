@@ -1,0 +1,148 @@
+# DDD Architecture Rules
+# ============================================================================
+# Each rule has:
+#   id:         unique identifier
+#   severity:   critical | high | medium | low
+#   description: what the rule enforces
+#   validation: how to check (glob pattern, regex, or script)
+#   examples:   array of {good, bad} pairs
+#   autofix:    optional command to auto-fix
+
+- id: DDD-001
+  severity: critical
+  description: "Domain layer must not import from any outer layer (application, infrastructure, presentation)"
+  profile:
+    appliesTo: [production, test]
+  validation:
+    type: import-check
+    pattern: "**/domain/**/*.ts"
+    forbidden: ["../application/", "../infrastructure/", "../presentation/"]
+  examples:
+    - good: "import { Entity } from './entity.js'"
+    - bad: "import { Service } from '../../application/services/service.js'"
+  autofix: false
+
+- id: DDD-002
+  severity: critical
+  description: "Application layer must only import from domain layer or external libraries"
+  profile:
+    appliesTo: [production]
+  validation:
+    type: import-check
+    pattern: "**/application/**/*.ts"
+    forbidden: ["../infrastructure/", "../presentation/"]
+  examples:
+    - good: "import { IRepository } from '../../domain/interfaces/repository.interface.js'"
+    - bad: "import { PrismaService } from '../infrastructure/persistence/prisma.service.js'"
+  autofix: false
+
+- id: DDD-003
+  severity: high
+  description: "Infrastructure layer must implement interfaces defined in domain layer"
+  profile:
+    appliesTo: [production]
+  validation:
+    type: implements-check
+    pattern: "**/infrastructure/**/*.repository.ts"
+  examples:
+    - good: "class UserRepository implements IUserRepository { ... }"
+    - bad: "class UserRepository { ... }  // no interface"
+  autofix: false
+
+- id: DDD-004
+  severity: high
+  description: "Entities must be defined in domain/entities/ directory"
+  profile:
+    appliesTo: [production]
+  validation:
+    type: file-location
+    pattern: "**/entities/*.entity.ts"
+    expected: "domain/entities/"
+  examples:
+    - good: "modules/auth/domain/entities/user.entity.ts"
+    - bad: "modules/auth/infrastructure/user.entity.ts"
+  autofix: false
+
+- id: DDD-005
+  severity: high
+  description: "Value Objects must be defined in domain/value-objects/ directory"
+  profile:
+    appliesTo: [production]
+  validation:
+    type: file-location
+    pattern: "**/*.vo.ts"
+    expected: "domain/value-objects/"
+  examples:
+    - good: "modules/auth/domain/value-objects/email.vo.ts"
+    - bad: "modules/auth/infrastructure/email.vo.ts"
+  autofix: false
+
+- id: DDD-006
+  severity: medium
+  description: "Repository interfaces must be defined in domain/interfaces/ directory"
+  profile:
+    appliesTo: [production]
+  validation:
+    type: file-location
+    pattern: "**/interfaces/*.repository.interface.ts"
+    expected: "domain/"
+  examples:
+    - good: "domain/interfaces/user.repository.interface.ts"
+    - bad: "infrastructure/repositories/user.repository.interface.ts"
+  autofix: false
+
+- id: DDD-007
+  severity: high
+  description: "Domain services must not depend on framework-specific constructs (NestJS, Express, Fastify, Prisma)"
+  profile:
+    appliesTo: [production]
+  validation:
+    type: import-check
+    pattern: "**/domain/**/*.ts"
+    forbidden: ["@nestjs/", "fastify", "express", "@prisma/", "PrismaClient"]
+  examples:
+    - good: "export class DomainService { ... }"
+    - bad: "import { Injectable } from '@nestjs/common'; export class DomainService { ... }"
+  autofix: false
+
+- id: DDD-008
+  severity: high
+  description: "Every entity must have a UUID identity field"
+  profile:
+    appliesTo: [production]
+  validation:
+    type: content-check
+    pattern: "**/domain/**/*.entity.ts"
+    required: ["uuid", "id:", "id="]
+  examples:
+    - good: "class UserEntity { constructor(private id: string) {} }"
+    - bad: "class UserEntity { constructor(private name: string) {} }"
+  autofix: false
+
+- id: DDD-009
+  severity: medium
+  description: "Value Objects must be immutable (readonly properties)"
+  profile:
+    appliesTo: [production]
+  validation:
+    type: content-check
+    pattern: "**/domain/**/*.vo.ts"
+    required: ["readonly"]
+  examples:
+    - good: "export class EmailVO { constructor(readonly value: string) {} }"
+    - bad: "export class Email { value: string; }"
+  autofix: false
+
+- id: DDD-010
+  severity: medium
+  description: "Domain events must be immutable frozen objects"
+  profile:
+    appliesTo: [production]
+  validation:
+    type: content-check
+    pattern: "**/domain/**/*event*.ts"
+    required: ["readonly", "Object.freeze"]
+  examples:
+    - good: "export class DocumentPublished { readonly eventId: string; } = Object.freeze(...)"
+    - bad: "export class DocumentPublished { eventId: string; }"
+  autofix: false

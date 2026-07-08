@@ -21,7 +21,10 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio",
-    "prisma:validate": "prisma validate"
+    "prisma:validate": "prisma validate",
+    "validate:arch": "npx tsx tools/architecture/validate.ts",
+    "validate:release": "npx tsx tools/release/release-validator.ts --skip-slow",
+    "prepare": "husky"
   },
   "devDependencies": {
     "@commitlint/cli": "^21.0.2",
@@ -45,6 +48,7 @@
     "@types/argon2": "^0.15.4",
     "@types/bcrypt": "^6.0.0",
     "@types/express": "^5.0.6",
+    "@types/js-yaml": "^4.0.9",
     "@types/node": "^25.9.1",
     "@types/passport-jwt": "^4.0.1",
     "@types/pdfmake": "^0.3.3",
@@ -58,6 +62,7 @@
     "eslint-config-prettier": "^10.1.8",
     "fastify": "^5.8.5",
     "husky": "^9.1.7",
+    "js-yaml": "^5.2.1",
     "jspdf": "^4.2.1",
     "jspdf-autotable": "^5.0.8",
     "lint-staged": "^17.0.7",

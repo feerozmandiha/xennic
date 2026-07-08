@@ -128,7 +128,7 @@ def test_registry_thread_safe():
     
     def register_calculator():
         class DynamicCalculator(BaseCalculator[TestInput]):
-            CALCULATION_CODE = f"THREAD-{threading.current_thread().ident}"
+            CALCULATION_CODE = f"THREAD-{threading.get_native_id()}"
             CALCULATION_NAME = "Thread Test"
             FORMULA_VERSION = "1.0"
             STANDARD = "TEST"

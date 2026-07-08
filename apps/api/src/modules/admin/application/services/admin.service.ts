@@ -1,11 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { prisma } from '@xennic/database';
-
-function toNum(v: any): number {
-  if (v === null || v === undefined) return 0;
-  if (typeof v === 'bigint') return Number(v);
-  return Number(v) || 0;
-}
+import { randomUUID } from 'node:crypto';
 
 @Injectable()
 export class AdminService {
@@ -393,7 +388,7 @@ export class AdminService {
 
       const now = new Date();
       const notifications = members.map(m => ({
-        id: require('node:crypto').randomUUID(),
+        id: randomUUID(),
         user_id: m.user_id,
         type: data.type,
         channel: 'in_app',
@@ -576,7 +571,7 @@ export class AdminService {
       max_file_size_mb:      '10',
       registration_open:     'true',
       maintenance_mode:      'false',
-      ai_model:              'llama-3.3-70b-versatile',
+      ai_model:              'gpt-4o-mini',
       free_calculations_day: '5',
     };
   }

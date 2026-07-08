@@ -348,7 +348,7 @@ export class BillingRepository implements IBillingRepository {
 
   private _mapTransaction(row: any): TransactionEntity {
     let metadata: Record<string, unknown> = {};
-    try { metadata = typeof row.metadata === 'string' ? JSON.parse(row.metadata) : (row.metadata ?? {}); } catch {}
+    try { metadata = typeof row.metadata === 'string' ? JSON.parse(row.metadata) : (row.metadata ?? {}); } catch { /* noop */ }
     return TransactionEntity.reconstitute({
       id: row.id,
       workspaceId: row.workspace_id,

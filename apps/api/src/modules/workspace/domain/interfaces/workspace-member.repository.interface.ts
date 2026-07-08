@@ -1,4 +1,4 @@
-import type { WorkspaceMemberEntity, WorkspaceMemberRole } from '../entities/workspace-member.entity.js';
+import type { WorkspaceMemberEntity} from '../entities/workspace-member.entity.js';
 import type { WorkspaceInvitationEntity } from '../entities/workspace-invitation.entity.js';
 
 export interface IWorkspaceMemberRepository {

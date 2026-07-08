@@ -129,7 +129,7 @@ export class ZarinpalGateway implements IPaymentGateway {
     }
   }
 
-  private _mockRequest(request: PaymentRequest): PaymentResponse {
+  private _mockRequest(_request: PaymentRequest): PaymentResponse {
     const authority = crypto.randomUUID();
     const nestApiUrl = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000';
     return {

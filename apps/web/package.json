@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start --port 3001",
     "typecheck": "tsc --noEmit",
-    "lint": "next lint"
+    "lint": "eslint ."
   },
   "dependencies": {
     "@radix-ui/react-avatar": "^1.1.10",
@@ -62,7 +62,8 @@
     "zustand": "^5.0.5"
   },
   "devDependencies": {
-    "@nestjs/throttler": "^6.5.0",
+    "@eslint/eslintrc": "^3.3.1",
+    "eslint-config-next": "15.3.2",
     "@tailwindcss/postcss": "^4.1.8",
     "@tailwindcss/typography": "^0.5.20",
     "@types/node": "^22.0.0",

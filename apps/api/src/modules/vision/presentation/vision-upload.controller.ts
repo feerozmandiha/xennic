@@ -96,7 +96,6 @@ export class VisionUploadController {
 
       // Save to workspace history (calculations table)
       try {
-        const allowedTypes = ['vision_bill', 'vision_nameplate', 'vision_generic'] as const;
         const typeMap: Record<string, string> = {
           bill: 'vision_bill',
           nameplate: 'vision_nameplate',

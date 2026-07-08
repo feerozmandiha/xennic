@@ -1,0 +1,84 @@
+# Aggregate Rules
+
+- id: AGG-001
+  severity: critical
+  description: "Aggregate root entities must be in domain/entities/ directory"
+  profile:
+    appliesTo: [production]
+  validation:
+    type: file-location
+    pattern: "**/domain/entities/*.entity.ts"
+  examples:
+    - good: "workspace/domain/entities/workspace.entity.ts"
+    - bad: "workspace/application/workspace.entity.ts"
+  autofix: false
+
+- id: AGG-002
+  severity: high
+  description: "Aggregate root must have exactly one repository"
+  profile:
+    appliesTo: [production]
+  validation:
+    type: count-check
+    pattern: "**/infrastructure/persistence/*.repository.ts"
+    relation: "one-to-one with aggregate root"
+  examples:
+    - good: "UserRepository for User aggregate"
+    - bad: "UserRepository + UserDataRepository for User aggregate"
+  autofix: false
+
+- id: AGG-003
+  severity: high
+  description: "Entities within an aggregate must only reference the aggregate root"
+  profile:
+    appliesTo: [production]
+  validation:
+    type: import-check
+    pattern: "**/domain/**/*.entity.ts"
+    forbidden: ["repository", "Repository"]
+  examples:
+    - good: "Child entity references aggregate root by ID"
+    - bad: "Child entity imports a repository"
+  autofix: false
+
+- id: AGG-004
+  severity: medium
+  description: "Aggregate roots should publish domain events for state changes"
+  profile:
+    appliesTo: [production]
+  validation:
+    type: content-check
+    pattern: "**/domain/entities/*.entity.ts"
+    required: ["events", "domainEvents", "addEvent", "push"]
+  examples:
+    - good: "this.addEvent(new DocumentPublished(this.id));"
+    - bad: "// no event publication"
+  autofix: false
+
+- id: AGG-005
+  severity: medium
+  description: "Cross-aggregate references must use IDs, not object references"
+  profile:
+    appliesTo: [production]
+  validation:
+    type: content-check
+    pattern: "**/domain/**/*.entity.ts"
+    forbidden: ["import.*Entity"]
+  examples:
+    - good: "readonly ownerId: string;  // references User aggregate by ID"
+    - bad: "readonly owner: UserEntity;  // direct object reference"
+  autofix: false
+
+- id: AGG-006
+  severity: high
+  description: "All workspace-scoped entities must include workspaceId field"
+  profile:
+    appliesTo: [production]
+  validation:
+    type: content-check
+    pattern: "**/domain/entities/*.entity.ts"
+    required: ["workspaceId", "workspace_id"]
+  examples:
+    - good: "readonly workspaceId: string;"
+    - bad: "// missing workspaceId"
+  autofix: false

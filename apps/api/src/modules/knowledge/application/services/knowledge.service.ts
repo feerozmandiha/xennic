@@ -526,7 +526,7 @@ export class KnowledgeService {
     id: string,
     versionId: string,
     workspaceId: string,
-    userId: string,
+    _userId: string,
   ): Promise<KnowledgeEntity> {
     const entity = await this.findOne(id, workspaceId);
     const version = await this.getVersion(id, versionId, workspaceId);

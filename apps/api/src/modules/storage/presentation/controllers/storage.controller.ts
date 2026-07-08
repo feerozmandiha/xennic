@@ -68,9 +68,9 @@ export class StorageController {
       throw new BadRequestException('Request must be multipart/form-data');
     }
 
-    let fileBuffer: Buffer | null = null;
-    let originalName = 'unknown';
-    let mimeType = 'application/octet-stream';
+    let fileBuffer: Buffer | null;
+    let originalName: string;
+    let mimeType: string;
 
     try {
       const data = await req.file({ limits: { fileSize: MAX_FILE_SIZE } });

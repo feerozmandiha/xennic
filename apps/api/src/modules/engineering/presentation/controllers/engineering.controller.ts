@@ -313,7 +313,7 @@ export class EngineeringController {
       });
       const data = await pythonRes.json();
       reply.status(pythonRes.ok ? 200 : pythonRes.status).send(data);
-    } catch (err) {
+    } catch {
       reply.status(503).send({ success: false, error: 'Engineering service unavailable' });
     }
   }
@@ -334,7 +334,7 @@ export class EngineeringController {
         .status(pythonRes.ok ? 200 : pythonRes.status)
         .header('Content-Type', 'application/json')
         .send(data);
-    } catch (err) {
+    } catch {
       reply.status(503).send({
         success: false,
         error:   { code: 'SERVICE_UNAVAILABLE', message: 'Engineering service unavailable' },

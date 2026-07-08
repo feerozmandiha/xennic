@@ -13,7 +13,7 @@ export class VendorEntity {
   ) {}
 
   static create(data: { name: string; slug?: string }): VendorEntity {
-    const slug = data.slug ?? data.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9\-]/g, '');
+    const slug = data.slug ?? data.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
     return new VendorEntity(
       randomUUID(),
       data.name,

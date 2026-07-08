@@ -12,11 +12,15 @@ coverage
 
 .env.*
 
-*.loginfrastructure/docker/secrets/*.key
+*.log
+infrastructure/docker/secrets/*.key
 infrastructure/docker/secrets/*.pem
 
 .pytest_cache
 
+venv/
+__pycache__/
+*.pyc
 .venv
 .vscode
 build
