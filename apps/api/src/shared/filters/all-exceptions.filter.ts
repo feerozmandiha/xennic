@@ -6,7 +6,8 @@ import {
   HttpStatus,
   BadRequestException,
 } from '@nestjs/common';
-import { FastifyReply } from 'fastify';
+import type { FastifyReply } from 'fastify';
+import type { ServerResponse } from 'node:http';
 
 export interface ErrorResponse {
   success: false;
@@ -21,7 +22,7 @@ export interface ErrorResponse {
 export class AllExceptionsFilter implements ExceptionFilter {
   catch(exception: unknown, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
-    const response = ctx.getResponse<FastifyReply>();
+    const response = ctx.getResponse<FastifyReply | ServerResponse>();
 
     let statusCode: number;
     let errorCode: string;
@@ -44,8 +45,8 @@ export class AllExceptionsFilter implements ExceptionFilter {
         details = this.formatValidationErrors(exceptionResponse.message);
       } else {
         errorCode = this.getErrorCodeFromHttpStatus(statusCode);
-        message = typeof exceptionResponse === 'string' 
-          ? exceptionResponse 
+        message = typeof exceptionResponse === 'string'
+          ? exceptionResponse
           : exceptionResponse.message || exception.message;
       }
     }
@@ -59,10 +60,10 @@ export class AllExceptionsFilter implements ExceptionFilter {
     else if (exception instanceof Error) {
       statusCode = HttpStatus.INTERNAL_SERVER_ERROR;
       errorCode = 'INTERNAL_SERVER_ERROR';
-      message = process.env.NODE_ENV === 'production' 
-        ? 'An unexpected error occurred' 
+      message = process.env.NODE_ENV === 'production'
+        ? 'An unexpected error occurred'
         : exception.message;
-      
+
       // Log error for debugging
       console.error('Unhandled exception:', exception);
     }
@@ -82,8 +83,44 @@ export class AllExceptionsFilter implements ExceptionFilter {
       },
     };
 
-    // Fastify uses .send() not .json()
-    response.status(statusCode).send(errorResponse);
+    this.sendErrorResponse(response, statusCode, errorResponse);
+  }
+
+  private sendErrorResponse(
+    response: FastifyReply | ServerResponse,
+    statusCode: number,
+    body: ErrorResponse,
+  ): void {
+    const res = response as FastifyReply & ServerResponse & {
+      code?: (statusCode: number) => FastifyReply;
+      raw?: ServerResponse;
+    };
+
+    // Normal Fastify reply path.
+    if (typeof res.status === 'function' && typeof res.send === 'function') {
+      res.status(statusCode).send(body);
+      return;
+    }
+
+    // Fastify's canonical status setter is `code()`. Keep this as a fallback
+    // for Fastify versions/adapters that do not expose `status()`.
+    if (typeof res.code === 'function' && typeof res.send === 'function') {
+      res.code(statusCode).send(body);
+      return;
+    }
+
+    // Exceptions thrown from Nest middleware under the Fastify adapter can expose
+    // the raw Node ServerResponse instead of FastifyReply. Express-style
+    // `response.status(...).send(...)` crashes in that case, so write the JSON
+    // response through the Node API.
+    const raw = res.raw ?? res;
+    if (typeof raw.end === 'function') {
+      if (!raw.headersSent) {
+        raw.statusCode = statusCode;
+        raw.setHeader('content-type', 'application/json; charset=utf-8');
+      }
+      raw.end(JSON.stringify(body));
+    }
   }
 
   private getErrorCodeFromHttpStatus(status: number): string {
@@ -105,7 +142,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
   private formatValidationErrors(errors: string[]): Record<string, string[]> {
     const result: Record<string, string[]> = {};
-    
+
     errors.forEach((error: string) => {
       const match = error.match(/^([a-zA-Z_]+)\s+/);
       if (match && match[1]) {
@@ -121,13 +158,13 @@ export class AllExceptionsFilter implements ExceptionFilter {
         result._general.push(error);
       }
     });
-    
+
     return result;
   }
 
   private isPrismaError(exception: unknown): boolean {
-    return exception instanceof Error && 
-           'code' in exception && 
+    return exception instanceof Error &&
+           'code' in exception &&
            typeof (exception as any).code === 'string' &&
            (exception as any).code.startsWith('P');
   }
