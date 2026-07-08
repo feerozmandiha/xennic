@@ -1,34 +1,87 @@
-node_modules
+# ─────────────────────────────────────────────────────────────
+# Dependencies
+# ─────────────────────────────────────────────────────────────
+node_modules/
+**/node_modules/
+.pnpm-store/
 
-dist
-xennic-patch
-coverage
+# ─────────────────────────────────────────────────────────────
+# Build outputs
+# ─────────────────────────────────────────────────────────────
+dist/
+**/dist/
+build/
+**/build/
+coverage/
+**/coverage/
+.next/
+**/.next/
+.turbo/
+**/.turbo/
+out/
+**/out/
 
-.turbo
+# Local patch / scratch directories
+xennic-patch/
+next
 
-.next
-
+# ─────────────────────────────────────────────────────────────
+# Environment files and secrets
+# ─────────────────────────────────────────────────────────────
 .env
-
 .env.*
+!.env.example
+!**/.env.example
+!**/.env.*.example
 
-*.log
+*.pem
+*.key
 infrastructure/docker/secrets/*.key
 infrastructure/docker/secrets/*.pem
 
-.pytest_cache
+# ─────────────────────────────────────────────────────────────
+# Logs
+# ─────────────────────────────────────────────────────────────
+*.log
+logs/
+**/logs/
 
+# ─────────────────────────────────────────────────────────────
+# Python virtualenvs and generated files
+# ─────────────────────────────────────────────────────────────
 venv/
+.venv/
+**/venv/
+**/.venv/
+
 __pycache__/
+**/__pycache__/
 *.pyc
-.venv
-.vscode
-build
+*.pyo
+*.pyd
 
-# OpenAPI generated files (keep the committed version)
-packages/openapi/v1/openapi.json
-!packages/openapi/v1/openapi.json
+.pytest_cache/
+**/.pytest_cache/
+.mypy_cache/
+**/.mypy_cache/
+.ruff_cache/
+**/.ruff_cache/
+.nox/
+**/.nox/
+.tox/
+**/.tox/
 
-.env*
-*.pem
-*.key
+.coverage
+htmlcov/
+
+# ─────────────────────────────────────────────────────────────
+# IDE / editor
+# ─────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+
+# ─────────────────────────────────────────────────────────────
+# OpenAPI
+# ─────────────────────────────────────────────────────────────
+# packages/openapi/v1/openapi.json is intentionally tracked.
+# Do not ignore it here.
