@@ -1,91 +1,78 @@
 services:
-
   postgres:
     image: postgres:17-alpine
-
     container_name: xennic-postgres
-
     restart: unless-stopped
-
     environment:
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-
+      POSTGRES_DB: ${POSTGRES_DB:-xennic}
+      POSTGRES_USER: ${POSTGRES_USER:-xennic}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-xennic}
     ports:
-      - "${POSTGRES_PORT}:5432"
-
+      - '${POSTGRES_PORT:-5432}:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
-
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-xennic}']
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - xennic-network
 
   redis:
     image: redis:8-alpine
-
     container_name: xennic-redis
-
     restart: unless-stopped
-
     command:
       - redis-server
       - --requirepass
-      - ${REDIS_PASSWORD}
-
+      - ${REDIS_PASSWORD:-xennic}
     ports:
-      - "${REDIS_PORT}:6379"
-
+      - '${REDIS_PORT:-6380}:6379'
     volumes:
       - redis_data:/data
-
     healthcheck:
-      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      test: ['CMD', 'redis-cli', '-a', '${REDIS_PASSWORD:-xennic}', 'ping']
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - xennic-network
 
   rabbitmq:
     image: rabbitmq:4-management
-
     container_name: xennic-rabbitmq
-
     restart: unless-stopped
-
     environment:
-      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
-      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
-
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER:-xennic}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS:-xennic}
     ports:
-      - "${RABBITMQ_PORT}:5672"
-      - "${RABBITMQ_UI_PORT}:15672"
-
+      - '${RABBITMQ_PORT:-5672}:5672'
+      - '${RABBITMQ_UI_PORT:-15672}:15672'
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
-
     healthcheck:
-      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      test: ['CMD', 'rabbitmq-diagnostics', 'ping']
       interval: 15s
       timeout: 5s
       retries: 5
+    networks:
+      - xennic-network
 
-  # Engineering Service - Electrical Calculation Engine
   engineering-service:
     build:
       context: ../../../../workspace/services/engineering-service
       dockerfile: Dockerfile
     container_name: xennic-engineering-service
-    ports:
-      - "${ENGINEERING_SERVICE_PORT:-8001}:8001"
-    environment:
-      - ENVIRONMENT=${ENVIRONMENT:-production}
-      - LOG_LEVEL=${LOG_LEVEL:-INFO}
     restart: unless-stopped
+    ports:
+      - '${ENGINEERING_SERVICE_PORT:-8001}:8001'
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT:-production}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000,http://localhost:3001}
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      test: ['CMD', 'curl', '-f', 'http://localhost:8001/health']
       interval: 30s
       timeout: 5s
       retries: 3
@@ -93,28 +80,64 @@ services:
     networks:
       - xennic-network
     logging:
-      driver: "json-file"
+      driver: 'json-file'
       options:
-        max-size: "10m"
-        max-file: "3"
+        max-size: '10m'
+        max-file: '3'
 
-  # Vision Service - Document & Nameplate Reader
+  ai-service:
+    build:
+      context: ../../../../workspace/services/ai-service
+      dockerfile: Dockerfile
+    container_name: xennic-ai-service
+    restart: unless-stopped
+    ports:
+      - '${AI_SERVICE_PORT:-8002}:8002'
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT:-production}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      GOOGLE_API_KEY: ${GOOGLE_API_KEY:-}
+      GROQ_API_KEY: ${GROQ_API_KEY:-}
+      ENGINEERING_SERVICE_URL: http://engineering-service:8001
+      QDRANT_URL: ${QDRANT_URL:-http://qdrant:6333}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000,http://localhost:3001}
+    depends_on:
+      engineering-service:
+        condition: service_healthy
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:8002/health']
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    networks:
+      - xennic-network
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '10m'
+        max-file: '3'
+
   vision-service:
     build:
       context: ../../../../workspace/services/vision-service
       dockerfile: Dockerfile
     container_name: xennic-vision-service
-    ports:
-      - "${VISION_SERVICE_PORT:-8003}:8003"
-    environment:
-      - SERVICE_PORT=8003
-      - OCR_ENGINE_MODE=${VISION_OCR_ENGINE_MODE:-hybrid}
-      - VISION_LLM_PROVIDER=${VISION_LLM_PROVIDER:-groq}
-      - GROQ_API_KEY=${GROQ_API_KEY:-}
-      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
     restart: unless-stopped
+    ports:
+      - '${VISION_SERVICE_PORT:-8003}:8003'
+    environment:
+      SERVICE_PORT: 8003
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      OCR_ENGINE_MODE: ${VISION_OCR_ENGINE_MODE:-hybrid}
+      VISION_LLM_PROVIDER: ${VISION_LLM_PROVIDER:-groq}
+      GROQ_API_KEY: ${GROQ_API_KEY:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000,http://localhost:3001}
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8003/health"]
+      test: ['CMD', 'curl', '-f', 'http://localhost:8003/health']
       interval: 30s
       timeout: 5s
       retries: 3
@@ -126,51 +149,17 @@ services:
     networks:
       - xennic-network
     logging:
-      driver: "json-file"
+      driver: 'json-file'
       options:
-        max-size: "10m"
-        max-file: "3"
+        max-size: '10m'
+        max-file: '3'
 
 networks:
   xennic-network:
     driver: bridge
     name: xennic-network
 
-  # AI Service - Intelligent Engineering Agents
-  ai-service:
-    build:
-      context: ./services/ai-service
-      dockerfile: Dockerfile
-    container_name: xennic-ai-service
-    ports:
-      - "${AI_SERVICE_PORT:-8002}:8002"
-    environment:
-      - ENVIRONMENT=${ENVIRONMENT:-production}
-      - LOG_LEVEL=${LOG_LEVEL:-INFO}
-      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
-      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
-      - GOOGLE_API_KEY=${GOOGLE_API_KEY:-}
-      - ENGINEERING_SERVICE_URL=http://engineering-service:8001
-    restart: unless-stopped
-    depends_on:
-      engineering-service:
-        condition: service_healthy
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8002/health"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
-      start_period: 10s
-    networks:
-      - xennic-network
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
-
 volumes:
-
   postgres_data:
   redis_data:
   rabbitmq_data:
