@@ -8,7 +8,7 @@
  * ensures JWT key paths point to real local files, and regenerates the public
  * key from the private key if needed.
  *
- * It is intended for local development only.
+ * Intended for local development only.
  */
 
 const fs = require('node:fs');
@@ -18,8 +18,10 @@ const { execFileSync } = require('node:child_process');
 const root = process.cwd();
 
 const secretsDir = path.join(root, 'infrastructure', 'docker', 'secrets');
+
+// Build names from fragments to avoid accidental Markdown auto-link corruption.
 const privateKeyName = ['jwt', 'RS', '256', '.', 'key'].join('');
-const publicKeyName = `${privateKeyName}.pub`;
+const publicKeyName = ['jwt', 'RS', '256', '.', 'key', '.', 'p', 'u', 'b'].join('');
 
 const privateKeyPath = path.join(secretsDir, privateKeyName);
 const publicKeyPath = path.join(secretsDir, publicKeyName);
@@ -27,20 +29,17 @@ const publicKeyPath = path.join(secretsDir, publicKeyName);
 function sanitizeValue(value) {
   let out = value;
 
-  // Convert Markdown links: [text](url) -> text
   let previous = null;
   while (previous !== out) {
     previous = out;
     out = out.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1');
   }
 
-  out = out
+  return out
     .replace(/mailto:/g, '')
     .replace(/&amp;/g, '&')
     .replace(/&gt;/g, '>')
     .replace(/&lt;/g, '<');
-
-  return out;
 }
 
 function normalizeEnvFile(filePath) {
@@ -53,9 +52,9 @@ function normalizeEnvFile(filePath) {
     POSTGRES_PASSWORD: process.env.POSTGRES_PASSWORD || 'xennic123',
     JWT_PRIVATE_KEY_PATH: privateKeyPath,
     JWT_PUBLIC_KEY_PATH: publicKeyPath,
-    AI_BASE_URL: 'https://api.groq.com/openai/v1',
-    CORS_ORIGINS: 'http://localhost:3000,http://localhost:3001',
-    ADMIN_EMAIL: process.env.ADMIN_EMAIL || 'admin@xennic.ir',
+    AI_BASE_URL: ['https://', 'api.groq.com', '/openai/v1'].join(''),
+    CORS_ORIGINS: ['http://localhost:3000', 'http://localhost:3001'].join(','),
+    ADMIN_EMAIL: process.env.ADMIN_EMAIL || ['admin', '@', 'xennic.ir'].join(''),
   };
 
   const input = fs.readFileSync(filePath, 'utf8').split(/\r?\n/);
@@ -103,7 +102,6 @@ function normalizeJwtPublicKey() {
     throw new Error(`Missing private key: ${privateKeyPath}`);
   }
 
-  // Remove public-key-like files with broken Markdown names.
   for (const entry of fs.readdirSync(secretsDir)) {
     if (entry !== privateKeyName && entry !== publicKeyName) {
       fs.rmSync(path.join(secretsDir, entry), { force: true });
