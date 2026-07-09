@@ -1,15 +1,8 @@
-#!/usr/bin/env sh
-. "$(dirname -- "$0")/_/husky.sh"
+#!/bin/sh
+set -e
 
 echo "🔍 Running full architecture validation before push..."
-npx tsx tools/architecture/validate.ts
+corepack pnpm exec tsx tools/architecture/validate.ts --no-reports
 
-if [ $? -ne 0 ]; then
-  echo "❌ Push blocked: Architecture validation failed. All violations must be resolved."
-  echo "   Run 'pnpm validate:arch' locally to see details."
-  echo "   Critical=0 and High=0 are required before pushing."
-  exit 1
-fi
-
-echo "✅ Architecture validation passed (Critical=0, High=0)"
+echo "✅ Architecture validation passed"
 echo "✅ Quality gates satisfied"
