@@ -1,25 +1,26 @@
 import {
+  BadRequestException,
   Injectable,
   Logger,
   ServiceUnavailableException,
-  BadRequestException,
 } from '@nestjs/common';
 
 /**
  * Engineering Client Service
  *
  * HTTP client that forwards calculation requests to the Python engineering-service.
+ * Uses the Node.js Fetch API and keeps retry/correlation behavior deterministic
+ * for tests and local development.
  */
 @Injectable()
 export class EngineeringClientService {
   private readonly logger = new Logger(EngineeringClientService.name);
+  private readonly timeoutMs = 30_000;
+  private readonly maxAttempts = 3;
 
   private get baseUrl(): string {
     return process.env.ENGINEERING_SERVICE_URL ?? 'http://localhost:8001';
   }
-
-  private readonly timeoutMs = 30_000;
-  private readonly maxAttempts = 3;
 
   async calculate(
     path: string,
@@ -82,16 +83,16 @@ export class EngineeringClientService {
           throw err;
         }
 
+        if (err instanceof ServiceUnavailableException) {
+          throw err;
+        }
+
         const error = err as Error;
         lastError = error;
 
         if (error.name === 'AbortError') {
           this.logger.error(`Engineering service timeout for ${path}`);
           throw new ServiceUnavailableException('Engineering service timed out. Please try again.');
-        }
-
-        if (err instanceof ServiceUnavailableException) {
-          throw err;
         }
 
         this.logger.error(`Engineering service connection failed for ${path}: ${error.message}`);
