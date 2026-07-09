@@ -25,7 +25,8 @@
     "validate:arch": "npx tsx tools/architecture/validate.ts",
     "validate:release": "npx tsx tools/release/release-validator.ts --skip-slow",
     "prepare": "husky",
-    "admin:upsert": "node scripts/admin/upsert-admin.cjs"
+    "admin:upsert": "node scripts/admin/upsert-admin.cjs",
+    "dev:normalize-env": "node scripts/dev/normalize-local-env.cjs"
   },
   "devDependencies": {
     "@commitlint/cli": "^21.0.2",
