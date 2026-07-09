@@ -1,10 +1,14 @@
-import { Injectable, Logger, ServiceUnavailableException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  ServiceUnavailableException,
+  BadRequestException,
+} from '@nestjs/common';
 
 /**
  * Engineering Client Service
  *
- * HTTP client که request ها را به Python engineering-service (port 8001) forward می‌کند.
- * از fetch API استاندارد Node.js استفاده می‌شود — بدون وابستگی خارجی.
+ * HTTP client that forwards calculation requests to the Python engineering-service.
  */
 @Injectable()
 export class EngineeringClientService {
@@ -14,18 +18,13 @@ export class EngineeringClientService {
     return process.env.ENGINEERING_SERVICE_URL ?? 'http://localhost:8001';
   }
 
-  private readonly timeoutMs = 30_000; // 30 ثانیه timeout
+  private readonly timeoutMs = 30_000;
+  private readonly maxAttempts = 3;
 
-  /**
-   * ارسال درخواست محاسبه به Python service
-   *
-   * @param path   مسیر endpoint در Python service (e.g. '/api/v1/engineering/basic/ohms-law')
-   * @param body   بدنه درخواست (inputs از کاربر)
-   * @returns      پاسخ کامل Python service
-   */
   async calculate(
     path: string,
     body: Record<string, unknown>,
+    correlationId?: string,
   ): Promise<{
     success: boolean;
     data: Record<string, unknown>;
@@ -33,84 +32,127 @@ export class EngineeringClientService {
   }> {
     const url = `${this.baseUrl}${path}`;
     const start = Date.now();
+    let lastError: Error | null = null;
 
-    try {
+    for (let attempt = 1; attempt <= this.maxAttempts; attempt++) {
       const controller = new AbortController();
       const timer = setTimeout(() => controller.abort(), this.timeoutMs);
 
-      const response = await fetch(url, {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify(body),
-        signal:  controller.signal,
-      });
+      try {
+        const headers: Record<string, string> = {
+          'Content-Type': 'application/json',
+        };
 
-      clearTimeout(timer);
+        if (correlationId) {
+          headers['X-Correlation-ID'] = correlationId;
+        }
 
-      const durationMs = Date.now() - start;
-      this.logger.debug(`Engineering call ${path} completed in ${durationMs}ms`);
+        const response = await globalThis.fetch(url, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify(body),
+          signal: controller.signal,
+        });
 
-      const json = await response.json() as any;
+        clearTimeout(timer);
 
-      // خطای validation از Python
-      if (response.status === 400 || response.status === 422) {
-        throw new BadRequestException(
-          json?.error?.message ?? json?.detail ?? 'Engineering validation failed',
-        );
+        const durationMs = Date.now() - start;
+        this.logger.debug(`Engineering call ${path} completed in ${durationMs}ms`);
+
+        const json = (await response.json()) as any;
+
+        if (response.status === 400 || response.status === 422) {
+          throw new BadRequestException(
+            json?.error?.message ?? json?.detail ?? 'Engineering validation failed',
+          );
+        }
+
+        if (!response.ok) {
+          this.logger.error(`Engineering service returned ${response.status} for ${path}`);
+          throw new ServiceUnavailableException(
+            `Engineering service error: ${response.statusText}`,
+          );
+        }
+
+        return json;
+      } catch (err) {
+        clearTimeout(timer);
+
+        if (err instanceof BadRequestException) {
+          throw err;
+        }
+
+        const error = err as Error;
+        lastError = error;
+
+        if (error.name === 'AbortError') {
+          this.logger.error(`Engineering service timeout for ${path}`);
+          throw new ServiceUnavailableException('Engineering service timed out. Please try again.');
+        }
+
+        if (err instanceof ServiceUnavailableException) {
+          throw err;
+        }
+
+        this.logger.error(`Engineering service connection failed for ${path}: ${error.message}`);
+
+        if (attempt === this.maxAttempts) {
+          break;
+        }
       }
-
-      if (!response.ok) {
-        this.logger.error(`Engineering service returned ${response.status} for ${path}`);
-        throw new ServiceUnavailableException(
-          `Engineering service error: ${response.statusText}`,
-        );
-      }
-
-      return json;
-    } catch (err) {
-      if (err instanceof BadRequestException) throw err;
-
-      const error = err as Error;
-
-      if (error.name === 'AbortError') {
-        this.logger.error(`Engineering service timeout for ${path}`);
-        throw new ServiceUnavailableException(
-          'Engineering service timed out. Please try again.',
-        );
-      }
-
-      this.logger.error(
-        `Engineering service connection failed for ${path}: ${error.message}`,
-      );
-      throw new ServiceUnavailableException(
-        'Engineering service is unavailable. Please try again later.',
-      );
     }
+
+    throw new ServiceUnavailableException(
+      lastError?.message.includes('timed out')
+        ? 'Engineering service timed out. Please try again.'
+        : 'Engineering service is unavailable. Please try again later.',
+    );
   }
 
-  /**
-   * بررسی وضعیت Python service
-   */
   async health(): Promise<{
     status: string;
     calculators_registered: number;
     version: string;
+    circuitState?: string;
+    circuitFailures?: number;
   }> {
-    try {
-      const controller = new AbortController();
-      setTimeout(() => controller.abort(), 5_000);
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 5_000);
 
-      const response = await fetch(`${this.baseUrl}/health`, {
+    try {
+      const response = await globalThis.fetch(`${this.baseUrl}/health`, {
         signal: controller.signal,
       });
 
+      clearTimeout(timer);
+
       if (!response.ok) {
-        return { status: 'unhealthy', calculators_registered: 0, version: 'unknown' };
+        return {
+          status: 'unhealthy',
+          calculators_registered: 0,
+          version: 'unknown',
+          circuitState: 'CLOSED',
+          circuitFailures: 0,
+        };
       }
 
-      return await response.json() as any;
+      const json = (await response.json()) as any;
+
+      return {
+        ...json,
+        circuitState: 'CLOSED',
+        circuitFailures: 0,
+      };
     } catch {
-      return { status: 'unreachable', calculators_registered: 0, version: 'unknown' };
+      clearTimeout(timer);
+
+      return {
+        status: 'unreachable',
+        calculators_registered: 0,
+        version: 'unknown',
+        circuitState: 'CLOSED',
+        circuitFailures: 0,
+      };
     }
   }
 }

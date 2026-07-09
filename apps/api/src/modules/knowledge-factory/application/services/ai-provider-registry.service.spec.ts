@@ -16,6 +16,17 @@ describe('AIProviderRegistry', () => {
     }).compile();
 
     registry = module.get<AIProviderRegistry>(AIProviderRegistry);
+
+    registry.register({
+      type: 'openai',
+      name: 'OpenAI',
+      priority: 100,
+      model: 'text-embedding-3-small',
+      dimensions: 1536,
+      timeoutMs: 30000,
+      maxRetries: 3,
+      enabled: true,
+    });
   });
 
   it('should be defined', () => {

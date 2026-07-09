@@ -10,6 +10,7 @@ import type { IExecutionRepository } from '../../domain/execution-repository.int
 
 describe('WorkflowExecutorService', () => {
   let executor: WorkflowExecutorService;
+  let compensation: CompensationService;
   let repository: IExecutionRepository;
   const makeDefinition = (steps: WorkflowStep[]): WorkflowDefinition => {
     return WorkflowDefinition.reconstitute(
