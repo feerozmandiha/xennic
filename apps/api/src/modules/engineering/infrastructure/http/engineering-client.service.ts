@@ -9,8 +9,6 @@ import {
  * Engineering Client Service
  *
  * HTTP client that forwards calculation requests to the Python engineering-service.
- * Uses the Node.js Fetch API and keeps retry/correlation behavior deterministic
- * for tests and local development.
  */
 @Injectable()
 export class EngineeringClientService {
