@@ -1,6 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { EvaluationRunnerService, ExactMatchStrategy, PartialMatchStrategy } from '../evaluation-runner.service.js';
-import { InMemoryEvaluationRepository } from '../../../testing/adapters/in-memory-evaluation-repository.js';
+import {
+  EvaluationRunnerService,
+  ExactMatchStrategy,
+  PartialMatchStrategy,
+} from '../evaluation-runner.service.js';
+import { InMemoryEvaluationRepository } from '../../testing/adapters/in-memory-evaluation-repository.js';
 import type { IEvaluationRepository } from '../../domain/evaluation-repository.interface.js';
 import { BenchmarkStatus } from '../../domain/benchmark.entity.js';
 import { EvaluationTargetType, EvaluationRunStatus } from '../../domain/evaluation-run.entity.js';
@@ -73,25 +77,29 @@ describe('EvaluationRunnerService', () => {
     it('should return perfect score when all items match exactly', async () => {
       service.registerStrategy('accuracy', new ExactMatchStrategy());
 
-      const { benchmark } = await setupBenchmarkAndDataset([
-        { input: { result: 'a' }, expectedOutput: { result: 'a' } },
-        { input: { result: 'b' }, expectedOutput: { result: 'b' } },
-      ], ['accuracy']);
+      const { benchmark } = await setupBenchmarkAndDataset(
+        [
+          { input: { result: 'a' }, expectedOutput: { result: 'a' } },
+          { input: { result: 'b' }, expectedOutput: { result: 'b' } },
+        ],
+        ['accuracy'],
+      );
 
       const run = await service.run(benchmark.id, EvaluationTargetType.TOOL, 'tool-1', 1);
 
       expect(run.status).toBe(EvaluationRunStatus.COMPLETED);
       expect(run.score).toBe(1);
       expect(run.results.length).toBe(2);
-      expect(run.results.every(r => r.value === 1)).toBe(true);
+      expect(run.results.every((r) => r.value === 1)).toBe(true);
     });
 
     it('should return zero score when nothing matches', async () => {
       service.registerStrategy('accuracy', new ExactMatchStrategy());
 
-      const { benchmark } = await setupBenchmarkAndDataset([
-        { input: { x: 1 }, expectedOutput: { result: 'a' } },
-      ], ['accuracy']);
+      const { benchmark } = await setupBenchmarkAndDataset(
+        [{ input: { x: 1 }, expectedOutput: { result: 'a' } }],
+        ['accuracy'],
+      );
 
       const run = await service.run(benchmark.id, EvaluationTargetType.TOOL, 'tool-1', 1);
 
@@ -105,9 +113,10 @@ describe('EvaluationRunnerService', () => {
     it('should calculate partial scores', async () => {
       service.registerStrategy('coherence', new PartialMatchStrategy());
 
-      const { benchmark } = await setupBenchmarkAndDataset([
-        { input: { a: 1, b: 2 }, expectedOutput: { a: 1, b: 99, c: 3 } },
-      ], ['coherence']);
+      const { benchmark } = await setupBenchmarkAndDataset(
+        [{ input: { a: 1, b: 2 }, expectedOutput: { a: 1, b: 99, c: 3 } }],
+        ['coherence'],
+      );
 
       const run = await service.run(benchmark.id, EvaluationTargetType.PROMPT, 'prompt-1', 1);
 
@@ -121,9 +130,10 @@ describe('EvaluationRunnerService', () => {
       service.registerStrategy('accuracy', new ExactMatchStrategy());
       service.registerStrategy('relevance', new PartialMatchStrategy());
 
-      const { benchmark } = await setupBenchmarkAndDataset([
-        { input: { result: 'a' }, expectedOutput: { result: 'a' } },
-      ], ['accuracy', 'relevance']);
+      const { benchmark } = await setupBenchmarkAndDataset(
+        [{ input: { result: 'a' }, expectedOutput: { result: 'a' } }],
+        ['accuracy', 'relevance'],
+      );
 
       const run = await service.run(benchmark.id, EvaluationTargetType.AGENT, 'agent-1', 1);
 
@@ -138,9 +148,10 @@ describe('EvaluationRunnerService', () => {
     it('should run evaluation for each target type', async () => {
       service.registerStrategy('accuracy', new ExactMatchStrategy());
 
-      const { benchmark } = await setupBenchmarkAndDataset([
-        { input: { result: 'a' }, expectedOutput: { result: 'a' } },
-      ], ['accuracy']);
+      const { benchmark } = await setupBenchmarkAndDataset(
+        [{ input: { result: 'a' }, expectedOutput: { result: 'a' } }],
+        ['accuracy'],
+      );
 
       for (const targetType of Object.values(EvaluationTargetType)) {
         const run = await service.run(benchmark.id, targetType, `${targetType}-id`, 1);

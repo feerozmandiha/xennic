@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { PolicyManagementService } from '../policy-management.service.js';
 import type { IPolicyRepository } from '../../domain/policy-repository.interface.js';
-import { InMemoryPolicyRepository } from '../../../testing/adapters/in-memory-policy-repository.js';
+import { InMemoryPolicyRepository } from '../../testing/adapters/in-memory-policy-repository.js';
 
 describe('PolicyManagementService', () => {
   let service: PolicyManagementService;
@@ -69,7 +69,14 @@ describe('PolicyManagementService', () => {
   describe('get()', () => {
     it('should retrieve a policy by id', async () => {
       const created = await service.create({
-        name: 'get-test', description: '', scope: 'global', resource: '*', action: '*', effect: 'allow', priority: 1, createdBy: 'u1',
+        name: 'get-test',
+        description: '',
+        scope: 'global',
+        resource: '*',
+        action: '*',
+        effect: 'allow',
+        priority: 1,
+        createdBy: 'u1',
       });
 
       const found = await service.get(created.id);
@@ -85,7 +92,14 @@ describe('PolicyManagementService', () => {
   describe('update()', () => {
     it('should update policy fields', async () => {
       const created = await service.create({
-        name: 'original-name', description: '', scope: 'global', resource: '*', action: '*', effect: 'allow', priority: 1, createdBy: 'u1',
+        name: 'original-name',
+        description: '',
+        scope: 'global',
+        resource: '*',
+        action: '*',
+        effect: 'allow',
+        priority: 1,
+        createdBy: 'u1',
       });
 
       const updated = await service.update(created.id, {
@@ -103,7 +117,14 @@ describe('PolicyManagementService', () => {
   describe('enable() / disable()', () => {
     it('should disable a policy', async () => {
       const policy = await service.create({
-        name: 'to-disable', description: '', scope: 'global', resource: '*', action: '*', effect: 'deny', priority: 1, createdBy: 'u1',
+        name: 'to-disable',
+        description: '',
+        scope: 'global',
+        resource: '*',
+        action: '*',
+        effect: 'deny',
+        priority: 1,
+        createdBy: 'u1',
       });
 
       const disabled = await service.disable(policy.id, 'admin');
@@ -112,7 +133,14 @@ describe('PolicyManagementService', () => {
 
     it('should enable a disabled policy', async () => {
       const policy = await service.create({
-        name: 'to-enable', description: '', scope: 'global', resource: '*', action: '*', effect: 'allow', priority: 1, createdBy: 'u1',
+        name: 'to-enable',
+        description: '',
+        scope: 'global',
+        resource: '*',
+        action: '*',
+        effect: 'allow',
+        priority: 1,
+        createdBy: 'u1',
       });
       await service.disable(policy.id, 'admin');
 
@@ -124,7 +152,14 @@ describe('PolicyManagementService', () => {
   describe('delete()', () => {
     it('should delete a policy', async () => {
       const policy = await service.create({
-        name: 'to-delete', description: '', scope: 'global', resource: '*', action: '*', effect: 'allow', priority: 1, createdBy: 'u1',
+        name: 'to-delete',
+        description: '',
+        scope: 'global',
+        resource: '*',
+        action: '*',
+        effect: 'allow',
+        priority: 1,
+        createdBy: 'u1',
       });
 
       await service.delete(policy.id);
@@ -134,8 +169,26 @@ describe('PolicyManagementService', () => {
 
   describe('list()', () => {
     it('should list all policies', async () => {
-      await service.create({ name: 'a', description: '', scope: 'global', resource: '*', action: '*', effect: 'allow', priority: 1, createdBy: 'u1' });
-      await service.create({ name: 'b', description: '', scope: 'global', resource: '*', action: '*', effect: 'deny', priority: 2, createdBy: 'u1' });
+      await service.create({
+        name: 'a',
+        description: '',
+        scope: 'global',
+        resource: '*',
+        action: '*',
+        effect: 'allow',
+        priority: 1,
+        createdBy: 'u1',
+      });
+      await service.create({
+        name: 'b',
+        description: '',
+        scope: 'global',
+        resource: '*',
+        action: '*',
+        effect: 'deny',
+        priority: 2,
+        createdBy: 'u1',
+      });
 
       const result = await service.list();
       expect(result.total).toBe(2);
@@ -144,7 +197,16 @@ describe('PolicyManagementService', () => {
 
     it('should respect offset and limit', async () => {
       for (let i = 0; i < 5; i++) {
-        await service.create({ name: `p-${i}`, description: '', scope: 'global', resource: '*', action: '*', effect: 'allow', priority: i, createdBy: 'u1' });
+        await service.create({
+          name: `p-${i}`,
+          description: '',
+          scope: 'global',
+          resource: '*',
+          action: '*',
+          effect: 'allow',
+          priority: i,
+          createdBy: 'u1',
+        });
       }
 
       const page = await service.list({ offset: 1, limit: 2 });
@@ -157,9 +219,36 @@ describe('PolicyManagementService', () => {
 
   describe('findByResource()', () => {
     it('should find policies by resource pattern', async () => {
-      await service.create({ name: 'doc-read', description: '', scope: 'global', resource: 'document:*', action: 'read', effect: 'allow', priority: 1, createdBy: 'u1' });
-      await service.create({ name: 'doc-write', description: '', scope: 'global', resource: 'document:*', action: 'write', effect: 'deny', priority: 1, createdBy: 'u1' });
-      await service.create({ name: 'user-read', description: '', scope: 'global', resource: 'user:*', action: 'read', effect: 'allow', priority: 1, createdBy: 'u1' });
+      await service.create({
+        name: 'doc-read',
+        description: '',
+        scope: 'global',
+        resource: 'document:*',
+        action: 'read',
+        effect: 'allow',
+        priority: 1,
+        createdBy: 'u1',
+      });
+      await service.create({
+        name: 'doc-write',
+        description: '',
+        scope: 'global',
+        resource: 'document:*',
+        action: 'write',
+        effect: 'deny',
+        priority: 1,
+        createdBy: 'u1',
+      });
+      await service.create({
+        name: 'user-read',
+        description: '',
+        scope: 'global',
+        resource: 'user:*',
+        action: 'read',
+        effect: 'allow',
+        priority: 1,
+        createdBy: 'u1',
+      });
 
       const results = await service.findByResource('document:*');
       expect(results).toHaveLength(2);
@@ -168,8 +257,27 @@ describe('PolicyManagementService', () => {
 
   describe('getEffectivePolicies()', () => {
     it('should return global and matching scope policies', async () => {
-      await service.create({ name: 'global-policy', description: '', scope: 'global', resource: '*', action: '*', effect: 'allow', priority: 1, createdBy: 'u1' });
-      await service.create({ name: 'workspace-policy', description: '', scope: 'workspace', scopeId: 'ws-1', resource: '*', action: '*', effect: 'deny', priority: 50, createdBy: 'u1' });
+      await service.create({
+        name: 'global-policy',
+        description: '',
+        scope: 'global',
+        resource: '*',
+        action: '*',
+        effect: 'allow',
+        priority: 1,
+        createdBy: 'u1',
+      });
+      await service.create({
+        name: 'workspace-policy',
+        description: '',
+        scope: 'workspace',
+        scopeId: 'ws-1',
+        resource: '*',
+        action: '*',
+        effect: 'deny',
+        priority: 50,
+        createdBy: 'u1',
+      });
 
       const effective = await service.getEffectivePolicies('workspace', 'ws-1');
       expect(effective).toHaveLength(2);

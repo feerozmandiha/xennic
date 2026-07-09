@@ -1,6 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { WorkflowValidatorService } from '../workflow-validator.service.js';
-import type { IWorkflowValidator, ValidationResult } from '../../domain/workflow-validator.interface.js';
+import type {
+  IWorkflowValidator,
+  ValidationResult,
+} from '../../domain/workflow-validator.interface.js';
 import { WorkflowDefinition } from '../../domain/workflow-definition.entity.js';
 import type { WorkflowStep } from '../../domain/workflow-definition.entity.js';
 
@@ -30,9 +33,7 @@ describe('WorkflowValidatorService', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        { provide: 'IWorkflowValidator', useClass: WorkflowValidatorService },
-      ],
+      providers: [{ provide: 'IWorkflowValidator', useClass: WorkflowValidatorService }],
     }).compile();
 
     validator = module.get('IWorkflowValidator');
@@ -141,7 +142,7 @@ describe('WorkflowValidatorService', () => {
 
       const result = validator.validate(makeDefinition(steps));
       expect(result.valid).toBe(false);
-      expect(result.errors.some(e => e.path.includes('next'))).toBe(true);
+      expect(result.errors.some((e) => e.path.includes('next'))).toBe(true);
     });
 
     it('should detect references to non-existent onFailure steps', () => {
@@ -161,7 +162,7 @@ describe('WorkflowValidatorService', () => {
 
       const result = validator.validate(makeDefinition(steps));
       expect(result.valid).toBe(false);
-      expect(result.errors.some(e => e.path.includes('onFailure'))).toBe(true);
+      expect(result.errors.some((e) => e.path.includes('onFailure'))).toBe(true);
     });
   });
 
@@ -194,7 +195,7 @@ describe('WorkflowValidatorService', () => {
 
       const result = validator.validate(makeDefinition(steps));
       expect(result.valid).toBe(false);
-      expect(result.errors.some(e => e.message.includes('Duplicate'))).toBe(true);
+      expect(result.errors.some((e) => e.message.includes('Duplicate'))).toBe(true);
     });
   });
 
@@ -227,7 +228,7 @@ describe('WorkflowValidatorService', () => {
 
       const result = validator.validate(makeDefinition(steps));
       expect(result.valid).toBe(false);
-      expect(result.errors.some(e => e.message.includes('Circular'))).toBe(true);
+      expect(result.errors.some((e) => e.message.includes('Circular'))).toBe(true);
     });
 
     it('should detect a self-loop', () => {
@@ -247,7 +248,7 @@ describe('WorkflowValidatorService', () => {
 
       const result = validator.validate(makeDefinition(steps));
       expect(result.valid).toBe(false);
-      expect(result.errors.some(e => e.message.includes('Circular'))).toBe(true);
+      expect(result.errors.some((e) => e.message.includes('Circular'))).toBe(true);
     });
   });
 
@@ -288,13 +289,13 @@ describe('WorkflowValidatorService', () => {
 
       const result = validator.validate(def);
       expect(result.valid).toBe(false);
-      expect(result.errors.some(e => e.path === 'name')).toBe(true);
+      expect(result.errors.some((e) => e.path === 'name')).toBe(true);
     });
 
     it('should reject empty steps', () => {
       const result = validator.validate(makeDefinition([]));
       expect(result.valid).toBe(false);
-      expect(result.errors.some(e => e.path === 'steps')).toBe(true);
+      expect(result.errors.some((e) => e.path === 'steps')).toBe(true);
     });
   });
 });

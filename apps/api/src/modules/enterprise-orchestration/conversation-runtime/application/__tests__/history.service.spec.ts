@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { HistoryService } from '../history.service.js';
-import { InMemoryConversationRepository } from '../../../testing/adapters/in-memory-conversation-repository.js';
+import { InMemoryConversationRepository } from '../../testing/adapters/in-memory-conversation-repository.js';
 import type { IConversationRepository } from '../../domain/conversation-repository.interface.js';
 
 describe('HistoryService', () => {
@@ -21,7 +21,12 @@ describe('HistoryService', () => {
 
   describe('recordEvent', () => {
     it('should record an event and create history if needed', async () => {
-      const event = await service.recordEvent('exec-1', 'message_sent', { content: 'hello' }, 'user-1');
+      const event = await service.recordEvent(
+        'exec-1',
+        'message_sent',
+        { content: 'hello' },
+        'user-1',
+      );
       expect(event).toBeDefined();
       expect(event.type).toBe('message_sent');
       expect(event.actor).toBe('user-1');
@@ -71,7 +76,7 @@ describe('HistoryService', () => {
 
       const events = await service.getEventsByType('exec-1', 'message_sent');
       expect(events).toHaveLength(2);
-      expect(events.every(e => e.type === 'message_sent')).toBe(true);
+      expect(events.every((e) => e.type === 'message_sent')).toBe(true);
     });
 
     it('should return empty array for non-existent history', async () => {
@@ -83,9 +88,9 @@ describe('HistoryService', () => {
   describe('getTimeline', () => {
     it('should return events sorted chronologically', async () => {
       await service.recordEvent('exec-1', 'first', { order: 1 });
-      await new Promise(resolve => setTimeout(resolve, 5));
+      await new Promise((resolve) => setTimeout(resolve, 5));
       await service.recordEvent('exec-1', 'second', { order: 2 });
-      await new Promise(resolve => setTimeout(resolve, 5));
+      await new Promise((resolve) => setTimeout(resolve, 5));
       await service.recordEvent('exec-1', 'third', { order: 3 });
 
       const timeline = await service.getTimeline('exec-1');

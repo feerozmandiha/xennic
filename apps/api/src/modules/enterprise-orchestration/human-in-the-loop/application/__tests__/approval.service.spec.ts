@@ -1,10 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ApprovalService } from '../approval.service.js';
-import { InMemoryHitlRepository } from '../../../testing/adapters/in-memory-hitl-repository.js';
+import { InMemoryHitlRepository } from '../../testing/adapters/in-memory-hitl-repository.js';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 
 describe('ApprovalService', () => {
   let service: ApprovalService;
+  let repository: any;
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [

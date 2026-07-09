@@ -24,22 +24,8 @@ describe('ContextEntity', () => {
     });
 
     it('should generate a unique UUID for each entity', () => {
-      const e1 = ContextEntity.create(
-        'workspace',
-        'ws-1',
-        'user',
-        'k1',
-        { a: 1 },
-        'u1',
-      );
-      const e2 = ContextEntity.create(
-        'workspace',
-        'ws-1',
-        'user',
-        'k2',
-        { b: 2 },
-        'u2',
-      );
+      const e1 = ContextEntity.create('workspace', 'ws-1', 'user', 'k1', { a: 1 }, 'u1');
+      const e2 = ContextEntity.create('workspace', 'ws-1', 'user', 'k2', { b: 2 }, 'u2');
       expect(e1.id).not.toBe(e2.id);
     });
 
@@ -129,22 +115,8 @@ describe('ContextEntity', () => {
     });
 
     it('should treat entities with different ids as different', () => {
-      const e1 = ContextEntity.create(
-        'workspace',
-        'ws-1',
-        'user',
-        'k',
-        {},
-        'u',
-      );
-      const e2 = ContextEntity.create(
-        'workspace',
-        'ws-1',
-        'user',
-        'k',
-        {},
-        'u',
-      );
+      const e1 = ContextEntity.create('workspace', 'ws-1', 'user', 'k', {}, 'u');
+      const e2 = ContextEntity.create('workspace', 'ws-1', 'user', 'k', {}, 'u');
       expect(e1.id).not.toBe(e2.id);
     });
   });

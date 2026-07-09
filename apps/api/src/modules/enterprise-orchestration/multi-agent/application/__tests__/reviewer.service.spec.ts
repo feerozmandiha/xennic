@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ReviewerService } from '../reviewer.service.js';
-import { InMemoryCoordinationRepository } from '../../../testing/adapters/in-memory-coordination-repository.js';
+import { InMemoryCoordinationRepository } from '../../testing/adapters/in-memory-coordination-repository.js';
 import { CoordinationPlan } from '../../domain/coordination-plan.entity.js';
 import type { ICoordinationRepository } from '../../domain/coordination-repository.interface.js';
 import type { Metadata } from '../../../shared/types/index.js';
@@ -74,7 +74,11 @@ describe('ReviewerService', () => {
     });
 
     it('should reject task with missing quality metric', async () => {
-      const result = await service.review(taskId, { completed: true }, { quality: true, completeness: false, accuracy: false });
+      const result = await service.review(
+        taskId,
+        { completed: true },
+        { quality: true, completeness: false, accuracy: false },
+      );
 
       expect(result.approved).toBe(false);
       expect(result.feedback).toContain('Quality');
@@ -97,12 +101,14 @@ describe('ReviewerService', () => {
       await service.requestChanges(taskId, 'Please add more details');
 
       const plan = await repository.findPlanByExecution('exec-1');
-      const task = plan?.tasks.find(t => t.id === taskId);
+      const task = plan?.tasks.find((t) => t.id === taskId);
       expect(task?.status).toBe('pending');
     });
 
     it('should throw when task does not exist', async () => {
-      await expect(service.requestChanges('nonexistent', 'Fix it')).rejects.toThrow(NotFoundException);
+      await expect(service.requestChanges('nonexistent', 'Fix it')).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
@@ -111,7 +117,7 @@ describe('ReviewerService', () => {
       await service.approve(taskId);
 
       const plan = await repository.findPlanByExecution('exec-1');
-      const task = plan?.tasks.find(t => t.id === taskId);
+      const task = plan?.tasks.find((t) => t.id === taskId);
       expect(task?.status).toBe('completed');
     });
 

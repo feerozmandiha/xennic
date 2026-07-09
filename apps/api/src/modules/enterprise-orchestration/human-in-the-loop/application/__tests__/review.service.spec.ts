@@ -1,16 +1,14 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ReviewService } from '../review.service.js';
-import { InMemoryHitlRepository } from '../../../testing/adapters/in-memory-hitl-repository.js';
+import { InMemoryHitlRepository } from '../../testing/adapters/in-memory-hitl-repository.js';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 
 describe('ReviewService', () => {
   let service: ReviewService;
+  let repository: any;
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        ReviewService,
-        { provide: 'IHitlRepository', useClass: InMemoryHitlRepository },
-      ],
+      providers: [ReviewService, { provide: 'IHitlRepository', useClass: InMemoryHitlRepository }],
     }).compile();
 
     service = module.get(ReviewService);
@@ -37,13 +35,9 @@ describe('ReviewService', () => {
 
   describe('complete', () => {
     it('should complete a review task', async () => {
-      const task = await service.assign(
-        'exec-1',
-        'step-1',
-        'reviewer-1',
-        'Review output',
-        { data: 'test' },
-      );
+      const task = await service.assign('exec-1', 'step-1', 'reviewer-1', 'Review output', {
+        data: 'test',
+      });
 
       const completed = await service.complete(task.id, { approved: true }, 'Looks good');
       expect(completed.status).toBe('completed');
@@ -52,13 +46,9 @@ describe('ReviewService', () => {
     });
 
     it('should complete without feedback', async () => {
-      const task = await service.assign(
-        'exec-1',
-        'step-1',
-        'reviewer-1',
-        'Review output',
-        { data: 'test' },
-      );
+      const task = await service.assign('exec-1', 'step-1', 'reviewer-1', 'Review output', {
+        data: 'test',
+      });
 
       const completed = await service.complete(task.id, { approved: true });
       expect(completed.status).toBe('completed');
@@ -66,16 +56,14 @@ describe('ReviewService', () => {
     });
 
     it('should throw when completing a non-pending review', async () => {
-      const task = await service.assign(
-        'exec-1',
-        'step-1',
-        'reviewer-1',
-        'Review output',
-        { data: 'test' },
-      );
+      const task = await service.assign('exec-1', 'step-1', 'reviewer-1', 'Review output', {
+        data: 'test',
+      });
 
       await service.complete(task.id, { approved: true });
-      await expect(service.complete(task.id, { approved: false })).rejects.toThrow(BadRequestException);
+      await expect(service.complete(task.id, { approved: false })).rejects.toThrow(
+        BadRequestException,
+      );
     });
 
     it('should throw when review not found', async () => {
@@ -85,13 +73,9 @@ describe('ReviewService', () => {
 
   describe('fail', () => {
     it('should fail a review task', async () => {
-      const task = await service.assign(
-        'exec-1',
-        'step-1',
-        'reviewer-1',
-        'Review output',
-        { data: 'test' },
-      );
+      const task = await service.assign('exec-1', 'step-1', 'reviewer-1', 'Review output', {
+        data: 'test',
+      });
 
       const failed = await service.fail(task.id, 'Quality standards not met');
       expect(failed.status).toBe('failed');
@@ -99,13 +83,9 @@ describe('ReviewService', () => {
     });
 
     it('should throw when reason is empty', async () => {
-      const task = await service.assign(
-        'exec-1',
-        'step-1',
-        'reviewer-1',
-        'Review output',
-        { data: 'test' },
-      );
+      const task = await service.assign('exec-1', 'step-1', 'reviewer-1', 'Review output', {
+        data: 'test',
+      });
 
       await expect(service.fail(task.id, '')).rejects.toThrow(BadRequestException);
     });

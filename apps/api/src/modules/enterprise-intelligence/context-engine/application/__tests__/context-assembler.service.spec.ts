@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ContextAssemblerService } from '../context-assembler.service.js';
 import { ContextCacheService } from '../context-cache.service.js';
-import { InMemoryContextStore } from '../../../testing/adapters/in-memory-context-store.js';
+import { InMemoryContextStore } from '../../testing/adapters/in-memory-context-store.js';
 import type { IContextRepository } from '../../domain/context-repository.interface.js';
 import { ContextEntity } from '../../domain/context.entity.js';
 

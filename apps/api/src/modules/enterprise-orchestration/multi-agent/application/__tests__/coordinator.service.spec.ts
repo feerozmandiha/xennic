@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { CoordinatorService } from '../coordinator.service.js';
-import { InMemoryCoordinationRepository } from '../../../testing/adapters/in-memory-coordination-repository.js';
+import { InMemoryCoordinationRepository } from '../../testing/adapters/in-memory-coordination-repository.js';
 import { CoordinationPlan } from '../../domain/coordination-plan.entity.js';
 import type { ICoordinationRepository } from '../../domain/coordination-repository.interface.js';
 import type { Metadata } from '../../../shared/types/index.js';

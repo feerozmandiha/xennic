@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ToolRegistryService } from '../tool-registry.service.js';
 import type { IToolRegistry } from '../../domain/tool-registry.interface.js';
-import { InMemoryToolRegistry } from '../../../testing/adapters/in-memory-tool-registry.js';
+import { InMemoryToolRegistry } from '../../testing/adapters/in-memory-tool-registry.js';
 import { ToolStatus, ToolHealth } from '../../domain/tool.entity.js';
 
 describe('ToolRegistryService', () => {
@@ -62,8 +62,15 @@ describe('ToolRegistryService', () => {
 
   describe('getByName / versioning', () => {
     it('should return the latest version when no version specified', async () => {
-      const v1 = await service.register('my-tool', 'v1', { input: { type: 'object', properties: {} } }, []);
-      await service.updateSchema(v1.id, { input: { type: 'object', properties: { x: { type: 'string' } } } });
+      const v1 = await service.register(
+        'my-tool',
+        'v1',
+        { input: { type: 'object', properties: {} } },
+        [],
+      );
+      await service.updateSchema(v1.id, {
+        input: { type: 'object', properties: { x: { type: 'string' } } },
+      });
 
       const found = await service.getByName('my-tool');
       expect(found).toBeDefined();
@@ -72,7 +79,9 @@ describe('ToolRegistryService', () => {
 
     it('should return specific version when requested', async () => {
       const v1 = await service.register('ver-tool', 'v1', {}, []);
-      await service.updateSchema(v1.id, { input: { type: 'object', properties: { y: { type: 'number' } } } });
+      await service.updateSchema(v1.id, {
+        input: { type: 'object', properties: { y: { type: 'number' } } },
+      });
 
       const foundV1 = await service.getByName('ver-tool', 1);
       expect(foundV1).toBeDefined();

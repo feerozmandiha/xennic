@@ -1,9 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { CostTrackingService } from '../cost-tracking.service.js';
-import { InMemoryCostRepository } from '../../../testing/adapters/in-memory-cost-repository.js';
+import { InMemoryCostRepository } from '../../testing/adapters/in-memory-cost-repository.js';
 
 describe('CostTrackingService', () => {
   let service: CostTrackingService;
+  let repository: any;
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -18,15 +19,9 @@ describe('CostTrackingService', () => {
 
   describe('recordProviderCost', () => {
     it('should record a provider cost entry', async () => {
-      const entry = await service.recordProviderCost(
-        'exec-1',
-        'openai',
-        'gpt-4',
-        1000,
-        0.03,
-        250,
-        { region: 'us-east' },
-      );
+      const entry = await service.recordProviderCost('exec-1', 'openai', 'gpt-4', 1000, 0.03, 250, {
+        region: 'us-east',
+      });
 
       expect(entry.id).toBeDefined();
       expect(entry.workflowExecutionId).toBe('exec-1');
@@ -35,7 +30,11 @@ describe('CostTrackingService', () => {
       expect(entry.amount).toBe(0.03);
       expect(entry.tokens).toBe(1000);
       expect(entry.latency).toBe(250);
-      expect(entry.metadata).toMatchObject({ provider: 'openai', model: 'gpt-4', region: 'us-east' });
+      expect(entry.metadata).toMatchObject({
+        provider: 'openai',
+        model: 'gpt-4',
+        region: 'us-east',
+      });
     });
   });
 
@@ -64,11 +63,11 @@ describe('CostTrackingService', () => {
 
   describe('recordWorkflowCost', () => {
     it('should record a workflow cost entry', async () => {
-      const entry = await service.recordWorkflowCost('exec-1', 0.10);
+      const entry = await service.recordWorkflowCost('exec-1', 0.1);
 
       expect(entry.sourceType).toBe('workflow');
       expect(entry.sourceId).toBe('exec-1');
-      expect(entry.amount).toBe(0.10);
+      expect(entry.amount).toBe(0.1);
       expect(entry.costType).toBe('compute');
     });
   });
@@ -104,14 +103,14 @@ describe('CostTrackingService', () => {
 
   describe('getTopCosts', () => {
     it('should return entries sorted by cost descending', async () => {
-      await service.recordProviderCost('exec-a', 'openai', 'gpt-4', 1000, 0.10);
-      await service.recordProviderCost('exec-b', 'anthropic', 'claude-3', 2000, 0.50);
+      await service.recordProviderCost('exec-a', 'openai', 'gpt-4', 1000, 0.1);
+      await service.recordProviderCost('exec-b', 'anthropic', 'claude-3', 2000, 0.5);
       await service.recordProviderCost('exec-c', 'google', 'gemini', 500, 0.02);
 
       const top = await service.getTopCosts(2);
       expect(top).toHaveLength(2);
-      expect(top[0]!.amount).toBe(0.50);
-      expect(top[1]!.amount).toBe(0.10);
+      expect(top[0]!.amount).toBe(0.5);
+      expect(top[1]!.amount).toBe(0.1);
     });
   });
 });

@@ -13,8 +13,8 @@ function makePlan(steps: { description: string; deps: string[] }[]): ReasoningPl
 
   const updatedSteps = plan.steps.map((step, i) => {
     const depIds = steps[i].deps
-      .map(d => parseInt(d, 10) - 1)
-      .map(idx => plan.steps[idx]?.id)
+      .map((d) => parseInt(d, 10) - 1)
+      .map((idx) => plan.steps[idx]?.id)
       .filter((id): id is string => id !== undefined);
     return { ...step, dependsOn: depIds };
   });
@@ -136,7 +136,9 @@ describe('ExecutionGraph', () => {
       expect(running.nodes[0].startedAt).toBeInstanceOf(Date);
       expect(running.nodes[0].status).toBe(NodeStatus.RUNNING);
 
-      const completed = running.withNodeStatus(plan.steps[0].id, NodeStatus.COMPLETED, { result: 'ok' });
+      const completed = running.withNodeStatus(plan.steps[0].id, NodeStatus.COMPLETED, {
+        result: 'ok',
+      });
       expect(completed.nodes[0].completedAt).toBeInstanceOf(Date);
       expect(completed.nodes[0].duration).toBeGreaterThanOrEqual(0);
       expect(completed.nodes[0].result).toEqual({ result: 'ok' });

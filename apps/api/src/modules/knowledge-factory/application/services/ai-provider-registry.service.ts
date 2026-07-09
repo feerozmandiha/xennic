@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Optional } from '@nestjs/common';
 import type { AIProvider } from '../../domain/interfaces/ai-provider.interface.js';
 import type { ProviderConfig } from '../../domain/value-objects/provider-config.vo.js';
 import { ProviderRegistryService } from '../../../ai-provider-management/application/services/provider-registry.service.js';
@@ -12,15 +12,26 @@ export class AIProviderRegistry {
   private readonly unhealthyProviders = new Set<string>();
   private readonly logger = new Logger(AIProviderRegistry.name);
 
+  private readonly providerConfigs = new Map<string, ProviderConfig>();
+
   constructor(
-    private readonly execution: ProviderExecutionService,
-    private readonly providerRegistry: ProviderRegistryService,
-    private readonly credentialService: CredentialService,
-    private readonly modelRegistry: ModelRegistryService,
+    @Optional() private readonly execution?: ProviderExecutionService,
+    @Optional() private readonly providerRegistry?: ProviderRegistryService,
+    @Optional() private readonly credentialService?: CredentialService,
+    @Optional() private readonly modelRegistry?: ModelRegistryService,
   ) {}
 
   register(config: ProviderConfig): void {
-    this.logger.log(`Provider registration via config deferred to ProviderManagement: ${config.name}`);
+    if (!config.enabled) return;
+
+    this.providerConfigs.set(config.type, config);
+    this.providers.set(config.type, {
+      type: config.type,
+      name: config.name,
+      isHealthy: async () => !this.unhealthyProviders.has(config.type),
+      embed: async (text: string) => this.embed(text, config.type),
+      embedBatch: async (texts: string[]) => this.embedBatch(texts, config.type),
+    });
   }
 
   getProvider(type: string): AIProvider | undefined {
@@ -29,11 +40,17 @@ export class AIProviderRegistry {
   }
 
   getProvidersByPriority(): AIProvider[] {
-    return [];
+    return Array.from(this.providers.values())
+      .filter((provider) => !this.unhealthyProviders.has(provider.type))
+      .sort((a, b) => {
+        const aPriority = this.providerConfigs.get(a.type)?.priority ?? 0;
+        const bPriority = this.providerConfigs.get(b.type)?.priority ?? 0;
+        return aPriority - bPriority;
+      });
   }
 
   getFallbackChain(primaryType: string): AIProvider[] {
-    return [];
+    return this.getProvidersByPriority().filter((provider) => provider.type !== primaryType);
   }
 
   markUnhealthy(type: string): void {
@@ -47,10 +64,14 @@ export class AIProviderRegistry {
   }
 
   getAvailableProviders(): string[] {
-    return [];
+    return this.getProvidersByPriority().map((provider) => provider.type);
   }
 
   async embed(text: string, preferredProvider?: string): Promise<number[]> {
+    if (!this.execution) {
+      throw new Error('ProviderExecutionService is not available');
+    }
+
     const result = await this.execution.embed({
       input: text,
       providerId: preferredProvider,
@@ -60,6 +81,10 @@ export class AIProviderRegistry {
   }
 
   async embedBatch(texts: string[], preferredProvider?: string): Promise<number[][]> {
+    if (!this.execution) {
+      throw new Error('ProviderExecutionService is not available');
+    }
+
     const result = await this.execution.embed({
       input: texts,
       providerId: preferredProvider,

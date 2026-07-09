@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { PlannerService } from '../planner.service.js';
-import { InMemoryPlannerRepository } from '../../../testing/adapters/in-memory-planner-repository.js';
+import { InMemoryPlannerRepository } from '../../testing/adapters/in-memory-planner-repository.js';
 import type { IPlannerRepository } from '../../domain/planner-repository.interface.js';
 import type { PlanTask, Dependency } from '../../domain/plan.entity.js';
 
@@ -31,7 +31,13 @@ describe('PlannerService', () => {
     it('should create a plan with tasks and dependencies', async () => {
       const tasks: PlanTask[] = [
         { id: 't1', description: 'Research', type: 'analysis', status: 'pending', dependsOn: [] },
-        { id: 't2', description: 'Implement', type: 'development', status: 'pending', dependsOn: ['t1'] },
+        {
+          id: 't2',
+          description: 'Implement',
+          type: 'development',
+          status: 'pending',
+          dependsOn: ['t1'],
+        },
         { id: 't3', description: 'Test', type: 'qa', status: 'pending', dependsOn: ['t2'] },
       ];
       const deps: Dependency[] = [
@@ -146,13 +152,13 @@ describe('PlannerService', () => {
       });
 
       const ready0 = await service.getReadyTasks(plan.id, []);
-      expect(ready0.map(t => t.id)).toEqual(['t1']);
+      expect(ready0.map((t) => t.id)).toEqual(['t1']);
 
       const ready1 = await service.getReadyTasks(plan.id, ['t1']);
-      expect(ready1.map(t => t.id)).toEqual(['t2']);
+      expect(ready1.map((t) => t.id)).toEqual(['t2']);
 
       const ready2 = await service.getReadyTasks(plan.id, ['t1', 't2']);
-      expect(ready2.map(t => t.id)).toEqual(['t3']);
+      expect(ready2.map((t) => t.id)).toEqual(['t3']);
     });
   });
 

@@ -24,11 +24,14 @@ export class KnowledgeFactoryHealthService {
 
     try {
       await this.documentRepository.findByWorkspace('', 0, 1);
+      details.database = 'connected';
     } catch {
       details.database = 'error';
     }
 
-    const queueNames = Object.values(QUEUE_NAMES).filter(name => name !== QUEUE_NAMES.DEAD_LETTER);
+    const queueNames = Object.values(QUEUE_NAMES).filter(
+      (name) => name !== QUEUE_NAMES.DEAD_LETTER,
+    );
     for (const queueName of queueNames) {
       try {
         const queue = (this.eventBus as any)?.queues?.get(queueName);
@@ -47,8 +50,10 @@ export class KnowledgeFactoryHealthService {
       }
     }
 
-    const allQueuesOk = Object.values(details.queues).every((q: any) => q === 'unavailable' || (q && q.waiting !== undefined && q.waiting < 1000));
-    
+    const allQueuesOk = Object.values(details.queues).every(
+      (q: any) => q === 'unavailable' || (q && q.waiting !== undefined && q.waiting < 1000),
+    );
+
     return {
       status: details.database === 'connected' && allQueuesOk ? 'ok' : 'degraded',
       details,

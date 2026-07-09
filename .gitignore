@@ -85,3 +85,6 @@ htmlcov/
 # ─────────────────────────────────────────────────────────────
 # packages/openapi/v1/openapi.json is intentionally tracked.
 # Do not ignore it here.
+
+# TypeScript incremental build info
+*.tsbuildinfo

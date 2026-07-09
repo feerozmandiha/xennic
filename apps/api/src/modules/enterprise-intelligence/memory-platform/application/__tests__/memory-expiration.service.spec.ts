@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { MemoryExpirationService } from '../memory-expiration.service.js';
 import { MemoryEntity, MemoryType } from '../../domain/memory.entity.js';
 import type { IMemoryStore } from '../../domain/memory-store.interface.js';
-import { InMemoryMemoryStore } from '../../../testing/adapters/in-memory-memory-store.js';
+import { InMemoryMemoryStore } from '../../testing/adapters/in-memory-memory-store.js';
 
 describe('MemoryExpirationService', () => {
   let service: MemoryExpirationService;
@@ -106,13 +106,37 @@ describe('MemoryExpirationService', () => {
       const past = new Date(Date.now() - 3600000);
 
       const e1 = MemoryEntity.create(
-        MemoryType.SESSION, 'user', 'u-1', 's1', {}, 'u1', [], null, past,
+        MemoryType.SESSION,
+        'user',
+        'u-1',
+        's1',
+        {},
+        'u1',
+        [],
+        null,
+        past,
       );
       const e2 = MemoryEntity.create(
-        MemoryType.SESSION, 'user', 'u-1', 's2', {}, 'u2', [], null, past,
+        MemoryType.SESSION,
+        'user',
+        'u-1',
+        's2',
+        {},
+        'u2',
+        [],
+        null,
+        past,
       );
       const e3 = MemoryEntity.create(
-        MemoryType.SESSION, 'user', 'u-1', 's3', {}, 'u3', [], null, past,
+        MemoryType.SESSION,
+        'user',
+        'u-1',
+        's3',
+        {},
+        'u3',
+        [],
+        null,
+        past,
       );
 
       await store.save(e1);
@@ -142,7 +166,7 @@ describe('MemoryExpirationService', () => {
 
       service.scheduleInterval(50);
 
-      await new Promise(resolve => setTimeout(resolve, 150));
+      await new Promise((resolve) => setTimeout(resolve, 150));
 
       const found = await store.findById(entity.id);
       expect(found).toBeNull();

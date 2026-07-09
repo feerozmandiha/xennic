@@ -86,6 +86,8 @@ export class ProviderExecutionService {
       max_tokens: maxTokens ?? 2000,
     };
 
+    let chatResult: ChatExecutionResult | null = null;
+
     const result = await this.failover.executeWithRetry(provider.id, async () => {
       const res = await this.http.request(`${baseUrl}/chat/completions`, {
         method: 'POST',
@@ -106,7 +108,7 @@ export class ProviderExecutionService {
       const content = choice?.message?.content || choice?.message?.reasoning || '';
       if (!content) throw new Error('Empty response from AI');
 
-      return {
+      chatResult = {
         content,
         promptTokens: data.usage?.prompt_tokens ?? 0,
         completionTokens: data.usage?.completion_tokens ?? 0,
@@ -115,13 +117,18 @@ export class ProviderExecutionService {
         providerId: provider.id,
         providerName: provider.name,
       };
+      return chatResult;
     });
 
     if (!result.success) {
       throw new Error(`Chat execution failed after ${result.attempts} attempts: ${result.error}`);
     }
 
-    return result as unknown as ChatExecutionResult;
+    if (!chatResult) {
+      throw new Error('Chat execution completed without response payload');
+    }
+
+    return chatResult;
   }
 
   async embed(request: EmbeddingExecutionRequest): Promise<EmbeddingExecutionResult> {
@@ -148,6 +155,8 @@ export class ProviderExecutionService {
 
     const endpoint = Array.isArray(input) ? '/embeddings' : '/embeddings';
 
+    let embeddingResult: EmbeddingExecutionResult | null = null;
+
     const result = await this.failover.executeWithRetry(provider.id, async () => {
       const res = await this.http.request(`${baseUrl}${endpoint}`, {
         method: 'POST',
@@ -165,27 +174,34 @@ export class ProviderExecutionService {
 
       const data = res.data as any;
       const embeddings = (data?.data ?? []).map((item: any) => item.embedding ?? []);
-      return {
+      embeddingResult = {
         embeddings,
         model: data.model ?? modelId,
         providerId: provider.id,
         providerName: provider.name,
         totalTokens: data.usage?.total_tokens,
       };
+      return embeddingResult;
     });
 
     if (!result.success) {
-      throw new Error(`Embedding execution failed after ${result.attempts} attempts: ${result.error}`);
+      throw new Error(
+        `Embedding execution failed after ${result.attempts} attempts: ${result.error}`,
+      );
     }
 
-    return result as unknown as EmbeddingExecutionResult;
+    if (!embeddingResult) {
+      throw new Error('Embedding execution completed without response payload');
+    }
+
+    return embeddingResult;
   }
 
   async *chatStream(request: ChatExecutionRequest): AsyncGenerator<string> {
     const result = await this.chat(request);
     for (const word of result.content.split(' ')) {
       yield word + ' ';
-      await new Promise(r => setTimeout(r, 15));
+      await new Promise((r) => setTimeout(r, 15));
     }
   }
 

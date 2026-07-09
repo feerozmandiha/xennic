@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { SkillRegistryService } from '../skill-registry.service.js';
 import type { ISkillRegistry } from '../../domain/skill-registry.interface.js';
-import { InMemorySkillRegistry } from '../../../testing/adapters/in-memory-skill-registry.js';
+import { InMemorySkillRegistry } from '../../testing/adapters/in-memory-skill-registry.js';
 import { SkillStatus } from '../../domain/skill.entity.js';
 
 describe('SkillRegistryService', () => {
@@ -32,8 +32,12 @@ describe('SkillRegistryService', () => {
       name,
       description: `Description for ${name}`,
       dependencies: [],
-      inputs: [{ name: 'input1', type: 'string', description: 'Input', required: true, schema: {} }],
-      outputs: [{ name: 'output1', type: 'string', description: 'Output', required: true, schema: {} }],
+      inputs: [
+        { name: 'input1', type: 'string', description: 'Input', required: true, schema: {} },
+      ],
+      outputs: [
+        { name: 'output1', type: 'string', description: 'Output', required: true, schema: {} },
+      ],
       policies: [],
       tags,
     });
@@ -45,8 +49,18 @@ describe('SkillRegistryService', () => {
         name: 'text-summarizer',
         description: 'Summarizes text content',
         dependencies: [],
-        inputs: [{ name: 'text', type: 'string', description: 'Input text', required: true, schema: {} }],
-        outputs: [{ name: 'summary', type: 'string', description: 'Summary text', required: true, schema: {} }],
+        inputs: [
+          { name: 'text', type: 'string', description: 'Input text', required: true, schema: {} },
+        ],
+        outputs: [
+          {
+            name: 'summary',
+            type: 'string',
+            description: 'Summary text',
+            required: true,
+            schema: {},
+          },
+        ],
         policies: ['read:text'],
         tags: ['nlp', 'summarization'],
       });
@@ -117,8 +131,24 @@ describe('SkillRegistryService', () => {
         name: 'translator',
         description: 'Translates text',
         dependencies: [],
-        inputs: [{ name: 'text', type: 'string', description: 'Text to translate', required: true, schema: {} }],
-        outputs: [{ name: 'translation', type: 'string', description: 'Translated text', required: true, schema: {} }],
+        inputs: [
+          {
+            name: 'text',
+            type: 'string',
+            description: 'Text to translate',
+            required: true,
+            schema: {},
+          },
+        ],
+        outputs: [
+          {
+            name: 'translation',
+            type: 'string',
+            description: 'Translated text',
+            required: true,
+            schema: {},
+          },
+        ],
         policies: [],
         tags: [],
       });

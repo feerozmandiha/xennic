@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { CostAnalysisService } from '../cost-analysis.service.js';
 import { CostTrackingService } from '../cost-tracking.service.js';
-import { InMemoryCostRepository } from '../../../testing/adapters/in-memory-cost-repository.js';
+import { InMemoryCostRepository } from '../../testing/adapters/in-memory-cost-repository.js';
 
 describe('CostAnalysisService', () => {
   let analysisService: CostAnalysisService;
@@ -23,7 +23,7 @@ describe('CostAnalysisService', () => {
   describe('analyzeExecution', () => {
     it('should return cost breakdown by source type', async () => {
       await trackingService.recordProviderCost('exec-1', 'openai', 'gpt-4', 1000, 0.06, 200);
-      await trackingService.recordProviderCost('exec-1', 'anthropic', 'claude-3', 2000, 0.10, 300);
+      await trackingService.recordProviderCost('exec-1', 'anthropic', 'claude-3', 2000, 0.1, 300);
       await trackingService.recordSkillCost('exec-1', 'skill-1', 500, 0.02, 100);
       await trackingService.recordToolCost('exec-1', 'tool-1', 0.01);
 
@@ -46,7 +46,7 @@ describe('CostAnalysisService', () => {
   describe('compareExecutions', () => {
     it('should compare multiple executions', async () => {
       await trackingService.recordProviderCost('exec-a', 'openai', 'gpt-4', 1000, 0.06, 200);
-      await trackingService.recordProviderCost('exec-b', 'anthropic', 'claude-3', 2000, 0.10, 300);
+      await trackingService.recordProviderCost('exec-b', 'anthropic', 'claude-3', 2000, 0.1, 300);
 
       const comparison = await analysisService.compareExecutions(['exec-a', 'exec-b']);
 
@@ -54,20 +54,20 @@ describe('CostAnalysisService', () => {
       expect(comparison[0]!.executionId).toBe('exec-a');
       expect(comparison[0]!.totalCost).toBe(0.06);
       expect(comparison[1]!.executionId).toBe('exec-b');
-      expect(comparison[1]!.totalCost).toBe(0.10);
+      expect(comparison[1]!.totalCost).toBe(0.1);
     });
   });
 
   describe('getTopCostExecutions', () => {
     it('should return most expensive entries', async () => {
-      await trackingService.recordProviderCost('exec-x', 'openai', 'gpt-4', 1000, 0.50);
-      await trackingService.recordProviderCost('exec-y', 'openai', 'gpt-4', 1000, 0.30);
-      await trackingService.recordProviderCost('exec-z', 'openai', 'gpt-4', 1000, 0.10);
+      await trackingService.recordProviderCost('exec-x', 'openai', 'gpt-4', 1000, 0.5);
+      await trackingService.recordProviderCost('exec-y', 'openai', 'gpt-4', 1000, 0.3);
+      await trackingService.recordProviderCost('exec-z', 'openai', 'gpt-4', 1000, 0.1);
 
       const top = await analysisService.getTopCostExecutions(2);
       expect(top).toHaveLength(2);
-      expect(top[0]!.amount).toBe(0.50);
-      expect(top[1]!.amount).toBe(0.30);
+      expect(top[0]!.amount).toBe(0.5);
+      expect(top[1]!.amount).toBe(0.3);
     });
   });
 

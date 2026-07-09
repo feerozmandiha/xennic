@@ -2,11 +2,12 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { MemoryService } from '../memory.service.js';
 import { MemoryEntity, MemoryType } from '../../domain/memory.entity.js';
 import type { IMemoryStore } from '../../domain/memory-store.interface.js';
-import { InMemoryMemoryStore } from '../../../testing/adapters/in-memory-memory-store.js';
-import { InMemoryMemoryIndex } from '../../../testing/adapters/in-memory-memory-index.js';
+import { InMemoryMemoryStore } from '../../testing/adapters/in-memory-memory-store.js';
+import { InMemoryMemoryIndex } from '../../testing/adapters/in-memory-memory-index.js';
 
 describe('MemoryService', () => {
   let service: MemoryService;
+  let index: any;
   let store: IMemoryStore;
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -82,14 +83,7 @@ describe('MemoryService', () => {
     });
 
     it('should return empty for mismatched scope', async () => {
-      const entity = MemoryEntity.create(
-        MemoryType.WORKING,
-        'workspace',
-        'ws-1',
-        'k1',
-        {},
-        'u1',
-      );
+      const entity = MemoryEntity.create(MemoryType.WORKING, 'workspace', 'ws-1', 'k1', {}, 'u1');
       await service.store(entity);
 
       const result = await service.find(MemoryType.WORKING, 'workspace', 'ws-2');
@@ -123,7 +117,7 @@ describe('MemoryService', () => {
 
       const results = await service.search('intelligence');
       expect(results.length).toBeGreaterThanOrEqual(1);
-      expect(results.some(r => r.entity.key === 'artificial-intelligence')).toBe(true);
+      expect(results.some((r) => r.entity.key === 'artificial-intelligence')).toBe(true);
     });
 
     it('should filter by type when provided', async () => {
@@ -134,39 +128,23 @@ describe('MemoryService', () => {
       await service.store(e2);
 
       const results = await service.search('ai', MemoryType.SEMANTIC);
-      expect(results.every(r => r.entity.type === MemoryType.SEMANTIC)).toBe(true);
+      expect(results.every((r) => r.entity.type === MemoryType.SEMANTIC)).toBe(true);
     });
   });
 
   describe('tagSearch()', () => {
     it('should find memories by tags', async () => {
-      const e1 = MemoryEntity.create(
-        MemoryType.WORKING,
-        'workspace',
-        'ws-1',
-        'task1',
-        {},
-        'u1',
-        ['urgent', 'frontend'],
-      );
-      const e2 = MemoryEntity.create(
-        MemoryType.WORKING,
-        'workspace',
-        'ws-1',
-        'task2',
-        {},
-        'u2',
-        ['backend'],
-      );
-      const e3 = MemoryEntity.create(
-        MemoryType.WORKING,
-        'workspace',
-        'ws-1',
-        'task3',
-        {},
-        'u3',
-        ['urgent', 'backend'],
-      );
+      const e1 = MemoryEntity.create(MemoryType.WORKING, 'workspace', 'ws-1', 'task1', {}, 'u1', [
+        'urgent',
+        'frontend',
+      ]);
+      const e2 = MemoryEntity.create(MemoryType.WORKING, 'workspace', 'ws-1', 'task2', {}, 'u2', [
+        'backend',
+      ]);
+      const e3 = MemoryEntity.create(MemoryType.WORKING, 'workspace', 'ws-1', 'task3', {}, 'u3', [
+        'urgent',
+        'backend',
+      ]);
 
       await service.store(e1);
       await service.store(e2);
@@ -177,24 +155,12 @@ describe('MemoryService', () => {
     });
 
     it('should filter by scope when provided', async () => {
-      const e1 = MemoryEntity.create(
-        MemoryType.WORKING,
-        'workspace',
-        'ws-1',
-        'task',
-        {},
-        'u1',
-        ['urgent'],
-      );
-      const e2 = MemoryEntity.create(
-        MemoryType.WORKING,
-        'project',
-        'proj-1',
-        'task',
-        {},
-        'u2',
-        ['urgent'],
-      );
+      const e1 = MemoryEntity.create(MemoryType.WORKING, 'workspace', 'ws-1', 'task', {}, 'u1', [
+        'urgent',
+      ]);
+      const e2 = MemoryEntity.create(MemoryType.WORKING, 'project', 'proj-1', 'task', {}, 'u2', [
+        'urgent',
+      ]);
 
       await service.store(e1);
       await service.store(e2);
@@ -227,9 +193,7 @@ describe('MemoryService', () => {
       await service.store(
         MemoryEntity.create(MemoryType.WORKING, 'workspace', 'ws-1', 'k1', {}, 'u1'),
       );
-      await service.store(
-        MemoryEntity.create(MemoryType.SESSION, 'user', 'u-1', 'k2', {}, 'u2'),
-      );
+      await service.store(MemoryEntity.create(MemoryType.SESSION, 'user', 'u-1', 'k2', {}, 'u2'));
       await service.store(
         MemoryEntity.create(MemoryType.SHORT_TERM, 'project', 'proj-1', 'k3', {}, 'u3'),
       );

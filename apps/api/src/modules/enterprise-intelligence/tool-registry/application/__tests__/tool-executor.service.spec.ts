@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ToolExecutorService } from '../tool-executor.service.js';
 import type { IToolRegistry } from '../../domain/tool-registry.interface.js';
-import { InMemoryToolRegistry } from '../../../testing/adapters/in-memory-tool-registry.js';
+import { InMemoryToolRegistry } from '../../testing/adapters/in-memory-tool-registry.js';
 import { ToolEntity } from '../../domain/tool.entity.js';
 
 function createTool(

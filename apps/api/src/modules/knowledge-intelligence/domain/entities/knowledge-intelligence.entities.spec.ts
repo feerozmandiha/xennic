@@ -28,6 +28,7 @@ describe('Knowledge Intelligence Layer - Domain Entities', () => {
         entityType: 'knowledge',
         entityId: 'doc-1',
       });
+      node.setProperty('language', 'fa');
       expect(node.properties.language).toBe('fa');
       expect(node.updatedAt).toBeDefined();
     });

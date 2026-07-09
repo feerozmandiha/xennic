@@ -3,7 +3,7 @@ import { PolicyEnforcementService } from '../policy-enforcement.service.js';
 import { PolicyEvaluationService } from '../policy-evaluation.service.js';
 import { PolicyEntity } from '../../domain/policy.entity.js';
 import type { IPolicyRepository } from '../../domain/policy-repository.interface.js';
-import { InMemoryPolicyRepository } from '../../../testing/adapters/in-memory-policy-repository.js';
+import { InMemoryPolicyRepository } from '../../testing/adapters/in-memory-policy-repository.js';
 
 describe('PolicyEnforcementService', () => {
   let service: PolicyEnforcementService;
@@ -78,12 +78,26 @@ describe('PolicyEnforcementService', () => {
     it('should deny take precedence over allow at same priority', async () => {
       await repo.save(
         PolicyEntity.create({
-          name: 'allow-all', description: '', scope: 'global', resource: '*', action: '*', effect: 'allow', priority: 50, createdBy: 'u1',
+          name: 'allow-all',
+          description: '',
+          scope: 'global',
+          resource: '*',
+          action: '*',
+          effect: 'allow',
+          priority: 50,
+          createdBy: 'u1',
         }),
       );
       await repo.save(
         PolicyEntity.create({
-          name: 'deny-secret', description: '', scope: 'global', resource: 'document:secret', action: 'read', effect: 'deny', priority: 50, createdBy: 'u1',
+          name: 'deny-secret',
+          description: '',
+          scope: 'global',
+          resource: 'document:secret',
+          action: 'read',
+          effect: 'deny',
+          priority: 50,
+          createdBy: 'u1',
         }),
       );
 
@@ -94,12 +108,26 @@ describe('PolicyEnforcementService', () => {
     it('should respect priority ordering (higher wins)', async () => {
       await repo.save(
         PolicyEntity.create({
-          name: 'low-deny', description: '', scope: 'global', resource: '*', action: '*', effect: 'deny', priority: 1, createdBy: 'u1',
+          name: 'low-deny',
+          description: '',
+          scope: 'global',
+          resource: '*',
+          action: '*',
+          effect: 'deny',
+          priority: 1,
+          createdBy: 'u1',
         }),
       );
       await repo.save(
         PolicyEntity.create({
-          name: 'high-allow', description: '', scope: 'global', resource: '*', action: '*', effect: 'allow', priority: 100, createdBy: 'u1',
+          name: 'high-allow',
+          description: '',
+          scope: 'global',
+          resource: '*',
+          action: '*',
+          effect: 'allow',
+          priority: 100,
+          createdBy: 'u1',
         }),
       );
 
@@ -131,7 +159,14 @@ describe('PolicyEnforcementService', () => {
 
     it('should not match disabled policies by default', async () => {
       const policy = PolicyEntity.create({
-        name: 'disabled-deny', description: '', scope: 'global', resource: '*', action: '*', effect: 'deny', priority: 100, createdBy: 'u1',
+        name: 'disabled-deny',
+        description: '',
+        scope: 'global',
+        resource: '*',
+        action: '*',
+        effect: 'deny',
+        priority: 100,
+        createdBy: 'u1',
       });
       const disabled = PolicyEntity.reconstitute({
         id: policy.id,
@@ -165,7 +200,14 @@ describe('PolicyEnforcementService', () => {
     it('should return false when access is denied', async () => {
       await repo.save(
         PolicyEntity.create({
-          name: 'deny-all', description: '', scope: 'global', resource: '*', action: '*', effect: 'deny', priority: 100, createdBy: 'admin',
+          name: 'deny-all',
+          description: '',
+          scope: 'global',
+          resource: '*',
+          action: '*',
+          effect: 'deny',
+          priority: 100,
+          createdBy: 'admin',
         }),
       );
 
@@ -178,12 +220,27 @@ describe('PolicyEnforcementService', () => {
     it('should return all policies applicable to user', async () => {
       await repo.save(
         PolicyEntity.create({
-          name: 'user-specific', description: '', scope: 'user', resource: '*', action: '*', effect: 'allow', priority: 1, createdBy: 'u1', conditions: { userId: 'user-1' },
+          name: 'user-specific',
+          description: '',
+          scope: 'user',
+          resource: '*',
+          action: '*',
+          effect: 'allow',
+          priority: 1,
+          createdBy: 'u1',
+          conditions: { userId: 'user-1' },
         }),
       );
       await repo.save(
         PolicyEntity.create({
-          name: 'global-allow', description: '', scope: 'global', resource: '*', action: '*', effect: 'allow', priority: 1, createdBy: 'u1',
+          name: 'global-allow',
+          description: '',
+          scope: 'global',
+          resource: '*',
+          action: '*',
+          effect: 'allow',
+          priority: 1,
+          createdBy: 'u1',
         }),
       );
 

@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConversationService } from '../conversation.service.js';
-import { InMemoryConversationRepository } from '../../../testing/adapters/in-memory-conversation-repository.js';
+import { InMemoryConversationRepository } from '../../testing/adapters/in-memory-conversation-repository.js';
 import type { IConversationRepository } from '../../domain/conversation-repository.interface.js';
 
 describe('ConversationService', () => {

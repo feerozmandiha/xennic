@@ -1,9 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfidenceService } from '../confidence.service.js';
-import { InMemoryExplainabilityRepository } from '../../../testing/adapters/in-memory-explainability-repository.js';
+import { InMemoryExplainabilityRepository } from '../../testing/adapters/in-memory-explainability-repository.js';
 
 describe('ConfidenceService', () => {
   let service: ConfidenceService;
+  let repository: any;
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -20,7 +21,12 @@ describe('ConfidenceService', () => {
     it('should record a confidence score', async () => {
       const result = await service.recordConfidence('exec-1', 'step-1', 0.85, [
         { name: 'data_quality', weight: 0.5, value: 0.9, description: 'Quality of input data' },
-        { name: 'model_accuracy', weight: 0.5, value: 0.8, description: 'Historical model accuracy' },
+        {
+          name: 'model_accuracy',
+          weight: 0.5,
+          value: 0.8,
+          description: 'Historical model accuracy',
+        },
       ]);
 
       expect(result.id).toBeDefined();
@@ -31,13 +37,13 @@ describe('ConfidenceService', () => {
     });
 
     it('should throw for invalid score', async () => {
-      await expect(
-        service.recordConfidence('exec-1', 'step-1', 1.5, []),
-      ).rejects.toThrow('Confidence score must be between 0 and 1');
+      await expect(service.recordConfidence('exec-1', 'step-1', 1.5, [])).rejects.toThrow(
+        'Confidence score must be between 0 and 1',
+      );
 
-      await expect(
-        service.recordConfidence('exec-1', 'step-1', -0.1, []),
-      ).rejects.toThrow('Confidence score must be between 0 and 1');
+      await expect(service.recordConfidence('exec-1', 'step-1', -0.1, [])).rejects.toThrow(
+        'Confidence score must be between 0 and 1',
+      );
     });
   });
 

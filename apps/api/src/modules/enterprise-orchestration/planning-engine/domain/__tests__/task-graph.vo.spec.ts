@@ -23,7 +23,12 @@ describe('TaskGraph', () => {
         { from: 't2', to: 't3', type: 'hard' },
       ];
 
-      const plan = PlanEntity.create({ goal: 'test', tasks, dependencies: deps, metadata: makeMetadata() });
+      const plan = PlanEntity.create({
+        goal: 'test',
+        tasks,
+        dependencies: deps,
+        metadata: makeMetadata(),
+      });
       const graph = TaskGraph.create(plan);
 
       expect(graph.nodes).toHaveLength(3);
@@ -36,7 +41,12 @@ describe('TaskGraph', () => {
         { id: 't2', description: 'Task 2', type: 'task', status: 'pending', dependsOn: [] },
       ];
 
-      const plan = PlanEntity.create({ goal: 'test', tasks, dependencies: [], metadata: makeMetadata() });
+      const plan = PlanEntity.create({
+        goal: 'test',
+        tasks,
+        dependencies: [],
+        metadata: makeMetadata(),
+      });
       const graph = TaskGraph.create(plan);
 
       expect(graph.nodes).toHaveLength(2);
@@ -56,7 +66,12 @@ describe('TaskGraph', () => {
         { from: 't2', to: 't3', type: 'hard' },
       ];
 
-      const plan = PlanEntity.create({ goal: 'test', tasks, dependencies: deps, metadata: makeMetadata() });
+      const plan = PlanEntity.create({
+        goal: 'test',
+        tasks,
+        dependencies: deps,
+        metadata: makeMetadata(),
+      });
       const graph = TaskGraph.create(plan);
 
       expect(graph.getLevel('t1')).toBe(0);
@@ -78,10 +93,17 @@ describe('TaskGraph', () => {
         { from: 't3', to: 't4', type: 'hard' },
       ];
 
-      const plan = PlanEntity.create({ goal: 'test', tasks, dependencies: deps, metadata: makeMetadata() });
+      const plan = PlanEntity.create({
+        goal: 'test',
+        tasks,
+        dependencies: deps,
+        metadata: makeMetadata(),
+      });
       const graph = TaskGraph.create(plan);
 
-      const order = graph.nodes.sort((a, b) => a.level - b.level || a.order - b.order).map(n => n.taskId);
+      const order = graph.nodes
+        .sort((a, b) => a.level - b.level || a.order - b.order)
+        .map((n) => n.taskId);
       expect(order.indexOf('t1')).toBeLessThan(order.indexOf('t2'));
       expect(order.indexOf('t1')).toBeLessThan(order.indexOf('t3'));
       expect(order.indexOf('t2')).toBeLessThan(order.indexOf('t4'));
@@ -94,24 +116,35 @@ describe('TaskGraph', () => {
       const tasks: PlanTask[] = [
         { id: 't1', description: 'Task 1', type: 'task', status: 'pending', dependsOn: [] },
         { id: 't2', description: 'Task 2', type: 'task', status: 'pending', dependsOn: ['t1'] },
-        { id: 't3', description: 'Task 3', type: 'task', status: 'pending', dependsOn: ['t1', 't2'] },
+        {
+          id: 't3',
+          description: 'Task 3',
+          type: 'task',
+          status: 'pending',
+          dependsOn: ['t1', 't2'],
+        },
       ];
       const deps: Dependency[] = [
         { from: 't1', to: 't2', type: 'hard' },
         { from: 't2', to: 't3', type: 'hard' },
       ];
 
-      const plan = PlanEntity.create({ goal: 'test', tasks, dependencies: deps, metadata: makeMetadata() });
+      const plan = PlanEntity.create({
+        goal: 'test',
+        tasks,
+        dependencies: deps,
+        metadata: makeMetadata(),
+      });
       const graph = TaskGraph.create(plan);
 
       const ready0 = graph.getReadyTasks([]);
-      expect(ready0.map(t => t.id)).toEqual(['t1']);
+      expect(ready0.map((t) => t.id)).toEqual(['t1']);
 
       const ready1 = graph.getReadyTasks(['t1']);
-      expect(ready1.map(t => t.id)).toEqual(['t2']);
+      expect(ready1.map((t) => t.id)).toEqual(['t2']);
 
       const ready2 = graph.getReadyTasks(['t1', 't2']);
-      expect(ready2.map(t => t.id)).toEqual(['t3']);
+      expect(ready2.map((t) => t.id)).toEqual(['t3']);
     });
   });
 
@@ -129,7 +162,12 @@ describe('TaskGraph', () => {
         { from: 't2', to: 't4', type: 'hard' },
       ];
 
-      const plan = PlanEntity.create({ goal: 'test', tasks, dependencies: deps, metadata: makeMetadata() });
+      const plan = PlanEntity.create({
+        goal: 'test',
+        tasks,
+        dependencies: deps,
+        metadata: makeMetadata(),
+      });
       const graph = TaskGraph.create(plan);
       const criticalPath = graph.getCriticalPath();
 
@@ -141,7 +179,12 @@ describe('TaskGraph', () => {
         { id: 't1', description: 'Solo', type: 'task', status: 'pending', dependsOn: [] },
       ];
 
-      const plan = PlanEntity.create({ goal: 'test', tasks, dependencies: [], metadata: makeMetadata() });
+      const plan = PlanEntity.create({
+        goal: 'test',
+        tasks,
+        dependencies: [],
+        metadata: makeMetadata(),
+      });
       const graph = TaskGraph.create(plan);
       const criticalPath = graph.getCriticalPath();
 
@@ -156,14 +199,24 @@ describe('TaskGraph', () => {
         { id: 't2', description: 'Dependent', type: 'task', status: 'pending', dependsOn: ['t1'] },
       ];
 
-      const plan = PlanEntity.create({ goal: 'test', tasks, dependencies: [], metadata: makeMetadata() });
+      const plan = PlanEntity.create({
+        goal: 'test',
+        tasks,
+        dependencies: [],
+        metadata: makeMetadata(),
+      });
       const graph = TaskGraph.create(plan);
 
       expect(graph.getLevel('t1')).toBe(0);
     });
 
     it('should return -1 for unknown task', () => {
-      const plan = PlanEntity.create({ goal: 'test', tasks: [], dependencies: [], metadata: makeMetadata() });
+      const plan = PlanEntity.create({
+        goal: 'test',
+        tasks: [],
+        dependencies: [],
+        metadata: makeMetadata(),
+      });
       const graph = TaskGraph.create(plan);
 
       expect(graph.getLevel('nonexistent')).toBe(-1);

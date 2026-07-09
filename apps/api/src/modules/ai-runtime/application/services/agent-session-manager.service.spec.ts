@@ -1,8 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AgentSessionManagerService } from './agent-session-manager.service';
 import { I_SESSION_STORE } from '../../domain/interfaces/session-store.interface';
-import { InMemorySessionStore } from '../../../testing/adapters/in-memory-session.store';
-import { SessionNotFoundException, SessionExpiredException } from '../../domain/exceptions/session.exception';
+import { InMemorySessionStore } from '../../testing/adapters/in-memory-session.store';
+import {
+  SessionNotFoundException,
+  SessionExpiredException,
+} from '../../domain/exceptions/session.exception';
 
 describe('AgentSessionManagerService', () => {
   let service: AgentSessionManagerService;

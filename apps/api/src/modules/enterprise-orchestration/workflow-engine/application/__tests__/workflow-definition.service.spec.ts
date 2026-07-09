@@ -1,10 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { WorkflowDefinitionService } from '../workflow-definition.service.js';
 import { WorkflowValidatorService } from '../workflow-validator.service.js';
-import { InMemoryWorkflowRepository } from '../../../testing/adapters/in-memory-workflow-repository.js';
+import { InMemoryWorkflowRepository } from '../../testing/adapters/in-memory-workflow-repository.js';
 
 describe('WorkflowDefinitionService', () => {
   let service: WorkflowDefinitionService;
+  let repository: any;
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -127,7 +128,7 @@ describe('WorkflowDefinitionService', () => {
     });
 
     it('should get a specific version', async () => {
-      await service.create({
+      const v1 = await service.create({
         name: 'multi-version',
         description: 'v1',
         steps: validSteps,
@@ -136,13 +137,8 @@ describe('WorkflowDefinitionService', () => {
         createdBy: 'user-1',
       });
 
-      await service.create({
-        name: 'multi-version',
+      await service.createVersion(v1.id, {
         description: 'v2',
-        steps: validSteps,
-        triggers: [],
-        timeout: null,
-        createdBy: 'user-1',
       });
 
       const foundV1 = await service.getByName('multi-version', 1);
@@ -155,9 +151,7 @@ describe('WorkflowDefinitionService', () => {
     });
 
     it('should throw for non-existent name', async () => {
-      await expect(
-        service.getByName('does-not-exist'),
-      ).rejects.toThrow('not found');
+      await expect(service.getByName('does-not-exist')).rejects.toThrow('not found');
     });
   });
 

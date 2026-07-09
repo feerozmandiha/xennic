@@ -1,10 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ReasoningPlannerService } from '../reasoning-planner.service.js';
-import { InMemoryReasoningRepository } from '../../../testing/adapters/in-memory-reasoning-repository.js';
+import { InMemoryReasoningRepository } from '../../testing/adapters/in-memory-reasoning-repository.js';
 import { PlanStatus } from '../../domain/reasoning-plan.entity.js';
 
 describe('ReasoningPlannerService', () => {
   let service: ReasoningPlannerService;
+  let repo: any;
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -97,9 +98,7 @@ describe('ReasoningPlannerService', () => {
     });
 
     it('should warn about empty step descriptions', async () => {
-      const plan = await service.plan('Empty steps', [
-        { id: '1', description: '', input: {} },
-      ]);
+      const plan = await service.plan('Empty steps', [{ id: '1', description: '', input: {} }]);
 
       const result = await service.validatePlan(plan.id);
 

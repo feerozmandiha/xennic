@@ -1,10 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { PromptRegistryService } from '../prompt-registry.service.js';
 import { PromptStatus } from '../../domain/prompt.entity.js';
-import { InMemoryPromptRegistry } from '../../../testing/adapters/in-memory-prompt-registry.js';
+import { InMemoryPromptRegistry } from '../../testing/adapters/in-memory-prompt-registry.js';
 
 describe('PromptRegistryService', () => {
   let service: PromptRegistryService;
+  let registry: any;
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -19,7 +20,14 @@ describe('PromptRegistryService', () => {
 
   describe('register()', () => {
     it('should register a new prompt', async () => {
-      const prompt = await service.register('test-prompt', 'Hello {{name}}', ['name'], ['test'], 'user-1', 'A test prompt');
+      const prompt = await service.register(
+        'test-prompt',
+        'Hello {{name}}',
+        ['name'],
+        ['test'],
+        'user-1',
+        'A test prompt',
+      );
 
       expect(prompt).toBeDefined();
       expect(prompt.name).toBe('test-prompt');
@@ -31,9 +39,9 @@ describe('PromptRegistryService', () => {
 
     it('should throw if prompt name already exists', async () => {
       await service.register('dup', 'content', [], [], 'u1');
-      await expect(
-        service.register('dup', 'other', [], [], 'u1'),
-      ).rejects.toThrow('already exists');
+      await expect(service.register('dup', 'other', [], [], 'u1')).rejects.toThrow(
+        'already exists',
+      );
     });
   });
 
@@ -51,7 +59,10 @@ describe('PromptRegistryService', () => {
 
   describe('getByName()', () => {
     it('should retrieve the latest version by default', async () => {
-      await service.register('multi-version', 'v1', [], [], 'u1');
+      const v1 = await service.register('multi-version', 'v1', [], [], 'u1');
+      await service.createVersion(v1.id, 'v2', 'u2');
+
+      const found = await service.getByName('multi-version');
 
       expect(found).not.toBeNull();
       expect(found!.version).toBe(2);

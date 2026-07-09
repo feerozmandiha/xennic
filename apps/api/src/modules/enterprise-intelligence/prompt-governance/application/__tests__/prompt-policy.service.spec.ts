@@ -1,9 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { PromptPolicyService } from '../prompt-policy.service.js';
-import { InMemoryPromptPolicyRepo } from '../../../testing/adapters/in-memory-prompt-policy-repo.js';
+import { InMemoryPromptPolicyRepo } from '../../testing/adapters/in-memory-prompt-policy-repo.js';
 
 describe('PromptPolicyService', () => {
   let service: PromptPolicyService;
+  let repo: any;
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -21,9 +22,7 @@ describe('PromptPolicyService', () => {
       const policy = await service.create({
         name: 'allow-admin',
         description: 'Allow admin access',
-        rules: [
-          { resource: 'prompt:*', action: 'execute', condition: null },
-        ],
+        rules: [{ resource: 'prompt:*', action: 'execute', condition: null }],
         effect: 'allow',
         priority: 100,
         createdBy: 'user-1',
@@ -39,7 +38,12 @@ describe('PromptPolicyService', () => {
   describe('get()', () => {
     it('should retrieve a policy by id', async () => {
       const created = await service.create({
-        name: 'get-test', description: '', rules: [], effect: 'allow', priority: 1, createdBy: 'u1',
+        name: 'get-test',
+        description: '',
+        rules: [],
+        effect: 'allow',
+        priority: 1,
+        createdBy: 'u1',
       });
 
       const found = await service.get(created.id);
@@ -160,8 +164,22 @@ describe('PromptPolicyService', () => {
 
   describe('list()', () => {
     it('should list all policies', async () => {
-      await service.create({ name: 'a', description: '', rules: [], effect: 'allow', priority: 1, createdBy: 'u1' });
-      await service.create({ name: 'b', description: '', rules: [], effect: 'deny', priority: 2, createdBy: 'u1' });
+      await service.create({
+        name: 'a',
+        description: '',
+        rules: [],
+        effect: 'allow',
+        priority: 1,
+        createdBy: 'u1',
+      });
+      await service.create({
+        name: 'b',
+        description: '',
+        rules: [],
+        effect: 'deny',
+        priority: 2,
+        createdBy: 'u1',
+      });
 
       const result = await service.list();
       expect(result.total).toBe(2);
@@ -171,7 +189,12 @@ describe('PromptPolicyService', () => {
   describe('delete()', () => {
     it('should delete a policy', async () => {
       const policy = await service.create({
-        name: 'to-delete', description: '', rules: [], effect: 'allow', priority: 1, createdBy: 'u1',
+        name: 'to-delete',
+        description: '',
+        rules: [],
+        effect: 'allow',
+        priority: 1,
+        createdBy: 'u1',
       });
 
       await service.delete(policy.id);

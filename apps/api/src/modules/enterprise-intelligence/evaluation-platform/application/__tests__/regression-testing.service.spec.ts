@@ -1,8 +1,12 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { RegressionTestingService } from '../regression-testing.service.js';
-import { InMemoryEvaluationRepository } from '../../../testing/adapters/in-memory-evaluation-repository.js';
+import { InMemoryEvaluationRepository } from '../../testing/adapters/in-memory-evaluation-repository.js';
 import type { IEvaluationRepository } from '../../domain/evaluation-repository.interface.js';
-import { EvaluationRun, EvaluationRunStatus, EvaluationTargetType } from '../../domain/evaluation-run.entity.js';
+import {
+  EvaluationRun,
+  EvaluationRunStatus,
+  EvaluationTargetType,
+} from '../../domain/evaluation-run.entity.js';
 
 describe('RegressionTestingService', () => {
   let service: RegressionTestingService;
@@ -45,7 +49,7 @@ describe('RegressionTestingService', () => {
       created.targetId,
       created.targetVersion,
       EvaluationRunStatus.COMPLETED,
-      results.map(r => ({ metric: r.metric, value: r.value })),
+      results.map((r) => ({ metric: r.metric, value: r.value })),
       score,
       new Date(completedAt.getTime() - 1000),
       completedAt,
@@ -101,8 +105,20 @@ describe('RegressionTestingService', () => {
         { metric: 'f1', value: 0.75 },
       ];
 
-      const previous = makeRun(EvaluationTargetType.PROMPT, 'prompt-1', 0.85, new Date('2025-01-01'), prevR);
-      const current = makeRun(EvaluationTargetType.PROMPT, 'prompt-1', 0.725, new Date('2025-06-01'), currR);
+      const previous = makeRun(
+        EvaluationTargetType.PROMPT,
+        'prompt-1',
+        0.85,
+        new Date('2025-01-01'),
+        prevR,
+      );
+      const current = makeRun(
+        EvaluationTargetType.PROMPT,
+        'prompt-1',
+        0.725,
+        new Date('2025-06-01'),
+        currR,
+      );
 
       await repo.saveRun(previous);
       await repo.saveRun(current);
@@ -110,7 +126,7 @@ describe('RegressionTestingService', () => {
       const report = await service.detectRegression(previous.id, current.id);
       expect(report.metrics.length).toBe(2);
 
-      const accuracyDelta = report.metrics.find(m => m.metric === 'accuracy');
+      const accuracyDelta = report.metrics.find((m) => m.metric === 'accuracy');
       expect(accuracyDelta).toBeDefined();
       expect(accuracyDelta!.delta).toBeCloseTo(-0.2, 5);
     });

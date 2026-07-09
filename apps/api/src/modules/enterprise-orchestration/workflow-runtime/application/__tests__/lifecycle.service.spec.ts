@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { LifecycleService } from '../lifecycle.service.js';
 import { CompensationService } from '../compensation.service.js';
-import { InMemoryExecutionRepository } from '../../../testing/adapters/in-memory-execution-repository.js';
+import { InMemoryExecutionRepository } from '../../testing/adapters/in-memory-execution-repository.js';
 import { WorkflowExecution } from '../../domain/workflow-execution.entity.js';
 import type { IExecutionRepository } from '../../domain/execution-repository.interface.js';
 

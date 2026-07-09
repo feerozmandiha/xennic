@@ -1,9 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { PromptTemplateService } from '../prompt-template.service.js';
-import { InMemoryTemplateRegistry } from '../../../testing/adapters/in-memory-template-registry.js';
+import { InMemoryTemplateRegistry } from '../../testing/adapters/in-memory-template-registry.js';
 
 describe('PromptTemplateService', () => {
   let service: PromptTemplateService;
+  let registry: any;
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -109,15 +110,11 @@ describe('PromptTemplateService', () => {
         name: 'missing-required',
         description: '',
         content: '{{required}} is needed',
-        variables: [
-          { name: 'required', type: 'string', required: true },
-        ],
+        variables: [{ name: 'required', type: 'string', required: true }],
         createdBy: 'u1',
       });
 
-      await expect(
-        service.render(template.id, {}),
-      ).rejects.toThrow('Missing required variable');
+      await expect(service.render(template.id, {})).rejects.toThrow('Missing required variable');
     });
 
     it('should throw for non-existent template', async () => {
@@ -127,8 +124,20 @@ describe('PromptTemplateService', () => {
 
   describe('list()', () => {
     it('should list all templates', async () => {
-      await service.register({ name: 'a', description: '', content: '', variables: [], createdBy: 'u1' });
-      await service.register({ name: 'b', description: '', content: '', variables: [], createdBy: 'u1' });
+      await service.register({
+        name: 'a',
+        description: '',
+        content: '',
+        variables: [],
+        createdBy: 'u1',
+      });
+      await service.register({
+        name: 'b',
+        description: '',
+        content: '',
+        variables: [],
+        createdBy: 'u1',
+      });
 
       const result = await service.list();
       expect(result.total).toBe(2);

@@ -3,7 +3,7 @@ import { WorkflowExecutorService } from '../workflow-executor.service.js';
 import { RetryHandlerService } from '../retry-handler.service.js';
 import { TimeoutHandlerService } from '../timeout-handler.service.js';
 import { CompensationService } from '../compensation.service.js';
-import { InMemoryExecutionRepository } from '../../../testing/adapters/in-memory-execution-repository.js';
+import { InMemoryExecutionRepository } from '../../testing/adapters/in-memory-execution-repository.js';
 import { WorkflowDefinition } from '../../../workflow-engine/domain/workflow-definition.entity.js';
 import type { WorkflowStep } from '../../../workflow-engine/domain/workflow-definition.entity.js';
 import type { IExecutionRepository } from '../../domain/execution-repository.interface.js';
@@ -110,7 +110,7 @@ describe('WorkflowExecutorService', () => {
       const execution = await executor.start('wf-1', definition);
 
       expect(execution.status).toBe('completed');
-      expect(execution.steps.every(s => s.status === 'completed')).toBe(true);
+      expect(execution.steps.every((s) => s.status === 'completed')).toBe(true);
     });
   });
 
@@ -190,10 +190,8 @@ describe('WorkflowExecutorService', () => {
       const execution = await executor.start('wf-1', definition);
 
       expect(execution.status).toBe('completed');
-      const condStep = execution.steps.find(s => s.stepId === 'condition');
-      expect(condStep?.output).toEqual(
-        expect.objectContaining({ conditionResult: true }),
-      );
+      const condStep = execution.steps.find((s) => s.stepId === 'condition');
+      expect(condStep?.output).toEqual(expect.objectContaining({ conditionResult: true }));
     });
 
     it('should evaluate conditional step when condition is false', async () => {
@@ -226,10 +224,8 @@ describe('WorkflowExecutorService', () => {
       const execution = await executor.start('wf-1', definition);
 
       expect(execution.status).toBe('completed');
-      const condStep = execution.steps.find(s => s.stepId === 'condition');
-      expect(condStep?.output).toEqual(
-        expect.objectContaining({ conditionResult: false }),
-      );
+      const condStep = execution.steps.find((s) => s.stepId === 'condition');
+      expect(condStep?.output).toEqual(expect.objectContaining({ conditionResult: false }));
     });
   });
 

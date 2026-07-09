@@ -144,9 +144,7 @@ describe('DSL Runtime Certification', () => {
       expect(result.errors.length).toBeGreaterThan(0);
       expect(result.errors[0]).toContain('A');
 
-      const cycle = validationEngine.detectCircularDependency([
-        { name: 'A', expression: 'A + 1' },
-      ]);
+      const cycle = validationEngine.detectCircularDependency([{ name: 'A', expression: 'A + 1' }]);
       expect(cycle).not.toBeNull();
       expect(cycle).toContain('Circular dependency');
     });
@@ -247,10 +245,12 @@ describe('DSL Runtime Certification', () => {
         version: '1.0',
         inputs: [{ name: 'key', label: 'Key', type: 'number', required: true }],
         outputs: [{ name: 'value', label: 'Value', type: 'number' }],
-        formulas: [{
-          name: 'value',
-          expression: 'key == 1 ? 100 : (key == 2 ? 200 : (key == 3 ? 300 : 0))',
-        }],
+        formulas: [
+          {
+            name: 'value',
+            expression: 'key == 1 ? 100 : (key == 2 ? 200 : (key == 3 ? 300 : 0))',
+          },
+        ],
       });
 
       const r1 = await runtime.execute(dsl, baseContext({ key: 2 }));
@@ -303,10 +303,12 @@ describe('DSL Runtime Certification', () => {
         version: '1.0',
         inputs: [{ name: 'key', label: 'Key', type: 'number', required: true }],
         outputs: [{ name: 'value', label: 'Value', type: 'number' }],
-        formulas: [{
-          name: 'value',
-          expression: 'key == 1 ? 100 : (key == 2 ? 200 : 999)',
-        }],
+        formulas: [
+          {
+            name: 'value',
+            expression: 'key == 1 ? 100 : (key == 2 ? 200 : 999)',
+          },
+        ],
       });
 
       const result = await runtime.execute(dsl, baseContext({ key: 999 }));
@@ -371,10 +373,12 @@ describe('DSL Runtime Certification', () => {
         version: '1.0',
         inputs: [{ name: 'x', label: 'X', type: 'number', required: true }],
         outputs: [{ name: 'result', label: 'Result', type: 'number' }],
-        formulas: [{
-          name: 'result',
-          expression: 'x > 0 ? (x > 10 ? x * 3 : x * 2) : 0',
-        }],
+        formulas: [
+          {
+            name: 'result',
+            expression: 'x > 0 ? (x > 10 ? x * 3 : x * 2) : 0',
+          },
+        ],
       });
 
       const r1 = await runtime.execute(dsl, baseContext({ x: 5 }));
@@ -414,10 +418,12 @@ describe('DSL Runtime Certification', () => {
         version: '1.0',
         inputs: [{ name: 'score', label: 'Score', type: 'number', required: true }],
         outputs: [{ name: 'grade', label: 'Grade', type: 'number' }],
-        formulas: [{
-          name: 'grade',
-          expression: 'score > 100 ? 1 : (score > 50 ? 2 : (score > 10 ? 3 : 4))',
-        }],
+        formulas: [
+          {
+            name: 'grade',
+            expression: 'score > 100 ? 1 : (score > 50 ? 2 : (score > 10 ? 3 : 4))',
+          },
+        ],
       });
 
       const r1 = await runtime.execute(dsl, baseContext({ score: 200 }));
@@ -577,7 +583,7 @@ describe('DSL Runtime Certification', () => {
       const result = await runtime.execute(dsl, baseContext({ mass: 10, charge: 1e-6 }));
       expect(result.errors).toEqual([]);
       expect(result.outputs.force).toBeCloseTo(98.0665, 10);
-      expect(result.outputs.energy).toBeCloseTo(8.987551787368176e17, 5);
+      expect(result.outputs.energy).toBeCloseTo(Number('8.987551787368176e17'), 5);
     });
   });
 

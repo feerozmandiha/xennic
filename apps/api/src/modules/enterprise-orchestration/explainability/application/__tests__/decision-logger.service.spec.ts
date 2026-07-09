@@ -1,9 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { DecisionLoggerService } from '../decision-logger.service.js';
-import { InMemoryExplainabilityRepository } from '../../../testing/adapters/in-memory-explainability-repository.js';
+import { InMemoryExplainabilityRepository } from '../../testing/adapters/in-memory-explainability-repository.js';
 
 describe('DecisionLoggerService', () => {
   let service: DecisionLoggerService;
+  let repository: any;
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [

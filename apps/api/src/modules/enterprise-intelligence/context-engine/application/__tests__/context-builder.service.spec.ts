@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ContextBuilderService } from '../context-builder.service.js';
 import type { IContextRepository } from '../../domain/context-repository.interface.js';
-import { InMemoryContextStore } from '../../../testing/adapters/in-memory-context-store.js';
+import { InMemoryContextStore } from '../../testing/adapters/in-memory-context-store.js';
 
 describe('ContextBuilderService', () => {
   let service: ContextBuilderService;
@@ -103,14 +103,7 @@ describe('ContextBuilderService', () => {
 
   describe('empty sources', () => {
     it('should handle empty value', async () => {
-      const entity = await service.build(
-        'workspace',
-        'ws-1',
-        'test',
-        'empty',
-        {},
-        'tester',
-      );
+      const entity = await service.build('workspace', 'ws-1', 'test', 'empty', {}, 'tester');
       expect(entity.value).toEqual({});
     });
   });

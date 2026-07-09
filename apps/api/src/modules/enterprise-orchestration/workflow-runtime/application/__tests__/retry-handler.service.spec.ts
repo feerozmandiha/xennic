@@ -42,7 +42,8 @@ describe('RetryHandlerService', () => {
 
     it('should retry on failure and eventually succeed', async () => {
       const step = createStep();
-      const executor = jest.fn()
+      const executor = jest
+        .fn()
         .mockRejectedValueOnce(new Error('Temporary failure'))
         .mockRejectedValueOnce(new Error('Temporary failure'))
         .mockResolvedValue({ result: 'success' });
@@ -58,9 +59,9 @@ describe('RetryHandlerService', () => {
       const step = createStep();
       const executor = jest.fn().mockRejectedValue(new Error('Persistent failure'));
 
-      await expect(
-        retryHandler.executeWithRetry('exec-1', step, executor),
-      ).rejects.toThrow('Persistent failure');
+      await expect(retryHandler.executeWithRetry('exec-1', step, executor)).rejects.toThrow(
+        'Persistent failure',
+      );
 
       expect(executor).toHaveBeenCalledTimes(3);
       expect(step.retryCount).toBe(3);

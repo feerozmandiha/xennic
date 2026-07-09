@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ReasoningEngineService } from '../reasoning-engine.service.js';
 import type { IReasoningRepository } from '../../domain/reasoning-repository.interface.js';
-import { InMemoryReasoningRepository } from '../../../testing/adapters/in-memory-reasoning-repository.js';
+import { InMemoryReasoningRepository } from '../../testing/adapters/in-memory-reasoning-repository.js';
 import { PlanStatus } from '../../domain/reasoning-plan.entity.js';
 
 describe('ReasoningEngineService', () => {

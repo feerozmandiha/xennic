@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { BenchmarkRegistryService } from '../benchmark-registry.service.js';
-import { InMemoryEvaluationRepository } from '../../../testing/adapters/in-memory-evaluation-repository.js';
+import { InMemoryEvaluationRepository } from '../../testing/adapters/in-memory-evaluation-repository.js';
 import type { IEvaluationRepository } from '../../domain/evaluation-repository.interface.js';
 import { BenchmarkStatus } from '../../domain/benchmark.entity.js';
 

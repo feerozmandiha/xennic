@@ -32,7 +32,7 @@ export class FailoverService {
     options?: { maxRetries?: number; baseDelayMs?: number },
   ): Promise<FailoverResult> {
     const maxRetries = options?.maxRetries ?? 3;
-    const baseDelayMs = options?.baseDelayMs ?? 1000;
+    const baseDelayMs = options?.baseDelayMs ?? (process.env.NODE_ENV === 'test' ? 0 : 1000);
     const start = Date.now();
     let lastError: string | undefined;
 
@@ -54,26 +54,27 @@ export class FailoverService {
         if (attempt < maxRetries) {
           const delay = baseDelayMs * Math.pow(2, attempt - 1);
           this.logger.log(`Backoff: waiting ${delay}ms before retry ${attempt + 1}`);
-          await new Promise(r => setTimeout(r, delay));
+          await new Promise((r) => setTimeout(r, delay));
         }
       }
     }
 
     return {
-      success: false, providerId,
+      success: false,
+      providerId,
       latencyMs: Date.now() - start,
-      attempts: maxRetries, error: lastError,
+      attempts: maxRetries,
+      error: lastError,
     };
   }
 
   async getFailoverChain(providerId: string): Promise<string[]> {
     const providers = await this.providerRepo.findAll({ enabled: true });
-    const chain = providers
-      .sort((a, b) => a.priority - b.priority)
-      .map(p => p.id);
+    const chain = providers.sort((a, b) => a.priority - b.priority).map((p) => p.id);
     const index = chain.indexOf(providerId);
     if (index === -1) return chain;
-    const primary = chain[index]!; return [primary, ...chain.slice(0, index), ...chain.slice(index + 1)];
+    const primary = chain[index]!;
+    return [primary, ...chain.slice(0, index), ...chain.slice(index + 1)];
   }
 
   recordSuccess(providerId: string): void {

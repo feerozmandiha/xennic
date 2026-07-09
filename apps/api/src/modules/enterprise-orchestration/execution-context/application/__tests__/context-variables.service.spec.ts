@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ContextVariablesService } from '../context-variables.service.js';
-import { InMemoryContextRepository } from '../../../testing/adapters/in-memory-context-repository.js';
+import { InMemoryContextRepository } from '../../testing/adapters/in-memory-context-repository.js';
 import type { IContextRepository } from '../../domain/context-repository.interface.js';
 
 describe('ContextVariablesService', () => {

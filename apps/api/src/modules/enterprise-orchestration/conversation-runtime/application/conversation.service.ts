@@ -3,7 +3,7 @@ import { randomUUID } from 'node:crypto';
 import type { Metadata, PaginatedResult } from '../../shared/types/index.js';
 import type { IConversationRepository } from '../domain/conversation-repository.interface.js';
 import { Conversation, type Message } from '../domain/conversation.entity.js';
-import { ConversationState, } from '../domain/conversation-state.vo.js';
+import { ConversationState } from '../domain/conversation-state.vo.js';
 
 interface MessageQueryOptions {
   offset?: number;
@@ -162,7 +162,9 @@ export class ConversationService {
 
     for (const id of this.conversationIds) {
       const conversation = await this.repository.getConversation(id);
-      if (conversation && conversation.status === 'active' && conversation.createdAt < cutoff) {
+      const isStale = maxAge <= 0 || (conversation?.createdAt && conversation.createdAt < cutoff);
+
+      if (conversation && conversation.status === 'active' && isStale) {
         await this.repository.updateStatus(id, 'expired');
         conversation.status = 'expired';
         expiredCount += 1;

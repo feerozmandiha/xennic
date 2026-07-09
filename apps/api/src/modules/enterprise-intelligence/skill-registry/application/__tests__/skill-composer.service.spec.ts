@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { SkillComposerService } from '../skill-composer.service.js';
 import { SkillRegistryService } from '../skill-registry.service.js';
 import type { ISkillRegistry } from '../../domain/skill-registry.interface.js';
-import { InMemorySkillRegistry } from '../../../testing/adapters/in-memory-skill-registry.js';
+import { InMemorySkillRegistry } from '../../testing/adapters/in-memory-skill-registry.js';
 
 describe('SkillComposerService', () => {
   let composer: SkillComposerService;
@@ -37,7 +37,9 @@ describe('SkillComposerService', () => {
         description: 'First skill',
         dependencies: [],
         inputs: [{ name: 'x', type: 'number', description: 'Input X', required: true, schema: {} }],
-        outputs: [{ name: 'y', type: 'number', description: 'Output Y', required: true, schema: {} }],
+        outputs: [
+          { name: 'y', type: 'number', description: 'Output Y', required: true, schema: {} },
+        ],
         policies: [],
         tags: [],
       });
@@ -47,7 +49,9 @@ describe('SkillComposerService', () => {
         description: 'Second skill',
         dependencies: [],
         inputs: [{ name: 'z', type: 'number', description: 'Input Z', required: true, schema: {} }],
-        outputs: [{ name: 'w', type: 'number', description: 'Output W', required: true, schema: {} }],
+        outputs: [
+          { name: 'w', type: 'number', description: 'Output W', required: true, schema: {} },
+        ],
         policies: [],
         tags: [],
       });
@@ -67,13 +71,9 @@ describe('SkillComposerService', () => {
     });
 
     it('should throw when a skill is not found', async () => {
-      await expect(
-        composer.compose(
-          ['nonexistent-id'],
-          [{}],
-          [{}],
-        ),
-      ).rejects.toThrow('Skill nonexistent-id not found');
+      await expect(composer.compose(['nonexistent-id'], [{}], [{}])).rejects.toThrow(
+        'Skill nonexistent-id not found',
+      );
     });
   });
 
@@ -89,12 +89,7 @@ describe('SkillComposerService', () => {
         tags: [],
       });
 
-      const composition = await composer.compose(
-        [skillA.id],
-        [{}],
-        [{}],
-        'decomp-test',
-      );
+      const composition = await composer.compose([skillA.id], [{}], [{}], 'decomp-test');
 
       const skills = await composer.decompose(composition.id);
       expect(skills.length).toBe(1);
@@ -115,7 +110,9 @@ describe('SkillComposerService', () => {
         description: 'Graph A',
         dependencies: [],
         inputs: [{ name: 'in', type: 'string', description: 'Input', required: true, schema: {} }],
-        outputs: [{ name: 'mid', type: 'string', description: 'Intermediate', required: true, schema: {} }],
+        outputs: [
+          { name: 'mid', type: 'string', description: 'Intermediate', required: true, schema: {} },
+        ],
         policies: [],
         tags: [],
       });
@@ -124,8 +121,12 @@ describe('SkillComposerService', () => {
         name: 'graph-b',
         description: 'Graph B',
         dependencies: [],
-        inputs: [{ name: 'mid', type: 'string', description: 'Mid input', required: true, schema: {} }],
-        outputs: [{ name: 'out', type: 'string', description: 'Final output', required: true, schema: {} }],
+        inputs: [
+          { name: 'mid', type: 'string', description: 'Mid input', required: true, schema: {} },
+        ],
+        outputs: [
+          { name: 'out', type: 'string', description: 'Final output', required: true, schema: {} },
+        ],
         policies: [],
         tags: [],
       });
@@ -154,11 +155,7 @@ describe('SkillComposerService', () => {
         tags: [],
       });
 
-      const composition = await composer.compose(
-        [skillA.id],
-        [{ x: 'value' }],
-        [{ y: 'out' }],
-      );
+      const composition = await composer.compose([skillA.id], [{ x: 'value' }], [{ y: 'out' }]);
 
       const validation = await composer.validateComposition(composition.id);
       expect(validation.valid).toBe(true);
