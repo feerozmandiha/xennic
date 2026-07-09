@@ -24,7 +24,8 @@
     "prisma:validate": "prisma validate",
     "validate:arch": "npx tsx tools/architecture/validate.ts",
     "validate:release": "npx tsx tools/release/release-validator.ts --skip-slow",
-    "prepare": "husky"
+    "prepare": "husky",
+    "admin:upsert": "node scripts/admin/upsert-admin.cjs"
   },
   "devDependencies": {
     "@commitlint/cli": "^21.0.2",
