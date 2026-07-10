@@ -77,8 +77,16 @@ jobs:
         run: pnpm --dir apps/api exec jest --runInBand
         timeout-minutes: 15
 
-      - name: Build
-        run: pnpm build
+      - name: Build Database
+        run: pnpm --filter @xennic/database build
+        timeout-minutes: 2
+
+      - name: Build API
+        run: pnpm --filter @xennic/api build
+        timeout-minutes: 5
+
+      - name: Build Web
+        run: pnpm --filter @xennic/web build
         timeout-minutes: 10
 
   engineering-service:
