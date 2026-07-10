@@ -67,9 +67,11 @@ jobs:
 
       - name: Lint API
         run: pnpm --filter @xennic/api lint
+        timeout-minutes: 5
 
       - name: Lint Web
         run: pnpm --filter @xennic/web lint
+        timeout-minutes: 5
 
       - name: Test API
         run: pnpm --dir apps/api exec jest --runInBand
@@ -94,10 +96,10 @@ jobs:
           cache-dependency-path: workspace/services/engineering-service/requirements.txt
 
       - name: Install dependencies
-        run: pip install -r requirements.txt
+        run: python -m pip install -r requirements.txt
 
       - name: Test
-        run: pytest tests -q --tb=short
+        run: python -m pytest tests -q --tb=short
 
   ai-service:
     runs-on: ubuntu-latest
@@ -114,7 +116,7 @@ jobs:
           cache-dependency-path: workspace/services/ai-service/requirements.txt
 
       - name: Install dependencies
-        run: pip install -r requirements.txt
+        run: python -m pip install -r requirements.txt
 
       - name: Test
-        run: pytest tests -q --tb=short
+        run: python -m pytest tests -q --tb=short

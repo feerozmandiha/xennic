@@ -10,3 +10,5 @@ pint>=0.24.0
 pandapower>=2.14.0
 python-multipart>=0.0.20
 httpx>=0.28.0
+pytest>=8.3.0
+pytest-cov>=6.0.0

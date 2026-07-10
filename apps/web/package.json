@@ -51,6 +51,7 @@
     "jspdf": "^2.5.2",
     "jspdf-autotable": "^5.0.8",
     "katex": "^0.17.0",
+    "lowlight": "^3.3.0",
     "lucide-react": "^0.511.0",
     "next": "15.3.2",
     "next-intl": "^4.1.0",
@@ -63,12 +64,12 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.1",
-    "eslint-config-next": "15.3.2",
     "@tailwindcss/postcss": "^4.1.8",
     "@tailwindcss/typography": "^0.5.20",
     "@types/node": "^22.0.0",
     "@types/react": "^19.1.5",
     "@types/react-dom": "^19.1.5",
+    "eslint-config-next": "15.3.2",
     "tailwindcss": "^4.1.8",
     "typescript": "^5.8.3"
   }
