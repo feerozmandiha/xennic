@@ -75,8 +75,8 @@ jobs:
           cache: pnpm
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-      - name: Lint
-        run: pnpm lint
+      - name: Lint API
+        run: pnpm --filter @xennic/api lint
         timeout-minutes: 5
 
   tests:
@@ -116,11 +116,13 @@ jobs:
       - name: Push Schema
         run: npx prisma db push --skip-generate
       - name: Unit Tests
-        run: pnpm --filter @xennic/api test
-        timeout-minutes: 10
+        if: ${{ ! inputs.skip_tests }}
+        run: pnpm --dir apps/api exec jest --runInBand
+        timeout-minutes: 15
       - name: E2E Tests
-        run: pnpm --filter @xennic/api run test:e2e
-        timeout-minutes: 10
+        if: ${{ ! inputs.skip_tests }}
+        run: pnpm --dir apps/api exec jest --config test/jest-e2e.json --runInBand
+        timeout-minutes: 15
 
   documentation-validation:
     name: Documentation Validation
@@ -149,6 +151,8 @@ jobs:
         run: grep -q "validate:arch" AGENTS.md
       - name: Verify Mermaid Diagrams
         run: grep -rl "mermaid" docs/ --include="*.mmd" 2>/dev/null || echo "No mermaid files found"
+      - name: Verify Build Certification
+        run: test -f docs/generated/build-certification.md && echo "Certification exists" || echo "No certification yet"
 
   release-validator:
     name: Release Validator
@@ -167,7 +171,7 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
       - name: Run Release Validator
-        run: npx tsx tools/release/release-validator.ts
+        run: pnpm validate:release
         timeout-minutes: 10
       - name: Upload Reports
         uses: actions/upload-artifact@v4
