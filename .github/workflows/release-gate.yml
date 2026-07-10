@@ -117,14 +117,35 @@ jobs:
         run: pnpm db:generate
       - name: Push Schema
         run: npx prisma db push --skip-generate
+      - name: Generate CI JWT keys
+        run: |
+          mkdir -p /tmp/xennic-jwt
+          openssl genrsa -out /tmp/xennic-jwt/jwtRS256.key 2048
+          openssl rsa -in /tmp/xennic-jwt/jwtRS256.key -pubout -out /tmp/xennic-jwt/jwtRS256.key.pub
+          echo "JWT_PRIVATE_KEY_PATH=/tmp/xennic-jwt/jwtRS256.key" >> "$GITHUB_ENV"
+          echo "JWT_PUBLIC_KEY_PATH=/tmp/xennic-jwt/jwtRS256.key.pub" >> "$GITHUB_ENV"
+          echo "JWT_ISSUER=xennic-platform" >> "$GITHUB_ENV"
+          echo "JWT_AUDIENCE=xennic-client" >> "$GITHUB_ENV"
+          echo "JWT_ACCESS_TOKEN_TTL=900" >> "$GITHUB_ENV"
+          echo "JWT_REFRESH_TOKEN_TTL=2592000" >> "$GITHUB_ENV"
       - name: Unit Tests
-        if: ${{ ! inputs.skip_tests }}
-        run: pnpm --dir apps/api exec jest --runInBand
+        if: ${{ github.event_name != 'workflow_dispatch' || !inputs.skip_tests }}
+        run: |
+          set -o pipefail
+          pnpm --dir apps/api exec jest --runInBand 2>&1 | tee /tmp/xennic-release-unit-tests.log
         timeout-minutes: 15
       - name: E2E Tests
-        if: ${{ ! inputs.skip_tests }}
+        if: ${{ github.event_name != 'workflow_dispatch' || !inputs.skip_tests }}
         run: pnpm --dir apps/api exec jest --config test/jest-e2e.json --runInBand
         timeout-minutes: 15
+      - name: Upload Release Gate unit test log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-gate-unit-test-log
+          path: /tmp/xennic-release-unit-tests.log
+          if-no-files-found: ignore
+          retention-days: 7
 
   documentation-validation:
     name: Documentation Validation
