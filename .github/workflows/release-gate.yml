@@ -172,6 +172,17 @@ jobs:
           cache: pnpm
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+      - name: Generate CI JWT keys
+        run: |
+          mkdir -p /tmp/xennic-jwt
+          openssl genrsa -out /tmp/xennic-jwt/jwtRS256.key 2048
+          openssl rsa -in /tmp/xennic-jwt/jwtRS256.key -pubout -out /tmp/xennic-jwt/jwtRS256.key.pub
+          echo "JWT_PRIVATE_KEY_PATH=/tmp/xennic-jwt/jwtRS256.key" >> "$GITHUB_ENV"
+          echo "JWT_PUBLIC_KEY_PATH=/tmp/xennic-jwt/jwtRS256.key.pub" >> "$GITHUB_ENV"
+          echo "JWT_ISSUER=xennic-platform" >> "$GITHUB_ENV"
+          echo "JWT_AUDIENCE=xennic-client" >> "$GITHUB_ENV"
+          echo "JWT_ACCESS_TOKEN_TTL=900" >> "$GITHUB_ENV"
+          echo "JWT_REFRESH_TOKEN_TTL=2592000" >> "$GITHUB_ENV"
       - name: Run Release Validator
         run: pnpm validate:release
         timeout-minutes: 10

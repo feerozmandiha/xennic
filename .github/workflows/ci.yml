@@ -77,17 +77,46 @@ jobs:
         run: pnpm --dir apps/api exec jest --runInBand
         timeout-minutes: 15
 
+      - name: Generate CI JWT keys
+        run: |
+          mkdir -p /tmp/xennic-jwt
+          openssl genrsa -out /tmp/xennic-jwt/jwtRS256.key 2048
+          openssl rsa -in /tmp/xennic-jwt/jwtRS256.key -pubout -out /tmp/xennic-jwt/jwtRS256.key.pub
+          echo "JWT_PRIVATE_KEY_PATH=/tmp/xennic-jwt/jwtRS256.key" >> "$GITHUB_ENV"
+          echo "JWT_PUBLIC_KEY_PATH=/tmp/xennic-jwt/jwtRS256.key.pub" >> "$GITHUB_ENV"
+          echo "JWT_ISSUER=xennic-platform" >> "$GITHUB_ENV"
+          echo "JWT_AUDIENCE=xennic-client" >> "$GITHUB_ENV"
+          echo "JWT_ACCESS_TOKEN_TTL=900" >> "$GITHUB_ENV"
+          echo "JWT_REFRESH_TOKEN_TTL=2592000" >> "$GITHUB_ENV"
+
       - name: Build Database
         run: pnpm --filter @xennic/database build
         timeout-minutes: 2
 
       - name: Build API
-        run: pnpm --filter @xennic/api build
-        timeout-minutes: 5
+        run: |
+          set -o pipefail
+          echo "Node: $(node --version)"
+          echo "pnpm: $(pnpm --version)"
+          echo "JWT_PRIVATE_KEY_PATH=$JWT_PRIVATE_KEY_PATH"
+          echo "JWT_PUBLIC_KEY_PATH=$JWT_PUBLIC_KEY_PATH"
+          test -f "$JWT_PRIVATE_KEY_PATH"
+          test -f "$JWT_PUBLIC_KEY_PATH"
+          pnpm --filter @xennic/api build 2>&1 | tee /tmp/xennic-api-build.log
+        timeout-minutes: 10
 
       - name: Build Web
         run: pnpm --filter @xennic/web build
         timeout-minutes: 10
+
+      - name: Upload API build log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-build-log
+          path: /tmp/xennic-api-build.log
+          if-no-files-found: ignore
+          retention-days: 7
 
   engineering-service:
     runs-on: ubuntu-latest
