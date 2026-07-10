@@ -56,9 +56,11 @@ jobs:
           cache: pnpm
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+      - name: Generate Prisma Client
+        run: pnpm db:generate
       - name: Typecheck
         run: pnpm typecheck
-        timeout-minutes: 5
+        timeout-minutes: 10
 
   lint:
     name: Lint
