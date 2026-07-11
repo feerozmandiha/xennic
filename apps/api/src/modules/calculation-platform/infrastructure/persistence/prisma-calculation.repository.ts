@@ -1,13 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@xennic/database';
 import type { ICalculationRepository } from '../../application/ports/calculation-repository.interface.js';
 import { CalculationCategoryEntity } from '../../domain/entities/calculation-category.entity.js';
 import { CalculationDefinitionEntity } from '../../domain/entities/calculation-definition.entity.js';
 import { CalculationVersionEntity } from '../../domain/entities/calculation-version.entity.js';
 import { FormulaDefinitionEntity } from '../../domain/entities/formula-definition.entity.js';
 import { FormulaVariableEntity } from '../../domain/entities/formula-variable.entity.js';
-
-const prisma = new PrismaClient();
 
 @Injectable()
 export class PrismaCalculationRepository implements ICalculationRepository {
@@ -63,20 +61,29 @@ export class PrismaCalculationRepository implements ICalculationRepository {
 
   async findDefinitionById(id: string): Promise<CalculationDefinitionEntity | null> {
     const row = await prisma.calculation_definitions.findUnique({ where: { id } });
-    return row ? CalculationDefinitionEntity.reconstitute({ ...row, metadata: row.metadata as any }) : null;
+    return row
+      ? CalculationDefinitionEntity.reconstitute({ ...row, metadata: row.metadata as any })
+      : null;
   }
 
   async findDefinitionBySlug(slug: string): Promise<CalculationDefinitionEntity | null> {
     const row = await prisma.calculation_definitions.findUnique({ where: { slug } });
-    return row ? CalculationDefinitionEntity.reconstitute({ ...row, metadata: row.metadata as any }) : null;
+    return row
+      ? CalculationDefinitionEntity.reconstitute({ ...row, metadata: row.metadata as any })
+      : null;
   }
 
-  async findAllDefinitions(options?: { categoryId?: string; enabled?: boolean }): Promise<CalculationDefinitionEntity[]> {
+  async findAllDefinitions(options?: {
+    categoryId?: string;
+    enabled?: boolean;
+  }): Promise<CalculationDefinitionEntity[]> {
     const where: Record<string, unknown> = {};
     if (options?.categoryId) where.category_id = options.categoryId;
     if (options?.enabled !== undefined) where.enabled = options.enabled;
     const rows = await prisma.calculation_definitions.findMany({ where, orderBy: { name: 'asc' } });
-    return rows.map(r => CalculationDefinitionEntity.reconstitute({ ...r, metadata: r.metadata as any }));
+    return rows.map((r) =>
+      CalculationDefinitionEntity.reconstitute({ ...r, metadata: r.metadata as any }),
+    );
   }
 
   async saveDefinition(definition: CalculationDefinitionEntity): Promise<void> {
@@ -124,7 +131,9 @@ export class PrismaCalculationRepository implements ICalculationRepository {
 
   async findVersionById(id: string): Promise<CalculationVersionEntity | null> {
     const row = await prisma.calculation_versions.findUnique({ where: { id } });
-    return row ? CalculationVersionEntity.reconstitute({ ...row, dsl_definition: row.dsl_definition as any }) : null;
+    return row
+      ? CalculationVersionEntity.reconstitute({ ...row, dsl_definition: row.dsl_definition as any })
+      : null;
   }
 
   async findVersionsByDefinitionId(definitionId: string): Promise<CalculationVersionEntity[]> {
@@ -132,14 +141,18 @@ export class PrismaCalculationRepository implements ICalculationRepository {
       where: { definition_id: definitionId },
       orderBy: { created_at: 'desc' },
     });
-    return rows.map(r => CalculationVersionEntity.reconstitute({ ...r, dsl_definition: r.dsl_definition as any }));
+    return rows.map((r) =>
+      CalculationVersionEntity.reconstitute({ ...r, dsl_definition: r.dsl_definition as any }),
+    );
   }
 
   async findActiveVersion(definitionId: string): Promise<CalculationVersionEntity | null> {
     const row = await prisma.calculation_versions.findFirst({
       where: { definition_id: definitionId, status: 'active' },
     });
-    return row ? CalculationVersionEntity.reconstitute({ ...row, dsl_definition: row.dsl_definition as any }) : null;
+    return row
+      ? CalculationVersionEntity.reconstitute({ ...row, dsl_definition: row.dsl_definition as any })
+      : null;
   }
 
   async saveVersion(version: CalculationVersionEntity): Promise<void> {
@@ -169,14 +182,18 @@ export class PrismaCalculationRepository implements ICalculationRepository {
 
   async findFormulaById(id: string): Promise<FormulaDefinitionEntity | null> {
     const row = await prisma.formula_definitions.findUnique({ where: { id } });
-    return row ? FormulaDefinitionEntity.reconstitute({ ...row, metadata: row.metadata as any }) : null;
+    return row
+      ? FormulaDefinitionEntity.reconstitute({ ...row, metadata: row.metadata as any })
+      : null;
   }
 
   async findFormulasByDefinitionId(definitionId: string): Promise<FormulaDefinitionEntity[]> {
     const rows = await prisma.formula_definitions.findMany({
       where: { definition_id: definitionId },
     });
-    return rows.map(r => FormulaDefinitionEntity.reconstitute({ ...r, metadata: r.metadata as any }));
+    return rows.map((r) =>
+      FormulaDefinitionEntity.reconstitute({ ...r, metadata: r.metadata as any }),
+    );
   }
 
   async saveFormula(formula: FormulaDefinitionEntity): Promise<void> {
@@ -216,7 +233,13 @@ export class PrismaCalculationRepository implements ICalculationRepository {
       where: { formula_id: formulaId },
       orderBy: { sort_order: 'asc' },
     });
-    return rows.map(r => FormulaVariableEntity.reconstitute({ ...r, default_value: r.default_value as any, enum_values: r.enum_values as any }));
+    return rows.map((r) =>
+      FormulaVariableEntity.reconstitute({
+        ...r,
+        default_value: r.default_value as any,
+        enum_values: r.enum_values as any,
+      }),
+    );
   }
 
   async saveVariable(variable: FormulaVariableEntity): Promise<void> {

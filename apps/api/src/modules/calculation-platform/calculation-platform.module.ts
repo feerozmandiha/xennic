@@ -105,18 +105,22 @@ import { UnitConversionService as UnitAppService } from './application/services/
 export class CalculationPlatformModule implements OnModuleInit {
   private readonly logger = new Logger(CalculationPlatformModule.name);
 
-  constructor(
-    private readonly unitService: UnitAppService,
-  ) {}
+  constructor(private readonly unitService: UnitAppService) {}
 
   async onModuleInit(): Promise<void> {
+    if (process.env.NODE_ENV === 'test' || process.env.CI === 'true') {
+      this.logger.log('Unit seeding skipped in test/CI environment');
+      return;
+    }
     try {
       const count = await this.unitService.seedDefaultUnits();
       if (count > 0) {
         this.logger.log(`Seeded ${count} default unit definitions`);
       }
     } catch (error) {
-      this.logger.warn(`Unit seeding skipped (DB may not be available): ${error instanceof Error ? error.message : 'Unknown'}`);
+      this.logger.warn(
+        `Unit seeding skipped (DB may not be available): ${error instanceof Error ? error.message : 'Unknown'}`,
+      );
     }
   }
 }

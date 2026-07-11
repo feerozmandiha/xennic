@@ -1,10 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@xennic/database';
 import type { IUnitRepository } from '../../application/ports/unit-repository.interface.js';
 import { UnitDefinitionEntity } from '../../domain/entities/unit-definition.entity.js';
 import { UnitConversionEntity } from '../../domain/entities/unit-conversion.entity.js';
-
-const prisma = new PrismaClient();
 
 @Injectable()
 export class PrismaUnitRepository implements IUnitRepository {
@@ -33,11 +31,23 @@ export class PrismaUnitRepository implements IUnitRepository {
   async saveUnit(unit: UnitDefinitionEntity): Promise<void> {
     await prisma.unit_definitions.upsert({
       where: { id: unit.id },
-      update: { name: unit.name, symbol: unit.symbol, factor: unit.factor, offset: unit.offset, description: unit.description },
+      update: {
+        name: unit.name,
+        symbol: unit.symbol,
+        factor: unit.factor,
+        offset: unit.offset,
+        description: unit.description,
+      },
       create: {
-        id: unit.id, category: unit.category, name: unit.name, symbol: unit.symbol,
-        base_unit: unit.baseUnit, factor: unit.factor, offset: unit.offset,
-        description: unit.description, created_at: unit.createdAt,
+        id: unit.id,
+        category: unit.category,
+        name: unit.name,
+        symbol: unit.symbol,
+        base_unit: unit.baseUnit,
+        factor: unit.factor,
+        offset: unit.offset,
+        description: unit.description,
+        created_at: unit.createdAt,
       },
     });
   }
@@ -61,8 +71,13 @@ export class PrismaUnitRepository implements IUnitRepository {
       where: { id: conversion.id },
       update: { factor: conversion.factor, offset: conversion.offset, formula: conversion.formula },
       create: {
-        id: conversion.id, from_unit_id: conversion.fromUnitId, to_unit_id: conversion.toUnitId,
-        factor: conversion.factor, offset: conversion.offset, formula: conversion.formula, created_at: conversion.createdAt,
+        id: conversion.id,
+        from_unit_id: conversion.fromUnitId,
+        to_unit_id: conversion.toUnitId,
+        factor: conversion.factor,
+        offset: conversion.offset,
+        formula: conversion.formula,
+        created_at: conversion.createdAt,
       },
     });
   }

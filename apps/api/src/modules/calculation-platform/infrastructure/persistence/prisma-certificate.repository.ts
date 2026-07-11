@@ -1,9 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@xennic/database';
 import type { ICertificateRepository } from '../../application/ports/certificate-repository.interface.js';
 import { CalculationCertificateEntity } from '../../domain/entities/calculation-certificate.entity.js';
-
-const prisma = new PrismaClient();
 
 @Injectable()
 export class PrismaCertificateRepository implements ICertificateRepository {
@@ -15,21 +13,33 @@ export class PrismaCertificateRepository implements ICertificateRepository {
   }
 
   async findByCertificateId(certificateId: string): Promise<CalculationCertificateEntity | null> {
-    const row = await prisma.calculation_certificates.findUnique({ where: { certificate_id: certificateId } });
+    const row = await prisma.calculation_certificates.findUnique({
+      where: { certificate_id: certificateId },
+    });
     return row ? CalculationCertificateEntity.reconstitute(row) : null;
   }
 
   async findByResultId(resultId: string): Promise<CalculationCertificateEntity | null> {
-    const row = await prisma.calculation_certificates.findUnique({ where: { result_id: resultId } });
+    const row = await prisma.calculation_certificates.findUnique({
+      where: { result_id: resultId },
+    });
     return row ? CalculationCertificateEntity.reconstitute(row) : null;
   }
 
-  async findByWorkspaceId(workspaceId: string, options?: { page?: number; limit?: number }): Promise<{ data: CalculationCertificateEntity[]; total: number }> {
+  async findByWorkspaceId(
+    workspaceId: string,
+    options?: { page?: number; limit?: number },
+  ): Promise<{ data: CalculationCertificateEntity[]; total: number }> {
     const page = options?.page ?? 1;
     const limit = options?.limit ?? 20;
     const where = { workspace_id: workspaceId };
     const [rows, total] = await Promise.all([
-      prisma.calculation_certificates.findMany({ where, orderBy: { generated_at: 'desc' }, skip: (page - 1) * limit, take: limit }),
+      prisma.calculation_certificates.findMany({
+        where,
+        orderBy: { generated_at: 'desc' },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
       prisma.calculation_certificates.count({ where }),
     ]);
     return { data: rows.map(CalculationCertificateEntity.reconstitute), total };

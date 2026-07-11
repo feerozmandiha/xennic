@@ -1,9 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@xennic/database';
 import type { IAuditRepository } from '../../application/ports/audit-repository.interface.js';
 import { CalculationAuditEntity } from '../../domain/entities/calculation-audit.entity.js';
-
-const prisma = new PrismaClient();
 
 @Injectable()
 export class PrismaAuditRepository implements IAuditRepository {
@@ -31,36 +29,48 @@ export class PrismaAuditRepository implements IAuditRepository {
     });
   }
 
-  async findByWorkspaceId(workspaceId: string, options?: { page?: number; limit?: number; action?: string; entityType?: string }): Promise<{ data: CalculationAuditEntity[]; total: number }> {
+  async findByWorkspaceId(
+    workspaceId: string,
+    options?: { page?: number; limit?: number; action?: string; entityType?: string },
+  ): Promise<{ data: CalculationAuditEntity[]; total: number }> {
     const page = options?.page ?? 1;
     const limit = options?.limit ?? 20;
     const where: Record<string, unknown> = { workspace_id: workspaceId };
     if (options?.action) where.action = options.action;
     if (options?.entityType) where.entity_type = options.entityType;
     const [rows, total] = await Promise.all([
-      prisma.calculation_audit.findMany({ where, orderBy: { created_at: 'desc' }, skip: (page - 1) * limit, take: limit }),
+      prisma.calculation_audit.findMany({
+        where,
+        orderBy: { created_at: 'desc' },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
       prisma.calculation_audit.count({ where }),
     ]);
     return {
-      data: rows.map(r => CalculationAuditEntity.reconstitute({
-        ...r,
-        inputs: r.inputs as any,
-        outputs: r.outputs as any,
-        ai_response: r.ai_response as any,
-        execution_path: r.execution_path as any,
-      })),
+      data: rows.map((r) =>
+        CalculationAuditEntity.reconstitute({
+          ...r,
+          inputs: r.inputs as any,
+          outputs: r.outputs as any,
+          ai_response: r.ai_response as any,
+          execution_path: r.execution_path as any,
+        }),
+      ),
       total,
     };
   }
 
   async findById(id: string): Promise<CalculationAuditEntity | null> {
     const row = await prisma.calculation_audit.findUnique({ where: { id } });
-    return row ? CalculationAuditEntity.reconstitute({
-      ...row,
-      inputs: row.inputs as any,
-      outputs: row.outputs as any,
-      ai_response: row.ai_response as any,
-      execution_path: row.execution_path as any,
-    }) : null;
+    return row
+      ? CalculationAuditEntity.reconstitute({
+          ...row,
+          inputs: row.inputs as any,
+          outputs: row.outputs as any,
+          ai_response: row.ai_response as any,
+          execution_path: row.execution_path as any,
+        })
+      : null;
   }
 }

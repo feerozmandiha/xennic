@@ -1,9 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@xennic/database';
 import type { IResultRepository } from '../../application/ports/result-repository.interface.js';
 import { CalculationResultEntity } from '../../domain/entities/calculation-result.entity.js';
-
-const prisma = new PrismaClient();
 
 @Injectable()
 export class PrismaResultRepository implements IResultRepository {
@@ -20,7 +18,10 @@ export class PrismaResultRepository implements IResultRepository {
     });
   }
 
-  async findByWorkspaceId(workspaceId: string, options?: { page?: number; limit?: number; definitionId?: string }): Promise<{ data: CalculationResultEntity[]; total: number }> {
+  async findByWorkspaceId(
+    workspaceId: string,
+    options?: { page?: number; limit?: number; definitionId?: string },
+  ): Promise<{ data: CalculationResultEntity[]; total: number }> {
     const page = options?.page ?? 1;
     const limit = options?.limit ?? 20;
     const where: Record<string, unknown> = { workspace_id: workspaceId };
@@ -35,12 +36,14 @@ export class PrismaResultRepository implements IResultRepository {
       prisma.calculation_results.count({ where }),
     ]);
     return {
-      data: rows.map(r => CalculationResultEntity.reconstitute({
-        ...r,
-        inputs: r.inputs as any,
-        outputs: r.outputs as any | null,
-        ai_review: r.ai_review as any | null,
-      })),
+      data: rows.map((r) =>
+        CalculationResultEntity.reconstitute({
+          ...r,
+          inputs: r.inputs as any,
+          outputs: r.outputs as any | null,
+          ai_review: r.ai_review as any | null,
+        }),
+      ),
       total,
     };
   }
