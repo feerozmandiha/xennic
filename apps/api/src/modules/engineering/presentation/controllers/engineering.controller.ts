@@ -27,7 +27,7 @@ import { PermissionsGuard } from '../../../rbac/infrastructure/guards/permission
 import { RequirePermissions } from '../../../rbac/infrastructure/decorators/permissions.decorator.js';
 import { EngineeringService } from '../../application/services/engineering.service.js';
 import {
-  RunCalculationDto,
+  EngineeringRunCalculationDto,
   CalculationResponseDto,
   CalculationResultDto,
   SUPPORTED_CALCULATION_TYPES,
@@ -48,21 +48,26 @@ export class EngineeringController {
     summary: 'List calculations',
     description: 'Returns paginated list of calculations in the workspace.',
   })
-  @ApiQuery({ name: 'page',      required: false, type: Number })
-  @ApiQuery({ name: 'limit',     required: false, type: Number })
+  @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'limit', required: false, type: Number })
   @ApiQuery({ name: 'projectId', required: false, type: String, description: 'Filter by project' })
-  @ApiQuery({ name: 'type',      required: false, type: String, description: 'Filter by calculation type (e.g. BASIC-001)' })
+  @ApiQuery({
+    name: 'type',
+    required: false,
+    type: String,
+    description: 'Filter by calculation type (e.g. BASIC-001)',
+  })
   @ApiResponse({ status: 200, description: 'Calculations retrieved successfully' })
   async findAll(
     @Req() req: any,
-    @Query('page')      page?: string,
-    @Query('limit')     limit?: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
     @Query('projectId') projectId?: string,
-    @Query('type')      type?: string,
+    @Query('type') type?: string,
   ) {
     const result = await this.engineeringService.findAll(
       req.workspaceId,
-      page  ? parseInt(page,  10) : 1,
+      page ? parseInt(page, 10) : 1,
       limit ? parseInt(limit, 10) : 20,
       projectId,
       type,
@@ -83,22 +88,30 @@ export class EngineeringController {
     summary: 'Run a calculation',
     description:
       'Executes an engineering calculation via the Python engine, saves the result and returns it.\n\n' +
-      '**Supported types:** ' + SUPPORTED_CALCULATION_TYPES.join(', '),
+      '**Supported types:** ' +
+      SUPPORTED_CALCULATION_TYPES.join(', '),
   })
-  @ApiBody({ type: RunCalculationDto })
-  @ApiResponse({ status: 201, description: 'Calculation executed and saved', type: CalculationResultDto })
-  @ApiResponse({ status: 400, description: 'Validation failed — invalid inputs for the calculation type' })
+  @ApiBody({ type: EngineeringRunCalculationDto })
+  @ApiResponse({
+    status: 201,
+    description: 'Calculation executed and saved',
+    type: CalculationResultDto,
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Validation failed — invalid inputs for the calculation type',
+  })
   @ApiResponse({ status: 403, description: 'This calculation requires a Pro or Enterprise plan' })
   @ApiResponse({ status: 404, description: 'Calculation type not found' })
   @ApiResponse({ status: 503, description: 'Engineering service unavailable' })
-  async run(@Body() dto: RunCalculationDto, @Req() req: any) {
+  async run(@Body() dto: EngineeringRunCalculationDto, @Req() req: any) {
     // planSlug از دیتابیس خوانده می‌شود — نه از JWT
     const { calculation, result } = await this.engineeringService.run({
       workspaceId: req.workspaceId,
-      projectId:   dto.projectId,
-      userId:      req.user.userId,
-      type:        dto.type,
-      inputs:      dto.inputs,
+      projectId: dto.projectId,
+      userId: req.user.userId,
+      type: dto.type,
+      inputs: dto.inputs,
     });
 
     return {
@@ -114,7 +127,10 @@ export class EngineeringController {
 
   @Get('calculations/:id')
   @RequirePermissions('engineering.read')
-  @ApiOperation({ summary: 'Get calculation by ID', description: 'Returns a specific calculation.' })
+  @ApiOperation({
+    summary: 'Get calculation by ID',
+    description: 'Returns a specific calculation.',
+  })
   @ApiParam({ name: 'id', description: 'Calculation UUID' })
   @ApiResponse({ status: 200, description: 'Calculation found', type: CalculationResponseDto })
   @ApiResponse({ status: 404, description: 'Calculation not found' })
@@ -128,7 +144,10 @@ export class EngineeringController {
   @Delete('calculations/:id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @RequirePermissions('engineering.calculate')
-  @ApiOperation({ summary: 'Delete calculation', description: 'Permanently deletes a calculation record.' })
+  @ApiOperation({
+    summary: 'Delete calculation',
+    description: 'Permanently deletes a calculation record.',
+  })
   @ApiParam({ name: 'id', description: 'Calculation UUID' })
   @ApiResponse({ status: 204, description: 'Calculation deleted' })
   async delete(@Param('id') id: string, @Req() req: any) {
@@ -141,13 +160,11 @@ export class EngineeringController {
   @RequirePermissions('engineering.read')
   @ApiOperation({
     summary: 'Get calculation catalog',
-    description: 'Returns list of available calculation types based on user\'s plan.',
+    description: "Returns list of available calculation types based on user's plan.",
   })
   @ApiResponse({ status: 200, description: 'Catalog retrieved' })
   async getCatalog(@Req() req: any) {
-    const available = this.engineeringService.availableCalculations(
-      req.user.planSlug ?? 'free',
-    );
+    const available = this.engineeringService.availableCalculations(req.user.planSlug ?? 'free');
     return {
       success: true,
       data: available,
@@ -244,17 +261,13 @@ export class EngineeringController {
         engine_version: visionData.engine_version ?? '1.0.0',
       };
 
-      return reply
-        .status(200)
-        .header('Content-Type', 'application/json')
-        .send(response);
-
+      return reply.status(200).header('Content-Type', 'application/json').send(response);
     } catch (err) {
       const msg = (err as Error).message;
       reply.status(503).send({
         success: false,
-        error:   'Bill OCR service unavailable',
-        detail:  msg,
+        error: 'Bill OCR service unavailable',
+        detail: msg,
       });
     }
   }
@@ -266,7 +279,8 @@ export class EngineeringController {
   @ApiOperation({ summary: 'تحلیل دستی مصرف انرژی (Proxy)' })
   async analyzeEnergy(@Req() req: any, @Res() reply: any) {
     return this._proxyJson(
-      req, reply,
+      req,
+      reply,
       `${process.env['ENGINEERING_SERVICE_URL'] ?? 'http://localhost:8001'}/api/v1/engineering/energy/analyze`,
     );
   }
@@ -282,7 +296,8 @@ export class EngineeringController {
   })
   async manualAnalyze(@Req() req: any, @Res() reply: any) {
     return this._proxyJson(
-      req, reply,
+      req,
+      reply,
       `${process.env['ENGINEERING_SERVICE_URL'] ?? 'http://localhost:8001'}/api/v1/engineering/energy/manual-analyze`,
     );
   }
@@ -294,7 +309,7 @@ export class EngineeringController {
   @ApiOperation({ summary: 'پیش‌نمایش OCR قبض (Proxy)' })
   async ocrPreview(@Req() req: any, @Res() reply: any) {
     const PYTHON_URL = process.env['ENGINEERING_SERVICE_URL'] ?? 'http://localhost:8001';
-    const targetUrl  = `${PYTHON_URL}/api/v1/engineering/energy/ocr-preview`;
+    const targetUrl = `${PYTHON_URL}/api/v1/engineering/energy/ocr-preview`;
     try {
       if (!req.isMultipart?.()) {
         return reply.status(400).send({ success: false, error: 'multipart required' });
@@ -305,7 +320,7 @@ export class EngineeringController {
       const pythonRes = await fetch(targetUrl, {
         method: 'POST',
         headers: {
-          'Content-Type':   req.headers['content-type'] ?? '',
+          'Content-Type': req.headers['content-type'] ?? '',
           'Content-Length': String(rawBody.length),
         },
         body: rawBody,
@@ -322,12 +337,12 @@ export class EngineeringController {
 
   private async _proxyJson(req: any, reply: any, targetUrl: string) {
     try {
-      const body       = req.body ?? {};
-      const pythonRes  = await fetch(targetUrl, {
-        method:  'POST',
+      const body = req.body ?? {};
+      const pythonRes = await fetch(targetUrl, {
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify(body),
-        signal:  AbortSignal.timeout(30_000),
+        body: JSON.stringify(body),
+        signal: AbortSignal.timeout(30_000),
       });
       const data = await pythonRes.json().catch(() => ({}));
       reply
@@ -337,7 +352,7 @@ export class EngineeringController {
     } catch {
       reply.status(503).send({
         success: false,
-        error:   { code: 'SERVICE_UNAVAILABLE', message: 'Engineering service unavailable' },
+        error: { code: 'SERVICE_UNAVAILABLE', message: 'Engineering service unavailable' },
       });
     }
   }
