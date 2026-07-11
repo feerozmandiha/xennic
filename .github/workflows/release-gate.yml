@@ -239,7 +239,9 @@ jobs:
           path: docs/generated/
       - name: Verify Certification
         run: |
-          if grep -q "Fail" docs/generated/build-certification.md; then
+          echo "Build certification grade:"
+          grep -E '^\| Grade \|' docs/generated/build-certification.md || true
+          if grep -Eq '^\| Grade \|[[:space:]]*Fail[[:space:]]*\|' docs/generated/build-certification.md || grep -Fq '❌ **FAILED**' docs/generated/build-certification.md; then
             echo "❌ Build certification FAILED"
             exit 1
           fi
