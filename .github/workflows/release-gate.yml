@@ -117,6 +117,9 @@ jobs:
         run: pnpm db:generate
       - name: Push Schema
         run: npx prisma db push --skip-generate
+      - name: Build Database Package
+        run: pnpm --filter @xennic/database build
+        timeout-minutes: 2
       - name: Generate CI JWT keys
         run: |
           mkdir -p /tmp/xennic-jwt

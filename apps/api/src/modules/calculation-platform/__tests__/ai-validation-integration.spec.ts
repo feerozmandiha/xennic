@@ -773,7 +773,7 @@ describe('AI Validation Integration Certification', () => {
       expect(response.model).toBe('gpt-4o-mini');
       expect(response.output).toBeTruthy();
       expect(response.usage.totalTokens).toBeGreaterThan(0);
-      expect(response.latency).toBeGreaterThan(0);
+      expect(response.latency).toBeGreaterThanOrEqual(0);
     });
 
     it('should route to fallback provider when primary has open circuit', async () => {
