@@ -1,9 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@xennic/database';
 import { IQuotaRepository } from '../../application/ports/quota-repository.interface.js';
 import { ProviderQuotaEntity } from '../../domain/entities/provider-quota.entity.js';
-
-const prisma = new PrismaClient();
 
 @Injectable()
 export class PrismaQuotaRepository implements IQuotaRepository {

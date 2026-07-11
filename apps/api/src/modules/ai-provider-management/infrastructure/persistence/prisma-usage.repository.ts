@@ -1,9 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@xennic/database';
 import { IUsageRepository } from '../../application/ports/usage-repository.interface.js';
 import { ProviderUsageEntity } from '../../domain/entities/provider-usage.entity.js';
-
-const prisma = new PrismaClient();
 
 @Injectable()
 export class PrismaUsageRepository implements IUsageRepository {
@@ -13,18 +11,28 @@ export class PrismaUsageRepository implements IUsageRepository {
     return ProviderUsageEntity.reconstitute(row);
   }
 
-  async findByProviderId(providerId: string, options?: { from?: Date; to?: Date }): Promise<ProviderUsageEntity[]> {
+  async findByProviderId(
+    providerId: string,
+    options?: { from?: Date; to?: Date },
+  ): Promise<ProviderUsageEntity[]> {
     const where: any = { provider_id: providerId };
     if (options?.from || options?.to) {
       where.period_start = {};
       if (options?.from) where.period_start.gte = options.from;
       if (options?.to) where.period_start.lte = options.to;
     }
-    const rows = await prisma.ai_provider_usage.findMany({ where, orderBy: { period_start: 'desc' } });
-    return rows.map(r => ProviderUsageEntity.reconstitute(r));
+    const rows = await prisma.ai_provider_usage.findMany({
+      where,
+      orderBy: { period_start: 'desc' },
+    });
+    return rows.map((r) => ProviderUsageEntity.reconstitute(r));
   }
 
-  async findByPeriod(providerId: string, periodStart: Date, periodEnd: Date): Promise<ProviderUsageEntity | null> {
+  async findByPeriod(
+    providerId: string,
+    periodStart: Date,
+    periodEnd: Date,
+  ): Promise<ProviderUsageEntity | null> {
     const row = await prisma.ai_provider_usage.findFirst({
       where: { provider_id: providerId, period_start: periodStart, period_end: periodEnd },
     });
@@ -33,20 +41,22 @@ export class PrismaUsageRepository implements IUsageRepository {
   }
 
   async save(usage: ProviderUsageEntity): Promise<void> {
-    await prisma.ai_provider_usage.create({ data: {
-      id: usage.id,
-      provider_id: usage.providerId,
-      model_id: usage.modelId,
-      request_count: usage.requestCount,
-      prompt_tokens: usage.promptTokens,
-      completion_tokens: usage.completionTokens,
-      total_tokens: usage.totalTokens,
-      estimated_cost: usage.estimatedCost,
-      period_start: usage.periodStart,
-      period_end: usage.periodEnd,
-      workspace_id: usage.workspaceId,
-      created_at: usage.createdAt,
-    }});
+    await prisma.ai_provider_usage.create({
+      data: {
+        id: usage.id,
+        provider_id: usage.providerId,
+        model_id: usage.modelId,
+        request_count: usage.requestCount,
+        prompt_tokens: usage.promptTokens,
+        completion_tokens: usage.completionTokens,
+        total_tokens: usage.totalTokens,
+        estimated_cost: usage.estimatedCost,
+        period_start: usage.periodStart,
+        period_end: usage.periodEnd,
+        workspace_id: usage.workspaceId,
+        created_at: usage.createdAt,
+      },
+    });
   }
 
   async getTotalTokens(providerId: string, from?: Date, to?: Date): Promise<bigint> {

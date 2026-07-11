@@ -1,9 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@xennic/database';
 import { ICredentialRepository } from '../../application/ports/credential-repository.interface.js';
-import { ProviderCredentialEntity, CredentialType } from '../../domain/entities/provider-credential.entity.js';
-
-const prisma = new PrismaClient();
+import {
+  ProviderCredentialEntity,
+  CredentialType,
+} from '../../domain/entities/provider-credential.entity.js';
 
 @Injectable()
 export class PrismaCredentialRepository implements ICredentialRepository {
@@ -17,10 +18,13 @@ export class PrismaCredentialRepository implements ICredentialRepository {
     const rows = await prisma.ai_provider_credentials.findMany({
       where: { provider_id: providerId, deleted_at: null },
     });
-    return rows.map(r => ProviderCredentialEntity.reconstitute(r));
+    return rows.map((r) => ProviderCredentialEntity.reconstitute(r));
   }
 
-  async findByType(providerId: string, type: CredentialType): Promise<ProviderCredentialEntity | null> {
+  async findByType(
+    providerId: string,
+    type: CredentialType,
+  ): Promise<ProviderCredentialEntity | null> {
     const row = await prisma.ai_provider_credentials.findFirst({
       where: { provider_id: providerId, credential_type: type, deleted_at: null },
     });

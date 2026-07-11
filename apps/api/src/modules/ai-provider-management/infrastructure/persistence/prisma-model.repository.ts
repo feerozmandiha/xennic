@@ -1,9 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@xennic/database';
 import { IModelRepository } from '../../application/ports/model-repository.interface.js';
 import { AIModelEntity, ModelType } from '../../domain/entities/ai-model.entity.js';
-
-const prisma = new PrismaClient();
 
 @Injectable()
 export class PrismaModelRepository implements IModelRepository {
@@ -18,7 +16,7 @@ export class PrismaModelRepository implements IModelRepository {
       where: { provider_id: providerId, deleted_at: null },
       orderBy: { model_id: 'asc' },
     });
-    return rows.map(r => AIModelEntity.reconstitute(r));
+    return rows.map((r) => AIModelEntity.reconstitute(r));
   }
 
   async findByModelId(providerId: string, modelId: string): Promise<AIModelEntity | null> {
@@ -33,15 +31,18 @@ export class PrismaModelRepository implements IModelRepository {
     const where: any = { model_type: type, deleted_at: null };
     if (options?.enabledOnly) where.enabled = true;
     const rows = await prisma.ai_models.findMany({ where });
-    return rows.map(r => AIModelEntity.reconstitute(r));
+    return rows.map((r) => AIModelEntity.reconstitute(r));
   }
 
-  async findAll(options?: { enabledOnly?: boolean; includeDeleted?: boolean }): Promise<AIModelEntity[]> {
+  async findAll(options?: {
+    enabledOnly?: boolean;
+    includeDeleted?: boolean;
+  }): Promise<AIModelEntity[]> {
     const where: any = {};
     if (!options?.includeDeleted) where.deleted_at = null;
     if (options?.enabledOnly) where.enabled = true;
     const rows = await prisma.ai_models.findMany({ where, orderBy: { model_id: 'asc' } });
-    return rows.map(r => AIModelEntity.reconstitute(r));
+    return rows.map((r) => AIModelEntity.reconstitute(r));
   }
 
   async save(model: AIModelEntity): Promise<void> {

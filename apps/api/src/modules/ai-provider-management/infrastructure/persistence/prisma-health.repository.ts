@@ -1,9 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@xennic/database';
 import { IHealthRepository } from '../../application/ports/health-repository.interface.js';
-import { ProviderHealthEntity, HealthStatus } from '../../domain/entities/provider-health.entity.js';
-
-const prisma = new PrismaClient();
+import {
+  ProviderHealthEntity,
+  HealthStatus,
+} from '../../domain/entities/provider-health.entity.js';
 
 @Injectable()
 export class PrismaHealthRepository implements IHealthRepository {
@@ -19,7 +20,7 @@ export class PrismaHealthRepository implements IHealthRepository {
       orderBy: { checked_at: 'desc' },
       take: limit,
     });
-    return rows.map(r => ProviderHealthEntity.reconstitute(r));
+    return rows.map((r) => ProviderHealthEntity.reconstitute(r));
   }
 
   async findLatestByProviderId(providerId: string): Promise<ProviderHealthEntity | null> {
@@ -37,7 +38,7 @@ export class PrismaHealthRepository implements IHealthRepository {
       where: { status: { in: ['degraded', 'unhealthy'] } },
       _max: { checked_at: true },
     });
-    return rows.map(r => ({ providerId: r.provider_id, status: r.status as HealthStatus }));
+    return rows.map((r) => ({ providerId: r.provider_id, status: r.status as HealthStatus }));
   }
 
   async save(health: ProviderHealthEntity): Promise<void> {

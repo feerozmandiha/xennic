@@ -1,9 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { PrismaClient, Prisma } from '@prisma/client';
+import { Prisma } from '@prisma/client';
+import { prisma } from '@xennic/database';
 import { IProviderRepository } from '../../application/ports/provider-repository.interface.js';
 import { AIProviderEntity, ProviderType } from '../../domain/entities/ai-provider.entity.js';
-
-const prisma = new PrismaClient();
 
 @Injectable()
 export class PrismaProviderRepository implements IProviderRepository {
@@ -33,24 +32,32 @@ export class PrismaProviderRepository implements IProviderRepository {
     const rows = await prisma.ai_providers.findMany({
       where: { provider_type: type, deleted_at: null },
     });
-    return rows.map(r => AIProviderEntity.reconstitute({
-      ...r,
-      headers: (r.headers as Record<string, string>) ?? {},
-      metadata: (r.metadata as Record<string, unknown>) ?? {},
-    }));
+    return rows.map((r) =>
+      AIProviderEntity.reconstitute({
+        ...r,
+        headers: (r.headers as Record<string, string>) ?? {},
+        metadata: (r.metadata as Record<string, unknown>) ?? {},
+      }),
+    );
   }
 
-  async findAll(options?: { enabled?: boolean; status?: string; includeDeleted?: boolean }): Promise<AIProviderEntity[]> {
+  async findAll(options?: {
+    enabled?: boolean;
+    status?: string;
+    includeDeleted?: boolean;
+  }): Promise<AIProviderEntity[]> {
     const where: any = {};
     if (!options?.includeDeleted) where.deleted_at = null;
     if (options?.enabled !== undefined) where.enabled = options.enabled;
     if (options?.status) where.status = options.status;
     const rows = await prisma.ai_providers.findMany({ where, orderBy: { priority: 'asc' } });
-    return rows.map(r => AIProviderEntity.reconstitute({
-      ...r,
-      headers: (r.headers as Record<string, string>) ?? {},
-      metadata: (r.metadata as Record<string, unknown>) ?? {},
-    }));
+    return rows.map((r) =>
+      AIProviderEntity.reconstitute({
+        ...r,
+        headers: (r.headers as Record<string, string>) ?? {},
+        metadata: (r.metadata as Record<string, unknown>) ?? {},
+      }),
+    );
   }
 
   async save(provider: AIProviderEntity): Promise<void> {
