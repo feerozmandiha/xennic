@@ -1,4 +1,12 @@
-import { Module, Global, MiddlewareConsumer, NestModule, OnModuleInit, Logger } from '@nestjs/common';
+import {
+  Module,
+  Global,
+  MiddlewareConsumer,
+  NestModule,
+  OnModuleInit,
+  Logger,
+  RequestMethod,
+} from '@nestjs/common';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 
 import { MetricsController } from './presentation/controllers/metrics.controller.js';
@@ -11,7 +19,12 @@ import { DatabaseMetricsService } from './infrastructure/metrics/database-metric
 import { AiProviderMetricsService } from './infrastructure/metrics/ai-provider-metrics.service.js';
 import { QueueMetricsService } from './infrastructure/metrics/queue-metrics.service.js';
 import { CorrelationIdMiddleware } from './infrastructure/otel/correlation-id.middleware.js';
-import { initializePrometheusMetrics, appUp, appMemory, appCpu } from './infrastructure/metrics/prometheus-metrics.js';
+import {
+  initializePrometheusMetrics,
+  appUp,
+  appMemory,
+  appCpu,
+} from './infrastructure/metrics/prometheus-metrics.js';
 
 @Global()
 @Module({
@@ -39,7 +52,10 @@ export class MonitoringModule implements NestModule, OnModuleInit {
   private readonly logger = new Logger(MonitoringModule.name);
 
   configure(consumer: MiddlewareConsumer): void {
-    consumer.apply(CorrelationIdMiddleware).forRoutes('*');
+    consumer.apply(CorrelationIdMiddleware).forRoutes({
+      path: '(.*)',
+      method: RequestMethod.ALL,
+    });
   }
 
   onModuleInit(): void {
