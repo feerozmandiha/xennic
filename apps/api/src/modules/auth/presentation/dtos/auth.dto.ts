@@ -1,5 +1,13 @@
 import { ApiProperty, ApiExtraModels } from '@nestjs/swagger';
-import { IsEmail, IsString, IsNotEmpty, MinLength, MaxLength, IsOptional, Matches } from 'class-validator';
+import {
+  IsEmail,
+  IsString,
+  IsNotEmpty,
+  MinLength,
+  MaxLength,
+  IsOptional,
+  Matches,
+} from 'class-validator';
 
 export class LoginDto {
   @ApiProperty({ example: 'user@example.com', description: 'User email address' })
@@ -33,12 +41,16 @@ export class RegisterDto {
   @MaxLength(50, { message: 'Last name must not exceed 50 characters' })
   lastName!: string;
 
-  @ApiProperty({ example: 'SecurePass123!', description: 'Password (min 8 chars, with uppercase, lowercase, number, special char)' })
+  @ApiProperty({
+    example: 'SecurePass123!',
+    description: 'Password (min 8 chars, with uppercase, lowercase, number, special char)',
+  })
   @IsString()
   @MinLength(8, { message: 'Password must be at least 8 characters' })
   @MaxLength(128, { message: 'Password must not exceed 128 characters' })
   @Matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/, {
-    message: 'Password must contain at least one uppercase, one lowercase, one number, and one special character',
+    message:
+      'Password must contain at least one uppercase, one lowercase, one number, and one special character',
   })
   password!: string;
 
@@ -72,7 +84,8 @@ export class ResetPasswordDto {
   @IsString()
   @MinLength(8)
   @Matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/, {
-    message: 'Password must contain at least one uppercase, one lowercase, one number, and one special character',
+    message:
+      'Password must contain at least one uppercase, one lowercase, one number, and one special character',
   })
   newPassword!: string;
 }
@@ -87,7 +100,8 @@ export class ChangePasswordDto {
   @IsString()
   @MinLength(8)
   @Matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/, {
-    message: 'Password must contain at least one uppercase, one lowercase, one number, and one special character',
+    message:
+      'Password must contain at least one uppercase, one lowercase, one number, and one special character',
   })
   newPassword!: string;
 }
@@ -116,7 +130,7 @@ export class AuthResponseDto {
   };
 }
 
-export class UserResponseDto {
+export class AuthUserResponseDto {
   @ApiProperty()
   id!: string;
 
