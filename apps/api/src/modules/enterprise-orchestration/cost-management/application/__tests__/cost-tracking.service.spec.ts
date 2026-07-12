@@ -4,7 +4,6 @@ import { InMemoryCostRepository } from '../../testing/adapters/in-memory-cost-re
 
 describe('CostTrackingService', () => {
   let service: CostTrackingService;
-  let repository: any;
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -14,7 +13,6 @@ describe('CostTrackingService', () => {
     }).compile();
 
     service = module.get(CostTrackingService);
-    repository = module.get('ICostRepository');
   });
 
   describe('recordProviderCost', () => {

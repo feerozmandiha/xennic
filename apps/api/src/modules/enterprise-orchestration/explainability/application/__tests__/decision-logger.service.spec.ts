@@ -4,7 +4,6 @@ import { InMemoryExplainabilityRepository } from '../../testing/adapters/in-memo
 
 describe('DecisionLoggerService', () => {
   let service: DecisionLoggerService;
-  let repository: any;
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -14,7 +13,6 @@ describe('DecisionLoggerService', () => {
     }).compile();
 
     service = module.get(DecisionLoggerService);
-    repository = module.get('IExplainabilityRepository');
   });
 
   describe('log', () => {

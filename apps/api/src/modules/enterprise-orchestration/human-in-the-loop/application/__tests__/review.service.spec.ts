@@ -5,14 +5,12 @@ import { BadRequestException, NotFoundException } from '@nestjs/common';
 
 describe('ReviewService', () => {
   let service: ReviewService;
-  let repository: any;
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [ReviewService, { provide: 'IHitlRepository', useClass: InMemoryHitlRepository }],
     }).compile();
 
     service = module.get(ReviewService);
-    repository = module.get('IHitlRepository');
   });
 
   describe('assign', () => {

@@ -5,7 +5,6 @@ import { BadRequestException, NotFoundException } from '@nestjs/common';
 
 describe('ApprovalService', () => {
   let service: ApprovalService;
-  let repository: any;
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -15,7 +14,6 @@ describe('ApprovalService', () => {
     }).compile();
 
     service = module.get(ApprovalService);
-    repository = module.get('IHitlRepository');
   });
 
   describe('request', () => {

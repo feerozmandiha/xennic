@@ -5,7 +5,6 @@ import { InMemoryWorkflowRepository } from '../../testing/adapters/in-memory-wor
 
 describe('WorkflowDefinitionService', () => {
   let service: WorkflowDefinitionService;
-  let repository: any;
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -16,7 +15,6 @@ describe('WorkflowDefinitionService', () => {
     }).compile();
 
     service = module.get(WorkflowDefinitionService);
-    repository = module.get('IWorkflowRepository');
   });
 
   const validSteps = [

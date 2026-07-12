@@ -4,7 +4,6 @@ import { InMemoryExplainabilityRepository } from '../../testing/adapters/in-memo
 
 describe('ConfidenceService', () => {
   let service: ConfidenceService;
-  let repository: any;
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -14,7 +13,6 @@ describe('ConfidenceService', () => {
     }).compile();
 
     service = module.get(ConfidenceService);
-    repository = module.get('IExplainabilityRepository');
   });
 
   describe('recordConfidence', () => {
