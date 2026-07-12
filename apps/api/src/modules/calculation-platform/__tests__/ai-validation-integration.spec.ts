@@ -7,7 +7,6 @@ import { GatewayTelemetryService } from '../../enterprise-intelligence/ai-gatewa
 import {
   ProviderExecutionService,
   type ChatExecutionRequest,
-  type ChatExecutionResult,
 } from '../../ai-provider-management/application/services/provider-execution.service.js';
 import { FailoverService } from '../../ai-provider-management/application/services/failover.service.js';
 import { CircuitBreakerService } from '../../ai-provider-management/infrastructure/circuit-breaker/circuit-breaker.service.js';
@@ -27,9 +26,7 @@ import type { ICredentialRepository } from '../../ai-provider-management/applica
 import { ICREDENTIAL_REPOSITORY } from '../../ai-provider-management/application/ports/credential-repository.interface.js';
 import type { IQuotaRepository } from '../../ai-provider-management/application/ports/quota-repository.interface.js';
 import { IQUOTA_REPOSITORY } from '../../ai-provider-management/application/ports/quota-repository.interface.js';
-import type { IUsageRepository } from '../../ai-provider-management/application/ports/usage-repository.interface.js';
 import { IUSAGE_REPOSITORY } from '../../ai-provider-management/application/ports/usage-repository.interface.js';
-import type { IStatisticsRepository } from '../../ai-provider-management/application/ports/statistics-repository.interface.js';
 import { ISTATISTICS_REPOSITORY } from '../../ai-provider-management/application/ports/statistics-repository.interface.js';
 import {
   AIProviderEntity,
@@ -67,9 +64,7 @@ import type { ICertificateRepository } from '../application/ports/certificate-re
 import { ICERTIFICATE_REPOSITORY } from '../application/ports/certificate-repository.interface.js';
 import type { IAuditRepository } from '../application/ports/audit-repository.interface.js';
 import { IAUDIT_REPOSITORY } from '../application/ports/audit-repository.interface.js';
-import type { IUnitRepository } from '../application/ports/unit-repository.interface.js';
 import { IUNIT_REPOSITORY } from '../application/ports/unit-repository.interface.js';
-import type { IPluginRepository } from '../application/ports/plugin-repository.interface.js';
 import { IPLUGIN_REPOSITORY } from '../application/ports/plugin-repository.interface.js';
 import { CalculationDefinitionEntity } from '../domain/entities/calculation-definition.entity.js';
 import { DslDefinition } from '../domain/value-objects/dsl-definition.value-object.js';
@@ -443,7 +438,7 @@ class MockProviderHttpClient extends ProviderHttpClient {
     model: 'gpt-4o-mini',
   };
 
-  async request(url: string, options: any = {}): Promise<any> {
+  async request(url: string, _options: any = {}): Promise<any> {
     this.callCount++;
     if (this.simulateTimeout) {
       throw new Error('Request timed out after 10000ms');
@@ -525,9 +520,7 @@ function createMockVersion(definitionId: string): any {
 describe('AI Validation Integration Certification', () => {
   let aiGatewayService: AIGatewayService;
   let executionService: ProviderExecutionService;
-  let failoverService: FailoverService;
   let circuitBreaker: CircuitBreakerService;
-  let routingEngine: RoutingEngineService;
   let calcExecutionService: CalculationExecutionService;
   let certificateService: CertificateService;
   let auditService: AuditService;
@@ -536,7 +529,6 @@ describe('AI Validation Integration Certification', () => {
   let modelRepo: InMemoryModelRepository;
   let healthRepo: InMemoryHealthRepository;
   let credentialRepo: InMemoryCredentialRepository;
-  let encryptionService: EncryptionService;
   let quotaRepo: InMemoryQuotaRepository;
   let calcRepo: InMemoryCalculationRepository;
   let telemetry: GatewayTelemetryService;
@@ -619,9 +611,7 @@ describe('AI Validation Integration Certification', () => {
 
     aiGatewayService = module.get(AIGatewayService);
     executionService = module.get(ProviderExecutionService);
-    failoverService = module.get(FailoverService);
     circuitBreaker = module.get(CircuitBreakerService);
-    routingEngine = module.get(RoutingEngineService);
     calcExecutionService = module.get(CalculationExecutionService);
     certificateService = module.get(CertificateService);
     auditService = module.get(AuditService);
@@ -630,7 +620,6 @@ describe('AI Validation Integration Certification', () => {
     modelRepo = module.get(IMODEL_REPOSITORY) as InMemoryModelRepository;
     healthRepo = module.get(IHEALTH_REPOSITORY) as InMemoryHealthRepository;
     credentialRepo = module.get(ICREDENTIAL_REPOSITORY) as InMemoryCredentialRepository;
-    encryptionService = module.get(EncryptionService);
     quotaRepo = module.get(IQUOTA_REPOSITORY) as InMemoryQuotaRepository;
     calcRepo = module.get(ICALCULATION_REPOSITORY) as InMemoryCalculationRepository;
     telemetry = module.get(GatewayTelemetryService);
