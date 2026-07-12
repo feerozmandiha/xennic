@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import type { DslDefinition, DslInput } from '../../domain/value-objects/dsl-definition.value-object.js';
+import type { DslDefinition } from '../../domain/value-objects/dsl-definition.value-object.js';
 import type { CalculationDsl } from '../../shared/types/dsl-types.js';
 import { FormulaEngine } from './formula-engine.js';
 import { UnitConversionEngine } from './unit-conversion-engine.js';
@@ -90,7 +90,8 @@ export class DslRuntime {
 
     for (const formula of dsl.formulas) {
       if (!formula.name) errors.push('DSL formula missing required field: name');
-      if (!formula.expression) errors.push(`DSL formula '${formula.name}' missing required field: expression`);
+      if (!formula.expression)
+        errors.push(`DSL formula '${formula.name}' missing required field: expression`);
       else {
         const validation = this.formulaEngine.validateExpression(formula.expression);
         if (!validation.valid) {

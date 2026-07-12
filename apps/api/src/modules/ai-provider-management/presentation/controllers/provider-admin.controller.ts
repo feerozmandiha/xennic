@@ -1,6 +1,14 @@
 import {
-  Controller, Get, Post,
-  Body, Param, Query, Req, UseGuards, HttpCode, HttpStatus,
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Query,
+  Req,
+  UseGuards,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../../auth/infrastructure/guards/jwt-auth.guard.js';
@@ -18,7 +26,6 @@ import { CircuitBreakerService } from '../../infrastructure/circuit-breaker/circ
 import { TestConnectionDto } from '../dtos/test-connection.dto.js';
 import { DiscoverProviderDto } from '../dtos/discover-provider.dto.js';
 import { CreateRoutingPolicyDto } from '../dtos/routing-policy.dto.js';
-import { SetFeatureFlagDto } from '../dtos/feature-flag.dto.js';
 import { HealthResponseDto } from '../dtos/health-response.dto.js';
 import { ProviderResponseDto } from '../dtos/provider-response.dto.js';
 
@@ -68,10 +75,7 @@ export class ProviderAdminController {
   @Get('providers/:id/health')
   @ApiOperation({ summary: 'Get health check history' })
   @HttpCode(HttpStatus.OK)
-  async getHealthHistory(
-    @Param('id') id: string,
-    @Query('limit') limit?: string,
-  ) {
+  async getHealthHistory(@Param('id') id: string, @Query('limit') limit?: string) {
     const entities = await this.health.getHealthHistory(id, Number(limit ?? 20));
     return { success: true, data: HealthResponseDto.fromEntities(entities) };
   }
@@ -123,8 +127,10 @@ export class ProviderAdminController {
       success: true,
       data: {
         provider: ProviderResponseDto.fromEntity(entity),
-        models: saved.map(m => ({
-          modelId: m.modelId, displayName: m.displayName, modelType: m.modelType,
+        models: saved.map((m) => ({
+          modelId: m.modelId,
+          displayName: m.displayName,
+          modelType: m.modelType,
         })),
       },
     };
@@ -215,7 +221,7 @@ export class ProviderAdminController {
   @ApiOperation({ summary: 'List all circuit breaker states' })
   async getAllCircuits() {
     const providers = await this.registry.findAll({ enabled: true });
-    const circuits = providers.map(p => ({
+    const circuits = providers.map((p) => ({
       providerId: p.id,
       providerName: p.name,
       state: this.circuitBreaker.getState(p.id),

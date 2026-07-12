@@ -2,7 +2,7 @@ import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import type { DslExecutionContext } from '../../engines/dsl-runtime.js';
 import { DslRuntime } from '../../engines/dsl-runtime.js';
 import { DslDefinition } from '../../../domain/value-objects/dsl-definition.value-object.js';
-import { ELECTRICAL_PLUGINS, ELECTRICAL_PLUGIN_LIST } from './electrical-plugin-catalog.js';
+import { ELECTRICAL_PLUGINS } from './electrical-plugin-catalog.js';
 
 export interface ElectricalPluginExecutionRequest {
   pluginId: string;
@@ -46,7 +46,9 @@ export class ElectricalPluginService implements OnModuleInit {
         this.pluginCache.set(id, dsl);
         this.logger.log(`Registered electrical plugin: ${id} (${dsl.formulas.length} formulas)`);
       } catch (error) {
-        this.logger.error(`Failed to register electrical plugin: ${id} - ${error instanceof Error ? error.message : 'Unknown'}`);
+        this.logger.error(
+          `Failed to register electrical plugin: ${id} - ${error instanceof Error ? error.message : 'Unknown'}`,
+        );
       }
     }
     this.logger.log(`Electrical Plugin Service initialized with ${this.pluginCache.size} plugins`);
@@ -66,7 +68,7 @@ export class ElectricalPluginService implements OnModuleInit {
     const meta = dsl.metadata as Record<string, unknown>;
     return {
       id: dsl.id,
-      name: dsl.id.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
+      name: dsl.id.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()),
       standard: dsl.standard ?? 'N/A',
       category: (meta.category as string) ?? 'general',
       tags: (meta.tags as string[]) ?? [],
@@ -81,20 +83,22 @@ export class ElectricalPluginService implements OnModuleInit {
 
   getAllPluginInfos(): ElectricalPluginInfo[] {
     return this.getPluginIds()
-      .map(id => this.getPluginInfo(id))
+      .map((id) => this.getPluginInfo(id))
       .filter((info): info is ElectricalPluginInfo => info !== undefined)
       .sort((a, b) => a.id.localeCompare(b.id));
   }
 
   getPluginsByCategory(category: string): ElectricalPluginInfo[] {
-    return this.getAllPluginInfos().filter(p => p.category === category);
+    return this.getAllPluginInfos().filter((p) => p.category === category);
   }
 
   getPluginCount(): number {
     return this.pluginCache.size;
   }
 
-  async execute(request: ElectricalPluginExecutionRequest): Promise<ElectricalPluginExecutionResult> {
+  async execute(
+    request: ElectricalPluginExecutionRequest,
+  ): Promise<ElectricalPluginExecutionResult> {
     const start = Date.now();
     const dsl = this.pluginCache.get(request.pluginId);
     if (!dsl) {
@@ -117,7 +121,7 @@ export class ElectricalPluginService implements OnModuleInit {
       const result = await this.runtime.execute(dsl, ctx);
       return {
         pluginId: request.pluginId,
-        pluginName: dsl.id.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
+        pluginName: dsl.id.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()),
         outputs: result.outputs,
         errors: result.errors,
         warnings: [],
@@ -135,32 +139,39 @@ export class ElectricalPluginService implements OnModuleInit {
     }
   }
 
-  async executeBatch(requests: ElectricalPluginExecutionRequest[]): Promise<ElectricalPluginExecutionResult[]> {
-    return Promise.all(requests.map(r => this.execute(r)));
+  async executeBatch(
+    requests: ElectricalPluginExecutionRequest[],
+  ): Promise<ElectricalPluginExecutionResult[]> {
+    return Promise.all(requests.map((r) => this.execute(r)));
   }
 
   getFormulasByPlugin(id: string): Array<{ name: string; expression: string }> | undefined {
     const dsl = this.pluginCache.get(id);
     if (!dsl) return undefined;
-    return dsl.formulas.map(f => ({ name: f.name, expression: f.expression }));
+    return dsl.formulas.map((f) => ({ name: f.name, expression: f.expression }));
   }
 
   searchPlugins(query: string): ElectricalPluginInfo[] {
     const q = query.toLowerCase();
-    return this.getAllPluginInfos().filter(p => {
+    return this.getAllPluginInfos().filter((p) => {
       const meta = this.pluginCache.get(p.id)?.metadata as Record<string, unknown> | undefined;
       const tags = (meta?.tags as string[]) ?? [];
-      return p.id.includes(q) || p.standard.toLowerCase().includes(q) || p.category.includes(q) || tags.some(t => t.includes(q));
+      return (
+        p.id.includes(q) ||
+        p.standard.toLowerCase().includes(q) ||
+        p.category.includes(q) ||
+        tags.some((t) => t.includes(q))
+      );
     });
   }
 
   getCategories(): string[] {
-    const cats = new Set(this.getAllPluginInfos().map(p => p.category));
+    const cats = new Set(this.getAllPluginInfos().map((p) => p.category));
     return Array.from(cats).sort();
   }
 
   getStandardsCovered(): string[] {
-    const stds = new Set(this.getAllPluginInfos().map(p => p.standard));
+    const stds = new Set(this.getAllPluginInfos().map((p) => p.standard));
     return Array.from(stds).sort();
   }
 
@@ -174,8 +185,8 @@ export class ElectricalPluginService implements OnModuleInit {
       totalFormulas: this.getTotalFormulaCount(),
       categories: this.getCategories().length,
       standards: this.getStandardsCovered().length,
-      aiEnabled: this.getAllPluginInfos().filter(p => p.aiReview).length,
-      certificateEnabled: this.getAllPluginInfos().filter(p => p.certificate).length,
+      aiEnabled: this.getAllPluginInfos().filter((p) => p.aiReview).length,
+      certificateEnabled: this.getAllPluginInfos().filter((p) => p.certificate).length,
     };
   }
 }

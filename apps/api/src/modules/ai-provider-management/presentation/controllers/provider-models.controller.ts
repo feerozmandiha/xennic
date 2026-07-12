@@ -1,7 +1,4 @@
-import {
-  Controller, Get, Patch,
-  Param, Body, UseGuards, HttpCode, HttpStatus,
-} from '@nestjs/common';
+import { Controller, Get, Patch, Param, Body, UseGuards, HttpStatus } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../../auth/infrastructure/guards/jwt-auth.guard.js';
 import { AdminGuard } from '../../../admin/infrastructure/guards/admin.guard.js';
@@ -54,9 +51,12 @@ export class ProviderModelsController {
   @ApiOperation({ summary: 'Get model by ID' })
   async findOne(@Param('id') id: string) {
     const entities = await this.models.findAll();
-    const model = entities.find(m => m.id === id);
+    const model = entities.find((m) => m.id === id);
     if (!model) {
-      return { success: false, error: { message: `Model ${id} not found`, statusCode: HttpStatus.NOT_FOUND } };
+      return {
+        success: false,
+        error: { message: `Model ${id} not found`, statusCode: HttpStatus.NOT_FOUND },
+      };
     }
     return { success: true, data: ModelResponseDto.fromEntity(model) };
   }

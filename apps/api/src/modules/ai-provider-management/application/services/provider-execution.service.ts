@@ -4,8 +4,6 @@ import { CredentialService } from './credential.service.js';
 import { RoutingEngineService, RoutingRequest } from './routing-engine.service.js';
 import { FailoverService } from './failover.service.js';
 import { ProviderHttpClient } from '../../infrastructure/http/provider-http.client.js';
-import { AIProviderEntity } from '../../domain/entities/ai-provider.entity.js';
-import { AIModelEntity } from '../../domain/entities/ai-model.entity.js';
 
 export interface ChatMessage {
   role: 'system' | 'user' | 'assistant';

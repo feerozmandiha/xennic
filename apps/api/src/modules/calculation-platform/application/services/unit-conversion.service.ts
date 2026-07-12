@@ -2,7 +2,6 @@ import { Injectable, Logger, Inject } from '@nestjs/common';
 import { IUNIT_REPOSITORY } from '../ports/unit-repository.interface.js';
 import type { IUnitRepository } from '../ports/unit-repository.interface.js';
 import { UnitDefinitionEntity } from '../../domain/entities/unit-definition.entity.js';
-import { UnitConversionEntity } from '../../domain/entities/unit-conversion.entity.js';
 import { UnitConversionEngine } from '../../infrastructure/engines/unit-conversion-engine.js';
 import { UNIT_CONVERSION_MATRIX } from '../../shared/constants/unit-categories.js';
 
@@ -28,13 +27,25 @@ export class UnitConversionService {
     return this.repo.findUnitBySymbol(symbol);
   }
 
-  async createUnit(data: { category: string; name: string; symbol: string; baseUnit: string; factor: number; offset?: number; description?: string | null }): Promise<UnitDefinitionEntity> {
+  async createUnit(data: {
+    category: string;
+    name: string;
+    symbol: string;
+    baseUnit: string;
+    factor: number;
+    offset?: number;
+    description?: string | null;
+  }): Promise<UnitDefinitionEntity> {
     const entity = UnitDefinitionEntity.create(data);
     await this.repo.saveUnit(entity);
     return entity;
   }
 
-  async convert(value: number, fromUnit: string, toUnit: string): Promise<{ value: number; unit: string }> {
+  async convert(
+    value: number,
+    fromUnit: string,
+    toUnit: string,
+  ): Promise<{ value: number; unit: string }> {
     const result = this.engine.convert(value, fromUnit, toUnit);
     return { value: result, unit: toUnit };
   }

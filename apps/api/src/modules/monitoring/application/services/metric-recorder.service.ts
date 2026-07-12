@@ -12,7 +12,6 @@ import {
   aiProviderCircuitState,
   workflowExecutionDuration,
   workflowExecutionTotal,
-  queueJobDuration,
   queueJobTotal,
   queueDepth,
   sloAvailability,
@@ -38,7 +37,13 @@ export class MetricRecorderService {
     dbQueryTotal.inc({ operation });
   }
 
-  recordAiProviderCall(provider: string, model: string, durationMs: number, tokens: number, success: boolean): void {
+  recordAiProviderCall(
+    provider: string,
+    model: string,
+    durationMs: number,
+    tokens: number,
+    success: boolean,
+  ): void {
     const labels = { provider, model, status: success ? 'success' : 'failure' };
     aiProviderRequestDuration.observe(labels, durationMs);
     aiProviderRequestTotal.inc(labels);
@@ -49,10 +54,7 @@ export class MetricRecorderService {
   }
 
   recordAiCircuitState(provider: string, state: string): void {
-    aiProviderCircuitState.set(
-      { provider },
-      state === 'closed' ? 1 : state === 'open' ? -1 : 0,
-    );
+    aiProviderCircuitState.set({ provider }, state === 'closed' ? 1 : state === 'open' ? -1 : 0);
   }
 
   recordWorkflowExecution(workflow: string, durationMs: number, success: boolean): void {
@@ -69,7 +71,7 @@ export class MetricRecorderService {
     queueDepth.set({ queue }, depth);
   }
 
-  recordSlo(name: string, value: number, target: number): void {
+  recordSlo(name: string, value: number, _target: number): void {
     if (name === 'availability') {
       sloAvailability.set({ window: '30d' }, value);
     } else if (name === 'latency') {

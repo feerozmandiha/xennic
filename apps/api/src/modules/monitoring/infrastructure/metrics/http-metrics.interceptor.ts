@@ -14,12 +14,11 @@ export class HttpMetricsInterceptor implements NestInterceptor {
   intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
     const http = context.switchToHttp();
     const request = http.getRequest<FastifyRequest>();
-    const { method, url } = request;
+    const { method } = request;
     const start = Date.now();
 
     const requestId = randomUUID();
-    const correlationId =
-      (request.headers['x-correlation-id'] as string) || requestId;
+    const correlationId = (request.headers['x-correlation-id'] as string) || requestId;
 
     const reply = http.getResponse<FastifyReply>();
     reply.header('x-request-id', requestId);

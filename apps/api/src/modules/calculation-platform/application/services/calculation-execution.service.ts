@@ -4,8 +4,7 @@ import type { ICalculationRepository } from '../ports/calculation-repository.int
 import { IRESULT_REPOSITORY } from '../ports/result-repository.interface.js';
 import type { IResultRepository } from '../ports/result-repository.interface.js';
 import { CalculationResultEntity } from '../../domain/entities/calculation-result.entity.js';
-import { DslDefinition } from '../../domain/value-objects/dsl-definition.value-object.js';
-import { DslRuntime, type DslExecutionContext } from '../../infrastructure/engines/dsl-runtime.js';
+import { DslRuntime } from '../../infrastructure/engines/dsl-runtime.js';
 import { ValidationEngine } from '../../infrastructure/engines/validation-engine.js';
 import { AuditService } from './audit.service.js';
 import { CertificateService } from './certificate.service.js';
@@ -42,10 +41,12 @@ export class CalculationExecutionService {
   }) {
     const definition = await this.calcRepo.findDefinitionById(data.definitionId);
     if (!definition) throw new NotFoundException(`Definition ${data.definitionId} not found`);
-    if (!definition.enabled) throw new BadRequestException(`Definition '${definition.name}' is disabled`);
+    if (!definition.enabled)
+      throw new BadRequestException(`Definition '${definition.name}' is disabled`);
 
     const version = await this.calcRepo.findActiveVersion(data.definitionId);
-    if (!version) throw new BadRequestException(`No active version for definition '${definition.name}'`);
+    if (!version)
+      throw new BadRequestException(`No active version for definition '${definition.name}'`);
 
     const dsl = version.dslDefinition;
 
@@ -57,10 +58,20 @@ export class CalculationExecutionService {
     const inputValidation = this.validationEngine.validateInputs(data.inputs, dsl.inputs);
     if (inputValidation.hasErrors()) {
       const auditEntry = await this.auditService.logExecution({
-        workspaceId: data.workspaceId, userId: data.userId, action: 'validate', entityType: 'definition',
-        entityId: data.definitionId, formulaVersion: version.version, errorMessage: inputValidation.errors[0]?.message, correlationId: data.correlationId,
+        workspaceId: data.workspaceId,
+        userId: data.userId,
+        action: 'validate',
+        entityType: 'definition',
+        entityId: data.definitionId,
+        formulaVersion: version.version,
+        errorMessage: inputValidation.errors[0]?.message,
+        correlationId: data.correlationId,
       });
-      throw new BadRequestException({ message: 'Input validation failed', errors: inputValidation.errors, auditId: auditEntry.id });
+      throw new BadRequestException({
+        message: 'Input validation failed',
+        errors: inputValidation.errors,
+        auditId: auditEntry.id,
+      });
     }
 
     if (data.validateOnly) {
@@ -68,8 +79,13 @@ export class CalculationExecutionService {
     }
 
     const result = CalculationResultEntity.create({
-      workspaceId: data.workspaceId, definitionId: data.definitionId, versionId: version.id,
-      userId: data.userId, inputs: data.inputs, engineVersion: this.ENGINE_VERSION, correlationId: data.correlationId,
+      workspaceId: data.workspaceId,
+      definitionId: data.definitionId,
+      versionId: version.id,
+      userId: data.userId,
+      inputs: data.inputs,
+      engineVersion: this.ENGINE_VERSION,
+      correlationId: data.correlationId,
     });
 
     try {
@@ -77,7 +93,7 @@ export class CalculationExecutionService {
       executionPath.push('unit-normalization');
       const normalizedInputs: Record<string, unknown> = {};
       for (const [key, value] of Object.entries(data.inputs)) {
-        const inputDef = dsl.inputs.find(i => i.name === key);
+        const inputDef = dsl.inputs.find((i) => i.name === key);
         if (inputDef?.unit && typeof value === 'object' && value !== null) {
           const iv = value as { value: number; unit: string };
           normalizedInputs[key] = this.unitConversionService.normalize(iv.value, iv.unit);
@@ -103,16 +119,32 @@ export class CalculationExecutionService {
         result.fail(execResult.errors.join('; '), Date.now() - startTime);
         await this.resultRepo.save(result);
         await this.auditService.logExecution({
-          workspaceId: data.workspaceId, userId: data.userId, action: 'run', entityType: 'result',
-          entityId: result.id, inputs: data.inputs, outputs: execResult.outputs, formulaVersion: version.version,
-          errorMessage: execResult.errors.join('; '), executionPath, durationMs: result.durationMs ?? 0, correlationId: data.correlationId,
+          workspaceId: data.workspaceId,
+          userId: data.userId,
+          action: 'run',
+          entityType: 'result',
+          entityId: result.id,
+          inputs: data.inputs,
+          outputs: execResult.outputs,
+          formulaVersion: version.version,
+          errorMessage: execResult.errors.join('; '),
+          executionPath,
+          durationMs: result.durationMs ?? 0,
+          correlationId: data.correlationId,
         });
-        throw new BadRequestException({ message: 'Formula execution failed', errors: execResult.errors, resultId: result.id });
+        throw new BadRequestException({
+          message: 'Formula execution failed',
+          errors: execResult.errors,
+          resultId: result.id,
+        });
       }
 
       // Stage 4: Result Validation
       executionPath.push('result-validation');
-      const dslValidations = this.validationEngine.validateAgainstDslRules(normalizedInputs, dsl.validations);
+      const dslValidations = this.validationEngine.validateAgainstDslRules(
+        normalizedInputs,
+        dsl.validations,
+      );
 
       // Stage 5: AI Review (skippable)
       executionPath.push('ai-review');
@@ -126,8 +158,13 @@ export class CalculationExecutionService {
       let certificate = null;
       if (dsl.certificate && !data.skipCertificate) {
         certificate = await this.certificateService.generateCertificate({
-          resultId: result.id, definition, version, inputs: data.inputs,
-          outputs: execResult.outputs, userId: data.userId, workspaceId: data.workspaceId,
+          resultId: result.id,
+          definition,
+          version,
+          inputs: data.inputs,
+          outputs: execResult.outputs,
+          userId: data.userId,
+          workspaceId: data.workspaceId,
         });
       }
 
@@ -138,9 +175,17 @@ export class CalculationExecutionService {
       // Stage 8: Audit
       executionPath.push('audit');
       await this.auditService.logExecution({
-        workspaceId: data.workspaceId, userId: data.userId, action: 'run', entityType: 'result',
-        entityId: result.id, inputs: data.inputs, outputs: execResult.outputs, formulaVersion: version.version,
-        executionPath, durationMs: result.durationMs ?? 0, correlationId: data.correlationId,
+        workspaceId: data.workspaceId,
+        userId: data.userId,
+        action: 'run',
+        entityType: 'result',
+        entityId: result.id,
+        inputs: data.inputs,
+        outputs: execResult.outputs,
+        formulaVersion: version.version,
+        executionPath,
+        durationMs: result.durationMs ?? 0,
+        correlationId: data.correlationId,
       });
 
       return {
@@ -154,13 +199,23 @@ export class CalculationExecutionService {
       };
     } catch (error) {
       if (result.status === 'pending') {
-        result.fail(error instanceof Error ? error.message : 'Execution failed', Date.now() - startTime);
+        result.fail(
+          error instanceof Error ? error.message : 'Execution failed',
+          Date.now() - startTime,
+        );
         await this.resultRepo.save(result);
         await this.auditService.logExecution({
-          workspaceId: data.workspaceId, userId: data.userId, action: 'run', entityType: 'result',
-          entityId: result.id, inputs: data.inputs, formulaVersion: version.version,
-          errorMessage: error instanceof Error ? error.message : 'Unknown error', executionPath,
-          durationMs: Date.now() - startTime, correlationId: data.correlationId,
+          workspaceId: data.workspaceId,
+          userId: data.userId,
+          action: 'run',
+          entityType: 'result',
+          entityId: result.id,
+          inputs: data.inputs,
+          formulaVersion: version.version,
+          errorMessage: error instanceof Error ? error.message : 'Unknown error',
+          executionPath,
+          durationMs: Date.now() - startTime,
+          correlationId: data.correlationId,
         });
       }
       throw error;
@@ -173,7 +228,10 @@ export class CalculationExecutionService {
     return result;
   }
 
-  async getResultsByWorkspace(workspaceId: string, options?: { page?: number; limit?: number; definitionId?: string }) {
+  async getResultsByWorkspace(
+    workspaceId: string,
+    options?: { page?: number; limit?: number; definitionId?: string },
+  ) {
     return this.resultRepo.findByWorkspaceId(workspaceId, options);
   }
 }
