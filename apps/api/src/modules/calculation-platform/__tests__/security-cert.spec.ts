@@ -174,17 +174,11 @@ describe('Security Certification', () => {
       const _dsl = minimalValidDsl({
         __proto__: { polluted: true },
       });
-      const result = dslValidator.validate(dsl);
+      const result = dslValidator.validate(_dsl);
       expect(result.valid).toBe(true);
     });
 
     it('should reject malicious keys: constructor', () => {
-      const dsl = minimalValidDsl({
-        inputs: [
-          { name: 'x', label: 'X', type: 'number' },
-          { name: 'constructor', label: 'Malicious', type: 'number' },
-        ],
-      });
       const result = inputSanitizer.sanitize({ constructor: 'evil' });
       expect(result.safe).toBe(false);
       expect(result.error).toContain('forbidden key');
