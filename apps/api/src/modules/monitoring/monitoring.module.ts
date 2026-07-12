@@ -53,7 +53,7 @@ export class MonitoringModule implements NestModule, OnModuleInit {
 
   configure(consumer: MiddlewareConsumer): void {
     consumer.apply(CorrelationIdMiddleware).forRoutes({
-      path: '(.*)',
+      path: '*path',
       method: RequestMethod.ALL,
     });
   }
