@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { FormulaSanitizer } from '../infrastructure/security/formula-sanitizer.js';
 import { DslValidator } from '../infrastructure/security/dsl-validator.js';
 import { InputSanitizer } from '../infrastructure/security/input-sanitizer.js';
@@ -144,7 +145,7 @@ describe('Security Certification', () => {
       });
       const result = dslValidator.validate(dsl);
       expect(result.valid).toBe(false);
-      expect(result.errors.some(e => e.includes('exceeds maximum'))).toBe(true);
+      expect(result.errors.some((e) => e.includes('exceeds maximum'))).toBe(true);
     });
 
     it('should reject DSL with deeply nested objects (>100 deep)', () => {
@@ -166,11 +167,11 @@ describe('Security Certification', () => {
       });
       const result = dslValidator.validate(dsl);
       expect(result.valid).toBe(false);
-      expect(result.errors.some(e => e.includes('exceeds maximum'))).toBe(true);
+      expect(result.errors.some((e) => e.includes('exceeds maximum'))).toBe(true);
     });
 
     it('should handle prototype pollution attempt gracefully', () => {
-      const dsl = minimalValidDsl({
+      const _dsl = minimalValidDsl({
         __proto__: { polluted: true },
       });
       const result = dslValidator.validate(dsl);
@@ -203,7 +204,7 @@ describe('Security Certification', () => {
       });
       const result = dslValidator.validate(dsl);
       expect(result.valid).toBe(false);
-      expect(result.errors.some(e => e.includes('formulas'))).toBe(true);
+      expect(result.errors.some((e) => e.includes('formulas'))).toBe(true);
     });
   });
 
@@ -303,81 +304,63 @@ describe('Security Certification', () => {
     } as never;
 
     it('should prevent file system access via sandbox evaluation', async () => {
-      const result = sandbox.execute(
-        mockPlugin,
-        { x: 1 },
-        [{ name: 'result', expression: 'require("fs")' }],
-      );
+      const result = sandbox.execute(mockPlugin, { x: 1 }, [
+        { name: 'result', expression: 'require("fs")' },
+      ]);
       await expect(result).resolves.toHaveProperty('error');
     });
 
     it('should prevent network access inside sandbox', async () => {
-      const result = sandbox.execute(
-        mockPlugin,
-        { x: 1 },
-        [{ name: 'result', expression: 'fetch("http://evil.com")' }],
-      );
+      const result = sandbox.execute(mockPlugin, { x: 1 }, [
+        { name: 'result', expression: 'fetch("http://evil.com")' },
+      ]);
       await expect(result).resolves.toHaveProperty('error');
     });
 
     it('should prevent process access inside sandbox', async () => {
-      const result = sandbox.execute(
-        mockPlugin,
-        { x: 1 },
-        [{ name: 'result', expression: 'process.env' }],
-      );
+      const result = sandbox.execute(mockPlugin, { x: 1 }, [
+        { name: 'result', expression: 'process.env' },
+      ]);
       await expect(result).resolves.toHaveProperty('error');
     });
 
     it('should enforce numeric return type (global access returns number, not blocked)', async () => {
-      const result = await sandbox.execute(
-        mockPlugin,
-        { x: 1 },
-        [{ name: 'result', expression: 'global.x = 42' }],
-      );
+      const result = await sandbox.execute(mockPlugin, { x: 1 }, [
+        { name: 'result', expression: 'global.x = 42' },
+      ]);
       expect(result.error).toBeUndefined();
       expect(result.outputs).toHaveProperty('result', 42);
     });
 
     it('should enforce numeric return type (prototype returns number, not blocked)', async () => {
-      const result = await sandbox.execute(
-        mockPlugin,
-        { x: 1 },
-        [{ name: 'result', expression: 'Object.prototype.x = 42' }],
-      );
+      const result = await sandbox.execute(mockPlugin, { x: 1 }, [
+        { name: 'result', expression: 'Object.prototype.x = 42' },
+      ]);
       expect(result.error).toBeUndefined();
       expect(result.outputs).toHaveProperty('result', 42);
     });
 
     it('should prevent context escape via constructor (non-numeric return)', async () => {
-      const result = await sandbox.execute(
-        mockPlugin,
-        { x: 1 },
-        [{ name: 'result', expression: 'this.constructor.constructor("return process")().env' }],
-      );
+      const result = await sandbox.execute(mockPlugin, { x: 1 }, [
+        { name: 'result', expression: 'this.constructor.constructor("return process")().env' },
+      ]);
       expect(result.error).toBeDefined();
     });
 
     it('should execute safe formulas successfully with built-in functions', async () => {
-      const result = await sandbox.execute(
-        mockPlugin,
-        { x: 10, y: 5 },
-        [
-          { name: 'sum', expression: 'x + y' },
-          { name: 'hypot', expression: 'sqrt(pow(x, 2) + pow(y, 2))' },
-        ],
-      );
+      const result = await sandbox.execute(mockPlugin, { x: 10, y: 5 }, [
+        { name: 'sum', expression: 'x + y' },
+        { name: 'hypot', expression: 'sqrt(pow(x, 2) + pow(y, 2))' },
+      ]);
       expect(result.error).toBeUndefined();
       expect(result.outputs).toHaveProperty('sum', 15);
       expect(result.outputs).toHaveProperty('hypot', Math.sqrt(125));
     });
 
     it('should reject non-numeric return values', async () => {
-      const result = await sandbox.execute(
-        mockPlugin,
-        { x: 1 },
-        [{ name: 'result', expression: '"string"' }],
-      );
+      const result = await sandbox.execute(mockPlugin, { x: 1 }, [
+        { name: 'result', expression: '"string"' },
+      ]);
       expect(result.error).toBeDefined();
       expect(result.error).toContain('not return a number');
     });
@@ -418,11 +401,9 @@ describe('Security Certification', () => {
     });
 
     it('should reject memory exhaustion via oversized output', async () => {
-      const result = await sandbox.execute(
-        mockPlugin,
-        { x: 1 },
-        [{ name: 'result', expression: '1' }],
-      );
+      const result = await sandbox.execute(mockPlugin, { x: 1 }, [
+        { name: 'result', expression: '1' },
+      ]);
       expect(result.error).toBeUndefined();
     });
 
@@ -483,30 +464,29 @@ describe('Security Certification', () => {
 
   describe('8. Certificate Tampering', () => {
     it('should detect tampered calculation hash', () => {
-      const mockRepo: ICertificateRepository = {
+      const _mockRepo: ICertificateRepository = {
         save: jest.fn().mockResolvedValue(undefined),
         findById: jest.fn(),
         findByResultId: jest.fn(),
         findByCertificateId: jest.fn(),
         findByWorkspaceId: jest.fn().mockResolvedValue({ items: [], total: 0 }),
       };
-      const service = new CertificateService(mockRepo);
-
       const def = { slug: 'TENSION-CALC', standard: 'ISO-15022' } as CalculationDefinitionEntity;
       const ver = { version: '1.0.0' } as CalculationVersionEntity;
 
       const originalOutputs = { tension: 450, safetyFactor: 2.5 };
       const tamperedOutputs = { tension: 999, safetyFactor: 999 };
 
-      const originalInputs = { material: 'steel', load: 1000 };
-      const tamperedInputs = { material: 'aluminum', load: 500 };
-
-      const originalHash = require('crypto').createHash('sha256')
-        .update(JSON.stringify({ definition: def.slug, version: ver.version, outputs: originalOutputs }))
+      const originalHash = createHash('sha256')
+        .update(
+          JSON.stringify({ definition: def.slug, version: ver.version, outputs: originalOutputs }),
+        )
         .digest('hex');
 
-      const tamperedHash = require('crypto').createHash('sha256')
-        .update(JSON.stringify({ definition: def.slug, version: ver.version, outputs: tamperedOutputs }))
+      const tamperedHash = createHash('sha256')
+        .update(
+          JSON.stringify({ definition: def.slug, version: ver.version, outputs: tamperedOutputs }),
+        )
         .digest('hex');
 
       expect(originalHash).not.toBe(tamperedHash);
@@ -516,11 +496,11 @@ describe('Security Certification', () => {
       const originalInputs = { material: 'steel', load: 1000 };
       const tamperedInputs = { material: 'aluminum', load: 500 };
 
-      const originalHash = require('crypto').createHash('sha256')
+      const originalHash = createHash('sha256')
         .update(JSON.stringify(originalInputs))
         .digest('hex');
 
-      const tamperedHash = require('crypto').createHash('sha256')
+      const tamperedHash = createHash('sha256')
         .update(JSON.stringify(tamperedInputs))
         .digest('hex');
 
@@ -558,25 +538,39 @@ describe('Security Certification', () => {
       const ver = { version: '2.0.0' } as CalculationVersionEntity;
 
       const outputs = { moment: 350, deflection: 2.1 };
-      const hash = require('crypto').createHash('sha256')
+      const hash = createHash('sha256')
         .update(JSON.stringify({ definition: def.slug, version: ver.version, outputs }))
         .digest('hex');
 
-      const recomputedHash = require('crypto').createHash('sha256')
-        .update(JSON.stringify({ definition: def.slug, version: ver.version, outputs: { moment: 350, deflection: 2.1 } }))
+      const recomputedHash = createHash('sha256')
+        .update(
+          JSON.stringify({
+            definition: def.slug,
+            version: ver.version,
+            outputs: { moment: 350, deflection: 2.1 },
+          }),
+        )
         .digest('hex');
 
       expect(hash).toBe(recomputedHash);
 
-      const tamperedHash = require('crypto').createHash('sha256')
-        .update(JSON.stringify({ definition: def.slug, version: ver.version, outputs: { moment: 999, deflection: 0 } }))
+      const tamperedHash = createHash('sha256')
+        .update(
+          JSON.stringify({
+            definition: def.slug,
+            version: ver.version,
+            outputs: { moment: 999, deflection: 0 },
+          }),
+        )
         .digest('hex');
 
       expect(hash).not.toBe(tamperedHash);
     });
 
     it('should revoke certificate and change status', async () => {
-      const { CalculationCertificateEntity } = jest.requireActual('../domain/entities/calculation-certificate.entity.js');
+      const { CalculationCertificateEntity } = jest.requireActual(
+        '../domain/entities/calculation-certificate.entity.js',
+      );
       const entity = new (CalculationCertificateEntity as any)();
       entity.id = 'cert-id';
       entity.status = 'valid' as const;
