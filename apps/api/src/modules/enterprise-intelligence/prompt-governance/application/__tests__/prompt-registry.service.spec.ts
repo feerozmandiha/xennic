@@ -5,7 +5,6 @@ import { InMemoryPromptRegistry } from '../../testing/adapters/in-memory-prompt-
 
 describe('PromptRegistryService', () => {
   let service: PromptRegistryService;
-  let registry: any;
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -15,7 +14,6 @@ describe('PromptRegistryService', () => {
     }).compile();
 
     service = module.get(PromptRegistryService);
-    registry = module.get('IPromptRegistry');
   });
 
   describe('register()', () => {

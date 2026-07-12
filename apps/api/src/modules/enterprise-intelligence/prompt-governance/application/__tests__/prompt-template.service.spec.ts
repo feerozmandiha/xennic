@@ -4,7 +4,6 @@ import { InMemoryTemplateRegistry } from '../../testing/adapters/in-memory-templ
 
 describe('PromptTemplateService', () => {
   let service: PromptTemplateService;
-  let registry: any;
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -14,7 +13,6 @@ describe('PromptTemplateService', () => {
     }).compile();
 
     service = module.get(PromptTemplateService);
-    registry = module.get('ITemplateRegistry');
   });
 
   describe('register()', () => {

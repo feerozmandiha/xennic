@@ -5,7 +5,6 @@ import { PlanStatus } from '../../domain/reasoning-plan.entity.js';
 
 describe('ReasoningPlannerService', () => {
   let service: ReasoningPlannerService;
-  let repo: any;
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -15,7 +14,6 @@ describe('ReasoningPlannerService', () => {
     }).compile();
 
     service = module.get(ReasoningPlannerService);
-    repo = module.get('IReasoningRepository');
   });
 
   describe('plan()', () => {

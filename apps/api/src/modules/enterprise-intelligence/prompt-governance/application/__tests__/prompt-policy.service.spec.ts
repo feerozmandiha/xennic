@@ -4,7 +4,6 @@ import { InMemoryPromptPolicyRepo } from '../../testing/adapters/in-memory-promp
 
 describe('PromptPolicyService', () => {
   let service: PromptPolicyService;
-  let repo: any;
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -14,7 +13,6 @@ describe('PromptPolicyService', () => {
     }).compile();
 
     service = module.get(PromptPolicyService);
-    repo = module.get('IPromptPolicyRepository');
   });
 
   describe('create()', () => {

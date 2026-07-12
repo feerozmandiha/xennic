@@ -7,7 +7,6 @@ import { InMemoryMemoryIndex } from '../../testing/adapters/in-memory-memory-ind
 
 describe('MemoryService', () => {
   let service: MemoryService;
-  let index: any;
   let store: IMemoryStore;
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -20,7 +19,6 @@ describe('MemoryService', () => {
 
     service = module.get(MemoryService);
     store = module.get('IMemoryStore');
-    index = module.get('IMemoryIndex');
   });
 
   describe('store()', () => {
