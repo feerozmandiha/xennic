@@ -51,15 +51,13 @@ describe('Performance Stress Certification', () => {
   });
 
   function runConcurrent<T>(count: number, factory: (i: number) => T): Promise<T[]> {
-    const tasks = Array.from({ length: count }, (_, i) =>
-      Promise.resolve().then(() => factory(i)),
-    );
+    const tasks = Array.from({ length: count }, (_, i) => Promise.resolve().then(() => factory(i)));
     return Promise.all(tasks);
   }
 
   it('1. Concurrent Batch (100) — completes 100 evaluations in under 1000ms', async () => {
     const start = performance.now();
-    const results = await runConcurrent(100, i =>
+    const results = await runConcurrent(100, (i) =>
       formulaEngine.evaluate(
         formulaBatch[i % formulaBatch.length].expr,
         formulaBatch[i % formulaBatch.length].vars,
@@ -68,13 +66,13 @@ describe('Performance Stress Certification', () => {
     const elapsed = performance.now() - start;
 
     expect(results).toHaveLength(100);
-    results.forEach(r => expect(typeof r).toBe('number'));
+    results.forEach((r) => expect(typeof r).toBe('number'));
     expect(elapsed).toBeLessThan(1000);
   });
 
   it('2. Concurrent Batch (1000) — completes 1000 evaluations in under 5000ms', async () => {
     const start = performance.now();
-    const results = await runConcurrent(1000, i =>
+    const results = await runConcurrent(1000, (i) =>
       formulaEngine.evaluate(
         formulaBatch[i % formulaBatch.length].expr,
         formulaBatch[i % formulaBatch.length].vars,
@@ -83,34 +81,34 @@ describe('Performance Stress Certification', () => {
     const elapsed = performance.now() - start;
 
     expect(results).toHaveLength(1000);
-    results.forEach(r => expect(typeof r).toBe('number'));
+    results.forEach((r) => expect(typeof r).toBe('number'));
     expect(elapsed).toBeLessThan(5000);
   });
 
   it('3. Concurrent Batch (10000) — completes 10000 evaluations and reports metrics', async () => {
     const start = performance.now();
-    const results = await runConcurrent(10000, i =>
+    const results = await runConcurrent(10000, (i) =>
       formulaEngine.evaluate(
         formulaBatch[i % formulaBatch.length].expr,
         formulaBatch[i % formulaBatch.length].vars,
       ),
     );
-    const elapsed = performance.now() - start;
+    const _elapsed = performance.now() - start;
 
     expect(results).toHaveLength(10000);
-    results.forEach(r => expect(typeof r).toBe('number'));
+    results.forEach((r) => expect(typeof r).toBe('number'));
   });
 
   it('4. Unit Conversion Stress — 500 simultaneous conversions across 10 unit pairs', async () => {
     const start = performance.now();
-    const results = await runConcurrent(500, i => {
+    const results = await runConcurrent(500, (i) => {
       const pair = unitPairs[i % unitPairs.length];
       return unitEngine.convert(100 + i, pair.from, pair.to);
     });
-    const elapsed = performance.now() - start;
+    const _elapsed = performance.now() - start;
 
     expect(results).toHaveLength(500);
-    results.forEach(r => expect(typeof r).toBe('number'));
+    results.forEach((r) => expect(typeof r).toBe('number'));
   });
 
   it('5. DSL Execution Stress — 50 complex DSL workflows with 10+ formulas each', async () => {
@@ -123,13 +121,13 @@ describe('Performance Stress Certification', () => {
         id: `dsl-${id}`,
         version: '1.0.0',
         inputs: [{ name: `in_${id}`, label: `Input ${id}`, type: 'number', required: true }],
-        outputs: formulas.map(f => ({ name: f.name, label: f.name, type: 'number' as const })),
+        outputs: formulas.map((f) => ({ name: f.name, label: f.name, type: 'number' as const })),
         formulas,
       });
     }
 
     const start = performance.now();
-    const results = await runConcurrent(50, async i => {
+    const results = await runConcurrent(50, async (i) => {
       const dsl = createDsl(i);
       return dslRuntime.execute(dsl, {
         definitionId: dsl.id,
@@ -138,10 +136,10 @@ describe('Performance Stress Certification', () => {
         userId: 'perf-test',
       });
     });
-    const elapsed = performance.now() - start;
+    const _elapsed = performance.now() - start;
 
     expect(results).toHaveLength(50);
-    results.forEach(r => {
+    results.forEach((r) => {
       expect(r.formulaCount).toBeGreaterThanOrEqual(10);
       expect(r.errors).toHaveLength(0);
       expect(Object.keys(r.outputs).length).toBeGreaterThanOrEqual(10);
@@ -198,13 +196,10 @@ describe('Performance Stress Certification', () => {
           return unitEngine.convert(100 + i, pair.from, pair.to);
         }),
         Promise.resolve().then(() =>
-          validationEngine.validateInputs(
-            { x: 42, y: 58 },
-            [
-              { name: 'x', label: 'X', type: 'number' as const, required: true, min: 0, max: 100 },
-              { name: 'y', label: 'Y', type: 'number' as const, required: true },
-            ],
-          ),
+          validationEngine.validateInputs({ x: 42, y: 58 }, [
+            { name: 'x', label: 'X', type: 'number' as const, required: true, min: 0, max: 100 },
+            { name: 'y', label: 'Y', type: 'number' as const, required: true },
+          ]),
         ),
       ]);
     });
@@ -215,7 +210,7 @@ describe('Performance Stress Certification', () => {
     });
 
     expect(results).toHaveLength(ops);
-    results.forEach(r => {
+    results.forEach((r) => {
       expect(typeof r.formula).toBe('number');
       expect(typeof r.conversion).toBe('number');
       expect(r.validation).toBe(true);

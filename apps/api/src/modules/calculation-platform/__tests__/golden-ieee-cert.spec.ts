@@ -64,7 +64,10 @@ describe('Golden IEEE/IEC/NFPA Reference Certification', () => {
       ],
     });
 
-    const result = await runtime.execute(dsl, ctx({ I: 200, V_nom: 480, R: 0.032, X: 0.048, L: 500, cos_theta: 0.85 }));
+    const result = await runtime.execute(
+      dsl,
+      ctx({ I: 200, V_nom: 480, R: 0.032, X: 0.048, L: 500, cos_theta: 0.85 }),
+    );
     expect(result.errors).toHaveLength(0);
     expectRelative(result.outputs.v_drop as number, REFERENCE_V_DROP_V);
     expectRelative(result.outputs.v_drop_pct as number, REFERENCE_V_DROP_PCT);
@@ -91,7 +94,12 @@ describe('Golden IEEE/IEC/NFPA Reference Certification', () => {
       ],
       outputs: [
         { name: 'I_sc_3ph', label: '3-Phase Short Circuit Current', type: 'number', unit: 'A' },
-        { name: 'I_sc_3ph_kA', label: '3-Phase Short Circuit Current (kA)', type: 'number', unit: 'kA' },
+        {
+          name: 'I_sc_3ph_kA',
+          label: '3-Phase Short Circuit Current (kA)',
+          type: 'number',
+          unit: 'kA',
+        },
       ],
       formulas: [
         { name: 'I_base', expression: 'S_kva * 1000 / (sqrt(3) * V_ll)' },
@@ -117,7 +125,11 @@ describe('Golden IEEE/IEC/NFPA Reference Certification', () => {
   // ───────────────────────────────────────────────────────────────────────────
   it('IEEE 399: should match 5-bus radial load flow bus voltages', async () => {
     const REFERENCE_BUS_VOLTAGES: Record<string, number> = {
-      V1: 1.0000, V2: 0.9948, V3: 0.9832, V4: 0.9764, V5: 0.9690,
+      V1: 1.0,
+      V2: 0.9948,
+      V3: 0.9832,
+      V4: 0.9764,
+      V5: 0.969,
     };
 
     // IEEE 399 typical radial system: each bus drops ~0.5-1% due to transformer
@@ -151,7 +163,10 @@ describe('Golden IEEE/IEC/NFPA Reference Certification', () => {
       ],
     });
 
-    const result = await runtime.execute(dsl, ctx({ P_mw_2: 10, P_mw_3: 15, P_mw_4: 10, P_mw_5: 8 }));
+    const result = await runtime.execute(
+      dsl,
+      ctx({ P_mw_2: 10, P_mw_3: 15, P_mw_4: 10, P_mw_5: 8 }),
+    );
     expect(result.errors).toHaveLength(0);
     for (const [bus, ref] of Object.entries(REFERENCE_BUS_VOLTAGES)) {
       expectRelative(result.outputs[bus] as number, ref);
@@ -168,7 +183,7 @@ describe('Golden IEEE/IEC/NFPA Reference Certification', () => {
   // ───────────────────────────────────────────────────────────────────────────
   it('IEEE 3002.2: should match motor starting current and voltage dip reference', async () => {
     const REFERENCE_I_START_A = 3765; // IEEE 3002.2 Section 4.2.2, Code G avg
-    const REFERENCE_FLA_A = 590; // NEMA MG-1 Table 20, 500 HP 460V
+    const _REFERENCE_FLA_A = 590; // NEMA MG-1 Table 20, 500 HP 460V
     const REFERENCE_LRC_RATIO = 6.0; // IEEE 3002.2 Table 4-1, Design B, Code G
 
     const dsl = DslDefinition.create({
@@ -196,7 +211,10 @@ describe('Golden IEEE/IEC/NFPA Reference Certification', () => {
       ],
     });
 
-    const result = await runtime.execute(dsl, ctx({ HP: 500, V: 460, kVA_per_HP: 6.0, eff: 0.92, pf: 0.89 }));
+    const result = await runtime.execute(
+      dsl,
+      ctx({ HP: 500, V: 460, kVA_per_HP: 6.0, eff: 0.92, pf: 0.89 }),
+    );
     expect(result.errors).toHaveLength(0);
     expectRelative(result.outputs.S_start_kVA as number, 3000);
     expectRelative(result.outputs.I_start as number, REFERENCE_I_START_A);
@@ -228,7 +246,12 @@ describe('Golden IEEE/IEC/NFPA Reference Certification', () => {
       ],
       outputs: [
         { name: 'I_k', label: 'Initial Symmetrical SC Current', type: 'number', unit: 'A' },
-        { name: 'I_k_kA', label: 'Initial Symmetrical SC Current (kA)', type: 'number', unit: 'kA' },
+        {
+          name: 'I_k_kA',
+          label: 'Initial Symmetrical SC Current (kA)',
+          type: 'number',
+          unit: 'kA',
+        },
       ],
       formulas: [
         { name: 'I_k', expression: 'c * S_kva * 1000 / (sqrt(3) * V_ll * (Z_pct / 100))' },
@@ -237,22 +260,33 @@ describe('Golden IEEE/IEC/NFPA Reference Certification', () => {
     });
 
     // IEEE method uses c = 1.0 (nominal voltage)
-    const ieeeResult = await runtime.execute(dsl, ctx({ S_kva: 1500, V_ll: 480, Z_pct: 5.75, c: 1.0 }));
+    const ieeeResult = await runtime.execute(
+      dsl,
+      ctx({ S_kva: 1500, V_ll: 480, Z_pct: 5.75, c: 1.0 }),
+    );
     expect(ieeeResult.errors).toHaveLength(0);
     expectRelative(ieeeResult.outputs.I_k_kA as number, REFERENCE_I_K_IEEE_KA);
 
     // IEC c_max = 1.05 for LV (IEC 60909-0 Table 1)
-    const iecMaxResult = await runtime.execute(dsl, ctx({ S_kva: 1500, V_ll: 480, Z_pct: 5.75, c: 1.05 }));
+    const iecMaxResult = await runtime.execute(
+      dsl,
+      ctx({ S_kva: 1500, V_ll: 480, Z_pct: 5.75, c: 1.05 }),
+    );
     expect(iecMaxResult.errors).toHaveLength(0);
     expectRelative(iecMaxResult.outputs.I_k_kA as number, REFERENCE_I_K_IEC_MAX_KA);
 
     // IEC c_min = 0.95 for LV
-    const iecMinResult = await runtime.execute(dsl, ctx({ S_kva: 1500, V_ll: 480, Z_pct: 5.75, c: 0.95 }));
+    const iecMinResult = await runtime.execute(
+      dsl,
+      ctx({ S_kva: 1500, V_ll: 480, Z_pct: 5.75, c: 0.95 }),
+    );
     expect(iecMinResult.errors).toHaveLength(0);
     expectRelative(iecMinResult.outputs.I_k_kA as number, REFERENCE_I_K_IEC_MIN_KA);
 
     // Verify IEC max gives a meaningfully different (higher) result than IEEE
-    expect(iecMaxResult.outputs.I_k_kA as number).toBeGreaterThan(ieeeResult.outputs.I_k_kA as number);
+    expect(iecMaxResult.outputs.I_k_kA as number).toBeGreaterThan(
+      ieeeResult.outputs.I_k_kA as number,
+    );
   });
 
   // ───────────────────────────────────────────────────────────────────────────
@@ -265,7 +299,7 @@ describe('Golden IEEE/IEC/NFPA Reference Certification', () => {
   //   Corrected ampacity: 153 × 0.87 × 0.80 = 106.5 A
   // ───────────────────────────────────────────────────────────────────────────
   it('IEC 60364: should match cable ampacity with correction factors', async () => {
-    const REFERENCE_BASE_AMPACITY_A = 153; // IEC 60364-5-52 Table A.52-3
+    const _REFERENCE_BASE_AMPACITY_A = 153; // IEC 60364-5-52 Table A.52-3
     const REFERENCE_ADJUSTED_AMPACITY_A = 106.5; // 153 × 0.87 × 0.80
 
     const dsl = DslDefinition.create({
@@ -277,15 +311,11 @@ describe('Golden IEEE/IEC/NFPA Reference Certification', () => {
         { name: 'k_temp', label: 'Temperature Correction Factor', type: 'number', required: true },
         { name: 'k_group', label: 'Grouping Correction Factor', type: 'number', required: true },
       ],
-      outputs: [
-        { name: 'adjusted_A', label: 'Adjusted Ampacity', type: 'number', unit: 'A' },
-      ],
-      formulas: [
-        { name: 'adjusted_A', expression: 'base_A * k_temp * k_group' },
-      ],
+      outputs: [{ name: 'adjusted_A', label: 'Adjusted Ampacity', type: 'number', unit: 'A' }],
+      formulas: [{ name: 'adjusted_A', expression: 'base_A * k_temp * k_group' }],
     });
 
-    const result = await runtime.execute(dsl, ctx({ base_A: 153, k_temp: 0.87, k_group: 0.80 }));
+    const result = await runtime.execute(dsl, ctx({ base_A: 153, k_temp: 0.87, k_group: 0.8 }));
     expect(result.errors).toHaveLength(0);
     expectRelative(result.outputs.adjusted_A as number, REFERENCE_ADJUSTED_AMPACITY_A);
   });
@@ -336,12 +366,18 @@ describe('Golden IEEE/IEC/NFPA Reference Certification', () => {
         // Step 3: Incident energy (IEEE 1584-2018 Eq. 5)
         { name: 'Cf', expression: '1.5' },
         { name: 'x', expression: '1.473' },
-        { name: 'incident_energy_J', expression: '4.184 * Cf * E_n * (t_clear / 0.2) * (610 ^ x) / (D_wd ^ x)' },
+        {
+          name: 'incident_energy_J',
+          expression: '4.184 * Cf * E_n * (t_clear / 0.2) * (610 ^ x) / (D_wd ^ x)',
+        },
         { name: 'incident_energy_cal', expression: 'incident_energy_J / 4.184' },
       ],
     });
 
-    const result = await runtime.execute(dsl, ctx({ V: 480, I_bf: 30000, G: 32, D_wd: 610, t_clear: 0.025 }));
+    const result = await runtime.execute(
+      dsl,
+      ctx({ V: 480, I_bf: 30000, G: 32, D_wd: 610, t_clear: 0.025 }),
+    );
     expect(result.errors).toHaveLength(0);
     expectRelative(result.outputs.I_arc as number, REFERENCE_I_ARC_A);
     expectRelative(result.outputs.incident_energy_cal as number, REFERENCE_INCIDENT_ENERGY_CAL);
@@ -366,8 +402,19 @@ describe('Golden IEEE/IEC/NFPA Reference Certification', () => {
       version: '1.0.0',
       standard: 'NEC 2023',
       inputs: [
-        { name: 'service_kcmil', label: 'Service Conductor Size', type: 'number', unit: 'kcmil', required: true },
-        { name: 'material', label: 'Conductor Material (1=Cu, 2=Al)', type: 'number', required: true },
+        {
+          name: 'service_kcmil',
+          label: 'Service Conductor Size',
+          type: 'number',
+          unit: 'kcmil',
+          required: true,
+        },
+        {
+          name: 'material',
+          label: 'Conductor Material (1=Cu, 2=Al)',
+          type: 'number',
+          required: true,
+        },
       ],
       outputs: [
         { name: 'gec_awg', label: 'GEC AWG Size', type: 'number' },
@@ -384,11 +431,13 @@ describe('Golden IEEE/IEC/NFPA Reference Certification', () => {
         // > 1000 kcmil → GEC = 3/0 AWG (85.0 mm²)
         {
           name: 'gec_awg',
-          expression: 'material >= 1.5 ? 0 : (service_kcmil >= 250 ? (service_kcmil <= 500 ? 0 : -1) : 4)',
+          expression:
+            'material >= 1.5 ? 0 : (service_kcmil >= 250 ? (service_kcmil <= 500 ? 0 : -1) : 4)',
         },
         {
           name: 'gec_area_mm2',
-          expression: 'material >= 1.5 ? 85.0 : (service_kcmil >= 250 ? (service_kcmil <= 500 ? 53.5 : 67.4) : 33.6)',
+          expression:
+            'material >= 1.5 ? 85.0 : (service_kcmil >= 250 ? (service_kcmil <= 500 ? 53.5 : 67.4) : 33.6)',
         },
       ],
     });
@@ -432,7 +481,10 @@ describe('Golden IEEE/IEC/NFPA Reference Certification', () => {
       ],
     });
 
-    const result = await runtime.execute(dsl, ctx({ P_kW: 500, PF_initial: 0.75, PF_target: 0.95 }));
+    const result = await runtime.execute(
+      dsl,
+      ctx({ P_kW: 500, PF_initial: 0.75, PF_target: 0.95 }),
+    );
     expect(result.errors).toHaveLength(0);
     expectRelative(result.outputs.Q_c_kVAR as number, REFERENCE_Q_C_KVAR);
   });
@@ -480,11 +532,17 @@ describe('Golden IEEE/IEC/NFPA Reference Certification', () => {
       ],
     });
 
-    const result = await runtime.execute(dsl, ctx({
-      S_MVA: 10, V_HV: 69, V_LV: 13.8,
-      CT_HV_ratio: 30, CT_LV_ratio: 100,
-      pickup_pu: 0.1,
-    }));
+    const result = await runtime.execute(
+      dsl,
+      ctx({
+        S_MVA: 10,
+        V_HV: 69,
+        V_LV: 13.8,
+        CT_HV_ratio: 30,
+        CT_LV_ratio: 100,
+        pickup_pu: 0.1,
+      }),
+    );
     expect(result.errors).toHaveLength(0);
     expectRelative(result.outputs.I_n_HV_A as number, 83.67);
     expectRelative(result.outputs.I_n_LV_A as number, 418.37);
