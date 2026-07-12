@@ -1,4 +1,15 @@
-import { Controller, Get, Post, Param, Body, Query, Req, UseGuards, HttpCode, HttpStatus } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Param,
+  Body,
+  Query,
+  Req,
+  UseGuards,
+  HttpCode,
+  HttpStatus,
+} from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation, ApiQuery } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../../auth/infrastructure/guards/jwt-auth.guard.js';
 import { CalculationRegistryService } from '../../application/services/calculation-registry.service.js';
@@ -11,7 +22,6 @@ import { ValidateInputDto } from '../dtos/validate-input.dto.js';
 import { DefinitionResponseDto } from '../dtos/calculation-response.dto.js';
 import { ResultResponseDto } from '../dtos/calculation-response.dto.js';
 import { CertificateResponseDto } from '../dtos/certificate-response.dto.js';
-import { AuditResponseDto } from '../dtos/audit-response.dto.js';
 
 @ApiTags('Calculations')
 @ApiBearerAuth('JWT-auth')
@@ -48,9 +58,10 @@ export class CalculationsController {
   @Get(':id')
   @ApiOperation({ summary: 'Get calculation definition by ID or slug' })
   async findOne(@Param('id') id: string) {
-    const entity = id.includes('-') && !id.includes('000')
-      ? await this.registry.getDefinitionBySlug(id)
-      : await this.registry.getDefinitionById(id);
+    const entity =
+      id.includes('-') && !id.includes('000')
+        ? await this.registry.getDefinitionBySlug(id)
+        : await this.registry.getDefinitionById(id);
     return { success: true, data: DefinitionResponseDto.fromEntity(entity) };
   }
 
@@ -84,13 +95,27 @@ export class CalculationsController {
   @ApiQuery({ name: 'page', required: false })
   @ApiQuery({ name: 'limit', required: false })
   @ApiQuery({ name: 'definitionId', required: false })
-  async getHistory(@Req() req: any, @Query('page') page?: string, @Query('limit') limit?: string, @Query('definitionId') definitionId?: string) {
+  async getHistory(
+    @Req() req: any,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+    @Query('definitionId') definitionId?: string,
+  ) {
     const result = await this.execution.getResultsByWorkspace(req.user.workspaceId ?? 'default', {
       page: page ? parseInt(page) : undefined,
       limit: limit ? parseInt(limit) : undefined,
       definitionId,
     });
-    return { success: true, data: ResultResponseDto.fromEntities(result.data), meta: { total: result.total, page: parseInt(page ?? '1'), limit: parseInt(limit ?? '20'), totalPages: Math.ceil(result.total / parseInt(limit ?? '20')) } };
+    return {
+      success: true,
+      data: ResultResponseDto.fromEntities(result.data),
+      meta: {
+        total: result.total,
+        page: parseInt(page ?? '1'),
+        limit: parseInt(limit ?? '20'),
+        totalPages: Math.ceil(result.total / parseInt(limit ?? '20')),
+      },
+    };
   }
 
   @Get('result/:id')

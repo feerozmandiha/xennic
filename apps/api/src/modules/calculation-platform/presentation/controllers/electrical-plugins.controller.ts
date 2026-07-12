@@ -1,5 +1,5 @@
 import { Controller, Get, Post, Param, Body, Query, HttpStatus, HttpCode } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiParam, ApiQuery, ApiBody } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiParam, ApiBody } from '@nestjs/swagger';
 import type { ElectricalPluginExecutionRequest } from '../../infrastructure/plugins/electrical/electrical-plugin.service.js';
 import { ElectricalPluginService } from '../../infrastructure/plugins/electrical/electrical-plugin.service.js';
 

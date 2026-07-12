@@ -1,4 +1,17 @@
-import { Controller, Get, Post, Put, Patch, Delete, Param, Body, Req, UseGuards, HttpCode, HttpStatus } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Patch,
+  Delete,
+  Param,
+  Body,
+  Req,
+  UseGuards,
+  HttpCode,
+  HttpStatus,
+} from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../../auth/infrastructure/guards/jwt-auth.guard.js';
 import { AdminGuard } from '../../../admin/infrastructure/guards/admin.guard.js';
@@ -56,7 +69,7 @@ export class CalculationAdminController {
   @Post('definitions')
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Create calculation definition' })
-  async createDefinition(@Body() dto: CreateDefinitionDto, @Req() req: any) {
+  async createDefinition(@Body() dto: CreateDefinitionDto, @Req() _req: any) {
     const entity = await this.registry.createDefinition(dto);
     return { success: true, data: DefinitionResponseDto.fromEntity(entity) };
   }
@@ -95,21 +108,21 @@ export class CalculationAdminController {
   @Post('definitions/:id/versions')
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Create new version for a definition' })
-  async createVersion(@Param('id') id: string, @Body() dto: CreateVersionDto, @Req() req: any) {
+  async createVersion(@Param('id') id: string, @Body() dto: CreateVersionDto, @Req() _req: any) {
     const entity = await this.versioning.createVersion({
       definitionId: id,
       version: dto.version,
       dslJson: dto.dslDefinition,
       changeLog: dto.changeLog,
-      createdBy: req.user.userId,
+      createdBy: _req.user.userId,
     });
     return { success: true, data: VersionResponseDto.fromEntity(entity) };
   }
 
   @Post('definitions/:id/versions/:versionId/publish')
   @ApiOperation({ summary: 'Publish a version' })
-  async publishVersion(@Param('versionId') versionId: string, @Req() req: any) {
-    const entity = await this.versioning.publishVersion(versionId, req.user.userId);
+  async publishVersion(@Param('versionId') versionId: string, @Req() _req: any) {
+    const entity = await this.versioning.publishVersion(versionId, _req.user.userId);
     return { success: true, data: VersionResponseDto.fromEntity(entity) };
   }
 
@@ -122,8 +135,8 @@ export class CalculationAdminController {
 
   @Post('definitions/:id/rollback/:version')
   @ApiOperation({ summary: 'Rollback to a specific version' })
-  async rollback(@Param('id') id: string, @Param('version') version: string, @Req() req: any) {
-    const entity = await this.versioning.rollback(id, version, req.user.userId);
+  async rollback(@Param('id') id: string, @Param('version') version: string, @Req() _req: any) {
+    const entity = await this.versioning.rollback(id, version, _req.user.userId);
     return { success: true, data: VersionResponseDto.fromEntity(entity) };
   }
 

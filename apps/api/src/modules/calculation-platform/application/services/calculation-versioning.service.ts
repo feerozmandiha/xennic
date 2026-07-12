@@ -14,16 +14,20 @@ export class CalculationVersioningService {
   ) {}
 
   async createVersion(data: {
-    definitionId: string; version: string; dslJson: Record<string, unknown>;
-    changeLog?: string | null; createdBy: string;
+    definitionId: string;
+    version: string;
+    dslJson: Record<string, unknown>;
+    changeLog?: string | null;
+    createdBy: string;
   }): Promise<CalculationVersionEntity> {
     const definition = await this.repo.findDefinitionById(data.definitionId);
     if (!definition) throw new NotFoundException(`Definition ${data.definitionId} not found`);
 
     const dsl = DslDefinition.fromJson(data.dslJson);
     const versions = await this.repo.findVersionsByDefinitionId(data.definitionId);
-    const versionExists = versions.some(v => v.version === data.version);
-    if (versionExists) throw new BadRequestException(`Version '${data.version}' already exists for this definition`);
+    const versionExists = versions.some((v) => v.version === data.version);
+    if (versionExists)
+      throw new BadRequestException(`Version '${data.version}' already exists for this definition`);
 
     const entity = CalculationVersionEntity.create({
       definitionId: data.definitionId,
@@ -38,7 +42,7 @@ export class CalculationVersioningService {
     return entity;
   }
 
-  async publishVersion(id: string, userId: string): Promise<CalculationVersionEntity> {
+  async publishVersion(id: string, _userId: string): Promise<CalculationVersionEntity> {
     const entity = await this.repo.findVersionById(id);
     if (!entity) throw new NotFoundException(`Version ${id} not found`);
 
@@ -62,12 +66,19 @@ export class CalculationVersioningService {
     return entity;
   }
 
-  async rollback(definitionId: string, targetVersion: string, userId: string): Promise<CalculationVersionEntity> {
+  async rollback(
+    definitionId: string,
+    targetVersion: string,
+    _userId: string,
+  ): Promise<CalculationVersionEntity> {
     const versions = await this.repo.findVersionsByDefinitionId(definitionId);
-    const target = versions.find(v => v.version === targetVersion);
-    if (!target) throw new NotFoundException(`Version '${targetVersion}' not found for definition ${definitionId}`);
+    const target = versions.find((v) => v.version === targetVersion);
+    if (!target)
+      throw new NotFoundException(
+        `Version '${targetVersion}' not found for definition ${definitionId}`,
+      );
 
-    const currentActive = versions.find(v => v.status === 'active');
+    const currentActive = versions.find((v) => v.status === 'active');
     if (currentActive) {
       currentActive.supersede();
       await this.repo.saveVersion(currentActive);
