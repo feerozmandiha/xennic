@@ -12,7 +12,10 @@ import { MemoryIndexerService } from '../src/modules/enterprise-intelligence/mem
 import { MemoryExpirationService } from '../src/modules/enterprise-intelligence/memory-platform/application/memory-expiration.service.js';
 import { InMemoryMemoryStore } from '../src/modules/enterprise-intelligence/memory-platform/testing/adapters/in-memory-memory-store';
 import { InMemoryMemoryIndex } from '../src/modules/enterprise-intelligence/memory-platform/testing/adapters/in-memory-memory-index';
-import { MemoryEntity, MemoryType } from '../src/modules/enterprise-intelligence/memory-platform/domain/memory.entity.js';
+import {
+  MemoryEntity,
+  MemoryType,
+} from '../src/modules/enterprise-intelligence/memory-platform/domain/memory.entity.js';
 
 import { PromptRegistryService } from '../src/modules/enterprise-intelligence/prompt-governance/application/prompt-registry.service.js';
 import { PromptTemplateService } from '../src/modules/enterprise-intelligence/prompt-governance/application/prompt-template.service.js';
@@ -47,13 +50,8 @@ import { PolicyManagementService } from '../src/modules/enterprise-intelligence/
 import { InMemoryPolicyRepository } from '../src/modules/enterprise-intelligence/policy-engine/testing/adapters/in-memory-policy-repository';
 
 import { AIGatewayService } from '../src/modules/enterprise-intelligence/ai-gateway/application/ai-gateway.service.js';
-import { GatewayRoutingService } from '../src/modules/enterprise-intelligence/ai-gateway/application/gateway-routing.service.js';
-import { GatewayQuotaService } from '../src/modules/enterprise-intelligence/ai-gateway/application/gateway-quota.service.js';
-import { GatewayRetryService } from '../src/modules/enterprise-intelligence/ai-gateway/application/gateway-retry.service.js';
 import { GatewayTelemetryService } from '../src/modules/enterprise-intelligence/ai-gateway/application/gateway-telemetry.service.js';
-import { MockProviderService } from '../src/modules/enterprise-intelligence/ai-gateway/infrastructure/providers/mock-provider.service.js';
-import { InMemoryProviderCapabilityRegistry } from '../src/modules/enterprise-intelligence/ai-gateway/testing/adapters/in-memory-provider-capability-registry';
-import { AIProvider, ProviderCapability } from '../src/modules/enterprise-intelligence/ai-gateway/domain/provider.enum.js';
+import { ProviderExecutionService } from '../src/modules/ai-provider-management/application/services/provider-execution.service.js';
 
 import { BenchmarkRegistryService } from '../src/modules/enterprise-intelligence/evaluation-platform/application/benchmark-registry.service.js';
 import { GoldenDatasetService } from '../src/modules/enterprise-intelligence/evaluation-platform/application/golden-dataset.service.js';
@@ -89,7 +87,6 @@ describe('Enterprise Intelligence Platform (Sprint I1)', () => {
   let policyManagement: PolicyManagementService;
 
   let aiGateway: AIGatewayService;
-  let providerRegistry: InMemoryProviderCapabilityRegistry;
 
   let benchmarkRegistry: BenchmarkRegistryService;
   let evaluationRunner: EvaluationRunnerService;
@@ -143,12 +140,28 @@ describe('Enterprise Intelligence Platform (Sprint I1)', () => {
         { provide: 'IPolicyRepository', useClass: InMemoryPolicyRepository },
 
         AIGatewayService,
-        GatewayRoutingService,
-        GatewayQuotaService,
-        GatewayRetryService,
         GatewayTelemetryService,
-        MockProviderService,
-        { provide: 'IProviderCapabilityRegistry', useClass: InMemoryProviderCapabilityRegistry },
+        {
+          provide: ProviderExecutionService,
+          useValue: {
+            chat: jest.fn().mockImplementation(async ({ modelId }) => ({
+              content: 'Mock AI response',
+              promptTokens: 10,
+              completionTokens: 5,
+              totalTokens: 15,
+              model: modelId ?? 'gpt-4',
+              providerId: 'mock-provider',
+              providerName: 'Mock Provider',
+            })),
+            embed: jest.fn().mockImplementation(async ({ modelId }) => ({
+              embeddings: [[0.1, 0.2, 0.3]],
+              model: modelId ?? 'text-embedding-3-small',
+              providerId: 'mock-provider',
+              providerName: 'Mock Provider',
+              totalTokens: 3,
+            })),
+          },
+        },
 
         BenchmarkRegistryService,
         GoldenDatasetService,
@@ -182,7 +195,6 @@ describe('Enterprise Intelligence Platform (Sprint I1)', () => {
     policyManagement = module.get(PolicyManagementService);
 
     aiGateway = module.get(AIGatewayService);
-    providerRegistry = module.get('IProviderCapabilityRegistry');
 
     benchmarkRegistry = module.get(BenchmarkRegistryService);
     evaluationRunner = module.get(EvaluationRunnerService);
@@ -239,8 +251,12 @@ describe('Enterprise Intelligence Platform (Sprint I1)', () => {
   describe('Phase 2: Enterprise Memory Platform', () => {
     it('should store and retrieve working memory', async () => {
       const entity = MemoryEntity.create(
-        MemoryType.WORKING, 'workspace', 'ws-1', 'task-1',
-        { status: 'active' }, 'user-1',
+        MemoryType.WORKING,
+        'workspace',
+        'ws-1',
+        'task-1',
+        { status: 'active' },
+        'user-1',
       );
       const stored = await memoryService.store(entity);
       expect(stored.id).toBeDefined();
@@ -253,8 +269,12 @@ describe('Enterprise Intelligence Platform (Sprint I1)', () => {
 
     it('should store and retrieve session memory', async () => {
       const entity = MemoryEntity.create(
-        MemoryType.SESSION, 'user', 'user-1', 'session-token',
-        { data: 'xyz' }, 'user-1',
+        MemoryType.SESSION,
+        'user',
+        'user-1',
+        'session-token',
+        { data: 'xyz' },
+        'user-1',
       );
       await memoryService.store(entity);
       const found = await memoryService.get(entity.id);
@@ -263,8 +283,12 @@ describe('Enterprise Intelligence Platform (Sprint I1)', () => {
 
     it('should search memory by query', async () => {
       const entity = MemoryEntity.create(
-        MemoryType.LONG_TERM, 'workspace', 'ws-1', 'key-concept',
-        { meaning: 'important' }, 'user-1',
+        MemoryType.LONG_TERM,
+        'workspace',
+        'ws-1',
+        'key-concept',
+        { meaning: 'important' },
+        'user-1',
       );
       await memoryService.store(entity);
       const results = await memoryService.search('important');
@@ -289,8 +313,12 @@ describe('Enterprise Intelligence Platform (Sprint I1)', () => {
 
     it('should register a prompt', async () => {
       const prompt = await promptRegistry.register(
-        'code-review', 'Check {{code}} for bugs', ['code'], [],
-        'user-1', 'Review code for issues',
+        'code-review',
+        'Check {{code}} for bugs',
+        ['code'],
+        [],
+        'user-1',
+        'Review code for issues',
       );
       promptId = prompt.id;
       expect(prompt.name).toBe('code-review');
@@ -346,7 +374,8 @@ describe('Enterprise Intelligence Platform (Sprint I1)', () => {
   describe('Phase 4: Tool Registry', () => {
     it('should register a tool with schema', async () => {
       const tool = await toolRegistry.register(
-        'calculator', 'Performs calculations',
+        'calculator',
+        'Performs calculations',
         { type: 'object', properties: { a: { type: 'number' }, b: { type: 'number' } } },
         ['workspace:admin'],
       );
@@ -361,7 +390,8 @@ describe('Enterprise Intelligence Platform (Sprint I1)', () => {
 
     it('should validate and execute a tool', async () => {
       const tool = await toolRegistry.register(
-        'echo', 'Echoes input',
+        'echo',
+        'Echoes input',
         { type: 'object', properties: { message: { type: 'string' } } },
         [],
       );
@@ -371,10 +401,12 @@ describe('Enterprise Intelligence Platform (Sprint I1)', () => {
 
     it('should reject invalid tool input when schema has required', async () => {
       const tool = await toolRegistry.register(
-        'strict-echo', 'Strict echo',
+        'strict-echo',
+        'Strict echo',
         {
           input: {
-            type: 'object', properties: { message: { type: 'string' } },
+            type: 'object',
+            properties: { message: { type: 'string' } },
             required: ['message'],
           },
           output: { type: 'object', properties: { result: { type: 'string' } } },
@@ -387,8 +419,10 @@ describe('Enterprise Intelligence Platform (Sprint I1)', () => {
 
     it('should get tool contract', async () => {
       const tool = await toolRegistry.register(
-        'contract-tool', 'Has contract',
-        { type: 'object', properties: {} }, [],
+        'contract-tool',
+        'Has contract',
+        { type: 'object', properties: {} },
+        [],
       );
       const contract = await toolExecutor.getContract(tool.id);
       expect(contract).toBeDefined();
@@ -403,8 +437,12 @@ describe('Enterprise Intelligence Platform (Sprint I1)', () => {
       const skill = await skillRegistry.register({
         name: 'translate',
         description: 'Translates text',
-        inputs: [{ name: 'text', type: 'string', description: 'Text to translate', required: true }],
-        outputs: [{ name: 'translated', type: 'string', description: 'Translated text', required: true }],
+        inputs: [
+          { name: 'text', type: 'string', description: 'Text to translate', required: true },
+        ],
+        outputs: [
+          { name: 'translated', type: 'string', description: 'Translated text', required: true },
+        ],
       });
       expect(skill.id).toBeDefined();
       expect(skill.name).toBe('translate');
@@ -412,12 +450,14 @@ describe('Enterprise Intelligence Platform (Sprint I1)', () => {
 
     it('should compose skills into a workflow', async () => {
       const s1 = await skillRegistry.register({
-        name: 'step1', description: 'First step',
+        name: 'step1',
+        description: 'First step',
         inputs: [{ name: 'input', type: 'string', required: true }],
         outputs: [{ name: 'intermediate', type: 'string', required: true }],
       });
       const s2 = await skillRegistry.register({
-        name: 'step2', description: 'Second step',
+        name: 'step2',
+        description: 'Second step',
         inputs: [{ name: 'data', type: 'string', required: true }],
         outputs: [{ name: 'result', type: 'string', required: true }],
       });
@@ -523,18 +563,6 @@ describe('Enterprise Intelligence Platform (Sprint I1)', () => {
   // ─── Phase 8: AI Gateway ────────────────────────────────────────────
 
   describe('Phase 8: AI Gateway', () => {
-    beforeAll(async () => {
-      await providerRegistry.registerProvider({
-        provider: AIProvider.OPENAI,
-        apiKey: 'sk-mock',
-        baseUrl: 'https://api.openai.com',
-        models: ['gpt-4'],
-        capabilities: [ProviderCapability.CHAT, ProviderCapability.COMPLETION, ProviderCapability.EMBEDDING],
-        rateLimits: { requestsPerMin: 100, tokensPerMin: 10000, concurrentMax: 5 },
-        enabled: true,
-      });
-    });
-
     it('should route a chat request and return response', async () => {
       const response = await aiGateway.chat({
         model: 'gpt-4',
@@ -577,7 +605,8 @@ describe('Enterprise Intelligence Platform (Sprint I1)', () => {
     it('should register a benchmark', async () => {
       // Create dataset first
       const ds = await goldenDataset.create({
-        name: 'eval-set', description: 'Eval dataset',
+        name: 'eval-set',
+        description: 'Eval dataset',
         items: [{ input: { q: 'hello' }, expectedOutput: { a: 'world' } }],
       });
       datasetId = ds.id;
