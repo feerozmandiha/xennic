@@ -5,9 +5,19 @@ import { useRouter } from 'next/navigation';
 import { useLocale } from 'next-intl';
 import { useQuery } from '@tanstack/react-query';
 import {
-  Search, Loader2, FolderKanban, BookOpen, MessageSquare,
-  HardDrive, FileText, Bell, ArrowLeft, X,
-  Filter, ChevronLeft, ChevronRight,
+  Search,
+  Loader2,
+  FolderKanban,
+  BookOpen,
+  MessageSquare,
+  HardDrive,
+  FileText,
+  Bell,
+  ArrowLeft,
+  X,
+  Filter,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 import { useAuthStore } from '@/stores/auth.store';
 import { apiClient } from '@/lib/api/client';
@@ -30,38 +40,45 @@ interface SearchMeta {
 }
 
 const TYPE_ICONS: Record<string, React.ElementType> = {
-  project:      FolderKanban,
-  standard:     FileText,
+  project: FolderKanban,
+  standard: FileText,
   conversation: MessageSquare,
-  article:      BookOpen,
-  file:         HardDrive,
+  article: BookOpen,
+  file: HardDrive,
   notification: Bell,
 };
 
 const TYPE_COLORS: Record<string, string> = {
-  project:      'text-blue-500 bg-blue-50 border-blue-200',
-  standard:     'text-purple-500 bg-purple-50 border-purple-200',
+  project: 'text-blue-500 bg-blue-50 border-blue-200',
+  standard: 'text-purple-500 bg-purple-50 border-purple-200',
   conversation: 'text-emerald-500 bg-emerald-50 border-emerald-200',
-  article:      'text-amber-500 bg-amber-50 border-amber-200',
-  file:         'text-rose-500 bg-rose-50 border-rose-200',
+  article: 'text-amber-500 bg-amber-50 border-amber-200',
+  file: 'text-rose-500 bg-rose-50 border-rose-200',
   notification: 'text-sky-500 bg-sky-50 border-sky-200',
 };
 
 const TYPE_LABELS: Record<string, string> = {
-  project:      'پروژه',
-  standard:     'استاندارد',
+  project: 'پروژه',
+  standard: 'استاندارد',
   conversation: 'مکالمه',
-  article:      'مقاله',
-  file:         'فایل',
+  article: 'مقاله',
+  file: 'فایل',
   notification: 'اعلان',
 };
 
-const ALL_TYPES = ['project', 'standard', 'conversation', 'article', 'file', 'notification'] as const;
+const ALL_TYPES = [
+  'project',
+  'standard',
+  'conversation',
+  'article',
+  'file',
+  'notification',
+] as const;
 
 export function SearchClient() {
   const locale = useLocale();
   const router = useRouter();
-  const wsId = useAuthStore(s => s.workspaceId);
+  const wsId = useAuthStore((s) => s.workspaceId);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const [query, setQuery] = useState('');
@@ -77,7 +94,7 @@ export function SearchClient() {
       params.set('q', searchQ);
       params.set('page', String(page));
       params.set('limit', String(LIMIT));
-      selectedTypes.forEach(t => params.append('type', t));
+      selectedTypes.forEach((t) => params.append('type', t));
       return apiClient.get<{ success: boolean; data: SearchResult[]; meta: SearchMeta }>(
         `/search?${params.toString()}`,
       );
@@ -105,7 +122,7 @@ export function SearchClient() {
   };
 
   const toggleType = (type: string) => {
-    setSelectedTypes(prev => {
+    setSelectedTypes((prev) => {
       const next = new Set(prev);
       if (next.has(type)) next.delete(type);
       else next.add(type);
@@ -147,7 +164,7 @@ export function SearchClient() {
         <input
           ref={inputRef}
           value={query}
-          onChange={e => setQuery(e.target.value)}
+          onChange={(e) => setQuery(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder="جستجو کنید..."
           className={cn(
@@ -158,14 +175,18 @@ export function SearchClient() {
           )}
         />
         {query && (
-          <button onClick={() => setQuery('')}
-            className="absolute left-3 top-1/2 -translate-y-1/2 h-6 w-6 flex items-center justify-center rounded-lg hover:bg-[hsl(var(--secondary))]">
+          <button
+            onClick={() => setQuery('')}
+            className="absolute left-3 top-1/2 -translate-y-1/2 h-6 w-6 flex items-center justify-center rounded-lg hover:bg-[hsl(var(--secondary))]"
+          >
             <X className="h-3.5 w-3.5 text-[hsl(var(--muted-foreground))]" />
           </button>
         )}
-        <button onClick={doSearch}
+        <button
+          onClick={doSearch}
           disabled={query.trim().length < 2}
-          className="absolute left-12 top-1/2 -translate-y-1/2 h-7 px-3 rounded-lg bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] text-xs font-medium hover:opacity-90 disabled:opacity-40">
+          className="absolute left-12 top-1/2 -translate-y-1/2 h-7 px-3 rounded-lg bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] text-xs font-medium hover:opacity-90 disabled:opacity-40"
+        >
           جستجو
         </button>
       </div>
@@ -173,25 +194,30 @@ export function SearchClient() {
       {/* Type filters */}
       <div className="flex items-center gap-2 flex-wrap">
         <Filter className="h-3.5 w-3.5 text-[hsl(var(--muted-foreground))]" />
-        {ALL_TYPES.map(type => {
+        {ALL_TYPES.map((type) => {
           const Icon = TYPE_ICONS[type];
           const isSelected = selectedTypes.size === 0 || selectedTypes.has(type);
           return (
-            <button key={type} onClick={() => toggleType(type)}
+            <button
+              key={type}
+              onClick={() => toggleType(type)}
               className={cn(
                 'flex items-center gap-1.5 h-7 px-2.5 rounded-lg text-[10px] font-medium border transition-all',
                 isSelected
                   ? 'bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] border-[hsl(var(--primary))]'
                   : 'bg-[hsl(var(--secondary)/0.3)] text-[hsl(var(--muted-foreground))] border-[hsl(var(--border))] hover:bg-[hsl(var(--secondary))]',
-              )}>
+              )}
+            >
               <Icon className="h-3 w-3" />
               {TYPE_LABELS[type]}
             </button>
           );
         })}
         {searchQ && (
-          <button onClick={clearAll}
-            className="flex items-center gap-1 h-7 px-2.5 rounded-lg text-[10px] font-medium border border-red-200 text-red-500 hover:bg-red-50">
+          <button
+            onClick={clearAll}
+            className="flex items-center gap-1 h-7 px-2.5 rounded-lg text-[10px] font-medium border border-red-200 text-red-500 hover:bg-red-50"
+          >
             <X className="h-3 w-3" />
             پاک کردن
           </button>
@@ -208,7 +234,9 @@ export function SearchClient() {
                 {meta.total} نتیجه برای &quot;{searchQ}&quot;
                 {meta.page > 1 && ` (صفحه ${meta.page})`}
               </p>
-              {isFetching && <Loader2 className="h-3.5 w-3.5 animate-spin text-[hsl(var(--muted-foreground))]" />}
+              {isFetching && (
+                <Loader2 className="h-3.5 w-3.5 animate-spin text-[hsl(var(--muted-foreground))]" />
+              )}
             </div>
           )}
 
@@ -216,7 +244,10 @@ export function SearchClient() {
           <div className="space-y-2">
             {isFetching && results.length === 0 ? (
               Array.from({ length: 5 }).map((_, i) => (
-                <div key={i} className="h-16 rounded-xl bg-[hsl(var(--secondary)/0.5)] animate-pulse" />
+                <div
+                  key={i}
+                  className="h-16 rounded-xl bg-[hsl(var(--secondary)/0.5)] animate-pulse"
+                />
               ))
             ) : results.length === 0 ? (
               <div className="py-12 text-center">
@@ -229,9 +260,10 @@ export function SearchClient() {
                 </p>
               </div>
             ) : (
-              results.map((result, i) => {
+              results.map((result) => {
                 const Icon = TYPE_ICONS[result.type] ?? FileText;
-                const colorClass = TYPE_COLORS[result.type] ?? 'text-gray-500 bg-gray-50 border-gray-200';
+                const colorClass =
+                  TYPE_COLORS[result.type] ?? 'text-gray-500 bg-gray-50 border-gray-200';
                 return (
                   <button
                     key={`${result.type}-${result.id}`}
@@ -243,7 +275,12 @@ export function SearchClient() {
                       'group',
                     )}
                   >
-                    <div className={cn('w-9 h-9 rounded-lg flex items-center justify-center border shrink-0', colorClass)}>
+                    <div
+                      className={cn(
+                        'w-9 h-9 rounded-lg flex items-center justify-center border shrink-0',
+                        colorClass,
+                      )}
+                    >
                       <Icon className="h-4 w-4" />
                     </div>
                     <div className="flex-1 min-w-0">
@@ -256,10 +293,12 @@ export function SearchClient() {
                         </p>
                       )}
                       <div className="flex items-center gap-2 mt-1">
-                        <span className={cn(
-                          'text-[10px] font-medium px-1.5 py-0.5 rounded',
-                          'bg-[hsl(var(--secondary)/0.5)] text-[hsl(var(--muted-foreground))]',
-                        )}>
+                        <span
+                          className={cn(
+                            'text-[10px] font-medium px-1.5 py-0.5 rounded',
+                            'bg-[hsl(var(--secondary)/0.5)] text-[hsl(var(--muted-foreground))]',
+                          )}
+                        >
                           {TYPE_LABELS[result.type] ?? result.type}
                         </span>
                         {result.createdAt && (
@@ -279,9 +318,11 @@ export function SearchClient() {
           {/* Pagination */}
           {totalPages > 1 && (
             <div className="flex items-center justify-center gap-2 pt-2">
-              <button onClick={() => setPage(p => Math.max(1, p - 1))}
+              <button
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={page <= 1}
-                className="h-8 w-8 flex items-center justify-center rounded-lg border border-[hsl(var(--border))] hover:bg-[hsl(var(--secondary))] disabled:opacity-30">
+                className="h-8 w-8 flex items-center justify-center rounded-lg border border-[hsl(var(--border))] hover:bg-[hsl(var(--secondary))] disabled:opacity-30"
+              >
                 <ChevronRight className="h-4 w-4" />
               </button>
               {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
@@ -296,20 +337,25 @@ export function SearchClient() {
                   pageNum = page - 2 + i;
                 }
                 return (
-                  <button key={pageNum} onClick={() => setPage(pageNum)}
+                  <button
+                    key={pageNum}
+                    onClick={() => setPage(pageNum)}
                     className={cn(
                       'h-8 w-8 flex items-center justify-center rounded-lg text-xs font-medium transition-all',
                       pageNum === page
                         ? 'bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]'
                         : 'border border-[hsl(var(--border))] hover:bg-[hsl(var(--secondary))]',
-                    )}>
+                    )}
+                  >
                     {pageNum.toLocaleString('fa-IR')}
                   </button>
                 );
               })}
-              <button onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+              <button
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                 disabled={page >= totalPages}
-                className="h-8 w-8 flex items-center justify-center rounded-lg border border-[hsl(var(--border))] hover:bg-[hsl(var(--secondary))] disabled:opacity-30">
+                className="h-8 w-8 flex items-center justify-center rounded-lg border border-[hsl(var(--border))] hover:bg-[hsl(var(--secondary))] disabled:opacity-30"
+              >
                 <ChevronLeft className="h-4 w-4" />
               </button>
             </div>

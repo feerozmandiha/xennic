@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { ShoppingCart, Package, Building2, Plus } from 'lucide-react';
+import { ShoppingCart, Package, Building2 } from 'lucide-react';
 import { PageHeader } from '@/components/ui/page-header';
 import { cn } from '@/lib/utils';
 import { ProductList } from './product-list';
@@ -23,10 +23,7 @@ export function MarketplaceClient() {
 
   return (
     <div>
-      <PageHeader
-        title={t('title')}
-        description={t('description')}
-      />
+      <PageHeader title={t('title')} description={t('description')} />
 
       <div className="flex items-center gap-1 border-b border-[hsl(var(--border))] mb-6">
         {TABS.map(({ key, icon: Icon, labelKey }) => (

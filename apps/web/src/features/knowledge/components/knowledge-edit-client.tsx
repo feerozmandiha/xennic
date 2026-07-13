@@ -4,30 +4,29 @@ import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter, useParams } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { BookOpen, ArrowLeft } from 'lucide-react';
-import { Button }   from '@/components/ui/button';
-import { Input }    from '@/components/ui/input';
+import { ArrowLeft } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { PageHeader } from '@/components/ui/page-header';
-import { useAuthStore } from '@/stores/auth.store';
-import { useToast }     from '@/stores/toast.store';
-import { apiClient }    from '@/lib/api/client';
+import { useToast } from '@/stores/toast.store';
+import { apiClient } from '@/lib/api/client';
 import { KnowledgeEditor } from './knowledge-editor';
-import { TaxonomySelect }  from './taxonomy-select';
+import { TaxonomySelect } from './taxonomy-select';
 import { StandardsManager } from './standards-manager';
 
 const DIFFICULTIES = [
-  { value: 'beginner',     label: 'مبتدی' },
+  { value: 'beginner', label: 'مبتدی' },
   { value: 'intermediate', label: 'متوسط' },
-  { value: 'advanced',     label: 'پیشرفته' },
-  { value: 'expert',       label: 'متخصص' },
+  { value: 'advanced', label: 'پیشرفته' },
+  { value: 'expert', label: 'متخصص' },
 ];
 
 const VISIBILITIES = [
-  { value: 'public',    label: 'عمومی' },
+  { value: 'public', label: 'عمومی' },
   { value: 'workspace', label: 'فضای کاری' },
-  { value: 'private',   label: 'خصوصی' },
+  { value: 'private', label: 'خصوصی' },
 ];
 
 interface TaxonomyEntry {
@@ -41,41 +40,45 @@ interface Props {
 }
 
 export function KnowledgeEditClient({ articleId }: Props) {
-  const t           = useTranslations('knowledge');
-  const tCommon     = useTranslations('common');
-  const params      = useParams();
-  const locale      = (params?.locale as string) ?? 'fa';
-  const router      = useRouter();
-  const wsId        = useAuthStore(s => s.workspaceId);
-  const toast       = useToast();
+  const t = useTranslations('knowledge');
+  const tCommon = useTranslations('common');
+  const params = useParams();
+  const locale = (params?.locale as string) ?? 'fa';
+  const router = useRouter();
+  const toast = useToast();
   const queryClient = useQueryClient();
 
-  const [slug, setSlug]               = useState('');
-  const [title, setTitle]             = useState('');
-  const [content, setContent]         = useState<Record<string, unknown>>({});
-  const [difficulty, setDifficulty]   = useState('');
-  const [visibility, setVisibility]   = useState('public');
+  const [slug, setSlug] = useState('');
+  const [title, setTitle] = useState('');
+  const [content, setContent] = useState<Record<string, unknown>>({});
+  const [difficulty, setDifficulty] = useState('');
+  const [visibility, setVisibility] = useState('public');
   const [selectedTaxonomy, setSelectedTaxonomy] = useState<Record<string, string[]>>({
-    category: [], topic: [], tag: [], discipline: [], audience: [],
+    category: [],
+    topic: [],
+    tag: [],
+    discipline: [],
+    audience: [],
   });
 
   const { data, isLoading } = useQuery({
     queryKey: ['knowledge', articleId],
-    queryFn:  () => apiClient.get<any>(`/knowledge/${articleId}`),
-    enabled:  !!articleId,
+    queryFn: () => apiClient.get<any>(`/knowledge/${articleId}`),
+    enabled: !!articleId,
     retry: false,
   });
 
   const taxonomyQuery = useQuery({
     queryKey: ['knowledge', articleId, 'taxonomy'],
-    queryFn:  () => apiClient.get<{ data: TaxonomyEntry[] }>(`/knowledge/${articleId}/taxonomy`),
-    enabled:  !!articleId,
+    queryFn: () => apiClient.get<{ data: TaxonomyEntry[] }>(`/knowledge/${articleId}/taxonomy`),
+    enabled: !!articleId,
   });
 
   const standardsQuery = useQuery({
     queryKey: ['knowledge', articleId, 'standards'],
-    queryFn:  () => apiClient.get<{ success: boolean; data: any[] }>(`/knowledge/${articleId}/standards`),
-    enabled:  !!articleId,
+    queryFn: () =>
+      apiClient.get<{ success: boolean; data: any[] }>(`/knowledge/${articleId}/standards`),
+    enabled: !!articleId,
   });
 
   useEffect(() => {
@@ -92,7 +95,11 @@ export function KnowledgeEditClient({ articleId }: Props) {
   useEffect(() => {
     if (taxonomyQuery.data?.data) {
       const grouped: Record<string, string[]> = {
-        category: [], topic: [], tag: [], discipline: [], audience: [],
+        category: [],
+        topic: [],
+        tag: [],
+        discipline: [],
+        audience: [],
       };
       for (const entry of taxonomyQuery.data.data) {
         if (grouped[entry.taxonomy_type]) {
@@ -120,7 +127,13 @@ export function KnowledgeEditClient({ articleId }: Props) {
         visibility: variables.visibility,
       });
 
-      const current: Record<string, string[]> = { category: [], topic: [], tag: [], discipline: [], audience: [] };
+      const current: Record<string, string[]> = {
+        category: [],
+        topic: [],
+        tag: [],
+        discipline: [],
+        audience: [],
+      };
       for (const entry of variables.existingTaxonomy) {
         if (current[entry.taxonomy_type]) {
           current[entry.taxonomy_type].push(entry.taxonomy_id);
@@ -138,7 +151,7 @@ export function KnowledgeEditClient({ articleId }: Props) {
         for (const id of existing) {
           if (!ids.includes(id)) {
             const entry = variables.existingTaxonomy.find(
-              e => e.taxonomy_type === type && e.taxonomy_id === id,
+              (e) => e.taxonomy_type === type && e.taxonomy_id === id,
             );
             if (entry) toRemove.push(entry.id);
           }
@@ -147,12 +160,14 @@ export function KnowledgeEditClient({ articleId }: Props) {
 
       await Promise.all([
         ...toAdd.map(({ type, id }) =>
-          apiClient.post(`/knowledge/${articleId}/taxonomy`, {
-            taxonomyType: type,
-            taxonomyId: id,
-          }).catch(() => {}),
+          apiClient
+            .post(`/knowledge/${articleId}/taxonomy`, {
+              taxonomyType: type,
+              taxonomyId: id,
+            })
+            .catch(() => {}),
         ),
-        ...toRemove.map(id =>
+        ...toRemove.map((id) =>
           apiClient.delete(`/knowledge/${articleId}/taxonomy/${id}`).catch(() => {}),
         ),
       ]);
@@ -217,7 +232,12 @@ export function KnowledgeEditClient({ articleId }: Props) {
           title={t('editArticle')}
           action={
             <div className="flex gap-3">
-              <Button type="button" variant="outline" onClick={() => router.back()} disabled={mutation.isPending}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => router.back()}
+                disabled={mutation.isPending}
+              >
                 {tCommon('cancel')}
               </Button>
               <Button type="submit" loading={mutation.isPending}>
@@ -253,14 +273,14 @@ export function KnowledgeEditClient({ articleId }: Props) {
                 <Input
                   label="عنوان"
                   value={title}
-                  onChange={e => setTitle(e.target.value)}
+                  onChange={(e) => setTitle(e.target.value)}
                   disabled={mutation.isPending}
                 />
 
                 <Input
                   label={t('slug')}
                   value={slug}
-                  onChange={e => setSlug(e.target.value)}
+                  onChange={(e) => setSlug(e.target.value)}
                   disabled={mutation.isPending}
                   dir="ltr"
                 />
@@ -269,12 +289,14 @@ export function KnowledgeEditClient({ articleId }: Props) {
                   <label className="block text-sm font-medium">سطح دشواری</label>
                   <select
                     value={difficulty}
-                    onChange={e => setDifficulty(e.target.value)}
+                    onChange={(e) => setDifficulty(e.target.value)}
                     className="flex w-full rounded-[var(--radius)] border border-[hsl(var(--input))] bg-transparent px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] disabled:opacity-50"
                   >
                     <option value="">بدون سطح</option>
-                    {DIFFICULTIES.map(d => (
-                      <option key={d.value} value={d.value}>{d.label}</option>
+                    {DIFFICULTIES.map((d) => (
+                      <option key={d.value} value={d.value}>
+                        {d.label}
+                      </option>
                     ))}
                   </select>
                 </div>
@@ -283,11 +305,13 @@ export function KnowledgeEditClient({ articleId }: Props) {
                   <label className="block text-sm font-medium">دید</label>
                   <select
                     value={visibility}
-                    onChange={e => setVisibility(e.target.value)}
+                    onChange={(e) => setVisibility(e.target.value)}
                     className="flex w-full rounded-[var(--radius)] border border-[hsl(var(--input))] bg-transparent px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] disabled:opacity-50"
                   >
-                    {VISIBILITIES.map(v => (
-                      <option key={v.value} value={v.value}>{v.label}</option>
+                    {VISIBILITIES.map((v) => (
+                      <option key={v.value} value={v.value}>
+                        {v.label}
+                      </option>
                     ))}
                   </select>
                 </div>
@@ -302,27 +326,27 @@ export function KnowledgeEditClient({ articleId }: Props) {
                 <TaxonomySelect
                   type="category"
                   selected={selectedTaxonomy.category ?? []}
-                  onChange={ids => setSelectedTaxonomy(p => ({ ...p, category: ids }))}
+                  onChange={(ids) => setSelectedTaxonomy((p) => ({ ...p, category: ids }))}
                 />
                 <TaxonomySelect
                   type="topic"
                   selected={selectedTaxonomy.topic ?? []}
-                  onChange={ids => setSelectedTaxonomy(p => ({ ...p, topic: ids }))}
+                  onChange={(ids) => setSelectedTaxonomy((p) => ({ ...p, topic: ids }))}
                 />
                 <TaxonomySelect
                   type="tag"
                   selected={selectedTaxonomy.tag ?? []}
-                  onChange={ids => setSelectedTaxonomy(p => ({ ...p, tag: ids }))}
+                  onChange={(ids) => setSelectedTaxonomy((p) => ({ ...p, tag: ids }))}
                 />
                 <TaxonomySelect
                   type="discipline"
                   selected={selectedTaxonomy.discipline ?? []}
-                  onChange={ids => setSelectedTaxonomy(p => ({ ...p, discipline: ids }))}
+                  onChange={(ids) => setSelectedTaxonomy((p) => ({ ...p, discipline: ids }))}
                 />
                 <TaxonomySelect
                   type="audience"
                   selected={selectedTaxonomy.audience ?? []}
-                  onChange={ids => setSelectedTaxonomy(p => ({ ...p, audience: ids }))}
+                  onChange={(ids) => setSelectedTaxonomy((p) => ({ ...p, audience: ids }))}
                 />
               </CardContent>
             </Card>

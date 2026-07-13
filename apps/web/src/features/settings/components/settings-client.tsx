@@ -1,53 +1,71 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useTheme }        from 'next-themes';
+import { useTheme } from 'next-themes';
 import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
-  Sun, Moon, Monitor, Globe, User, CreditCard,
-  Shield, Save, Building2, UserPlus, Trash2,
-  Crown, UserMinus, Mail, RefreshCw, ChevronRight,
-  CheckCircle2, AlertTriangle, Eye, EyeOff,
-  Settings, Palette, Clock, Bell, Sliders,
-  Languages, Ruler, Zap, Thermometer, Hash, Percent,
-  PaintBucket, ToggleLeft,
+  Sun,
+  Moon,
+  Monitor,
+  Globe,
+  User,
+  CreditCard,
+  Shield,
+  Save,
+  Building2,
+  UserPlus,
+  Trash2,
+  Crown,
+  UserMinus,
+  Mail,
+  RefreshCw,
+  ChevronRight,
+  CheckCircle2,
+  AlertTriangle,
+  Eye,
+  EyeOff,
+  Settings,
+  Palette,
+  Bell,
+  Sliders,
+  ToggleLeft,
 } from 'lucide-react';
-import { PageHeader }  from '@/components/ui/page-header';
+import { PageHeader } from '@/components/ui/page-header';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input }   from '@/components/ui/input';
-import { Badge }   from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
 import { useAuthStore } from '@/stores/auth.store';
-import { useToast }     from '@/stores/toast.store';
-import { apiClient }    from '@/lib/api/client';
-import { cn }           from '@/lib/utils';
+import { useToast } from '@/stores/toast.store';
+import { apiClient } from '@/lib/api/client';
+import { cn } from '@/lib/utils';
 import { BillingClient } from '@/features/billing/components/billing-client';
 
 // ── Tabs ──────────────────────────────────────────────────────────────────────
 
 const TABS = [
-  { key: 'profile',   label: 'پروفایل',   icon: User },
+  { key: 'profile', label: 'پروفایل', icon: User },
   { key: 'workspace', label: 'Workspace', icon: Building2 },
-  { key: 'security',  label: 'امنیت',     icon: Shield },
-  { key: 'plan',      label: 'اشتراک',    icon: CreditCard },
-  { key: 'appearance',label: 'ظاهر',      icon: Sun },
+  { key: 'security', label: 'امنیت', icon: Shield },
+  { key: 'plan', label: 'اشتراک', icon: CreditCard },
+  { key: 'appearance', label: 'ظاهر', icon: Sun },
 ] as const;
 
-type Tab = typeof TABS[number]['key'];
+type Tab = (typeof TABS)[number]['key'];
 
 // ─────────────────────────────────────────────────────────────
 // TAB: PROFILE
 // ─────────────────────────────────────────────────────────────
 
 function ProfileTab() {
-  const user       = useAuthStore(s => s.user);
-  const updateUser = useAuthStore(s => s.updateUser);
-  const toast      = useToast();
+  const user = useAuthStore((s) => s.user);
+  const updateUser = useAuthStore((s) => s.updateUser);
+  const toast = useToast();
 
   const [firstName, setFirstName] = useState(user?.firstName ?? '');
-  const [lastName,  setLastName]  = useState(user?.lastName  ?? '');
+  const [lastName, setLastName] = useState(user?.lastName ?? '');
 
   const mutation = useMutation({
     mutationFn: () => apiClient.put(`/users/${user?.id}`, { firstName, lastName }),
@@ -66,14 +84,18 @@ function ProfileTab() {
       <Card>
         <CardContent className="p-5">
           <div className="flex items-center gap-4">
-            <div className={cn(
-              'w-16 h-16 rounded-2xl flex items-center justify-center shrink-0',
-              'bg-[hsl(var(--primary)/0.1)] border-2 border-[hsl(var(--primary)/0.2)]',
-            )}>
+            <div
+              className={cn(
+                'w-16 h-16 rounded-2xl flex items-center justify-center shrink-0',
+                'bg-[hsl(var(--primary)/0.1)] border-2 border-[hsl(var(--primary)/0.2)]',
+              )}
+            >
               <span className="text-2xl font-black text-[hsl(var(--primary))]">{initials}</span>
             </div>
             <div className="min-w-0">
-              <p className="font-bold text-base">{firstName} {lastName}</p>
+              <p className="font-bold text-base">
+                {firstName} {lastName}
+              </p>
               <p className="text-sm text-[hsl(var(--muted-foreground))] truncate">{user?.email}</p>
               <div className="flex items-center gap-1.5 mt-1.5">
                 <CheckCircle2 className="h-3 w-3 text-[hsl(var(--success))]" />
@@ -94,8 +116,18 @@ function ProfileTab() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-2 gap-3">
-            <Input label="نام" value={firstName} onChange={e => setFirstName(e.target.value)} required />
-            <Input label="نام خانوادگی" value={lastName} onChange={e => setLastName(e.target.value)} required />
+            <Input
+              label="نام"
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
+              required
+            />
+            <Input
+              label="نام خانوادگی"
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value)}
+              required
+            />
           </div>
           <Input label="ایمیل" value={user?.email ?? ''} disabled className="opacity-60" />
           <p className="text-xs text-[hsl(var(--muted-foreground))]">
@@ -120,22 +152,22 @@ function ProfileTab() {
 // ─────────────────────────────────────────────────────────────
 
 const ROLE_CONFIG: Record<string, { label: string; variant: any; icon: React.ElementType }> = {
-  OWNER:  { label: 'مالک',     variant: 'warning',   icon: Crown },
-  ADMIN:  { label: 'ادمین',    variant: 'default',   icon: Shield },
-  MEMBER: { label: 'عضو',      variant: 'secondary', icon: User },
+  OWNER: { label: 'مالک', variant: 'warning', icon: Crown },
+  ADMIN: { label: 'ادمین', variant: 'default', icon: Shield },
+  MEMBER: { label: 'عضو', variant: 'secondary', icon: User },
   VIEWER: { label: 'مشاهده‌گر', variant: 'secondary', icon: Eye },
 };
 
 function WorkspaceTab() {
-  const wsId        = useAuthStore(s => s.workspaceId);
-  const user        = useAuthStore(s => s.user);
-  const toast       = useToast();
+  const wsId = useAuthStore((s) => s.workspaceId);
+  const user = useAuthStore((s) => s.user);
+  const toast = useToast();
   const queryClient = useQueryClient();
 
-  const [wsName,    setWsName]    = useState('');
-  const [nameEdit,  setNameEdit]  = useState(false);
-  const [invEmail,  setInvEmail]  = useState('');
-  const [invRole,   setInvRole]   = useState<'ADMIN' | 'MEMBER' | 'VIEWER'>('MEMBER');
+  const [wsName, setWsName] = useState('');
+  const [nameEdit, setNameEdit] = useState(false);
+  const [invEmail, setInvEmail] = useState('');
+  const [invRole, setInvRole] = useState<'ADMIN' | 'MEMBER' | 'VIEWER'>('MEMBER');
   const [showInvite, setShowInvite] = useState(false);
 
   // ── Workspace Settings ──
@@ -144,8 +176,8 @@ function WorkspaceTab() {
 
   const { data: settingsData, isLoading: settingsLoading } = useQuery({
     queryKey: ['ws-settings', wsId],
-    queryFn:  () => apiClient.get<any>(`/workspaces/${wsId}/settings`),
-    enabled:  !!wsId && showSettings,
+    queryFn: () => apiClient.get<any>(`/workspaces/${wsId}/settings`),
+    enabled: !!wsId && showSettings,
     retry: false,
   });
 
@@ -169,31 +201,32 @@ function WorkspaceTab() {
   // Workspace info
   const { data: wsData, isLoading: wsLoading } = useQuery({
     queryKey: ['workspace-detail', wsId],
-    queryFn:  () => apiClient.get<any>(`/workspaces/${wsId}`),
-    enabled:  !!wsId,
+    queryFn: () => apiClient.get<any>(`/workspaces/${wsId}`),
+    enabled: !!wsId,
     retry: false,
   });
 
   // Members
   const { data: membersData, isLoading: membersLoading } = useQuery({
     queryKey: ['ws-members', wsId],
-    queryFn:  () => apiClient.get<any>(`/workspaces/${wsId}/members`),
-    enabled:  !!wsId,
+    queryFn: () => apiClient.get<any>(`/workspaces/${wsId}/members`),
+    enabled: !!wsId,
     retry: false,
   });
 
   // Invitations
   const { data: invData } = useQuery({
     queryKey: ['ws-invitations', wsId],
-    queryFn:  () => apiClient.get<any>(`/workspaces/${wsId}/invitations`),
-    enabled:  !!wsId,
+    queryFn: () => apiClient.get<any>(`/workspaces/${wsId}/invitations`),
+    enabled: !!wsId,
     retry: false,
   });
 
-  const ws      = wsData?.data;
+  const ws = wsData?.data;
   const members = membersData?.data ?? [];
   const invitations = (invData?.data ?? []).filter((i: any) => i.status === 'pending');
-  const isOwner = ws?.createdBy === user?.id || members.find((m: any) => m.userId === user?.id)?.role === 'OWNER';
+  const isOwner =
+    ws?.createdBy === user?.id || members.find((m: any) => m.userId === user?.id)?.role === 'OWNER';
 
   // Rename workspace
   const renameMutation = useMutation({
@@ -230,7 +263,8 @@ function WorkspaceTab() {
 
   // Invite
   const inviteMutation = useMutation({
-    mutationFn: () => apiClient.post(`/workspaces/${wsId}/invitations`, { email: invEmail, role: invRole }),
+    mutationFn: () =>
+      apiClient.post(`/workspaces/${wsId}/invitations`, { email: invEmail, role: invRole }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['ws-invitations'] });
       toast.success(`دعوتنامه به ${invEmail} ارسال شد`);
@@ -250,16 +284,16 @@ function WorkspaceTab() {
     onError: () => toast.error('خطا در لغو دعوتنامه'),
   });
 
-  if (wsLoading) return (
-    <div className="space-y-4 max-w-2xl">
-      <Skeleton className="h-32" />
-      <Skeleton className="h-48" />
-    </div>
-  );
+  if (wsLoading)
+    return (
+      <div className="space-y-4 max-w-2xl">
+        <Skeleton className="h-32" />
+        <Skeleton className="h-48" />
+      </div>
+    );
 
   return (
     <div className="space-y-5 max-w-2xl">
-
       {/* Workspace Info */}
       <Card>
         <CardHeader className="pb-3">
@@ -280,7 +314,7 @@ function WorkspaceTab() {
                 <div className="flex items-center gap-2">
                   <Input
                     value={wsName}
-                    onChange={e => setWsName(e.target.value)}
+                    onChange={(e) => setWsName(e.target.value)}
                     placeholder={ws?.name}
                     className="h-8 text-sm"
                   />
@@ -303,7 +337,10 @@ function WorkspaceTab() {
                   <p className="font-semibold">{ws?.name}</p>
                   {isOwner && (
                     <button
-                      onClick={() => { setWsName(ws?.name ?? ''); setNameEdit(true); }}
+                      onClick={() => {
+                        setWsName(ws?.name ?? '');
+                        setNameEdit(true);
+                      }}
                       className="text-xs text-[hsl(var(--primary))] hover:underline"
                     >
                       ویرایش
@@ -311,9 +348,13 @@ function WorkspaceTab() {
                   )}
                 </div>
               )}
-              <p className="text-xs text-[hsl(var(--muted-foreground))] mt-0.5 font-mono">{ws?.code}</p>
+              <p className="text-xs text-[hsl(var(--muted-foreground))] mt-0.5 font-mono">
+                {ws?.code}
+              </p>
             </div>
-            <Badge variant="success" className="shrink-0 text-[10px]">فعال</Badge>
+            <Badge variant="success" className="shrink-0 text-[10px]">
+              فعال
+            </Badge>
           </div>
         </CardContent>
       </Card>
@@ -324,11 +365,13 @@ function WorkspaceTab() {
           <CardTitle className="text-sm flex items-center gap-2">
             <User className="h-4 w-4 text-[hsl(var(--muted-foreground))]" />
             اعضا
-            <Badge variant="secondary" className="text-[10px]">{members.length}</Badge>
+            <Badge variant="secondary" className="text-[10px]">
+              {members.length}
+            </Badge>
           </CardTitle>
           {isOwner && (
             <button
-              onClick={() => setShowInvite(s => !s)}
+              onClick={() => setShowInvite((s) => !s)}
               className="inline-flex items-center gap-1.5 h-7 px-3 rounded-[var(--radius)] bg-[hsl(var(--primary)/0.08)] text-[hsl(var(--primary))] text-xs font-medium hover:bg-[hsl(var(--primary)/0.12)] transition-colors"
             >
               <UserPlus className="h-3.5 w-3.5" />
@@ -340,20 +383,22 @@ function WorkspaceTab() {
         {/* Invite form */}
         {showInvite && (
           <div className="mx-5 mb-4 p-4 rounded-[var(--radius-lg)] bg-[hsl(var(--secondary)/0.5)] border border-[hsl(var(--border))] space-y-3 animate-slide-down">
-            <p className="text-xs font-semibold text-[hsl(var(--muted-foreground))]">دعوت عضو جدید</p>
+            <p className="text-xs font-semibold text-[hsl(var(--muted-foreground))]">
+              دعوت عضو جدید
+            </p>
             <div className="flex gap-2">
               <Input
                 type="email"
                 placeholder="email@example.com"
                 value={invEmail}
-                onChange={e => setInvEmail(e.target.value)}
+                onChange={(e) => setInvEmail(e.target.value)}
                 startIcon={<Mail className="h-4 w-4" />}
                 dir="ltr"
                 className="flex-1"
               />
               <select
                 value={invRole}
-                onChange={e => setInvRole(e.target.value as any)}
+                onChange={(e) => setInvRole(e.target.value as any)}
                 className={cn(
                   'h-9 px-2 rounded-[var(--radius)] border border-[hsl(var(--input))] bg-transparent text-sm',
                   'focus:outline-none focus:ring-2 focus:ring-[hsl(var(--ring))]',
@@ -385,14 +430,16 @@ function WorkspaceTab() {
         <CardContent className="p-0">
           {membersLoading ? (
             <div className="p-4 space-y-3">
-              {[1,2,3].map(i => <Skeleton key={i} className="h-14" />)}
+              {[1, 2, 3].map((i) => (
+                <Skeleton key={i} className="h-14" />
+              ))}
             </div>
           ) : (
             <ul className="divide-y divide-[hsl(var(--border))]">
               {members.map((member: any) => {
-                const cfg     = ROLE_CONFIG[member.role] ?? ROLE_CONFIG.MEMBER;
-                const Icon    = cfg.icon;
-                const isMe    = member.userId === user?.id;
+                const cfg = ROLE_CONFIG[member.role] ?? ROLE_CONFIG.MEMBER;
+                const Icon = cfg.icon;
+                const isMe = member.userId === user?.id;
                 const isOwnerMember = member.role === 'OWNER';
 
                 return (
@@ -409,7 +456,11 @@ function WorkspaceTab() {
                       <div className="flex items-center gap-2">
                         <p className="text-sm font-medium truncate">
                           {member.userId}
-                          {isMe && <span className="text-[10px] text-[hsl(var(--muted-foreground))] mr-1">(شما)</span>}
+                          {isMe && (
+                            <span className="text-[10px] text-[hsl(var(--muted-foreground))] mr-1">
+                              (شما)
+                            </span>
+                          )}
                         </p>
                       </div>
                       <p className="text-[10px] text-[hsl(var(--muted-foreground))]">
@@ -422,7 +473,9 @@ function WorkspaceTab() {
                       {isOwner && !isMe && !isOwnerMember ? (
                         <select
                           defaultValue={member.role}
-                          onChange={e => roleMutation.mutate({ userId: member.userId, role: e.target.value })}
+                          onChange={(e) =>
+                            roleMutation.mutate({ userId: member.userId, role: e.target.value })
+                          }
                           className={cn(
                             'h-7 px-2 rounded-[var(--radius)] border border-[hsl(var(--border))] bg-transparent text-xs',
                             'focus:outline-none focus:ring-1 focus:ring-[hsl(var(--ring))]',
@@ -465,7 +518,9 @@ function WorkspaceTab() {
             <CardTitle className="text-sm flex items-center gap-2">
               <Mail className="h-4 w-4 text-[hsl(var(--muted-foreground))]" />
               دعوتنامه‌های در انتظار
-              <Badge variant="warning" className="text-[10px]">{invitations.length}</Badge>
+              <Badge variant="warning" className="text-[10px]">
+                {invitations.length}
+              </Badge>
             </CardTitle>
           </CardHeader>
           <CardContent className="p-0">
@@ -481,7 +536,9 @@ function WorkspaceTab() {
                         انقضا: {new Date(inv.expiresAt).toLocaleDateString('fa-IR')}
                       </p>
                     </div>
-                    <Badge variant={cfg.variant} className="text-[10px] shrink-0">{cfg.label}</Badge>
+                    <Badge variant={cfg.variant} className="text-[10px] shrink-0">
+                      {cfg.label}
+                    </Badge>
                     {isOwner && (
                       <button
                         onClick={() => cancelInvMutation.mutate(inv.id)}
@@ -508,10 +565,14 @@ function WorkspaceTab() {
           </CardTitle>
           {isOwner && (
             <button
-              onClick={() => { setShowSettings(s => !s); }}
+              onClick={() => {
+                setShowSettings((s) => !s);
+              }}
               className="inline-flex items-center gap-1.5 h-7 px-3 rounded-[var(--radius)] bg-[hsl(var(--primary)/0.08)] text-[hsl(var(--primary))] text-xs font-medium hover:bg-[hsl(var(--primary)/0.12)] transition-colors"
             >
-              <ChevronRight className={cn('h-3.5 w-3.5 transition-transform', showSettings && 'rotate-90')} />
+              <ChevronRight
+                className={cn('h-3.5 w-3.5 transition-transform', showSettings && 'rotate-90')}
+              />
               {showSettings ? 'بستن' : 'ویرایش'}
             </button>
           )}
@@ -526,7 +587,6 @@ function WorkspaceTab() {
               </div>
             ) : (
               <div className="space-y-6">
-
                 {/* ── Brand ── */}
                 <div>
                   <h4 className="text-xs font-semibold text-[hsl(var(--muted-foreground))] flex items-center gap-1.5 mb-3">
@@ -535,30 +595,51 @@ function WorkspaceTab() {
                   </h4>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div className="space-y-1.5">
-                      <label className="text-[11px] font-medium text-[hsl(var(--muted-foreground))]">نام برند</label>
+                      <label className="text-[11px] font-medium text-[hsl(var(--muted-foreground))]">
+                        نام برند
+                      </label>
                       <Input
                         value={settings?.brand?.name ?? ''}
-                        onChange={e => setWsSettings((s: any) => ({ ...s, brand: { ...s?.brand, name: e.target.value } }))}
+                        onChange={(e) =>
+                          setWsSettings((s: any) => ({
+                            ...s,
+                            brand: { ...s?.brand, name: e.target.value },
+                          }))
+                        }
                         placeholder="Xennic Engineering"
                         className="h-8 text-sm"
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <label className="text-[11px] font-medium text-[hsl(var(--muted-foreground))]">آدرس لوگو</label>
+                      <label className="text-[11px] font-medium text-[hsl(var(--muted-foreground))]">
+                        آدرس لوگو
+                      </label>
                       <Input
                         dir="ltr"
                         value={settings?.brand?.logo_url ?? ''}
-                        onChange={e => setWsSettings((s: any) => ({ ...s, brand: { ...s?.brand, logo_url: e.target.value } }))}
+                        onChange={(e) =>
+                          setWsSettings((s: any) => ({
+                            ...s,
+                            brand: { ...s?.brand, logo_url: e.target.value },
+                          }))
+                        }
                         placeholder="https://storage.example.com/logo.png"
                         className="h-8 text-sm"
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <label className="text-[11px] font-medium text-[hsl(var(--muted-foreground))]">رنگ اصلی</label>
+                      <label className="text-[11px] font-medium text-[hsl(var(--muted-foreground))]">
+                        رنگ اصلی
+                      </label>
                       <div className="flex items-center gap-2">
                         <Input
                           value={settings?.brand?.primary_color ?? '#2563eb'}
-                          onChange={e => setWsSettings((s: any) => ({ ...s, brand: { ...s?.brand, primary_color: e.target.value } }))}
+                          onChange={(e) =>
+                            setWsSettings((s: any) => ({
+                              ...s,
+                              brand: { ...s?.brand, primary_color: e.target.value },
+                            }))
+                          }
                           placeholder="#2563eb"
                           className="h-8 text-sm font-mono flex-1"
                           dir="ltr"
@@ -570,11 +651,18 @@ function WorkspaceTab() {
                       </div>
                     </div>
                     <div className="space-y-1.5">
-                      <label className="text-[11px] font-medium text-[hsl(var(--muted-foreground))]">رنگ ثانویه</label>
+                      <label className="text-[11px] font-medium text-[hsl(var(--muted-foreground))]">
+                        رنگ ثانویه
+                      </label>
                       <div className="flex items-center gap-2">
                         <Input
                           value={settings?.brand?.accent_color ?? '#7c3aed'}
-                          onChange={e => setWsSettings((s: any) => ({ ...s, brand: { ...s?.brand, accent_color: e.target.value } }))}
+                          onChange={(e) =>
+                            setWsSettings((s: any) => ({
+                              ...s,
+                              brand: { ...s?.brand, accent_color: e.target.value },
+                            }))
+                          }
                           placeholder="#7c3aed"
                           className="h-8 text-sm font-mono flex-1"
                           dir="ltr"
@@ -598,10 +686,17 @@ function WorkspaceTab() {
                   </h4>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div className="space-y-1.5">
-                      <label className="text-[11px] font-medium text-[hsl(var(--muted-foreground))]">زبان</label>
+                      <label className="text-[11px] font-medium text-[hsl(var(--muted-foreground))]">
+                        زبان
+                      </label>
                       <select
                         value={settings?.localization?.locale ?? 'fa'}
-                        onChange={e => setWsSettings((s: any) => ({ ...s, localization: { ...s?.localization, locale: e.target.value } }))}
+                        onChange={(e) =>
+                          setWsSettings((s: any) => ({
+                            ...s,
+                            localization: { ...s?.localization, locale: e.target.value },
+                          }))
+                        }
                         className="h-8 w-full rounded-[var(--radius)] border border-[hsl(var(--input))] bg-transparent px-2 text-sm focus:outline-none focus:ring-2 focus:ring-[hsl(var(--ring))]"
                       >
                         <option value="fa">فارسی</option>
@@ -609,10 +704,17 @@ function WorkspaceTab() {
                       </select>
                     </div>
                     <div className="space-y-1.5">
-                      <label className="text-[11px] font-medium text-[hsl(var(--muted-foreground))]">جهت</label>
+                      <label className="text-[11px] font-medium text-[hsl(var(--muted-foreground))]">
+                        جهت
+                      </label>
                       <select
                         value={settings?.localization?.direction ?? 'rtl'}
-                        onChange={e => setWsSettings((s: any) => ({ ...s, localization: { ...s?.localization, direction: e.target.value } }))}
+                        onChange={(e) =>
+                          setWsSettings((s: any) => ({
+                            ...s,
+                            localization: { ...s?.localization, direction: e.target.value },
+                          }))
+                        }
                         className="h-8 w-full rounded-[var(--radius)] border border-[hsl(var(--input))] bg-transparent px-2 text-sm focus:outline-none focus:ring-2 focus:ring-[hsl(var(--ring))]"
                       >
                         <option value="rtl">راست‌به‌چپ (RTL)</option>
@@ -620,10 +722,17 @@ function WorkspaceTab() {
                       </select>
                     </div>
                     <div className="space-y-1.5">
-                      <label className="text-[11px] font-medium text-[hsl(var(--muted-foreground))]">منطقه زمانی</label>
+                      <label className="text-[11px] font-medium text-[hsl(var(--muted-foreground))]">
+                        منطقه زمانی
+                      </label>
                       <select
                         value={settings?.localization?.timezone ?? 'Asia/Tehran'}
-                        onChange={e => setWsSettings((s: any) => ({ ...s, localization: { ...s?.localization, timezone: e.target.value } }))}
+                        onChange={(e) =>
+                          setWsSettings((s: any) => ({
+                            ...s,
+                            localization: { ...s?.localization, timezone: e.target.value },
+                          }))
+                        }
                         className="h-8 w-full rounded-[var(--radius)] border border-[hsl(var(--input))] bg-transparent px-2 text-sm focus:outline-none focus:ring-2 focus:ring-[hsl(var(--ring))]"
                         dir="ltr"
                       >
@@ -635,10 +744,17 @@ function WorkspaceTab() {
                       </select>
                     </div>
                     <div className="space-y-1.5">
-                      <label className="text-[11px] font-medium text-[hsl(var(--muted-foreground))]">فرمت تاریخ</label>
+                      <label className="text-[11px] font-medium text-[hsl(var(--muted-foreground))]">
+                        فرمت تاریخ
+                      </label>
                       <select
                         value={settings?.localization?.date_format ?? 'YYYY/MM/DD'}
-                        onChange={e => setWsSettings((s: any) => ({ ...s, localization: { ...s?.localization, date_format: e.target.value } }))}
+                        onChange={(e) =>
+                          setWsSettings((s: any) => ({
+                            ...s,
+                            localization: { ...s?.localization, date_format: e.target.value },
+                          }))
+                        }
                         className="h-8 w-full rounded-[var(--radius)] border border-[hsl(var(--input))] bg-transparent px-2 text-sm focus:outline-none focus:ring-2 focus:ring-[hsl(var(--ring))]"
                       >
                         <option value="YYYY/MM/DD">۱۴۰۴/۰۳/۲۶</option>
@@ -647,10 +763,17 @@ function WorkspaceTab() {
                       </select>
                     </div>
                     <div className="space-y-1.5">
-                      <label className="text-[11px] font-medium text-[hsl(var(--muted-foreground))]">فرمت اعداد</label>
+                      <label className="text-[11px] font-medium text-[hsl(var(--muted-foreground))]">
+                        فرمت اعداد
+                      </label>
                       <select
                         value={settings?.localization?.number_format ?? 'fa'}
-                        onChange={e => setWsSettings((s: any) => ({ ...s, localization: { ...s?.localization, number_format: e.target.value } }))}
+                        onChange={(e) =>
+                          setWsSettings((s: any) => ({
+                            ...s,
+                            localization: { ...s?.localization, number_format: e.target.value },
+                          }))
+                        }
                         className="h-8 w-full rounded-[var(--radius)] border border-[hsl(var(--input))] bg-transparent px-2 text-sm focus:outline-none focus:ring-2 focus:ring-[hsl(var(--ring))]"
                       >
                         <option value="fa">فارسی (۱۲۳۴)</option>
@@ -670,20 +793,40 @@ function WorkspaceTab() {
                   </h4>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                     <div className="space-y-1.5">
-                      <label className="text-[11px] font-medium text-[hsl(var(--muted-foreground))]">ولتاژ (kV)</label>
+                      <label className="text-[11px] font-medium text-[hsl(var(--muted-foreground))]">
+                        ولتاژ (kV)
+                      </label>
                       <Input
-                        type="number" step="0.1" min="0" max="1000"
+                        type="number"
+                        step="0.1"
+                        min="0"
+                        max="1000"
                         value={settings?.defaults?.voltage_level_kv ?? 0.4}
-                        onChange={e => setWsSettings((s: any) => ({ ...s, defaults: { ...s?.defaults, voltage_level_kv: parseFloat(e.target.value) } }))}
+                        onChange={(e) =>
+                          setWsSettings((s: any) => ({
+                            ...s,
+                            defaults: {
+                              ...s?.defaults,
+                              voltage_level_kv: parseFloat(e.target.value),
+                            },
+                          }))
+                        }
                         className="h-8 text-sm"
                         dir="ltr"
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <label className="text-[11px] font-medium text-[hsl(var(--muted-foreground))]">فرکانس (Hz)</label>
+                      <label className="text-[11px] font-medium text-[hsl(var(--muted-foreground))]">
+                        فرکانس (Hz)
+                      </label>
                       <select
                         value={settings?.defaults?.frequency_hz ?? 50}
-                        onChange={e => setWsSettings((s: any) => ({ ...s, defaults: { ...s?.defaults, frequency_hz: parseInt(e.target.value) } }))}
+                        onChange={(e) =>
+                          setWsSettings((s: any) => ({
+                            ...s,
+                            defaults: { ...s?.defaults, frequency_hz: parseInt(e.target.value) },
+                          }))
+                        }
                         className="h-8 w-full rounded-[var(--radius)] border border-[hsl(var(--input))] bg-transparent px-2 text-sm focus:outline-none focus:ring-2 focus:ring-[hsl(var(--ring))]"
                       >
                         <option value={50}>50 Hz</option>
@@ -691,20 +834,40 @@ function WorkspaceTab() {
                       </select>
                     </div>
                     <div className="space-y-1.5">
-                      <label className="text-[11px] font-medium text-[hsl(var(--muted-foreground))]">دمای محیط (°C)</label>
+                      <label className="text-[11px] font-medium text-[hsl(var(--muted-foreground))]">
+                        دمای محیط (°C)
+                      </label>
                       <Input
-                        type="number" step="1" min="-20" max="80"
+                        type="number"
+                        step="1"
+                        min="-20"
+                        max="80"
                         value={settings?.defaults?.ambient_temperature_c ?? 35}
-                        onChange={e => setWsSettings((s: any) => ({ ...s, defaults: { ...s?.defaults, ambient_temperature_c: parseFloat(e.target.value) } }))}
+                        onChange={(e) =>
+                          setWsSettings((s: any) => ({
+                            ...s,
+                            defaults: {
+                              ...s?.defaults,
+                              ambient_temperature_c: parseFloat(e.target.value),
+                            },
+                          }))
+                        }
                         className="h-8 text-sm"
                         dir="ltr"
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <label className="text-[11px] font-medium text-[hsl(var(--muted-foreground))]">جنس هادی</label>
+                      <label className="text-[11px] font-medium text-[hsl(var(--muted-foreground))]">
+                        جنس هادی
+                      </label>
                       <select
                         value={settings?.defaults?.conductor_material ?? 'copper'}
-                        onChange={e => setWsSettings((s: any) => ({ ...s, defaults: { ...s?.defaults, conductor_material: e.target.value } }))}
+                        onChange={(e) =>
+                          setWsSettings((s: any) => ({
+                            ...s,
+                            defaults: { ...s?.defaults, conductor_material: e.target.value },
+                          }))
+                        }
                         className="h-8 w-full rounded-[var(--radius)] border border-[hsl(var(--input))] bg-transparent px-2 text-sm focus:outline-none focus:ring-2 focus:ring-[hsl(var(--ring))]"
                       >
                         <option value="copper">مس</option>
@@ -712,10 +875,17 @@ function WorkspaceTab() {
                       </select>
                     </div>
                     <div className="space-y-1.5">
-                      <label className="text-[11px] font-medium text-[hsl(var(--muted-foreground))]">نوع عایق</label>
+                      <label className="text-[11px] font-medium text-[hsl(var(--muted-foreground))]">
+                        نوع عایق
+                      </label>
                       <select
                         value={settings?.defaults?.insulation_type ?? 'XLPE'}
-                        onChange={e => setWsSettings((s: any) => ({ ...s, defaults: { ...s?.defaults, insulation_type: e.target.value } }))}
+                        onChange={(e) =>
+                          setWsSettings((s: any) => ({
+                            ...s,
+                            defaults: { ...s?.defaults, insulation_type: e.target.value },
+                          }))
+                        }
                         className="h-8 w-full rounded-[var(--radius)] border border-[hsl(var(--input))] bg-transparent px-2 text-sm focus:outline-none focus:ring-2 focus:ring-[hsl(var(--ring))]"
                       >
                         <option value="XLPE">XLPE</option>
@@ -725,11 +895,21 @@ function WorkspaceTab() {
                       </select>
                     </div>
                     <div className="space-y-1.5">
-                      <label className="text-[11px] font-medium text-[hsl(var(--muted-foreground))]">ضریب توان</label>
+                      <label className="text-[11px] font-medium text-[hsl(var(--muted-foreground))]">
+                        ضریب توان
+                      </label>
                       <Input
-                        type="number" step="0.01" min="0" max="1"
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        max="1"
                         value={settings?.defaults?.power_factor ?? 0.85}
-                        onChange={e => setWsSettings((s: any) => ({ ...s, defaults: { ...s?.defaults, power_factor: parseFloat(e.target.value) } }))}
+                        onChange={(e) =>
+                          setWsSettings((s: any) => ({
+                            ...s,
+                            defaults: { ...s?.defaults, power_factor: parseFloat(e.target.value) },
+                          }))
+                        }
                         className="h-8 text-sm"
                         dir="ltr"
                       />
@@ -751,7 +931,12 @@ function WorkspaceTab() {
                       <input
                         type="checkbox"
                         checked={settings?.notifications?.email_alerts ?? true}
-                        onChange={e => setWsSettings((s: any) => ({ ...s, notifications: { ...s?.notifications, email_alerts: e.target.checked } }))}
+                        onChange={(e) =>
+                          setWsSettings((s: any) => ({
+                            ...s,
+                            notifications: { ...s?.notifications, email_alerts: e.target.checked },
+                          }))
+                        }
                         className="h-4 w-4 rounded border-[hsl(var(--border))] text-[hsl(var(--primary))] focus:ring-[hsl(var(--ring))]"
                       />
                     </label>
@@ -760,7 +945,15 @@ function WorkspaceTab() {
                       <input
                         type="checkbox"
                         checked={settings?.notifications?.calculation_completed ?? true}
-                        onChange={e => setWsSettings((s: any) => ({ ...s, notifications: { ...s?.notifications, calculation_completed: e.target.checked } }))}
+                        onChange={(e) =>
+                          setWsSettings((s: any) => ({
+                            ...s,
+                            notifications: {
+                              ...s?.notifications,
+                              calculation_completed: e.target.checked,
+                            },
+                          }))
+                        }
                         className="h-4 w-4 rounded border-[hsl(var(--border))] text-[hsl(var(--primary))] focus:ring-[hsl(var(--ring))]"
                       />
                     </label>
@@ -769,7 +962,12 @@ function WorkspaceTab() {
                       <input
                         type="checkbox"
                         checked={settings?.notifications?.member_joined ?? true}
-                        onChange={e => setWsSettings((s: any) => ({ ...s, notifications: { ...s?.notifications, member_joined: e.target.checked } }))}
+                        onChange={(e) =>
+                          setWsSettings((s: any) => ({
+                            ...s,
+                            notifications: { ...s?.notifications, member_joined: e.target.checked },
+                          }))
+                        }
                         className="h-4 w-4 rounded border-[hsl(var(--border))] text-[hsl(var(--primary))] focus:ring-[hsl(var(--ring))]"
                       />
                     </label>
@@ -778,7 +976,12 @@ function WorkspaceTab() {
                       <input
                         type="checkbox"
                         checked={settings?.notifications?.weekly_report ?? false}
-                        onChange={e => setWsSettings((s: any) => ({ ...s, notifications: { ...s?.notifications, weekly_report: e.target.checked } }))}
+                        onChange={(e) =>
+                          setWsSettings((s: any) => ({
+                            ...s,
+                            notifications: { ...s?.notifications, weekly_report: e.target.checked },
+                          }))
+                        }
                         className="h-4 w-4 rounded border-[hsl(var(--border))] text-[hsl(var(--primary))] focus:ring-[hsl(var(--ring))]"
                       />
                     </label>
@@ -799,7 +1002,12 @@ function WorkspaceTab() {
                       <input
                         type="checkbox"
                         checked={settings?.features?.auto_save ?? true}
-                        onChange={e => setWsSettings((s: any) => ({ ...s, features: { ...s?.features, auto_save: e.target.checked } }))}
+                        onChange={(e) =>
+                          setWsSettings((s: any) => ({
+                            ...s,
+                            features: { ...s?.features, auto_save: e.target.checked },
+                          }))
+                        }
                         className="h-4 w-4 rounded border-[hsl(var(--border))] text-[hsl(var(--primary))] focus:ring-[hsl(var(--ring))]"
                       />
                     </label>
@@ -808,7 +1016,12 @@ function WorkspaceTab() {
                       <input
                         type="checkbox"
                         checked={settings?.features?.show_advanced_options ?? false}
-                        onChange={e => setWsSettings((s: any) => ({ ...s, features: { ...s?.features, show_advanced_options: e.target.checked } }))}
+                        onChange={(e) =>
+                          setWsSettings((s: any) => ({
+                            ...s,
+                            features: { ...s?.features, show_advanced_options: e.target.checked },
+                          }))
+                        }
                         className="h-4 w-4 rounded border-[hsl(var(--border))] text-[hsl(var(--primary))] focus:ring-[hsl(var(--ring))]"
                       />
                     </label>
@@ -816,7 +1029,12 @@ function WorkspaceTab() {
                       <span className="text-xs">فرمت پیش‌فرض خروجی</span>
                       <select
                         value={settings?.features?.export_default_format ?? 'pdf'}
-                        onChange={e => setWsSettings((s: any) => ({ ...s, features: { ...s?.features, export_default_format: e.target.value } }))}
+                        onChange={(e) =>
+                          setWsSettings((s: any) => ({
+                            ...s,
+                            features: { ...s?.features, export_default_format: e.target.value },
+                          }))
+                        }
                         className="h-7 w-24 rounded-[var(--radius)] border border-[hsl(var(--border))] bg-transparent px-1 text-xs focus:outline-none focus:ring-2 focus:ring-[hsl(var(--ring))]"
                       >
                         <option value="pdf">PDF</option>
@@ -849,13 +1067,11 @@ function WorkspaceTab() {
                     بازنشانی به پیش‌فرض
                   </button>
                 </div>
-
               </div>
             )}
           </CardContent>
         )}
       </Card>
-
     </div>
   );
 }
@@ -865,18 +1081,18 @@ function WorkspaceTab() {
 // ─────────────────────────────────────────────────────────────
 
 function SecurityTab() {
-  const toast     = useToast();
-  const clearAuth = useAuthStore(s => s.clearAuth);
-  const router    = useRouter();
-  const params    = useParams();
-  const locale    = (params?.locale as string) ?? 'fa';
+  const toast = useToast();
+  const clearAuth = useAuthStore((s) => s.clearAuth);
+  const router = useRouter();
+  const params = useParams();
+  const locale = (params?.locale as string) ?? 'fa';
 
-  const [current,   setCurrent]   = useState('');
-  const [newPass,   setNewPass]   = useState('');
-  const [confirm,   setConfirm]   = useState('');
-  const [showCur,   setShowCur]   = useState(false);
-  const [showNew,   setShowNew]   = useState(false);
-  const [loading,   setLoading]   = useState(false);
+  const [current, setCurrent] = useState('');
+  const [newPass, setNewPass] = useState('');
+  const [confirm, setConfirm] = useState('');
+  const [showCur, setShowCur] = useState(false);
+  const [showNew, setShowNew] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const passwordsMatch = newPass === confirm;
   const isValid = current && newPass.length >= 8 && passwordsMatch;
@@ -885,9 +1101,14 @@ function SecurityTab() {
     if (!isValid) return;
     setLoading(true);
     try {
-      await apiClient.put('/auth/change-password', { currentPassword: current, newPassword: newPass });
+      await apiClient.put('/auth/change-password', {
+        currentPassword: current,
+        newPassword: newPass,
+      });
       toast.success('رمز عبور با موفقیت تغییر کرد');
-      setCurrent(''); setNewPass(''); setConfirm('');
+      setCurrent('');
+      setNewPass('');
+      setConfirm('');
     } catch (err: any) {
       toast.error(err?.message ?? 'خطا در تغییر رمز عبور');
     } finally {
@@ -896,7 +1117,11 @@ function SecurityTab() {
   }
 
   async function handleLogout() {
-    try { await apiClient.post('/auth/logout'); } catch { /* ignore */ }
+    try {
+      await apiClient.post('/auth/logout');
+    } catch {
+      /* ignore */
+    }
     clearAuth();
     router.push(`/${locale}/login`);
   }
@@ -916,10 +1141,10 @@ function SecurityTab() {
             type={showCur ? 'text' : 'password'}
             label="رمز عبور فعلی"
             value={current}
-            onChange={e => setCurrent(e.target.value)}
+            onChange={(e) => setCurrent(e.target.value)}
             dir="ltr"
             endIcon={
-              <button type="button" onClick={() => setShowCur(s => !s)}>
+              <button type="button" onClick={() => setShowCur((s) => !s)}>
                 {showCur ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
             }
@@ -928,11 +1153,11 @@ function SecurityTab() {
             type={showNew ? 'text' : 'password'}
             label="رمز عبور جدید"
             value={newPass}
-            onChange={e => setNewPass(e.target.value)}
+            onChange={(e) => setNewPass(e.target.value)}
             hint="حداقل ۸ کاراکتر، شامل حرف بزرگ، عدد و کاراکتر خاص (@$!%*?&)"
             dir="ltr"
             endIcon={
-              <button type="button" onClick={() => setShowNew(s => !s)}>
+              <button type="button" onClick={() => setShowNew((s) => !s)}>
                 {showNew ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
             }
@@ -941,7 +1166,7 @@ function SecurityTab() {
             type="password"
             label="تکرار رمز عبور جدید"
             value={confirm}
-            onChange={e => setConfirm(e.target.value)}
+            onChange={(e) => setConfirm(e.target.value)}
             error={confirm && !passwordsMatch ? 'رمز عبور مطابقت ندارد' : undefined}
             dir="ltr"
           />
@@ -956,11 +1181,26 @@ function SecurityTab() {
                   /[0-9]/.test(newPass),
                   /[@$!%*?&]/.test(newPass),
                 ].map((ok, i) => (
-                  <div key={i} className={cn('h-1 flex-1 rounded-full transition-colors', ok ? 'bg-[hsl(var(--success))]' : 'bg-[hsl(var(--border))]')} />
+                  <div
+                    key={i}
+                    className={cn(
+                      'h-1 flex-1 rounded-full transition-colors',
+                      ok ? 'bg-[hsl(var(--success))]' : 'bg-[hsl(var(--border))]',
+                    )}
+                  />
                 ))}
               </div>
               <p className="text-[10px] text-[hsl(var(--muted-foreground))]">
-                قدرت رمز عبور: {[/[A-Z]/.test(newPass), /[0-9]/.test(newPass), /[@$!%*?&]/.test(newPass), newPass.length >= 8].filter(Boolean).length}/4
+                قدرت رمز عبور:{' '}
+                {
+                  [
+                    /[A-Z]/.test(newPass),
+                    /[0-9]/.test(newPass),
+                    /[@$!%*?&]/.test(newPass),
+                    newPass.length >= 8,
+                  ].filter(Boolean).length
+                }
+                /4
               </p>
             </div>
           )}
@@ -987,7 +1227,9 @@ function SecurityTab() {
           <div className="flex items-center justify-between p-3 rounded-[var(--radius)] bg-[hsl(var(--destructive)/0.04)] border border-[hsl(var(--destructive)/0.1)]">
             <div>
               <p className="text-sm font-medium">خروج از سیستم</p>
-              <p className="text-xs text-[hsl(var(--muted-foreground))]">از همه دستگاه‌ها خارج می‌شوید</p>
+              <p className="text-xs text-[hsl(var(--muted-foreground))]">
+                از همه دستگاه‌ها خارج می‌شوید
+              </p>
             </div>
             <button
               onClick={handleLogout}
@@ -1021,13 +1263,13 @@ function AppearanceTab() {
   const locale = (params?.locale as string) ?? 'fa';
 
   const themes = [
-    { key: 'light',  label: 'روشن',   icon: Sun,     desc: 'پس‌زمینه سفید' },
-    { key: 'dark',   label: 'تاریک',  icon: Moon,    desc: 'پس‌زمینه تاریک' },
-    { key: 'system', label: 'سیستم',  icon: Monitor, desc: 'بر اساس تنظیمات سیستم' },
+    { key: 'light', label: 'روشن', icon: Sun, desc: 'پس‌زمینه سفید' },
+    { key: 'dark', label: 'تاریک', icon: Moon, desc: 'پس‌زمینه تاریک' },
+    { key: 'system', label: 'سیستم', icon: Monitor, desc: 'بر اساس تنظیمات سیستم' },
   ] as const;
 
   const langs = [
-    { code: 'fa', label: 'فارسی',  flag: '🇮🇷', dir: 'RTL' },
+    { code: 'fa', label: 'فارسی', flag: '🇮🇷', dir: 'RTL' },
     { code: 'en', label: 'English', flag: '🇺🇸', dir: 'LTR' },
   ];
 
@@ -1054,10 +1296,28 @@ function AppearanceTab() {
                     : 'border-[hsl(var(--border))] hover:border-[hsl(var(--primary)/0.3)] hover:bg-[hsl(var(--secondary)/0.5)]',
                 )}
               >
-                <Icon className={cn('h-5 w-5', theme === key ? 'text-[hsl(var(--primary))]' : 'text-[hsl(var(--muted-foreground))]')} />
-                <span className={cn('text-xs font-semibold', theme === key ? 'text-[hsl(var(--primary))]' : '')}>{label}</span>
-                <span className="text-[10px] text-[hsl(var(--muted-foreground))] text-center">{desc}</span>
-                {theme === key && <CheckCircle2 className="h-3.5 w-3.5 text-[hsl(var(--primary))]" />}
+                <Icon
+                  className={cn(
+                    'h-5 w-5',
+                    theme === key
+                      ? 'text-[hsl(var(--primary))]'
+                      : 'text-[hsl(var(--muted-foreground))]',
+                  )}
+                />
+                <span
+                  className={cn(
+                    'text-xs font-semibold',
+                    theme === key ? 'text-[hsl(var(--primary))]' : '',
+                  )}
+                >
+                  {label}
+                </span>
+                <span className="text-[10px] text-[hsl(var(--muted-foreground))] text-center">
+                  {desc}
+                </span>
+                {theme === key && (
+                  <CheckCircle2 className="h-3.5 w-3.5 text-[hsl(var(--primary))]" />
+                )}
               </button>
             ))}
           </div>
@@ -1074,7 +1334,7 @@ function AppearanceTab() {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 gap-3">
-            {langs.map(lang => (
+            {langs.map((lang) => (
               <button
                 key={lang.code}
                 onClick={() => {
@@ -1090,12 +1350,21 @@ function AppearanceTab() {
               >
                 <span className="text-2xl">{lang.flag}</span>
                 <div>
-                  <p className={cn('text-sm font-semibold', locale === lang.code && 'text-[hsl(var(--primary))]')}>
+                  <p
+                    className={cn(
+                      'text-sm font-semibold',
+                      locale === lang.code && 'text-[hsl(var(--primary))]',
+                    )}
+                  >
                     {lang.label}
                   </p>
-                  <p className="text-[10px] text-[hsl(var(--muted-foreground))] font-mono">{lang.dir}</p>
+                  <p className="text-[10px] text-[hsl(var(--muted-foreground))] font-mono">
+                    {lang.dir}
+                  </p>
                 </div>
-                {locale === lang.code && <CheckCircle2 className="h-4 w-4 text-[hsl(var(--primary))] mr-auto" />}
+                {locale === lang.code && (
+                  <CheckCircle2 className="h-4 w-4 text-[hsl(var(--primary))] mr-auto" />
+                )}
               </button>
             ))}
           </div>
@@ -1114,14 +1383,11 @@ export function SettingsClient() {
   const initialTab = (searchParams?.get('tab') as Tab) ?? 'profile';
   const [activeTab, setActiveTab] = useState<Tab>(initialTab);
 
-  const activeTabConfig = TABS.find(t => t.key === activeTab);
-
   return (
     <div>
       <PageHeader title="تنظیمات" />
 
       <div className="flex flex-col lg:flex-row gap-6">
-
         {/* ── Sidebar tabs ─────────────────────────────── */}
         <nav className="lg:w-52 shrink-0">
           <ul className="flex lg:flex-col gap-1 overflow-x-auto lg:overflow-x-visible pb-2 lg:pb-0">
@@ -1138,7 +1404,9 @@ export function SettingsClient() {
                 >
                   <Icon className="h-4 w-4 shrink-0" />
                   <span className="truncate">{label}</span>
-                  {activeTab === key && <ChevronRight className="h-3.5 w-3.5 mr-auto opacity-50 rtl:rotate-180" />}
+                  {activeTab === key && (
+                    <ChevronRight className="h-3.5 w-3.5 mr-auto opacity-50 rtl:rotate-180" />
+                  )}
                 </button>
               </li>
             ))}
@@ -1147,10 +1415,10 @@ export function SettingsClient() {
 
         {/* ── Tab content ──────────────────────────────── */}
         <div className="flex-1 min-w-0 animate-fade-in">
-          {activeTab === 'profile'    && <ProfileTab />}
-          {activeTab === 'workspace'  && <WorkspaceTab />}
-          {activeTab === 'security'   && <SecurityTab />}
-          {activeTab === 'plan'       && <PlanTab />}
+          {activeTab === 'profile' && <ProfileTab />}
+          {activeTab === 'workspace' && <WorkspaceTab />}
+          {activeTab === 'security' && <SecurityTab />}
+          {activeTab === 'plan' && <PlanTab />}
           {activeTab === 'appearance' && <AppearanceTab />}
         </div>
       </div>

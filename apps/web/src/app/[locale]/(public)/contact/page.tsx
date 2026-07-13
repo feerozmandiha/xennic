@@ -1,31 +1,28 @@
 'use client';
 
 import { useState } from 'react';
-import { useParams } from 'next/navigation';
-import Link from 'next/link';
 import { Mail, MessageSquare, MapPin, Send, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export default function ContactPage() {
-  const params = useParams();
-  const locale = (params?.locale as string) ?? 'fa';
   const [form, setForm] = useState({ name: '', email: '', subject: '', message: '' });
   const [sent, setSent] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const set = (k: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
-    setForm(f => ({ ...f, [k]: e.target.value }));
+    setForm((f) => ({ ...f, [k]: e.target.value }));
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     // TODO: actual API call
-    await new Promise(r => setTimeout(r, 800));
+    await new Promise((r) => setTimeout(r, 800));
     setSent(true);
     setLoading(false);
   };
 
-  const inputCls = 'w-full px-4 py-3 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--background))] text-[hsl(var(--foreground))] text-sm outline-none focus:border-[hsl(var(--primary))] transition-colors placeholder:text-[hsl(var(--muted-foreground))/0.5]';
+  const inputCls =
+    'w-full px-4 py-3 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--background))] text-[hsl(var(--foreground))] text-sm outline-none focus:border-[hsl(var(--primary))] transition-colors placeholder:text-[hsl(var(--muted-foreground))/0.5]';
 
   return (
     <div className="min-h-screen bg-[hsl(var(--background))]">
@@ -69,24 +66,60 @@ export default function ContactPage() {
                 <div className="w-16 h-16 rounded-full bg-[hsl(var(--success))/0.2] flex items-center justify-center mx-auto mb-4">
                   <Send className="h-6 w-6 text-[hsl(var(--success))]" />
                 </div>
-                <h3 className="text-[hsl(var(--foreground))] text-lg font-bold mb-2">پیام شما ارسال شد</h3>
-                <p className="text-sm text-[hsl(var(--muted-foreground))]">در اسرع وقت با شما تماس خواهیم گرفت</p>
+                <h3 className="text-[hsl(var(--foreground))] text-lg font-bold mb-2">
+                  پیام شما ارسال شد
+                </h3>
+                <p className="text-sm text-[hsl(var(--muted-foreground))]">
+                  در اسرع وقت با شما تماس خواهیم گرفت
+                </p>
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <input value={form.name} onChange={set('name')} placeholder="نام و نام خانوادگی" className={inputCls} required />
-                  <input value={form.email} onChange={set('email')} type="email" placeholder="ایمیل" className={inputCls} required />
+                  <input
+                    value={form.name}
+                    onChange={set('name')}
+                    placeholder="نام و نام خانوادگی"
+                    className={inputCls}
+                    required
+                  />
+                  <input
+                    value={form.email}
+                    onChange={set('email')}
+                    type="email"
+                    placeholder="ایمیل"
+                    className={inputCls}
+                    required
+                  />
                 </div>
-                <input value={form.subject} onChange={set('subject')} placeholder="موضوع" className={inputCls} required />
-                <textarea value={form.message} onChange={set('message')} rows={6} placeholder="متن پیام..." className={cn(inputCls, 'resize-none')} required />
+                <input
+                  value={form.subject}
+                  onChange={set('subject')}
+                  placeholder="موضوع"
+                  className={inputCls}
+                  required
+                />
+                <textarea
+                  value={form.message}
+                  onChange={set('message')}
+                  rows={6}
+                  placeholder="متن پیام..."
+                  className={cn(inputCls, 'resize-none')}
+                  required
+                />
                 <button
                   type="submit"
                   disabled={loading}
                   className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-white text-sm transition-all hover:opacity-90 disabled:opacity-50"
-                  style={{ background: 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)))' }}
+                  style={{
+                    background: 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)))',
+                  }}
                 >
-                  {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                  {loading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Send className="h-4 w-4" />
+                  )}
                   ارسال پیام
                 </button>
               </form>

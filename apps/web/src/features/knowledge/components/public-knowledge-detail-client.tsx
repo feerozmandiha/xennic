@@ -3,17 +3,10 @@
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
-import { BookOpen, ArrowRight, Clock, User, Calendar, Eye } from 'lucide-react';
+import { BookOpen, ArrowRight, Clock, Calendar } from 'lucide-react';
 import { apiClient } from '@/lib/api/client';
 import { Badge } from '@/components/ui/badge';
 import { KnowledgeRenderer } from './knowledge-editor';
-
-const STATUS_FA: Record<string, string> = {
-  published: 'منتشرشده',
-  draft: 'پیش‌نویس',
-  review: 'در انتظار بررسی',
-  archived: 'آرشیو',
-};
 
 const DIFFICULTY_FA: Record<string, string> = {
   beginner: 'مبتدی',
@@ -55,8 +48,7 @@ export function PublicKnowledgeDetailClient({ slug }: Props) {
 
   const { data, isLoading } = useQuery({
     queryKey: ['public-knowledge', slug],
-    queryFn: () =>
-      apiClient.get<{ success: boolean; data: Article }>(`/public/knowledge/${slug}`),
+    queryFn: () => apiClient.get<{ success: boolean; data: Article }>(`/public/knowledge/${slug}`),
     retry: false,
   });
 
@@ -101,9 +93,7 @@ export function PublicKnowledgeDetailClient({ slug }: Props) {
 
       <article>
         <header className="mb-10">
-          <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">
-            {title}
-          </h1>
+          <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">{title}</h1>
 
           <div className="flex flex-wrap items-center gap-3 text-sm text-[hsl(var(--muted-foreground))]">
             {article.difficulty && (
@@ -134,9 +124,7 @@ export function PublicKnowledgeDetailClient({ slug }: Props) {
           {article.content && Object.keys(article.content).length > 0 ? (
             <KnowledgeRenderer content={article.content} />
           ) : (
-            <p className="text-[hsl(var(--muted-foreground))] italic">
-              محتوایی ثبت نشده است
-            </p>
+            <p className="text-[hsl(var(--muted-foreground))] italic">محتوایی ثبت نشده است</p>
           )}
         </div>
       </article>

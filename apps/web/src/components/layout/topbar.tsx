@@ -7,21 +7,22 @@ import { Sun, Moon, Bell, ChevronDown, LogOut, User, Monitor, Search } from 'luc
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import { useQuery } from '@tanstack/react-query';
 import { WorkspaceSelector } from '@/features/workspace/components/workspace-selector';
-import { useAuthStore }  from '@/stores/auth.store';
+import { useAuthStore } from '@/stores/auth.store';
 import { useRouter, useParams } from 'next/navigation';
-import { apiClient }     from '@/lib/api/client';
-import { cn }            from '@/lib/utils';
+import { apiClient } from '@/lib/api/client';
+import { cn } from '@/lib/utils';
 import { CommandPalette } from '@/components/ui/command-palette';
-import { useHotkey }     from '@/hooks/use-hotkey';
+import { useHotkey } from '@/hooks/use-hotkey';
 
 // ── Unread count ───────────────────────────────────────────────────────────────
 
 function useUnreadCount() {
-  const wsId = useAuthStore(s => s.workspaceId);
+  const wsId = useAuthStore((s) => s.workspaceId);
   const { data } = useQuery({
-    queryKey:  ['notif-unread', wsId],
-    queryFn:   () => apiClient.get<{ success: boolean; data: { unread: number } }>('/notifications/unread-count'),
-    enabled:   !!wsId,
+    queryKey: ['notif-unread', wsId],
+    queryFn: () =>
+      apiClient.get<{ success: boolean; data: { unread: number } }>('/notifications/unread-count'),
+    enabled: !!wsId,
     refetchInterval: 30_000,
     retry: false,
     staleTime: 15_000,
@@ -34,7 +35,7 @@ function useUnreadCount() {
 function ThemeButton() {
   const { theme, setTheme } = useTheme();
   const cycle = () => {
-    if (theme === 'light')  setTheme('dark');
+    if (theme === 'light') setTheme('dark');
     else if (theme === 'dark') setTheme('system');
     else setTheme('light');
   };
@@ -44,7 +45,7 @@ function ThemeButton() {
       className="h-8 w-8 inline-flex items-center justify-center rounded-[var(--radius)] hover:bg-[hsl(var(--secondary))] transition-colors relative overflow-hidden"
       title="تغییر تم"
     >
-      <Sun  className="h-4 w-4 absolute transition-all duration-200 dark:opacity-0 dark:-translate-y-4 [.system_&]:opacity-0" />
+      <Sun className="h-4 w-4 absolute transition-all duration-200 dark:opacity-0 dark:-translate-y-4 [.system_&]:opacity-0" />
       <Moon className="h-4 w-4 absolute transition-all duration-200 opacity-0 dark:opacity-100 dark:translate-y-0 translate-y-4" />
       <Monitor className="h-4 w-4 absolute transition-all duration-200 opacity-0 [.system_&]:opacity-100" />
     </button>
@@ -52,34 +53,34 @@ function ThemeButton() {
 }
 
 export function Topbar() {
-  const t       = useTranslations('settings');
-  const tNav    = useTranslations('nav');
+  const tNav = useTranslations('nav');
   const tCommon = useTranslations('common');
-  const router  = useRouter();
-  const params  = useParams();
-  const locale  = (params?.locale as string) ?? 'fa';
+  const router = useRouter();
+  const params = useParams();
+  const locale = (params?.locale as string) ?? 'fa';
   const { user, clearAuth } = useAuthStore();
-  const unread  = useUnreadCount();
+  const unread = useUnreadCount();
 
   const [searchOpen, setSearchOpen] = useState(false);
 
   useHotkey(['ctrl+k', 'meta+k'], () => setSearchOpen(true));
 
   async function handleLogout() {
-    try { await apiClient.post('/auth/logout'); } catch { /* ignore */ }
+    try {
+      await apiClient.post('/auth/logout');
+    } catch {
+      /* ignore */
+    }
     clearAuth();
     router.push(`/${locale}/login`);
   }
 
-  const initials = [user?.firstName?.[0], user?.lastName?.[0]]
-    .filter(Boolean)
-    .join('')
-    .toUpperCase() || 'U';
+  const initials =
+    [user?.firstName?.[0], user?.lastName?.[0]].filter(Boolean).join('').toUpperCase() || 'U';
 
   return (
     <>
       <header className="flex items-center justify-between h-14 px-4 sm:px-5 shrink-0 border-b border-[hsl(var(--border))] bg-[hsl(var(--background)/0.95)] backdrop-blur-sm sticky top-0 z-30">
-
         {/* ── Left — Workspace Selector ─────────────────────── */}
         <WorkspaceSelector />
 
@@ -111,7 +112,6 @@ export function Topbar() {
 
         {/* ── Right — Actions ──────────────────────────────── */}
         <div className="flex items-center gap-1">
-
           {/* Theme */}
           <ThemeButton />
 
@@ -126,15 +126,17 @@ export function Topbar() {
           >
             <Bell className="h-4 w-4" />
             {unread > 0 && (
-              <span className={cn(
-                'absolute top-1 end-1',
-                'min-w-[16px] h-4 px-1',
-                'flex items-center justify-center',
-                'rounded-full text-[9px] font-bold leading-none',
-                'bg-[hsl(var(--destructive))] text-white',
-                'border border-[hsl(var(--background))]',
-                'animate-scale-in',
-              )}>
+              <span
+                className={cn(
+                  'absolute top-1 end-1',
+                  'min-w-[16px] h-4 px-1',
+                  'flex items-center justify-center',
+                  'rounded-full text-[9px] font-bold leading-none',
+                  'bg-[hsl(var(--destructive))] text-white',
+                  'border border-[hsl(var(--background))]',
+                  'animate-scale-in',
+                )}
+              >
                 {unread > 9 ? '9+' : unread}
               </span>
             )}
@@ -143,15 +145,19 @@ export function Topbar() {
           {/* User Menu */}
           <DropdownMenu.Root>
             <DropdownMenu.Trigger asChild>
-              <button className={cn(
-                'flex items-center gap-2 rounded-[var(--radius)] px-2 py-1.5',
-                'text-sm hover:bg-[hsl(var(--secondary))] transition-colors',
-                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))]',
-              )}>
-                <div className={cn(
-                  'w-7 h-7 rounded-full flex items-center justify-center shrink-0',
-                  'bg-[hsl(var(--primary)/0.15)] border border-[hsl(var(--primary)/0.2)]',
-                )}>
+              <button
+                className={cn(
+                  'flex items-center gap-2 rounded-[var(--radius)] px-2 py-1.5',
+                  'text-sm hover:bg-[hsl(var(--secondary))] transition-colors',
+                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))]',
+                )}
+              >
+                <div
+                  className={cn(
+                    'w-7 h-7 rounded-full flex items-center justify-center shrink-0',
+                    'bg-[hsl(var(--primary)/0.15)] border border-[hsl(var(--primary)/0.2)]',
+                  )}
+                >
                   <span className="text-[11px] font-bold text-[hsl(var(--primary))]">
                     {initials}
                   </span>
@@ -174,8 +180,12 @@ export function Topbar() {
                 sideOffset={8}
               >
                 <div className="px-3 py-2.5 mb-1 rounded-[var(--radius)] bg-[hsl(var(--secondary)/0.5)]">
-                  <p className="text-xs font-semibold truncate">{user?.firstName} {user?.lastName}</p>
-                  <p className="text-[10px] text-[hsl(var(--muted-foreground))] truncate mt-0.5">{user?.email}</p>
+                  <p className="text-xs font-semibold truncate">
+                    {user?.firstName} {user?.lastName}
+                  </p>
+                  <p className="text-[10px] text-[hsl(var(--muted-foreground))] truncate mt-0.5">
+                    {user?.email}
+                  </p>
                 </div>
 
                 <DropdownMenu.Item
@@ -190,7 +200,10 @@ export function Topbar() {
 
                 <DropdownMenu.Item
                   onSelect={handleLogout}
-                  className={cn(menuItem, 'text-[hsl(var(--destructive))] data-[highlighted]:bg-[hsl(var(--destructive)/0.08)]')}
+                  className={cn(
+                    menuItem,
+                    'text-[hsl(var(--destructive))] data-[highlighted]:bg-[hsl(var(--destructive)/0.08)]',
+                  )}
                 >
                   <LogOut className="h-3.5 w-3.5 shrink-0" />
                   خروج از سیستم

@@ -1,27 +1,46 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { useQuery }        from '@tanstack/react-query';
-import { useParams }       from 'next/navigation';
+import { useQuery } from '@tanstack/react-query';
+import { useParams } from 'next/navigation';
 import {
-  FolderKanban, Zap, HardDrive, CreditCard,
-  TrendingUp, Clock, ArrowUpRight, BarChart3,
-  CheckCircle2, AlertCircle,
+  FolderKanban,
+  Zap,
+  HardDrive,
+  CreditCard,
+  TrendingUp,
+  Clock,
+  ArrowUpRight,
+  BarChart3,
+  CheckCircle2,
+  AlertCircle,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Badge }    from '@/components/ui/badge';
+import { Badge } from '@/components/ui/badge';
 import { useAuthStore } from '@/stores/auth.store';
-import { apiClient }    from '@/lib/api/client';
-import { cn }           from '@/lib/utils';
+import { apiClient } from '@/lib/api/client';
+import { cn } from '@/lib/utils';
 import { usePlan } from '@/features/subscription/hooks/use-plan';
 
 // ── Stat Card ─────────────────────────────────────────────────────────────────
 
-function StatCard({ title, value, sub, icon: Icon, colorClass, href, loading, trend }: {
-  title: string; value: string | number; sub?: string;
-  icon: React.ElementType; colorClass: string; href?: string;
-  loading?: boolean; trend?: 'up' | 'down' | null;
+function StatCard({
+  title,
+  value,
+  sub,
+  icon: Icon,
+  colorClass,
+  href,
+  loading,
+}: {
+  title: string;
+  value: string | number;
+  sub?: string;
+  icon: React.ElementType;
+  colorClass: string;
+  href?: string;
+  loading?: boolean;
 }) {
   if (loading) return <Skeleton className="h-28 rounded-[var(--radius-lg)]" />;
 
@@ -32,22 +51,27 @@ function StatCard({ title, value, sub, icon: Icon, colorClass, href, loading, tr
       <CardContent className="p-5">
         <div className="flex items-start justify-between gap-2">
           <div className="space-y-1 min-w-0">
-            <p className="text-xs text-[hsl(var(--muted-foreground))] font-medium truncate">{title}</p>
+            <p className="text-xs text-[hsl(var(--muted-foreground))] font-medium truncate">
+              {title}
+            </p>
             <p className="text-2xl font-bold tabular-nums">{value}</p>
-            {sub && (
-              <p className="text-xs text-[hsl(var(--muted-foreground))]">{sub}</p>
-            )}
+            {sub && <p className="text-xs text-[hsl(var(--muted-foreground))]">{sub}</p>}
           </div>
-          <div className={cn(
-            'w-11 h-11 rounded-[var(--radius-lg)] flex items-center justify-center shrink-0',
-            colorClass,
-          )}>
+          <div
+            className={cn(
+              'w-11 h-11 rounded-[var(--radius-lg)] flex items-center justify-center shrink-0',
+              colorClass,
+            )}
+          >
             <Icon className="h-5 w-5" />
           </div>
         </div>
         {href && (
           <div className="mt-3 pt-3 border-t border-[hsl(var(--border))]">
-            <a href={href} className="flex items-center gap-1 text-xs text-[hsl(var(--primary))] hover:underline font-medium">
+            <a
+              href={href}
+              className="flex items-center gap-1 text-xs text-[hsl(var(--primary))] hover:underline font-medium"
+            >
               مشاهده <ArrowUpRight className="h-3 w-3" />
             </a>
           </div>
@@ -62,16 +86,20 @@ function StatCard({ title, value, sub, icon: Icon, colorClass, href, loading, tr
 function UsageBar({ used, limit, label }: { used: number; limit: number; label: string }) {
   const unlimited = limit === -1;
   const pct = unlimited ? 0 : Math.min(100, Math.round((used / limit) * 100));
-  const color = pct >= 90 ? 'bg-[hsl(var(--destructive))]'
-    : pct >= 70 ? 'bg-[hsl(var(--warning))]'
-    : 'bg-[hsl(var(--primary))]';
+  const color =
+    pct >= 90
+      ? 'bg-[hsl(var(--destructive))]'
+      : pct >= 70
+        ? 'bg-[hsl(var(--warning))]'
+        : 'bg-[hsl(var(--primary))]';
 
   return (
     <div className="space-y-1.5">
       <div className="flex justify-between text-xs">
         <span className="text-[hsl(var(--muted-foreground))]">{label}</span>
         <span className="font-medium tabular-nums">
-          {used}{unlimited ? '' : ` / ${limit}`}
+          {used}
+          {unlimited ? '' : ` / ${limit}`}
           {unlimited && ' (نامحدود)'}
         </span>
       </div>
@@ -91,10 +119,10 @@ function UsageBar({ used, limit, label }: { used: number; limit: number; label: 
 
 function ProjectRow({ project, locale }: { project: any; locale: string }) {
   const STATUS: Record<string, { label: string; variant: string }> = {
-    active:    { label: 'فعال',       variant: 'success' },
+    active: { label: 'فعال', variant: 'success' },
     completed: { label: 'تکمیل‌شده', variant: 'secondary' },
-    archived:  { label: 'آرشیو',      variant: 'secondary' },
-    cancelled: { label: 'لغو',        variant: 'destructive' },
+    archived: { label: 'آرشیو', variant: 'secondary' },
+    cancelled: { label: 'لغو', variant: 'destructive' },
   };
   const s = STATUS[project.status] ?? STATUS.active;
 
@@ -109,10 +137,14 @@ function ProjectRow({ project, locale }: { project: any; locale: string }) {
       <div className="min-w-0 flex-1">
         <p className="text-sm font-medium truncate">{project.name}</p>
         {project.description && (
-          <p className="text-xs text-[hsl(var(--muted-foreground))] truncate">{project.description}</p>
+          <p className="text-xs text-[hsl(var(--muted-foreground))] truncate">
+            {project.description}
+          </p>
         )}
       </div>
-      <Badge variant={s.variant as any} className="shrink-0 text-[10px]">{s.label}</Badge>
+      <Badge variant={s.variant as any} className="shrink-0 text-[10px]">
+        {s.label}
+      </Badge>
       <ArrowUpRight className="h-3.5 w-3.5 text-[hsl(var(--muted-foreground))] shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
     </a>
   );
@@ -121,30 +153,38 @@ function ProjectRow({ project, locale }: { project: any; locale: string }) {
 // ── Calculation Row ────────────────────────────────────────────────────────────
 
 const CALC_LABELS: Record<string, string> = {
-  'BASIC-001': 'قانون اهم',       'BASIC-002': 'توان اکتیو',
-  'CABLE-001': 'سایزینگ کابل',    'CABLE-002': 'افت ولتاژ',
-  'TRF-001':   'سایزینگ ترانس',   'TRF-002':   'تلفات ترانس',
-  'PQ-001':    'THD جریان',        'PQ-002':    'TDD',
-  'PQ-003':    'K-Factor',         'PQ-004':    'آنالیز رزونانس',
-  'PQ-005':    'فیلتر پسیو',       'PQ-006':    'سایزینگ APF',
+  'BASIC-001': 'قانون اهم',
+  'BASIC-002': 'توان اکتیو',
+  'CABLE-001': 'سایزینگ کابل',
+  'CABLE-002': 'افت ولتاژ',
+  'TRF-001': 'سایزینگ ترانس',
+  'TRF-002': 'تلفات ترانس',
+  'PQ-001': 'THD جریان',
+  'PQ-002': 'TDD',
+  'PQ-003': 'K-Factor',
+  'PQ-004': 'آنالیز رزونانس',
+  'PQ-005': 'فیلتر پسیو',
+  'PQ-006': 'سایزینگ APF',
 };
 
 function CalcRow({ calc }: { calc: any }) {
   const isOk = calc.status === 'completed';
   return (
     <div className="flex items-center gap-3 px-5 py-3 border-b border-[hsl(var(--border))] last:border-0">
-      <div className={cn(
-        'w-8 h-8 rounded-[var(--radius)] flex items-center justify-center shrink-0',
-        isOk ? 'bg-[hsl(var(--success)/0.1)]' : 'bg-[hsl(var(--destructive)/0.1)]',
-      )}>
-        {isOk
-          ? <CheckCircle2 className="h-3.5 w-3.5 text-[hsl(var(--success))]" />
-          : <AlertCircle  className="h-3.5 w-3.5 text-[hsl(var(--destructive))]" />}
+      <div
+        className={cn(
+          'w-8 h-8 rounded-[var(--radius)] flex items-center justify-center shrink-0',
+          isOk ? 'bg-[hsl(var(--success)/0.1)]' : 'bg-[hsl(var(--destructive)/0.1)]',
+        )}
+      >
+        {isOk ? (
+          <CheckCircle2 className="h-3.5 w-3.5 text-[hsl(var(--success))]" />
+        ) : (
+          <AlertCircle className="h-3.5 w-3.5 text-[hsl(var(--destructive))]" />
+        )}
       </div>
       <div className="min-w-0 flex-1">
-        <p className="text-sm font-medium truncate">
-          {CALC_LABELS[calc.type] ?? calc.type}
-        </p>
+        <p className="text-sm font-medium truncate">{CALC_LABELS[calc.type] ?? calc.type}</p>
         <p className="text-[10px] text-[hsl(var(--muted-foreground))] flex items-center gap-1">
           <Clock className="h-3 w-3" />
           {new Date(calc.createdAt).toLocaleString('fa-IR')}
@@ -159,8 +199,16 @@ function CalcRow({ calc }: { calc: any }) {
 
 // ── Quick Action ───────────────────────────────────────────────────────────────
 
-function QuickAction({ icon, label, href, pro }: {
-  icon: string; label: string; href: string; pro?: boolean;
+function QuickAction({
+  icon,
+  label,
+  href,
+  pro,
+}: {
+  icon: string;
+  label: string;
+  href: string;
+  pro?: boolean;
 }) {
   return (
     <a
@@ -174,7 +222,9 @@ function QuickAction({ icon, label, href, pro }: {
       <span className="text-base">{icon}</span>
       <span className="text-sm flex-1">{label}</span>
       {pro && (
-        <Badge variant="warning" className="text-[9px] py-0 px-1.5">Pro</Badge>
+        <Badge variant="warning" className="text-[9px] py-0 px-1.5">
+          Pro
+        </Badge>
       )}
       <ArrowUpRight className="h-3.5 w-3.5 text-[hsl(var(--muted-foreground))] opacity-0 group-hover:opacity-100 transition-opacity" />
     </a>
@@ -184,39 +234,39 @@ function QuickAction({ icon, label, href, pro }: {
 // ── Main ──────────────────────────────────────────────────────────────────────
 
 export function DashboardClient() {
-  const t      = useTranslations('dashboard');
-  const user   = useAuthStore(s => s.user);
-  const wsId   = useAuthStore(s => s.workspaceId);
+  const t = useTranslations('dashboard');
+  const user = useAuthStore((s) => s.user);
+  const wsId = useAuthStore((s) => s.workspaceId);
   const params = useParams();
   const locale = (params?.locale as string) ?? 'fa';
 
-  const { data: usage, isLoading: usageLoading } = useQuery({
+  const { isLoading: usageLoading } = useQuery({
     queryKey: ['usage', wsId],
-    queryFn:  () => apiClient.get<any>(`/workspaces/${wsId}/subscription/usage`),
-    enabled:  !!wsId,
+    queryFn: () => apiClient.get<any>(`/workspaces/${wsId}/subscription/usage`),
+    enabled: !!wsId,
     retry: false,
     staleTime: 60_000,
   });
 
   const { data: storage } = useQuery({
     queryKey: ['storage-stats', wsId],
-    queryFn:  () => apiClient.get<any>('/storage/stats'),
-    enabled:  !!wsId,
+    queryFn: () => apiClient.get<any>('/storage/stats'),
+    enabled: !!wsId,
     retry: false,
     staleTime: 60_000,
   });
 
   const { data: projects, isLoading: projLoading } = useQuery({
     queryKey: ['projects-dash', wsId],
-    queryFn:  () => apiClient.get<any>('/projects?limit=5'),
-    enabled:  !!wsId,
+    queryFn: () => apiClient.get<any>('/projects?limit=5'),
+    enabled: !!wsId,
     retry: false,
   });
 
   const { data: calcHistory, isLoading: calcLoading } = useQuery({
     queryKey: ['calc-history-dash', wsId],
-    queryFn:  () => apiClient.get<any>('/engineering/calculations?limit=5'),
-    enabled:  !!wsId,
+    queryFn: () => apiClient.get<any>('/engineering/calculations?limit=5'),
+    enabled: !!wsId,
     retry: false,
   });
 
@@ -227,7 +277,6 @@ export function DashboardClient() {
 
   return (
     <div className="space-y-5">
-
       {/* ── Header ──────────────────────────────────────────── */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 animate-fade-in">
         <div>
@@ -293,7 +342,6 @@ export function DashboardClient() {
 
       {/* ── Content Grid ────────────────────────────────────── */}
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 animate-fade-in stagger-2">
-
         {/* Recent Projects */}
         <Card className="xl:col-span-2">
           <CardHeader className="flex flex-row items-center justify-between pb-3">
@@ -301,14 +349,19 @@ export function DashboardClient() {
               <FolderKanban className="h-4 w-4 text-[hsl(var(--muted-foreground))]" />
               {t('recentProjects')}
             </CardTitle>
-            <a href={`/${locale}/projects`} className="text-xs text-[hsl(var(--primary))] hover:underline font-medium">
+            <a
+              href={`/${locale}/projects`}
+              className="text-xs text-[hsl(var(--primary))] hover:underline font-medium"
+            >
               همه پروژه‌ها
             </a>
           </CardHeader>
           <CardContent className="p-0">
             {projLoading ? (
               <div className="p-4 space-y-2.5">
-                {[1,2,3].map(i => <Skeleton key={i} className="h-14" />)}
+                {[1, 2, 3].map((i) => (
+                  <Skeleton key={i} className="h-14" />
+                ))}
               </div>
             ) : projects?.data?.length ? (
               <ul className="divide-y divide-[hsl(var(--border))]">
@@ -335,7 +388,6 @@ export function DashboardClient() {
 
         {/* Right column */}
         <div className="space-y-4">
-
           {/* Quick Calculations */}
           <Card>
             <CardHeader className="pb-3">
@@ -346,11 +398,20 @@ export function DashboardClient() {
             </CardHeader>
             <CardContent className="space-y-2 pt-0">
               {[
-                { icon: '⚡', label: 'قانون اهم',       href: `/${locale}/engineering?calc=BASIC-001` },
-                { icon: '🔌', label: 'سایزینگ کابل',   href: `/${locale}/engineering?calc=CABLE-001` },
-                { icon: '🔋', label: 'ترانسفورماتور',   href: `/${locale}/engineering?calc=TRF-001` },
-                { icon: '📊', label: 'THD کیفیت توان',  href: `/${locale}/engineering?calc=PQ-001`, pro: true },
-              ].map(item => (
+                { icon: '⚡', label: 'قانون اهم', href: `/${locale}/engineering?calc=BASIC-001` },
+                {
+                  icon: '🔌',
+                  label: 'سایزینگ کابل',
+                  href: `/${locale}/engineering?calc=CABLE-001`,
+                },
+                { icon: '🔋', label: 'ترانسفورماتور', href: `/${locale}/engineering?calc=TRF-001` },
+                {
+                  icon: '📊',
+                  label: 'THD کیفیت توان',
+                  href: `/${locale}/engineering?calc=PQ-001`,
+                  pro: true,
+                },
+              ].map((item) => (
                 <QuickAction key={item.href} {...item} />
               ))}
             </CardContent>
@@ -367,7 +428,7 @@ export function DashboardClient() {
               </CardHeader>
               <CardContent className="space-y-4 pt-0">
                 <UsageBar used={calcUsed} limit={calcLimit} label="محاسبات" />
-                <UsageBar used={aiUsed}   limit={aiLimit}   label="درخواست‌های AI" />
+                <UsageBar used={aiUsed} limit={aiLimit} label="درخواست‌های AI" />
               </CardContent>
             </Card>
           )}
@@ -382,7 +443,10 @@ export function DashboardClient() {
               <Clock className="h-4 w-4 text-[hsl(var(--muted-foreground))]" />
               آخرین محاسبات
             </CardTitle>
-            <a href={`/${locale}/engineering`} className="text-xs text-[hsl(var(--primary))] hover:underline font-medium">
+            <a
+              href={`/${locale}/engineering`}
+              className="text-xs text-[hsl(var(--primary))] hover:underline font-medium"
+            >
               مشاهده همه
             </a>
           </CardHeader>

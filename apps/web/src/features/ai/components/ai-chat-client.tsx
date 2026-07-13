@@ -2,40 +2,48 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useParams } from 'next/navigation';
 import {
-  Send, Bot, User, Plus, Trash2,
-  MessageSquare, Zap, Cpu, Loader2,
-  ChevronLeft, Copy, Check, RefreshCw,
-  BookOpen, Settings2,
+  Send,
+  Bot,
+  User,
+  Plus,
+  Trash2,
+  MessageSquare,
+  Zap,
+  Cpu,
+  Loader2,
+  ChevronLeft,
+  Copy,
+  Check,
+  RefreshCw,
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Skeleton }   from '@/components/ui/skeleton';
-import { Badge }      from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Badge } from '@/components/ui/badge';
 import { useAuthStore } from '@/stores/auth.store';
-import { useToast }     from '@/stores/toast.store';
-import { apiClient }    from '@/lib/api/client';
-import { cn }           from '@/lib/utils';
+import { useToast } from '@/stores/toast.store';
+import { apiClient } from '@/lib/api/client';
+import { cn } from '@/lib/utils';
 
 // ─────────────────────────────────────────────────────────────
 // TYPES
 // ─────────────────────────────────────────────────────────────
 
 interface Message {
-  id:        string;
-  role:      'user' | 'assistant' | 'system';
-  content:   string;
+  id: string;
+  role: 'user' | 'assistant' | 'system';
+  content: string;
   createdAt: string;
   streaming?: boolean;
 }
 
 interface Conversation {
-  id:           string;
-  agentId:      string;
-  title:        string | null;
-  createdAt:    string;
-  updatedAt:    string;
-  messages:     Message[];
+  id: string;
+  agentId: string;
+  title: string | null;
+  createdAt: string;
+  updatedAt: string;
+  messages: Message[];
   messageCount: number;
 }
 
@@ -44,26 +52,31 @@ interface Conversation {
 // ─────────────────────────────────────────────────────────────
 
 function renderMarkdown(text: string): string {
-  return text
-    // Code blocks ```lang\n...\n```
-    .replace(/```(\w*)\n?([\s\S]*?)```/g, (_, lang, code) =>
-      `<pre class="code-block"><div class="code-lang">${lang || 'code'}</div><code>${code.trim().replace(/</g,'&lt;').replace(/>/g,'&gt;')}</code></pre>`)
-    // Inline code `...`
-    .replace(/`([^`\n]+)`/g, '<code class="inline-code">$1</code>')
-    // Bold **...**
-    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-    // Italic *...*
-    .replace(/(?<!\*)\*([^*\n]+)\*(?!\*)/g, '<em>$1</em>')
-    // Headers ## ...
-    .replace(/^#{1,3}\s+(.+)$/gm, '<div class="md-heading">$1</div>')
-    // Bullet • or -
-    .replace(/^[•\-]\s+(.+)$/gm, '<div class="md-bullet">• $1</div>')
-    // Numbered list 1. ...
-    .replace(/^\d+\.\s+(.+)$/gm, '<div class="md-numbered">$1</div>')
-    // Horizontal rule ---
-    .replace(/^---$/gm, '<hr class="md-hr"/>')
-    // Line breaks
-    .replace(/\n/g, '<br/>');
+  return (
+    text
+      // Code blocks ```lang\n...\n```
+      .replace(
+        /```(\w*)\n?([\s\S]*?)```/g,
+        (_, lang, code) =>
+          `<pre class="code-block"><div class="code-lang">${lang || 'code'}</div><code>${code.trim().replace(/</g, '&lt;').replace(/>/g, '&gt;')}</code></pre>`,
+      )
+      // Inline code `...`
+      .replace(/`([^`\n]+)`/g, '<code class="inline-code">$1</code>')
+      // Bold **...**
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      // Italic *...*
+      .replace(/(?<!\*)\*([^*\n]+)\*(?!\*)/g, '<em>$1</em>')
+      // Headers ## ...
+      .replace(/^#{1,3}\s+(.+)$/gm, '<div class="md-heading">$1</div>')
+      // Bullet • or -
+      .replace(/^[•-]\s+(.+)$/gm, '<div class="md-bullet">• $1</div>')
+      // Numbered list 1. ...
+      .replace(/^\d+\.\s+(.+)$/gm, '<div class="md-numbered">$1</div>')
+      // Horizontal rule ---
+      .replace(/^---$/gm, '<hr class="md-hr"/>')
+      // Line breaks
+      .replace(/\n/g, '<br/>')
+  );
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -72,12 +85,7 @@ function renderMarkdown(text: string): string {
 
 function MessageContent({ content }: { content: string }) {
   const html = renderMarkdown(content);
-  return (
-    <div
-      className="prose-xennic"
-      dangerouslySetInnerHTML={{ __html: html }}
-    />
-  );
+  return <div className="prose-xennic" dangerouslySetInnerHTML={{ __html: html }} />;
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -95,28 +103,36 @@ function MessageBubble({ msg, userName }: { msg: Message; userName?: string }) {
   }
 
   return (
-    <div className={cn('flex gap-3 group animate-fade-in', isUser ? 'flex-row-reverse' : 'flex-row')}>
+    <div
+      className={cn('flex gap-3 group animate-fade-in', isUser ? 'flex-row-reverse' : 'flex-row')}
+    >
       {/* Avatar */}
-      <div className={cn(
-        'w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-1 text-xs font-bold',
-        isUser
-          ? 'bg-[hsl(var(--primary))] text-white'
-          : 'bg-[hsl(var(--secondary))] border border-[hsl(var(--border))]',
-      )}>
-        {isUser
-          ? (userName?.[0]?.toUpperCase() ?? <User className="h-3.5 w-3.5" />)
-          : <Bot className="h-4 w-4 text-[hsl(var(--primary))]" />}
+      <div
+        className={cn(
+          'w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-1 text-xs font-bold',
+          isUser
+            ? 'bg-[hsl(var(--primary))] text-white'
+            : 'bg-[hsl(var(--secondary))] border border-[hsl(var(--border))]',
+        )}
+      >
+        {isUser ? (
+          (userName?.[0]?.toUpperCase() ?? <User className="h-3.5 w-3.5" />)
+        ) : (
+          <Bot className="h-4 w-4 text-[hsl(var(--primary))]" />
+        )}
       </div>
 
       {/* Bubble */}
       <div className={cn('max-w-[80%] space-y-1', isUser ? 'items-end' : 'items-start')}>
-        <div className={cn(
-          'relative px-4 py-3 rounded-2xl text-sm leading-relaxed',
-          isUser
-            ? 'bg-[hsl(var(--primary))] text-white rounded-tr-sm'
-            : 'bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-tl-sm',
-          msg.streaming && 'opacity-90',
-        )}>
+        <div
+          className={cn(
+            'relative px-4 py-3 rounded-2xl text-sm leading-relaxed',
+            isUser
+              ? 'bg-[hsl(var(--primary))] text-white rounded-tr-sm'
+              : 'bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-tl-sm',
+            msg.streaming && 'opacity-90',
+          )}
+        >
           {isUser ? (
             <p className="whitespace-pre-wrap">{msg.content}</p>
           ) : (
@@ -138,18 +154,25 @@ function MessageBubble({ msg, userName }: { msg: Message; userName?: string }) {
               )}
               title="کپی"
             >
-              {copied
-                ? <Check className="h-3 w-3 text-[hsl(var(--success))]" />
-                : <Copy  className="h-3 w-3 text-[hsl(var(--muted-foreground))]" />}
+              {copied ? (
+                <Check className="h-3 w-3 text-[hsl(var(--success))]" />
+              ) : (
+                <Copy className="h-3 w-3 text-[hsl(var(--muted-foreground))]" />
+              )}
             </button>
           )}
         </div>
 
-        <p className={cn(
-          'text-[10px] text-[hsl(var(--muted-foreground))] px-1',
-          isUser ? 'text-end' : 'text-start',
-        )}>
-          {new Date(msg.createdAt).toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' })}
+        <p
+          className={cn(
+            'text-[10px] text-[hsl(var(--muted-foreground))] px-1',
+            isUser ? 'text-end' : 'text-start',
+          )}
+        >
+          {new Date(msg.createdAt).toLocaleTimeString('fa-IR', {
+            hour: '2-digit',
+            minute: '2-digit',
+          })}
         </p>
       </div>
     </div>
@@ -168,7 +191,7 @@ function TypingIndicator() {
       </div>
       <div className="px-4 py-3 rounded-2xl rounded-tl-sm bg-[hsl(var(--card))] border border-[hsl(var(--border))]">
         <div className="flex gap-1 items-center h-5">
-          {[0, 1, 2].map(i => (
+          {[0, 1, 2].map((i) => (
             <span
               key={i}
               className="w-1.5 h-1.5 rounded-full bg-[hsl(var(--muted-foreground))] animate-bounce"
@@ -198,9 +221,16 @@ const SUGGESTIONS = [
 // CONVERSATION SIDEBAR ITEM
 // ─────────────────────────────────────────────────────────────
 
-function ConvItem({ conv, active, onClick, onDelete }: {
-  conv: Conversation; active: boolean;
-  onClick: () => void; onDelete: () => void;
+function ConvItem({
+  conv,
+  active,
+  onClick,
+  onDelete,
+}: {
+  conv: Conversation;
+  active: boolean;
+  onClick: () => void;
+  onDelete: () => void;
 }) {
   return (
     <div
@@ -214,15 +244,16 @@ function ConvItem({ conv, active, onClick, onDelete }: {
     >
       <MessageSquare className="h-3.5 w-3.5 shrink-0 opacity-60" />
       <div className="flex-1 min-w-0">
-        <p className="text-xs font-medium truncate">
-          {conv.title ?? 'گفتگوی جدید'}
-        </p>
+        <p className="text-xs font-medium truncate">{conv.title ?? 'گفتگوی جدید'}</p>
         <p className="text-[10px] text-[hsl(var(--muted-foreground))] mt-0.5">
           {conv.messageCount} پیام · {new Date(conv.updatedAt).toLocaleDateString('fa-IR')}
         </p>
       </div>
       <button
-        onClick={e => { e.stopPropagation(); onDelete(); }}
+        onClick={(e) => {
+          e.stopPropagation();
+          onDelete();
+        }}
         className="p-1 rounded opacity-0 group-hover:opacity-100 hover:bg-[hsl(var(--destructive)/0.1)] hover:text-[hsl(var(--destructive))] transition-all shrink-0"
         title="حذف"
       >
@@ -236,18 +267,23 @@ function ConvItem({ conv, active, onClick, onDelete }: {
 // WELCOME SCREEN
 // ─────────────────────────────────────────────────────────────
 
-function WelcomeScreen({ onSuggestion, onStart }: {
+function WelcomeScreen({
+  onSuggestion,
+  onStart,
+}: {
   onSuggestion: (text: string) => void;
   onStart: () => void;
 }) {
   return (
     <div className="flex flex-col items-center justify-center h-full text-center px-6 py-12 space-y-6">
       {/* Icon */}
-      <div className={cn(
-        'w-18 h-18 rounded-3xl flex items-center justify-center p-4',
-        'bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--accent))]',
-        'shadow-[0_0_40px_hsl(var(--primary)/0.25)]',
-      )}>
+      <div
+        className={cn(
+          'w-18 h-18 rounded-3xl flex items-center justify-center p-4',
+          'bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--accent))]',
+          'shadow-[0_0_40px_hsl(var(--primary)/0.25)]',
+        )}
+      >
         <Cpu className="h-8 w-8 text-white" />
       </div>
 
@@ -266,7 +302,10 @@ function WelcomeScreen({ onSuggestion, onStart }: {
           { icon: '🔌', label: 'کابل و ترانسفورماتور' },
           { icon: '🛡️', label: 'حفاظت و رله‌گذاری' },
         ].map(({ icon, label }) => (
-          <div key={label} className="flex items-center gap-2 p-2.5 rounded-[var(--radius-lg)] bg-[hsl(var(--secondary)/0.6)] border border-[hsl(var(--border))] text-xs">
+          <div
+            key={label}
+            className="flex items-center gap-2 p-2.5 rounded-[var(--radius-lg)] bg-[hsl(var(--secondary)/0.6)] border border-[hsl(var(--border))] text-xs"
+          >
             <span className="text-base">{icon}</span>
             <span className="font-medium">{label}</span>
           </div>
@@ -278,7 +317,7 @@ function WelcomeScreen({ onSuggestion, onStart }: {
         <p className="text-[10px] text-[hsl(var(--muted-foreground))] font-medium uppercase tracking-wider text-right">
           سؤالات پیشنهادی
         </p>
-        {SUGGESTIONS.slice(0, 4).map(s => (
+        {SUGGESTIONS.slice(0, 4).map((s) => (
           <button
             key={s.text}
             onClick={() => onSuggestion(s.text)}
@@ -315,31 +354,32 @@ function WelcomeScreen({ onSuggestion, onStart }: {
 // MAIN COMPONENT
 // ─────────────────────────────────────────────────────────────
 
-const API_BASE = typeof window !== 'undefined'
-  ? `${process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000'}/api/v1`
-  : `http://localhost:3000/api/v1`;
+const API_BASE =
+  typeof window !== 'undefined'
+    ? `${process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000'}/api/v1`
+    : `http://localhost:3000/api/v1`;
 
 export function AiChatClient() {
-  const user        = useAuthStore(s => s.user);
-  const wsId        = useAuthStore(s => s.workspaceId);
-  const toast       = useToast();
+  const user = useAuthStore((s) => s.user);
+  const wsId = useAuthStore((s) => s.workspaceId);
+  const toast = useToast();
   const queryClient = useQueryClient();
 
   const [activeConvId, setActiveConvId] = useState<string | null>(null);
-  const [input,        setInput]        = useState('');
-  const [isTyping,     setIsTyping]     = useState(false);
-  const [messages,     setMessages]     = useState<Message[]>([]);
-  const [useStream,    setUseStream]    = useState(false); // streaming endpoint در دست توسعه
+  const [input, setInput] = useState('');
+  const [isTyping, setIsTyping] = useState(false);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [useStream, setUseStream] = useState(false); // streaming endpoint در دست توسعه
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const inputRef       = useRef<HTMLTextAreaElement>(null);
-  const abortRef       = useRef<AbortController | null>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
+  const abortRef = useRef<AbortController | null>(null);
 
   // Conversations list
   const { data: convsData, isLoading: convsLoading } = useQuery({
     queryKey: ['ai-conversations', wsId],
-    queryFn:  () => apiClient.get<any>('/ai/conversations?limit=30'),
-    enabled:  !!wsId,
+    queryFn: () => apiClient.get<any>('/ai/conversations?limit=30'),
+    enabled: !!wsId,
     retry: false,
     refetchInterval: 30_000,
   });
@@ -347,8 +387,8 @@ export function AiChatClient() {
   // Active conversation
   const { data: convData, isLoading: convLoading } = useQuery({
     queryKey: ['ai-conversation', activeConvId],
-    queryFn:  () => apiClient.get<any>(`/ai/conversations/${activeConvId}`),
-    enabled:  !!activeConvId,
+    queryFn: () => apiClient.get<any>(`/ai/conversations/${activeConvId}`),
+    enabled: !!activeConvId,
     retry: false,
   });
 
@@ -364,7 +404,8 @@ export function AiChatClient() {
 
   // Create conversation
   const createMutation = useMutation({
-    mutationFn: () => apiClient.post<any>('/ai/conversations', { agentSlug: 'electrical-engineer' }),
+    mutationFn: () =>
+      apiClient.post<any>('/ai/conversations', { agentSlug: 'electrical-engineer' }),
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['ai-conversations'] });
       setActiveConvId(data.data.id);
@@ -378,7 +419,10 @@ export function AiChatClient() {
     mutationFn: (id: string) => apiClient.delete(`/ai/conversations/${id}`),
     onSuccess: (_, id) => {
       queryClient.invalidateQueries({ queryKey: ['ai-conversations'] });
-      if (activeConvId === id) { setActiveConvId(null); setMessages([]); }
+      if (activeConvId === id) {
+        setActiveConvId(null);
+        setMessages([]);
+      }
     },
     onError: () => toast.error('خطا در حذف'),
   });
@@ -391,40 +435,44 @@ export function AiChatClient() {
     // Optimistic user message
     const tempUserMsg: Message = {
       id: 'user-' + Date.now(),
-      role: 'user', content,
+      role: 'user',
+      content,
       createdAt: new Date().toISOString(),
     };
-    setMessages(prev => [...prev, tempUserMsg]);
+    setMessages((prev) => [...prev, tempUserMsg]);
     setIsTyping(true);
 
     // Streaming assistant bubble
     const tempAsstId = 'asst-' + Date.now();
     const tempAsst: Message = {
-      id: tempAsstId, role: 'assistant',
-      content: '', createdAt: new Date().toISOString(), streaming: true,
+      id: tempAsstId,
+      role: 'assistant',
+      content: '',
+      createdAt: new Date().toISOString(),
+      streaming: true,
     };
-    setMessages(prev => [...prev, tempAsst]);
+    setMessages((prev) => [...prev, tempAsst]);
 
     const ctrl = new AbortController();
     abortRef.current = ctrl;
 
     try {
       const res = await fetch(`${API_BASE}/ai/conversations/${convId}/stream`, {
-        method:  'POST',
+        method: 'POST',
         headers: {
-          'Content-Type':   'application/json',
-          'Authorization':  `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
           'x-workspace-id': wsId ?? '',
         },
-        body:   JSON.stringify({ content }),
+        body: JSON.stringify({ content }),
         signal: ctrl.signal,
       });
 
       if (!res.ok || !res.body) throw new Error(`HTTP ${res.status}`);
 
-      const reader  = res.body.getReader();
+      const reader = res.body.getReader();
       const decoder = new TextDecoder();
-      let   buffer  = '';
+      let buffer = '';
 
       while (true) {
         const { done, value } = await reader.read();
@@ -442,37 +490,41 @@ export function AiChatClient() {
           try {
             const ev = JSON.parse(raw);
             if (ev.type === 'chunk') {
-              setMessages(prev => prev.map(m =>
-                m.id === tempAsstId
-                  ? { ...m, content: m.content + ev.chunk }
-                  : m,
-              ));
+              setMessages((prev) =>
+                prev.map((m) =>
+                  m.id === tempAsstId ? { ...m, content: m.content + ev.chunk } : m,
+                ),
+              );
             }
             if (ev.type === 'done') {
-              setMessages(prev => prev.map(m =>
-                m.id === tempAsstId
-                  ? { ...m, id: ev.assistantMessageId, streaming: false }
-                  : m.id === tempUserMsg.id
-                  ? { ...m, id: ev.userMessageId }
-                  : m,
-              ));
+              setMessages((prev) =>
+                prev.map((m) =>
+                  m.id === tempAsstId
+                    ? { ...m, id: ev.assistantMessageId, streaming: false }
+                    : m.id === tempUserMsg.id
+                      ? { ...m, id: ev.userMessageId }
+                      : m,
+                ),
+              );
             }
             if (ev.type === 'error') throw new Error(ev.message);
-          } catch { /* skip malformed */ }
+          } catch {
+            /* skip malformed */
+          }
         }
       }
     } catch (err: any) {
       if (err.name === 'AbortError') return;
       // Fallback به non-streaming
       // silent fallback to non-streaming
-      setMessages(prev => prev.filter(m => m.id !== tempAsstId));
+      setMessages((prev) => prev.filter((m) => m.id !== tempAsstId));
       await sendNormal(convId, content, tempUserMsg.id);
       return;
     } finally {
       setIsTyping(false);
-      setMessages(prev => prev.map(m =>
-        m.id === tempAsstId ? { ...m, streaming: false } : m,
-      ));
+      setMessages((prev) =>
+        prev.map((m) => (m.id === tempAsstId ? { ...m, streaming: false } : m)),
+      );
       queryClient.invalidateQueries({ queryKey: ['ai-conversations'] });
     }
   }
@@ -485,17 +537,29 @@ export function AiChatClient() {
       const res = await apiClient.post<any>(`/ai/conversations/${convId}/messages`, { content });
       const now = new Date().toISOString();
 
-      const userMsg: Message  = { id: res.data.userMessageId,      role: 'user',      content, createdAt: now };
-      const asstMsg: Message  = { id: res.data.assistantMessageId, role: 'assistant', content: res.data.reply, createdAt: now };
+      const userMsg: Message = {
+        id: res.data.userMessageId,
+        role: 'user',
+        content,
+        createdAt: now,
+      };
+      const asstMsg: Message = {
+        id: res.data.assistantMessageId,
+        role: 'assistant',
+        content: res.data.reply,
+        createdAt: now,
+      };
 
-      setMessages(prev => {
-        const filtered = prev.filter(m => m.id !== tempUserId && !m.id.startsWith('user-'));
+      setMessages((prev) => {
+        const filtered = prev.filter((m) => m.id !== tempUserId && !m.id.startsWith('user-'));
         return [...filtered, userMsg, asstMsg];
       });
       queryClient.invalidateQueries({ queryKey: ['ai-conversations'] });
     } catch (err: any) {
       toast.error(err?.message ?? 'خطا در ارسال پیام');
-      setMessages(prev => prev.filter(m => !m.id.startsWith('user-') && !m.id.startsWith('asst-')));
+      setMessages((prev) =>
+        prev.filter((m) => !m.id.startsWith('user-') && !m.id.startsWith('asst-')),
+      );
     } finally {
       setIsTyping(false);
     }
@@ -511,7 +575,9 @@ export function AiChatClient() {
     let convId = activeConvId;
     if (!convId) {
       try {
-        const res = await apiClient.post<any>('/ai/conversations', { agentSlug: 'electrical-engineer' });
+        const res = await apiClient.post<any>('/ai/conversations', {
+          agentSlug: 'electrical-engineer',
+        });
         convId = res.data.id;
         setActiveConvId(convId);
         queryClient.invalidateQueries({ queryKey: ['ai-conversations'] });
@@ -525,9 +591,15 @@ export function AiChatClient() {
       await sendStreaming(convId!, content);
     } else {
       const tempId = 'user-' + Date.now();
-      setMessages(prev => [...prev, {
-        id: tempId, role: 'user', content, createdAt: new Date().toISOString(),
-      }]);
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: tempId,
+          role: 'user',
+          content,
+          createdAt: new Date().toISOString(),
+        },
+      ]);
       await sendNormal(convId!, content, tempId);
     }
 
@@ -544,13 +616,11 @@ export function AiChatClient() {
   function stopStreaming() {
     abortRef.current?.abort();
     setIsTyping(false);
-    setMessages(prev => prev.map(m =>
-      m.streaming ? { ...m, streaming: false } : m,
-    ));
+    setMessages((prev) => prev.map((m) => (m.streaming ? { ...m, streaming: false } : m)));
   }
 
   const conversations: Conversation[] = convsData?.data ?? [];
-  const activeConv = conversations.find(c => c.id === activeConvId);
+  const activeConv = conversations.find((c) => c.id === activeConvId);
 
   return (
     <>
@@ -581,10 +651,8 @@ export function AiChatClient() {
       `}</style>
 
       <div className="flex h-[calc(100dvh-7rem)] gap-4 -mx-4 lg:-mx-6 px-4 lg:px-6">
-
         {/* ── Sidebar ──────────────────────────────────────── */}
         <div className="hidden lg:flex flex-col w-60 shrink-0 gap-2.5">
-
           {/* New button */}
           <button
             onClick={() => createMutation.mutate()}
@@ -596,9 +664,11 @@ export function AiChatClient() {
               'shadow-[0_2px_8px_hsl(var(--primary)/0.3)]',
             )}
           >
-            {createMutation.isPending
-              ? <Loader2 className="h-4 w-4 animate-spin" />
-              : <Plus    className="h-4 w-4" />}
+            {createMutation.isPending ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Plus className="h-4 w-4" />
+            )}
             گفتگوی جدید
           </button>
 
@@ -607,15 +677,20 @@ export function AiChatClient() {
             <CardContent className="p-2 h-full overflow-y-auto space-y-0.5">
               {convsLoading ? (
                 <div className="space-y-2 p-2">
-                  {[1,2,3].map(i => <Skeleton key={i} className="h-12" />)}
+                  {[1, 2, 3].map((i) => (
+                    <Skeleton key={i} className="h-12" />
+                  ))}
                 </div>
               ) : conversations.length > 0 ? (
-                conversations.map(conv => (
+                conversations.map((conv) => (
                   <ConvItem
                     key={conv.id}
                     conv={conv}
                     active={conv.id === activeConvId}
-                    onClick={() => { setActiveConvId(conv.id); setMessages([]); }}
+                    onClick={() => {
+                      setActiveConvId(conv.id);
+                      setMessages([]);
+                    }}
                     onDelete={() => deleteMutation.mutate(conv.id)}
                   />
                 ))
@@ -635,14 +710,18 @@ export function AiChatClient() {
                 <Zap className="h-3.5 w-3.5 text-[hsl(var(--primary))]" />
                 <span className="text-xs font-medium">Xennic AI</span>
               </div>
-              <Badge variant="default" className="text-[9px]">β</Badge>
+              <Badge variant="default" className="text-[9px]">
+                β
+              </Badge>
             </div>
             {/* Streaming toggle */}
             <button
-              onClick={() => setUseStream(s => !s)}
+              onClick={() => setUseStream((s) => !s)}
               className={cn(
                 'w-full flex items-center gap-2 px-2 py-1.5 rounded-[var(--radius)] text-[10px] transition-colors',
-                useStream ? 'bg-[hsl(var(--primary)/0.1)] text-[hsl(var(--primary))]' : 'hover:bg-[hsl(var(--secondary))]',
+                useStream
+                  ? 'bg-[hsl(var(--primary)/0.1)] text-[hsl(var(--primary))]'
+                  : 'hover:bg-[hsl(var(--secondary))]',
               )}
             >
               <RefreshCw className="h-3 w-3" />
@@ -653,12 +732,14 @@ export function AiChatClient() {
 
         {/* ── Chat Area ─────────────────────────────────────── */}
         <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-
           {/* Header */}
           {activeConvId && (
             <div className="flex items-center gap-3 mb-3 pb-3 border-b border-[hsl(var(--border))] shrink-0">
               <button
-                onClick={() => { setActiveConvId(null); setMessages([]); }}
+                onClick={() => {
+                  setActiveConvId(null);
+                  setMessages([]);
+                }}
                 className="lg:hidden p-1.5 rounded-[var(--radius)] hover:bg-[hsl(var(--secondary))]"
               >
                 <ChevronLeft className="h-4 w-4 rtl:rotate-180" />
@@ -667,14 +748,16 @@ export function AiChatClient() {
                 <Bot className="h-4 w-4 text-[hsl(var(--primary))]" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold truncate">
-                  {activeConv?.title ?? 'Xennic AI'}
-                </p>
+                <p className="text-sm font-semibold truncate">{activeConv?.title ?? 'Xennic AI'}</p>
                 <div className="flex items-center gap-1.5">
-                  <span className={cn(
-                    'w-1.5 h-1.5 rounded-full',
-                    isTyping ? 'bg-[hsl(var(--warning))] animate-pulse' : 'bg-[hsl(var(--success))]',
-                  )} />
+                  <span
+                    className={cn(
+                      'w-1.5 h-1.5 rounded-full',
+                      isTyping
+                        ? 'bg-[hsl(var(--warning))] animate-pulse'
+                        : 'bg-[hsl(var(--success))]',
+                    )}
+                  />
                   <p className="text-[10px] text-[hsl(var(--muted-foreground))]">
                     {isTyping ? 'در حال پاسخ...' : 'آنلاین'}
                   </p>
@@ -700,23 +783,21 @@ export function AiChatClient() {
           <div className="flex-1 overflow-y-auto">
             {!activeConvId ? (
               <WelcomeScreen
-                onSuggestion={text => handleSend(text)}
+                onSuggestion={(text) => handleSend(text)}
                 onStart={() => createMutation.mutate()}
               />
             ) : convLoading ? (
               <div className="space-y-4 p-4">
-                {[1,2,3].map(i => <Skeleton key={i} className="h-16" />)}
+                {[1, 2, 3].map((i) => (
+                  <Skeleton key={i} className="h-16" />
+                ))}
               </div>
             ) : (
               <div className="space-y-4 p-4 pb-2">
-                {messages.map(msg => (
-                  <MessageBubble
-                    key={msg.id}
-                    msg={msg}
-                    userName={user?.firstName}
-                  />
+                {messages.map((msg) => (
+                  <MessageBubble key={msg.id} msg={msg} userName={user?.firstName} />
                 ))}
-                {isTyping && !messages.some(m => m.streaming) && <TypingIndicator />}
+                {isTyping && !messages.some((m) => m.streaming) && <TypingIndicator />}
                 <div ref={messagesEndRef} />
               </div>
             )}
@@ -728,30 +809,32 @@ export function AiChatClient() {
               {/* Suggestion chips (اگر پیامی نیست) */}
               {messages.length === 0 && (
                 <div className="flex gap-2 flex-wrap mb-3">
-                  {SUGGESTIONS.slice(0, 3).map(s => (
+                  {SUGGESTIONS.slice(0, 3).map((s) => (
                     <button
                       key={s.text}
                       onClick={() => handleSend(s.text)}
                       className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs border border-[hsl(var(--border))] hover:bg-[hsl(var(--secondary))] hover:border-[hsl(var(--primary)/0.3)] transition-all"
                     >
                       <span>{s.icon}</span>
-                      <span className="truncate max-w-[120px]">{s.text.slice(0,25)}...</span>
+                      <span className="truncate max-w-[120px]">{s.text.slice(0, 25)}...</span>
                     </button>
                   ))}
                 </div>
               )}
 
               {/* Input box */}
-              <div className={cn(
-                'flex items-end gap-2 p-2 rounded-[var(--radius-xl)] border',
-                'bg-[hsl(var(--card))]',
-                'focus-within:border-[hsl(var(--primary)/0.5)] focus-within:ring-1 focus-within:ring-[hsl(var(--ring)/0.3)]',
-                'transition-all',
-              )}>
+              <div
+                className={cn(
+                  'flex items-end gap-2 p-2 rounded-[var(--radius-xl)] border',
+                  'bg-[hsl(var(--card))]',
+                  'focus-within:border-[hsl(var(--primary)/0.5)] focus-within:ring-1 focus-within:ring-[hsl(var(--ring)/0.3)]',
+                  'transition-all',
+                )}
+              >
                 <textarea
                   ref={inputRef}
                   value={input}
-                  onChange={e => setInput(e.target.value)}
+                  onChange={(e) => setInput(e.target.value)}
                   onKeyDown={handleKeyDown}
                   placeholder="سؤال فنی بپرسید... (Enter=ارسال، Shift+Enter=خط جدید)"
                   rows={1}
@@ -774,9 +857,11 @@ export function AiChatClient() {
                     'disabled:opacity-40 disabled:cursor-not-allowed',
                   )}
                 >
-                  {isTyping
-                    ? <Loader2 className="h-4 w-4 animate-spin" />
-                    : <Send    className="h-4 w-4" />}
+                  {isTyping ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Send className="h-4 w-4" />
+                  )}
                 </button>
               </div>
 

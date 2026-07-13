@@ -3,38 +3,95 @@
 import { useTranslations } from 'next-intl';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
-  Bell, CheckCheck, Trash2, BellOff,
-  Building2, UserPlus, UserMinus, FolderPlus,
-  Pencil, Zap, CreditCard, Clock, FileText,
-  ShieldAlert, RefreshCw,
+  Bell,
+  CheckCheck,
+  Trash2,
+  BellOff,
+  Building2,
+  UserPlus,
+  UserMinus,
+  FolderPlus,
+  Pencil,
+  Zap,
+  CreditCard,
+  Clock,
+  FileText,
+  ShieldAlert,
+  RefreshCw,
 } from 'lucide-react';
-import { PageHeader }  from '@/components/ui/page-header';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge }       from '@/components/ui/badge';
-import { Skeleton }    from '@/components/ui/skeleton';
+import { PageHeader } from '@/components/ui/page-header';
+import { Card, CardContent } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useAuthStore } from '@/stores/auth.store';
-import { useToast }     from '@/stores/toast.store';
-import { apiClient }    from '@/lib/api/client';
-import { cn }           from '@/lib/utils';
+import { useToast } from '@/stores/toast.store';
+import { apiClient } from '@/lib/api/client';
+import { cn } from '@/lib/utils';
 
 // ── Type config ───────────────────────────────────────────────────────────────
 
-const TYPE_CONFIG: Record<string, {
-  icon: React.ElementType;
-  colorClass: string;
-  bgClass: string;
-}> = {
-  workspace_invite:         { icon: Building2,    colorClass: 'text-[hsl(var(--primary))]',     bgClass: 'bg-[hsl(var(--primary)/0.1)]' },
-  workspace_member_added:   { icon: UserPlus,     colorClass: 'text-[hsl(var(--success))]',     bgClass: 'bg-[hsl(var(--success)/0.1)]' },
-  workspace_member_removed: { icon: UserMinus,    colorClass: 'text-[hsl(var(--destructive))]', bgClass: 'bg-[hsl(var(--destructive)/0.1)]' },
-  project_added:            { icon: FolderPlus,   colorClass: 'text-[hsl(var(--primary))]',     bgClass: 'bg-[hsl(var(--primary)/0.1)]' },
-  project_updated:          { icon: Pencil,       colorClass: 'text-[hsl(var(--warning))]',     bgClass: 'bg-[hsl(var(--warning)/0.1)]' },
-  calculation_complete:     { icon: Zap,          colorClass: 'text-[hsl(var(--success))]',     bgClass: 'bg-[hsl(var(--success)/0.1)]' },
-  subscription_changed:     { icon: CreditCard,   colorClass: 'text-[hsl(var(--primary))]',     bgClass: 'bg-[hsl(var(--primary)/0.1)]' },
-  subscription_expiring:    { icon: Clock,        colorClass: 'text-[hsl(var(--warning))]',     bgClass: 'bg-[hsl(var(--warning)/0.1)]' },
-  file_shared:              { icon: FileText,     colorClass: 'text-[hsl(var(--accent))]',      bgClass: 'bg-[hsl(var(--accent)/0.1)]' },
-  security_alert:           { icon: ShieldAlert,  colorClass: 'text-[hsl(var(--destructive))]', bgClass: 'bg-[hsl(var(--destructive)/0.1)]' },
-  system:                   { icon: Bell,         colorClass: 'text-[hsl(var(--muted-foreground))]', bgClass: 'bg-[hsl(var(--secondary))]' },
+const TYPE_CONFIG: Record<
+  string,
+  {
+    icon: React.ElementType;
+    colorClass: string;
+    bgClass: string;
+  }
+> = {
+  workspace_invite: {
+    icon: Building2,
+    colorClass: 'text-[hsl(var(--primary))]',
+    bgClass: 'bg-[hsl(var(--primary)/0.1)]',
+  },
+  workspace_member_added: {
+    icon: UserPlus,
+    colorClass: 'text-[hsl(var(--success))]',
+    bgClass: 'bg-[hsl(var(--success)/0.1)]',
+  },
+  workspace_member_removed: {
+    icon: UserMinus,
+    colorClass: 'text-[hsl(var(--destructive))]',
+    bgClass: 'bg-[hsl(var(--destructive)/0.1)]',
+  },
+  project_added: {
+    icon: FolderPlus,
+    colorClass: 'text-[hsl(var(--primary))]',
+    bgClass: 'bg-[hsl(var(--primary)/0.1)]',
+  },
+  project_updated: {
+    icon: Pencil,
+    colorClass: 'text-[hsl(var(--warning))]',
+    bgClass: 'bg-[hsl(var(--warning)/0.1)]',
+  },
+  calculation_complete: {
+    icon: Zap,
+    colorClass: 'text-[hsl(var(--success))]',
+    bgClass: 'bg-[hsl(var(--success)/0.1)]',
+  },
+  subscription_changed: {
+    icon: CreditCard,
+    colorClass: 'text-[hsl(var(--primary))]',
+    bgClass: 'bg-[hsl(var(--primary)/0.1)]',
+  },
+  subscription_expiring: {
+    icon: Clock,
+    colorClass: 'text-[hsl(var(--warning))]',
+    bgClass: 'bg-[hsl(var(--warning)/0.1)]',
+  },
+  file_shared: {
+    icon: FileText,
+    colorClass: 'text-[hsl(var(--accent))]',
+    bgClass: 'bg-[hsl(var(--accent)/0.1)]',
+  },
+  security_alert: {
+    icon: ShieldAlert,
+    colorClass: 'text-[hsl(var(--destructive))]',
+    bgClass: 'bg-[hsl(var(--destructive)/0.1)]',
+  },
+  system: {
+    icon: Bell,
+    colorClass: 'text-[hsl(var(--muted-foreground))]',
+    bgClass: 'bg-[hsl(var(--secondary))]',
+  },
 };
 
 function getConfig(type: string) {
@@ -43,25 +100,33 @@ function getConfig(type: string) {
 
 // ── Notification Item ─────────────────────────────────────────────────────────
 
-function NotificationItem({ notif, onRead, onDelete }: {
+function NotificationItem({
+  notif,
+  onRead,
+  onDelete,
+}: {
   notif: any;
-  onRead:   (id: string) => void;
+  onRead: (id: string) => void;
   onDelete: (id: string) => void;
 }) {
   const { icon: Icon, colorClass, bgClass } = getConfig(notif.type);
   const timeAgo = getTimeAgo(new Date(notif.createdAt));
 
   return (
-    <div className={cn(
-      'flex items-start gap-4 px-5 py-4 transition-colors',
-      'border-b border-[hsl(var(--border))] last:border-0',
-      !notif.isRead && 'bg-[hsl(var(--primary)/0.025)]',
-    )}>
+    <div
+      className={cn(
+        'flex items-start gap-4 px-5 py-4 transition-colors',
+        'border-b border-[hsl(var(--border))] last:border-0',
+        !notif.isRead && 'bg-[hsl(var(--primary)/0.025)]',
+      )}
+    >
       {/* Icon */}
-      <div className={cn(
-        'w-10 h-10 rounded-full flex items-center justify-center shrink-0 mt-0.5',
-        bgClass,
-      )}>
+      <div
+        className={cn(
+          'w-10 h-10 rounded-full flex items-center justify-center shrink-0 mt-0.5',
+          bgClass,
+        )}
+      >
         <Icon className={cn('h-4 w-4', colorClass)} />
       </div>
 
@@ -112,39 +177,40 @@ function NotificationItem({ notif, onRead, onDelete }: {
 // ── Time ago helper ────────────────────────────────────────────────────────────
 
 function getTimeAgo(date: Date): string {
-  const now   = new Date();
-  const diff  = now.getTime() - date.getTime();
-  const mins  = Math.floor(diff / 60_000);
+  const now = new Date();
+  const diff = now.getTime() - date.getTime();
+  const mins = Math.floor(diff / 60_000);
   const hours = Math.floor(diff / 3_600_000);
-  const days  = Math.floor(diff / 86_400_000);
+  const days = Math.floor(diff / 86_400_000);
 
-  if (mins < 1)    return 'همین الان';
-  if (mins < 60)   return `${mins} دقیقه پیش`;
-  if (hours < 24)  return `${hours} ساعت پیش`;
-  if (days < 7)    return `${days} روز پیش`;
+  if (mins < 1) return 'همین الان';
+  if (mins < 60) return `${mins} دقیقه پیش`;
+  if (hours < 24) return `${hours} ساعت پیش`;
+  if (days < 7) return `${days} روز پیش`;
   return date.toLocaleDateString('fa-IR');
 }
 
 // ── Main ──────────────────────────────────────────────────────────────────────
 
 export function NotificationsClient() {
-  const t           = useTranslations('notifications');
-  const wsId        = useAuthStore(s => s.workspaceId);
-  const toast       = useToast();
+  const t = useTranslations('notifications');
+  const wsId = useAuthStore((s) => s.workspaceId);
+  const toast = useToast();
   const queryClient = useQueryClient();
 
   const { data, isLoading, refetch } = useQuery({
     queryKey: ['notifications', wsId],
-    queryFn:  () => apiClient.get<any>('/notifications?limit=50'),
-    enabled:  !!wsId,
+    queryFn: () => apiClient.get<any>('/notifications?limit=50'),
+    enabled: !!wsId,
     retry: false,
     staleTime: 30_000,
   });
 
   const { data: unreadData } = useQuery({
     queryKey: ['notif-unread', wsId],
-    queryFn:  () => apiClient.get<{ success: boolean; data: { unread: number } }>('/notifications/unread-count'),
-    enabled:  !!wsId,
+    queryFn: () =>
+      apiClient.get<{ success: boolean; data: { unread: number } }>('/notifications/unread-count'),
+    enabled: !!wsId,
     retry: false,
   });
 
@@ -177,7 +243,7 @@ export function NotificationsClient() {
   });
 
   const notifications = data?.data ?? [];
-  const unread        = unreadData?.data?.unread ?? 0;
+  const unread = unreadData?.data?.unread ?? 0;
 
   return (
     <div>
@@ -210,8 +276,11 @@ export function NotificationsClient() {
       {isLoading ? (
         <Card>
           <CardContent className="p-0">
-            {[1,2,3,4,5].map(i => (
-              <div key={i} className="flex items-start gap-4 px-5 py-4 border-b border-[hsl(var(--border))] last:border-0">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <div
+                key={i}
+                className="flex items-start gap-4 px-5 py-4 border-b border-[hsl(var(--border))] last:border-0"
+              >
                 <Skeleton className="w-10 h-10 rounded-full shrink-0" />
                 <div className="flex-1 space-y-2">
                   <Skeleton className="h-4 w-3/4" />
@@ -228,8 +297,8 @@ export function NotificationsClient() {
               <NotificationItem
                 key={notif.id}
                 notif={notif}
-                onRead={id => readMutation.mutate(id)}
-                onDelete={id => deleteMutation.mutate(id)}
+                onRead={(id) => readMutation.mutate(id)}
+                onDelete={(id) => deleteMutation.mutate(id)}
               />
             ))}
           </CardContent>

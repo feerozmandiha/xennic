@@ -4,24 +4,21 @@ import { useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
-import {
-  Building2, Sparkles, Users, Settings, Zap,
-  ArrowRight, CheckCircle2, Loader2,
-} from 'lucide-react';
+import { Building2, Sparkles, Users, Settings, Zap, CheckCircle2, Loader2 } from 'lucide-react';
 import { useAuthStore } from '@/stores/auth.store';
 import { apiClient } from '@/lib/api/client';
 import { cn } from '@/lib/utils';
 
 export function WorkspaceWelcomeClient() {
-  const router      = useRouter();
-  const params      = useParams();
-  const locale      = (params?.locale as string) ?? 'fa';
-  const wsId        = useAuthStore(s => s.workspaceId);
-  const setWorkspace = useAuthStore(s => s.setWorkspace);
+  const router = useRouter();
+  const params = useParams();
+  const locale = (params?.locale as string) ?? 'fa';
+  const wsId = useAuthStore((s) => s.workspaceId);
+  const setWorkspace = useAuthStore((s) => s.setWorkspace);
 
   const { data, isLoading } = useQuery({
     queryKey: ['workspaces-list'],
-    queryFn:  () => apiClient.get<any>('/workspaces?limit=20'),
+    queryFn: () => apiClient.get<any>('/workspaces?limit=20'),
     retry: false,
   });
 
@@ -51,7 +48,6 @@ export function WorkspaceWelcomeClient() {
   return (
     <div className="min-h-[70vh] flex items-center justify-center">
       <div className="w-full max-w-2xl mx-auto text-center">
-
         {/* ── Illustration ── */}
         <div className="w-20 h-20 rounded-2xl bg-[hsl(var(--primary)/0.1)] flex items-center justify-center mx-auto mb-6">
           <Building2 className="h-10 w-10 text-[hsl(var(--primary))]" />
@@ -98,12 +94,17 @@ export function WorkspaceWelcomeClient() {
               desc: 'برند، محلی‌سازی و پیش‌فرض‌های محاسباتی را تنظیم کنید',
             },
           ].map((f, i) => (
-            <div key={i} className="p-4 rounded-[var(--radius-lg)] border border-[hsl(var(--border))] bg-[hsl(var(--card))]">
+            <div
+              key={i}
+              className="p-4 rounded-[var(--radius-lg)] border border-[hsl(var(--border))] bg-[hsl(var(--card))]"
+            >
               <div className="w-10 h-10 rounded-[var(--radius)] bg-[hsl(var(--primary)/0.08)] flex items-center justify-center mb-3">
                 <f.icon className="h-5 w-5 text-[hsl(var(--primary))]" />
               </div>
               <h3 className="text-sm font-semibold mb-1">{f.title}</h3>
-              <p className="text-xs text-[hsl(var(--muted-foreground))] leading-relaxed">{f.desc}</p>
+              <p className="text-xs text-[hsl(var(--muted-foreground))] leading-relaxed">
+                {f.desc}
+              </p>
             </div>
           ))}
         </div>
@@ -115,13 +116,15 @@ export function WorkspaceWelcomeClient() {
             'همکاران را دعوت کنید و نقش‌ها را تعیین کنید',
             'محاسبات مهندسی خود را شروع کنید',
           ].map((step, i) => (
-            <div key={i} className="flex items-start gap-2.5 text-sm text-[hsl(var(--muted-foreground))]">
+            <div
+              key={i}
+              className="flex items-start gap-2.5 text-sm text-[hsl(var(--muted-foreground))]"
+            >
               <CheckCircle2 className="h-4 w-4 text-[hsl(var(--primary)/0.6)] shrink-0 mt-0.5" />
               <span>{step}</span>
             </div>
           ))}
         </div>
-
       </div>
     </div>
   );

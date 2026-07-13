@@ -4,39 +4,40 @@ import { useState } from 'react';
 import { useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import {
-  ArrowLeft, FolderKanban, Users, FileText,
-  Plus, Trash2, Calendar, Zap, MoreHorizontal,
-} from 'lucide-react';
+import { ArrowLeft, Users, FileText, Plus, Trash2, Zap } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge }    from '@/components/ui/badge';
+import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { PageHeader } from '@/components/ui/page-header';
 import * as Dialog from '@radix-ui/react-dialog';
-import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import { useAuthStore } from '@/stores/auth.store';
-import { useToast }     from '@/stores/toast.store';
-import { apiClient }    from '@/lib/api/client';
-import { cn }           from '@/lib/utils';
+import { useToast } from '@/stores/toast.store';
+import { apiClient } from '@/lib/api/client';
 
 const STATUS_VARIANT: Record<string, any> = {
-  active:    'success',
+  active: 'success',
   completed: 'secondary',
-  archived:  'secondary',
+  archived: 'secondary',
   cancelled: 'destructive',
 };
 
 const STATUS_FA: Record<string, string> = {
-  active:    'فعال',
+  active: 'فعال',
   completed: 'تکمیل‌شده',
-  archived:  'آرشیو',
+  archived: 'آرشیو',
   cancelled: 'لغوشده',
 };
 
 // ── Add Note Modal ────────────────────────────────────────────────────────────
 
-function AddNoteModal({ projectId, onClose, open }: {
-  projectId: string; open: boolean; onClose: () => void;
+function AddNoteModal({
+  projectId,
+  onClose,
+  open,
+}: {
+  projectId: string;
+  open: boolean;
+  onClose: () => void;
 }) {
   const [content, setContent] = useState('');
   const queryClient = useQueryClient();
@@ -54,7 +55,7 @@ function AddNoteModal({ projectId, onClose, open }: {
   });
 
   return (
-    <Dialog.Root open={open} onOpenChange={v => !v && onClose()}>
+    <Dialog.Root open={open} onOpenChange={(v) => !v && onClose()}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm animate-fade-in" />
         <Dialog.Content className="fixed left-1/2 top-1/2 z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2 rounded-[var(--radius-xl)] border border-[hsl(var(--border))] bg-[hsl(var(--card))] shadow-xl p-6 animate-fade-in focus:outline-none">
@@ -66,7 +67,7 @@ function AddNoteModal({ projectId, onClose, open }: {
           </div>
           <textarea
             value={content}
-            onChange={e => setContent(e.target.value)}
+            onChange={(e) => setContent(e.target.value)}
             placeholder="یادداشت خود را بنویسید..."
             rows={4}
             autoFocus
@@ -96,34 +97,33 @@ function AddNoteModal({ projectId, onClose, open }: {
 // ── Main ──────────────────────────────────────────────────────────────────────
 
 export function ProjectDetailClient({ projectId }: { projectId: string }) {
-  const t           = useTranslations('projects');
-  const tCommon     = useTranslations('common');
-  const params      = useParams();
-  const locale      = (params?.locale as string) ?? 'fa';
-  const wsId        = useAuthStore(s => s.workspaceId);
-  const toast       = useToast();
+  const t = useTranslations('projects');
+  const params = useParams();
+  const locale = (params?.locale as string) ?? 'fa';
+  const wsId = useAuthStore((s) => s.workspaceId);
+  const toast = useToast();
   const queryClient = useQueryClient();
   const [addNote, setAddNote] = useState(false);
 
   // Project data
   const { data: proj, isLoading } = useQuery({
     queryKey: ['project', projectId],
-    queryFn:  () => apiClient.get<any>(`/projects/${projectId}`),
-    enabled:  !!wsId,
+    queryFn: () => apiClient.get<any>(`/projects/${projectId}`),
+    enabled: !!wsId,
   });
 
   // Notes
   const { data: notesData } = useQuery({
     queryKey: ['project-notes', projectId],
-    queryFn:  () => apiClient.get<any>(`/projects/${projectId}/notes`),
-    enabled:  !!wsId,
+    queryFn: () => apiClient.get<any>(`/projects/${projectId}/notes`),
+    enabled: !!wsId,
   });
 
   // Members
   const { data: membersData } = useQuery({
     queryKey: ['project-members', projectId],
-    queryFn:  () => apiClient.get<any>(`/projects/${projectId}/members`),
-    enabled:  !!wsId,
+    queryFn: () => apiClient.get<any>(`/projects/${projectId}/members`),
+    enabled: !!wsId,
   });
 
   // Delete note
@@ -136,7 +136,7 @@ export function ProjectDetailClient({ projectId }: { projectId: string }) {
   });
 
   const project = proj?.data;
-  const notes   = notesData?.data ?? [];
+  const notes = notesData?.data ?? [];
   const members = membersData?.data ?? [];
 
   if (isLoading) {
@@ -155,7 +155,10 @@ export function ProjectDetailClient({ projectId }: { projectId: string }) {
     return (
       <div className="text-center py-20">
         <p className="text-[hsl(var(--muted-foreground))]">پروژه یافت نشد</p>
-        <a href={`/${locale}/projects`} className="text-[hsl(var(--primary))] text-sm hover:underline mt-2 inline-block">
+        <a
+          href={`/${locale}/projects`}
+          className="text-[hsl(var(--primary))] text-sm hover:underline mt-2 inline-block"
+        >
           بازگشت به پروژه‌ها
         </a>
       </div>
@@ -196,7 +199,7 @@ export function ProjectDetailClient({ projectId }: { projectId: string }) {
               : '—',
             icon: '📅',
           },
-        ].map(item => (
+        ].map((item) => (
           <Card key={item.label}>
             <CardContent className="p-4 flex items-center gap-3">
               <span className="text-2xl">{item.icon}</span>
@@ -210,7 +213,6 @@ export function ProjectDetailClient({ projectId }: { projectId: string }) {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-
         {/* Notes */}
         <Card className="lg:col-span-2">
           <CardHeader className="flex flex-row items-center justify-between pb-3">
@@ -230,7 +232,10 @@ export function ProjectDetailClient({ projectId }: { projectId: string }) {
             {notes.length > 0 ? (
               <ul className="divide-y divide-[hsl(var(--border))]">
                 {notes.map((note: any) => (
-                  <li key={note.id} className="flex items-start gap-3 px-5 py-3 group hover:bg-[hsl(var(--secondary)/0.3)] transition-colors">
+                  <li
+                    key={note.id}
+                    className="flex items-start gap-3 px-5 py-3 group hover:bg-[hsl(var(--secondary)/0.3)] transition-colors"
+                  >
                     <div className="flex-1 min-w-0">
                       <p className="text-sm leading-relaxed">{note.content}</p>
                       <p className="text-[10px] text-[hsl(var(--muted-foreground))] mt-1">
@@ -283,7 +288,9 @@ export function ProjectDetailClient({ projectId }: { projectId: string }) {
                       </div>
                       <div className="min-w-0 flex-1">
                         <p className="text-xs truncate">{m.userId?.slice(0, 8)}...</p>
-                        <Badge variant="secondary" className="text-[9px] py-0 mt-0.5">{m.role}</Badge>
+                        <Badge variant="secondary" className="text-[9px] py-0 mt-0.5">
+                          {m.role}
+                        </Badge>
                       </div>
                     </li>
                   ))}
@@ -315,11 +322,7 @@ export function ProjectDetailClient({ projectId }: { projectId: string }) {
         </div>
       </div>
 
-      <AddNoteModal
-        projectId={projectId}
-        open={addNote}
-        onClose={() => setAddNote(false)}
-      />
+      <AddNoteModal projectId={projectId} open={addNote} onClose={() => setAddNote(false)} />
     </div>
   );
 }

@@ -1,15 +1,13 @@
 'use client';
 
-import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useParams } from 'next/navigation';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { ShoppingCart, Eye } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent } from '@/components/ui/card';
 import { useAuthStore } from '@/stores/auth.store';
-import { useToast } from '@/stores/toast.store';
 import { apiClient } from '@/lib/api/client';
 
 const STATUS_VARIANT: Record<string, 'success' | 'secondary' | 'warning' | 'destructive'> = {
@@ -26,7 +24,7 @@ export function OrderList() {
   const t = useTranslations('marketplace');
   const params = useParams();
   const locale = (params?.locale as string) ?? 'fa';
-  const wsId = useAuthStore(s => s.workspaceId);
+  const wsId = useAuthStore((s) => s.workspaceId);
 
   const { data, isLoading } = useQuery({
     queryKey: ['marketplace', 'orders', wsId],
@@ -40,7 +38,9 @@ export function OrderList() {
 
   return (
     <div>
-      <p className="text-sm text-[hsl(var(--muted-foreground))] mb-4">{total} {t('orders')}</p>
+      <p className="text-sm text-[hsl(var(--muted-foreground))] mb-4">
+        {total} {t('orders')}
+      </p>
 
       {isLoading ? (
         <div className="space-y-3">
@@ -60,7 +60,8 @@ export function OrderList() {
                   <div>
                     <p className="text-sm font-medium">{o.id.slice(0, 8)}...</p>
                     <p className="text-xs text-[hsl(var(--muted-foreground))]">
-                      {new Date(o.createdAt).toLocaleDateString('fa-IR')} · {o.items?.length ?? 0} {t('items')}
+                      {new Date(o.createdAt).toLocaleDateString('fa-IR')} · {o.items?.length ?? 0}{' '}
+                      {t('items')}
                     </p>
                   </div>
                 </div>

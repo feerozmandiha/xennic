@@ -4,8 +4,17 @@ import { useState, useEffect } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import {
-  CheckCircle2, CreditCard, ArrowRight, Loader2, Shield,
-  Zap, Crown, Building2, CheckCheck, XCircle, ArrowLeft,
+  CheckCircle2,
+  CreditCard,
+  ArrowRight,
+  Loader2,
+  Shield,
+  Zap,
+  Crown,
+  Building2,
+  CheckCheck,
+  XCircle,
+  ArrowLeft,
 } from 'lucide-react';
 import { apiClient } from '@/lib/api/client';
 import { useAuthStore } from '@/stores/auth.store';
@@ -15,14 +24,16 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
-const CALLBACK_URL = typeof window !== 'undefined'
-  ? `${window.location.origin}/api/v1/billing/callback`
-  : '';
+const CALLBACK_URL =
+  typeof window !== 'undefined' ? `${window.location.origin}/api/v1/billing/callback` : '';
 
-const PLAN_CONFIG: Record<string, { icon: React.ElementType; color: string; monthlyPrice: string }> = {
-  free:       { icon: Zap,      color: 'hsl(var(--muted-foreground))', monthlyPrice: 'رایگان' },
-  pro:        { icon: Crown,    color: 'hsl(var(--primary))',          monthlyPrice: '' },
-  enterprise: { icon: Building2, color: 'hsl(var(--foreground))',     monthlyPrice: '' },
+const PLAN_CONFIG: Record<
+  string,
+  { icon: React.ElementType; color: string; monthlyPrice: string }
+> = {
+  free: { icon: Zap, color: 'hsl(var(--muted-foreground))', monthlyPrice: 'رایگان' },
+  pro: { icon: Crown, color: 'hsl(var(--primary))', monthlyPrice: '' },
+  enterprise: { icon: Building2, color: 'hsl(var(--foreground))', monthlyPrice: '' },
 };
 
 export function CheckoutClient() {
@@ -30,13 +41,12 @@ export function CheckoutClient() {
   const params = useParams();
   const router = useRouter();
   const locale = (params?.locale as string) ?? 'fa';
-  const wsId = useAuthStore(s => s.workspaceId);
-  const token = useAuthStore(s => s.token);
+  const wsId = useAuthStore((s) => s.workspaceId);
+  const token = useAuthStore((s) => s.token);
   const toast = useToast();
 
   const planSlug = searchParams?.get('plan') ?? 'pro';
 
-  const [loading, setLoading] = useState(false);
   const [step, setStep] = useState<'info' | 'processing' | 'redirecting'>('info');
   const [paymentStatus, setPaymentStatus] = useState<'success' | 'failed' | null>(null);
 
@@ -84,7 +94,6 @@ export function CheckoutClient() {
   async function handlePay() {
     if (!wsId || !token || !selectedPlan) return;
 
-    setLoading(true);
     setStep('processing');
 
     try {
@@ -119,7 +128,6 @@ export function CheckoutClient() {
       }
     } catch (err: any) {
       toast.error(err?.message ?? 'خطا در اتصال به درگاه پرداخت');
-      setLoading(false);
       setStep('info');
     }
   }
@@ -128,7 +136,9 @@ export function CheckoutClient() {
     return (
       <div className="max-w-lg mx-auto mt-12 text-center space-y-4">
         <p className="text-[hsl(var(--muted-foreground))]">پلن مورد نظر یافت نشد</p>
-        <Button onClick={() => router.push(`/${locale}/settings?tab=plan`)}>بازگشت به صفحه اشتراک</Button>
+        <Button onClick={() => router.push(`/${locale}/settings?tab=plan`)}>
+          بازگشت به صفحه اشتراک
+        </Button>
       </div>
     );
   }
@@ -163,14 +173,18 @@ export function CheckoutClient() {
             <XCircle className="h-6 w-6 text-red-600 shrink-0" />
             <div>
               <p className="font-semibold">پرداخت ناموفق</p>
-              <p className="text-sm text-[hsl(var(--muted-foreground))]">پرداخت تأیید نشد. لطفاً مجدداً تلاش کنید.</p>
+              <p className="text-sm text-[hsl(var(--muted-foreground))]">
+                پرداخت تأیید نشد. لطفاً مجدداً تلاش کنید.
+              </p>
             </div>
           </CardContent>
         </Card>
       )}
 
       {/* Plan Summary */}
-      <Card className={cn('border', planSlug === 'pro' && 'border-[#3b82f6]/30 bg-[#3b82f6]/[0.03]')}>
+      <Card
+        className={cn('border', planSlug === 'pro' && 'border-[#3b82f6]/30 bg-[#3b82f6]/[0.03]')}
+      >
         <CardContent className="p-6 space-y-5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5">
@@ -182,7 +196,9 @@ export function CheckoutClient() {
                 <p className="text-xl font-bold">{selectedPlan?.name ?? planSlug}</p>
               </div>
             </div>
-            <Badge variant="default" className="text-sm px-3 py-1">{selectedPlan?.name ?? planSlug}</Badge>
+            <Badge variant="default" className="text-sm px-3 py-1">
+              {selectedPlan?.name ?? planSlug}
+            </Badge>
           </div>
 
           <div className="flex items-end gap-1 pb-4 border-b border-[hsl(var(--border))]">
@@ -195,7 +211,9 @@ export function CheckoutClient() {
                 <span className="text-4xl font-black tabular-nums">
                   {monthlyPrice.toLocaleString('fa-IR')}
                 </span>
-                <span className="text-sm text-[hsl(var(--muted-foreground))] pb-1">تومان / ماه</span>
+                <span className="text-sm text-[hsl(var(--muted-foreground))] pb-1">
+                  تومان / ماه
+                </span>
               </>
             )}
           </div>
@@ -203,7 +221,10 @@ export function CheckoutClient() {
           {selectedPlan?.features && (
             <ul className="space-y-2.5">
               {Object.entries(selectedPlan.features as Record<string, any>).map(([key, val]) => (
-                <li key={key} className="flex items-start gap-2.5 text-sm text-[hsl(var(--foreground)/0.7)]">
+                <li
+                  key={key}
+                  className="flex items-start gap-2.5 text-sm text-[hsl(var(--foreground)/0.7)]"
+                >
                   <CheckCircle2 className="h-4 w-4 text-green-600 shrink-0 mt-0.5" />
                   {typeof val === 'boolean' ? (val ? key : null) : `${key}: ${val}`}
                 </li>
@@ -230,12 +251,21 @@ export function CheckoutClient() {
               </span>
             </div>
 
-            <Button onClick={handlePay} disabled={isProcessing}
-              className="w-full h-11 text-base font-semibold">
+            <Button
+              onClick={handlePay}
+              disabled={isProcessing}
+              className="w-full h-11 text-base font-semibold"
+            >
               {isProcessing ? (
-                <><Loader2 className="h-4 w-4 animate-spin" />{step === 'redirecting' ? 'در حال انتقال به درگاه پرداخت...' : 'در حال پردازش...'}</>
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  {step === 'redirecting' ? 'در حال انتقال به درگاه پرداخت...' : 'در حال پردازش...'}
+                </>
               ) : (
-                <>پرداخت {monthlyPrice.toLocaleString('fa-IR')} تومان<ArrowRight className="h-4 w-4 mr-1" /></>
+                <>
+                  پرداخت {monthlyPrice.toLocaleString('fa-IR')} تومان
+                  <ArrowRight className="h-4 w-4 mr-1" />
+                </>
               )}
             </Button>
 
@@ -249,7 +279,9 @@ export function CheckoutClient() {
       {(planSlug === 'free' || planSlug === 'enterprise') && (
         <div className="text-center space-y-4">
           <p className="text-sm text-[hsl(var(--muted-foreground))]">
-            {planSlug === 'free' ? 'پلن رایگان نیاز به پرداخت ندارد.' : 'برای پلن سازمانی با تیم فروش تماس بگیرید.'}
+            {planSlug === 'free'
+              ? 'پلن رایگان نیاز به پرداخت ندارد.'
+              : 'برای پلن سازمانی با تیم فروش تماس بگیرید.'}
           </p>
           <Button onClick={() => router.push(`/${locale}/settings?tab=plan`)}>
             <ArrowLeft className="h-4 w-4 ml-1 rtl:rotate-180" />
@@ -260,8 +292,8 @@ export function CheckoutClient() {
 
       <Card className="border-yellow-200 bg-yellow-50">
         <CardContent className="p-4 text-xs text-[hsl(var(--muted-foreground))] leading-relaxed">
-          پس از پرداخت موفق، اشتراک شما بلافاصله فعال می‌شود.
-          در صورت لغو در هر زمان، تا پایان دوره صورتحساب به امکانات Pro دسترسی دارید.
+          پس از پرداخت موفق، اشتراک شما بلافاصله فعال می‌شود. در صورت لغو در هر زمان، تا پایان دوره
+          صورتحساب به امکانات Pro دسترسی دارید.
         </CardContent>
       </Card>
     </div>

@@ -3,16 +3,12 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import {
-  Zap, ArrowRight, ChevronDown,
-  Shield, TrendingUp, Star,
-  Menu, X,
-} from 'lucide-react';
+import { Zap, ArrowRight, ChevronDown, Shield, TrendingUp, Star, Menu, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/stores/auth.store';
 import { UserStatus } from '@/components/layout/user-status';
 import { LanguageSwitcher } from '@/components/layout/language-switcher';
-import { ThemeToggle } from '@/components/layout/theme-toggle';  // ✅ اضافه کردن import
+import { ThemeToggle } from '@/components/layout/theme-toggle'; // ✅ اضافه کردن import
 import { FeaturesSection } from './features-section';
 import { PricingSection } from './pricing-section';
 import { ArticlesSection } from './articles-section';
@@ -26,8 +22,8 @@ import { CalculationsSection } from './calculations-section';
 
 function Navbar({ locale }: { locale: string }) {
   const [scrolled, setScrolled] = useState(false);
-  const [open, setOpen]         = useState(false);
-  const isAuth = useAuthStore(s => s.isAuthenticated);
+  const [open, setOpen] = useState(false);
+  const isAuth = useAuthStore((s) => s.isAuthenticated);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
@@ -36,30 +32,34 @@ function Navbar({ locale }: { locale: string }) {
   }, []);
 
   const links: { label: string; href: string }[] = [
-    { label: 'صفحه اصلی',  href: `/${locale}` },
-    { label: 'محاسبات',    href: isAuth ? `/${locale}/engineering` : '#calculations' },
-    { label: 'مقالات',     href: `/${locale}/articles` },
-    { label: 'درباره ما',  href: `/${locale}/about` },
-    { label: 'تماس',       href: `/${locale}/contact` },
+    { label: 'صفحه اصلی', href: `/${locale}` },
+    { label: 'محاسبات', href: isAuth ? `/${locale}/engineering` : '#calculations' },
+    { label: 'مقالات', href: `/${locale}/articles` },
+    { label: 'درباره ما', href: `/${locale}/about` },
+    { label: 'تماس', href: `/${locale}/contact` },
   ];
 
   return (
-    <header className={cn(
-      'fixed inset-x-0 top-0 z-50 transition-all duration-300',
-      scrolled
-        ? 'bg-[hsl(var(--background)/0.9)] backdrop-blur-xl border-b border-[hsl(var(--border))] shadow-lg'
-        : 'bg-transparent',
-    )}>
+    <header
+      className={cn(
+        'fixed inset-x-0 top-0 z-50 transition-all duration-300',
+        scrolled
+          ? 'bg-[hsl(var(--background)/0.9)] backdrop-blur-xl border-b border-[hsl(var(--border))] shadow-lg'
+          : 'bg-transparent',
+      )}
+    >
       <div className="max-w-7xl mx-auto px-5 h-16 flex items-center justify-between gap-4">
         <Link href={`/${locale}`} className="flex items-center gap-2.5 shrink-0">
           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--accent))] flex items-center justify-center shadow-[0_0_16px_hsl(var(--primary)/0.3)]">
             <Zap className="h-4 w-4 text-white" />
           </div>
-          <span className="font-bold text-[hsl(var(--foreground))] tracking-wide text-lg">Xennic</span>
+          <span className="font-bold text-[hsl(var(--foreground))] tracking-wide text-lg">
+            Xennic
+          </span>
         </Link>
 
         <nav className="hidden md:flex items-center gap-1">
-          {links.map(l => (
+          {links.map((l) => (
             <Link
               key={l.href}
               href={l.href}
@@ -72,21 +72,21 @@ function Navbar({ locale }: { locale: string }) {
 
         <div className="hidden md:flex items-center gap-2">
           <LanguageSwitcher />
-          <ThemeToggle />  {/* ✅ استفاده از کامپوننت اصلی */}
+          <ThemeToggle /> {/* ✅ استفاده از کامپوننت اصلی */}
           <UserStatus />
         </div>
 
         <button
-          onClick={() => setOpen(o => !o)}
+          onClick={() => setOpen((o) => !o)}
           className="md:hidden w-9 h-9 flex items-center justify-center rounded-lg text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] hover:bg-[hsl(var(--secondary))] transition-colors"
         >
-          {open ? <Menu className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </button>
       </div>
 
       {open && (
         <div className="md:hidden bg-[hsl(var(--background)/0.98)] border-b border-[hsl(var(--border))] px-5 pb-5 space-y-1 animate-slide-down">
-          {links.map(l => (
+          {links.map((l) => (
             <Link
               key={l.href}
               href={l.href}
@@ -98,7 +98,7 @@ function Navbar({ locale }: { locale: string }) {
           ))}
           <div className="pt-3 flex items-center gap-2 border-t border-[hsl(var(--border))]">
             <LanguageSwitcher />
-            <ThemeToggle />  {/* ✅ استفاده از کامپوننت اصلی */}
+            <ThemeToggle /> {/* ✅ استفاده از کامپوننت اصلی */}
           </div>
           <UserStatus variant="mobile" />
         </div>
@@ -106,7 +106,6 @@ function Navbar({ locale }: { locale: string }) {
     </header>
   );
 }
-
 
 // ─────────────────────────────────────────────────────────────
 // HERO SECTION
@@ -119,7 +118,8 @@ function HeroSection({ locale }: { locale: string }) {
       <div
         className="absolute inset-0 opacity-[0.03]"
         style={{
-          backgroundImage: 'linear-gradient(rgba(255,255,255,0.8) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.8) 1px, transparent 1px)',
+          backgroundImage:
+            'linear-gradient(rgba(255,255,255,0.8) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.8) 1px, transparent 1px)',
           backgroundSize: '60px 60px',
         }}
       />
@@ -148,12 +148,11 @@ function HeroSection({ locale }: { locale: string }) {
               هوشمند
             </span>
             <br />
-            با استانداردهای{' '}
-            <span className="text-[hsl(var(--foreground))/0.8]">IEC / IEEE</span>
+            با استانداردهای <span className="text-[hsl(var(--foreground))/0.8]">IEC / IEEE</span>
           </h1>
           <p className="text-base sm:text-lg text-[hsl(var(--muted-foreground))] max-w-2xl mx-auto leading-relaxed text-pretty">
-            از طراحی کابل تا آنالیز کیفیت توان، از خورشیدی تا شبکه هوشمند —
-            همه محاسبات تخصصی شما در یک پلتفرم یکپارچه
+            از طراحی کابل تا آنالیز کیفیت توان، از خورشیدی تا شبکه هوشمند — همه محاسبات تخصصی شما در
+            یک پلتفرم یکپارچه
           </p>
         </div>
 
@@ -180,9 +179,9 @@ function HeroSection({ locale }: { locale: string }) {
         <div className="flex flex-wrap items-center justify-center gap-6 pt-2 animate-fade-in stagger-3">
           {[
             { v: '۲۰+', l: 'محاسبه استاندارد' },
-            { v: 'IEC',  l: '60364 / 60076' },
+            { v: 'IEC', l: '60364 / 60076' },
             { v: 'IEEE', l: '519 / C57.110' },
-            { v: 'RTL',  l: 'پشتیبانی فارسی' },
+            { v: 'RTL', l: 'پشتیبانی فارسی' },
           ].map(({ v, l }) => (
             <div key={v} className="text-center">
               <p className="text-lg font-bold text-[hsl(var(--foreground))]">{v}</p>
@@ -213,13 +212,25 @@ function HeroSection({ locale }: { locale: string }) {
 
 function TerminalMockup() {
   const lines = [
-    { t: 100,  text: '$ xennic calc --type PQ-001 --thd 8.3%',  color: 'text-[hsl(var(--primary))/0.8]' },
-    { t: 600,  text: '  ✓ THD Analysis (IEEE 519-2022)',          color: 'text-[hsl(var(--foreground))/0.4]' },
-    { t: 900,  text: '  → THD_I = 8.3% > 5% (Limit)',           color: 'text-[hsl(var(--destructive))/0.8]' },
-    { t: 1100, text: '  → Recommendation: 5th Harmonic Filter',  color: 'text-[hsl(var(--warning))/0.8]' },
-    { t: 1400, text: '  → C = 147.3 μF  |  L = 12.4 mH',       color: 'text-[hsl(var(--success))/0.8]' },
-    { t: 1700, text: '  ✓ Completed in 42ms',                    color: 'text-[hsl(var(--success))/0.8]' },
-    { t: 2000, text: '$ _',                                       color: 'text-[hsl(var(--primary))/0.8]' },
+    {
+      t: 100,
+      text: '$ xennic calc --type PQ-001 --thd 8.3%',
+      color: 'text-[hsl(var(--primary))/0.8]',
+    },
+    {
+      t: 600,
+      text: '  ✓ THD Analysis (IEEE 519-2022)',
+      color: 'text-[hsl(var(--foreground))/0.4]',
+    },
+    { t: 900, text: '  → THD_I = 8.3% > 5% (Limit)', color: 'text-[hsl(var(--destructive))/0.8]' },
+    {
+      t: 1100,
+      text: '  → Recommendation: 5th Harmonic Filter',
+      color: 'text-[hsl(var(--warning))/0.8]',
+    },
+    { t: 1400, text: '  → C = 147.3 μF  |  L = 12.4 mH', color: 'text-[hsl(var(--success))/0.8]' },
+    { t: 1700, text: '  ✓ Completed in 42ms', color: 'text-[hsl(var(--success))/0.8]' },
+    { t: 2000, text: '$ _', color: 'text-[hsl(var(--primary))/0.8]' },
   ];
 
   const [visible, setVisible] = useState(0);
@@ -234,21 +245,25 @@ function TerminalMockup() {
   return (
     <div
       className="rounded-2xl overflow-hidden border border-[hsl(var(--border))/0.5]"
-      style={{ background: 'hsl(var(--card)/0.9)', backdropFilter: 'blur(20px)', boxShadow: '0 25px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05)' }}
+      style={{
+        background: 'hsl(var(--card)/0.9)',
+        backdropFilter: 'blur(20px)',
+        boxShadow: '0 25px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05)',
+      }}
     >
       <div className="flex items-center gap-2 px-4 py-3 border-b border-[hsl(var(--border))/0.5]">
         <span className="w-3 h-3 rounded-full bg-[#ff5f57]" />
         <span className="w-3 h-3 rounded-full bg-[#ffbd2e]" />
         <span className="w-3 h-3 rounded-full bg-[#28c840]" />
-        <span className="flex-1 text-center text-[11px] text-[hsl(var(--foreground))/0.2] font-mono">xennic-cli — bash</span>
+        <span className="flex-1 text-center text-[11px] text-[hsl(var(--foreground))/0.2] font-mono">
+          xennic-cli — bash
+        </span>
       </div>
       <div className="p-5 font-mono text-sm space-y-1 min-h-[180px]">
         {lines.slice(0, visible).map((l, i) => (
           <div key={i} className={cn('leading-relaxed', l.color, 'animate-fade-in-fast')}>
             {l.text}
-            {i === visible - 1 && l.text.endsWith('_') && (
-              <span className="animate-pulse">|</span>
-            )}
+            {i === visible - 1 && l.text.endsWith('_') && <span className="animate-pulse">|</span>}
           </div>
         ))}
       </div>
@@ -270,9 +285,12 @@ function CTASection({ locale }: { locale: string }) {
 
       <div className="relative z-10 max-w-4xl mx-auto px-5 text-center space-y-8">
         <div className="space-y-4">
-          <p className="text-xs text-[hsl(var(--primary))] font-mono uppercase tracking-[0.2em]">// شروع کنید</p>
+          <p className="text-xs text-[hsl(var(--primary))] font-mono uppercase tracking-[0.2em]">
+            // شروع کنید
+          </p>
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-[hsl(var(--foreground))] text-balance">
-            محاسبات مهندسی خود را<br />
+            محاسبات مهندسی خود را
+            <br />
             <span
               style={{
                 background: `linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)))`,
@@ -306,11 +324,14 @@ function CTASection({ locale }: { locale: string }) {
 
         <div className="flex flex-wrap items-center justify-center gap-6 pt-4">
           {[
-            { icon: Shield,    text: 'امنیت کامل' },
+            { icon: Shield, text: 'امنیت کامل' },
             { icon: TrendingUp, text: 'بروزرسانی مداوم' },
-            { icon: Star,      text: 'پشتیبانی فارسی' },
+            { icon: Star, text: 'پشتیبانی فارسی' },
           ].map(({ icon: Icon, text }) => (
-            <div key={text} className="flex items-center gap-2 text-xs text-[hsl(var(--foreground))/0.3]">
+            <div
+              key={text}
+              className="flex items-center gap-2 text-xs text-[hsl(var(--foreground))/0.3]"
+            >
               <Icon className="h-3.5 w-3.5" />
               {text}
             </div>
@@ -338,8 +359,8 @@ function Footer({ locale }: { locale: string }) {
               <span className="font-bold text-[hsl(var(--foreground))] text-lg">Xennic</span>
             </div>
             <p className="text-sm text-[hsl(var(--foreground))/0.35] leading-relaxed max-w-xs">
-              پلتفرم تخصصی محاسبات مهندسی برق، کیفیت توان و انرژی‌های تجدیدپذیر
-              با استانداردهای IEC و IEEE
+              پلتفرم تخصصی محاسبات مهندسی برق، کیفیت توان و انرژی‌های تجدیدپذیر با استانداردهای IEC
+              و IEEE
             </p>
             <div className="flex items-center gap-2 text-xs text-[hsl(var(--foreground))/0.2] font-mono">
               <span className="w-1.5 h-1.5 rounded-full bg-[hsl(var(--success))] animate-pulse" />
@@ -348,16 +369,21 @@ function Footer({ locale }: { locale: string }) {
           </div>
 
           <div>
-            <h4 className="text-xs font-semibold text-[hsl(var(--foreground))/0.5] uppercase tracking-wider mb-4">محصول</h4>
+            <h4 className="text-xs font-semibold text-[hsl(var(--foreground))/0.5] uppercase tracking-wider mb-4">
+              محصول
+            </h4>
             <ul className="space-y-2.5">
               {[
-                { label: 'ویژگی‌ها',   href: '#features' },
-                { label: 'مقالات',     href: `/${locale}/articles` },
-                { label: 'محاسبات',    href: '#calculations' },
-                { label: 'پلن‌ها',     href: '#pricing' },
+                { label: 'ویژگی‌ها', href: '#features' },
+                { label: 'مقالات', href: `/${locale}/articles` },
+                { label: 'محاسبات', href: '#calculations' },
+                { label: 'پلن‌ها', href: '#pricing' },
               ].map(({ label, href }) => (
                 <li key={label}>
-                  <a href={href} className="text-sm text-[hsl(var(--foreground))/0.35] hover:text-[hsl(var(--foreground))/0.7] transition-colors">
+                  <a
+                    href={href}
+                    className="text-sm text-[hsl(var(--foreground))/0.35] hover:text-[hsl(var(--foreground))/0.7] transition-colors"
+                  >
                     {label}
                   </a>
                 </li>
@@ -366,16 +392,21 @@ function Footer({ locale }: { locale: string }) {
           </div>
 
           <div>
-            <h4 className="text-xs font-semibold text-[hsl(var(--foreground))/0.5] uppercase tracking-wider mb-4">سایر</h4>
+            <h4 className="text-xs font-semibold text-[hsl(var(--foreground))/0.5] uppercase tracking-wider mb-4">
+              سایر
+            </h4>
             <ul className="space-y-2.5">
               {[
                 { label: 'درباره ما', href: `/${locale}/about` },
-                { label: 'تماس',      href: `/${locale}/contact` },
-                { label: 'ورود',     href: `/${locale}/login` },
+                { label: 'تماس', href: `/${locale}/contact` },
+                { label: 'ورود', href: `/${locale}/login` },
                 { label: 'ثبت‌نام', href: `/${locale}/register` },
               ].map(({ label, href }) => (
                 <li key={label}>
-                  <a href={href} className="text-sm text-[hsl(var(--foreground))/0.35] hover:text-[hsl(var(--foreground))/0.7] transition-colors">
+                  <a
+                    href={href}
+                    className="text-sm text-[hsl(var(--foreground))/0.35] hover:text-[hsl(var(--foreground))/0.7] transition-colors"
+                  >
                     {label}
                   </a>
                 </li>
@@ -388,9 +419,7 @@ function Footer({ locale }: { locale: string }) {
           <p className="text-xs text-[hsl(var(--foreground))/0.2]">
             © ۱۴۰۴ Xennic — تمام حقوق محفوظ است
           </p>
-          <p className="text-xs text-[hsl(var(--foreground))/0.15] font-mono">
-            v1.0.0-beta
-          </p>
+          <p className="text-xs text-[hsl(var(--foreground))/0.15] font-mono">v1.0.0-beta</p>
         </div>
       </div>
     </footer>

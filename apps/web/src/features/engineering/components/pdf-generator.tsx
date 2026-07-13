@@ -186,10 +186,10 @@ export async function downloadPDF(data: ReportData): Promise<void> {
     });
 
     const inputEntries = Object.entries(data.inputs || {}).filter(
-      ([, v]) => v !== null && v !== undefined && typeof v !== 'object'
+      ([, v]) => v !== null && v !== undefined && typeof v !== 'object',
     );
     const resultEntries = Object.entries(data.results || {}).filter(
-      ([k, v]) => v !== null && v !== undefined && typeof v !== 'object' && !k.startsWith('_')
+      ([k, v]) => v !== null && v !== undefined && typeof v !== 'object' && !k.startsWith('_'),
     );
 
     // ── ایجاد Document ──────────────────────────────────────────────────────
@@ -268,7 +268,12 @@ export async function downloadPDF(data: ReportData): Promise<void> {
                     <Text style={[styles.tableCell, { width: '50%', color: colors.muted }]}>
                       {data.fieldLabels?.[key] ?? key}
                     </Text>
-                    <Text style={[styles.tableCell, { width: '50%', fontWeight: 700, color: colors.success }]}>
+                    <Text
+                      style={[
+                        styles.tableCell,
+                        { width: '50%', fontWeight: 700, color: colors.success },
+                      ]}
+                    >
                       {formatValue(key, val, data.units || {})}
                     </Text>
                   </View>
@@ -283,7 +288,9 @@ export async function downloadPDF(data: ReportData): Promise<void> {
               <Text style={[styles.sectionTitle, { color: colors.warning }]}>هشدارها</Text>
               <View style={styles.warningBox}>
                 {data.warnings.map((w, i) => (
-                  <Text key={i} style={styles.warningText}>{i + 1}. {w}</Text>
+                  <Text key={i} style={styles.warningText}>
+                    {i + 1}. {w}
+                  </Text>
                 ))}
               </View>
             </View>
@@ -295,7 +302,9 @@ export async function downloadPDF(data: ReportData): Promise<void> {
               <Text style={[styles.sectionTitle, { color: colors.accent }]}>توصیه‌ها</Text>
               <View style={styles.noteBox}>
                 {data.recommendations.map((r, i) => (
-                  <Text key={i} style={styles.noteText}>{i + 1}. {r}</Text>
+                  <Text key={i} style={styles.noteText}>
+                    {i + 1}. {r}
+                  </Text>
                 ))}
               </View>
             </View>
@@ -319,7 +328,6 @@ export async function downloadPDF(data: ReportData): Promise<void> {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-    
   } catch (error) {
     console.error('PDF Download Error:', error);
     alert('خطا در تولید PDF. لطفاً دوباره تلاش کنید.');
@@ -327,6 +335,6 @@ export async function downloadPDF(data: ReportData): Promise<void> {
 }
 
 // ── کامپوننت برای dynamic import ────────────────────────────────────────────
-export function PDFGenerator({ data }: { data: ReportData }) {
+export function PDFGenerator({ data: _data }: { data: ReportData }) {
   return null; // این کامپوننت فقط برای dynamic import استفاده می‌شود
 }

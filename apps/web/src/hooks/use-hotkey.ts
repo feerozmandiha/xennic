@@ -2,19 +2,13 @@
 
 import { useEffect } from 'react';
 
-export function useHotkey(
-  keys: string[],
-  callback: () => void,
-  enabled = true,
-) {
+export function useHotkey(keys: string[], callback: () => void, enabled = true) {
   useEffect(() => {
     if (!enabled) return;
 
     function handleKeyDown(e: KeyboardEvent) {
       const isMac = navigator.platform.toUpperCase().includes('MAC');
-      const metaKey = isMac ? e.metaKey : e.ctrlKey;
-
-      const isMatch = keys.some(key => {
+      const isMatch = keys.some((key) => {
         const parts = key.toLowerCase().split('+');
         const needsMeta = parts.includes('meta') || parts.includes('ctrl');
         const needsShift = parts.includes('shift');
