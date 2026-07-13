@@ -1,7 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
 import type { ITracer, Span } from '../../domain/interfaces/tracer.interface.js';
 import type { IMetrics } from '../../domain/interfaces/metrics.interface.js';
-import type { IStructuredLogger, LogEntry, LogLevel } from '../../domain/interfaces/structured-logger.interface.js';
+import type {
+  IStructuredLogger,
+  LogEntry,
+  LogLevel,
+} from '../../domain/interfaces/structured-logger.interface.js';
 
 @Injectable()
 export class ObservabilityService implements ITracer, IMetrics, IStructuredLogger {
@@ -73,7 +77,29 @@ export class ObservabilityService implements ITracer, IMetrics, IStructuredLogge
   }
 
   async getMetric(name: string): Promise<number | undefined> {
-    return this.counters.get(name) ?? this.gauges.get(name);
+    const directMetric = this.counters.get(name) ?? this.gauges.get(name);
+    if (directMetric !== undefined) {
+      return directMetric;
+    }
+
+    const labeledPrefix = `${name}{`;
+    const labeledCounters = [...this.counters.entries()]
+      .filter(([key]) => key.startsWith(labeledPrefix))
+      .map(([, value]) => value);
+
+    if (labeledCounters.length > 0) {
+      return labeledCounters.reduce((sum, value) => sum + value, 0);
+    }
+
+    const labeledGauges = [...this.gauges.entries()]
+      .filter(([key]) => key.startsWith(labeledPrefix))
+      .map(([, value]) => value);
+
+    if (labeledGauges.length > 0) {
+      return labeledGauges.reduce((sum, value) => sum + value, 0);
+    }
+
+    return undefined;
   }
 
   reset(): void {
@@ -97,21 +123,30 @@ export class ObservabilityService implements ITracer, IMetrics, IStructuredLogge
 
   error(message: string, error?: Error, meta?: Record<string, unknown>): void {
     this.logger.error(
-      this._formatLog('error', message, { ...meta, error: error ? { name: error.name, message: error.message, stack: error.stack } : undefined }),
+      this._formatLog('error', message, {
+        ...meta,
+        error: error ? { name: error.name, message: error.message, stack: error.stack } : undefined,
+      }),
       error?.stack,
     );
   }
 
   fatal(message: string, error?: Error, meta?: Record<string, unknown>): void {
     this.logger.fatal(
-      this._formatLog('fatal', message, { ...meta, error: error ? { name: error.name, message: error.message, stack: error.stack } : undefined }),
+      this._formatLog('fatal', message, {
+        ...meta,
+        error: error ? { name: error.name, message: error.message, stack: error.stack } : undefined,
+      }),
       error?.stack,
     );
   }
 
   private _metricKey(name: string, labels?: Record<string, string>): string {
     if (!labels) return name;
-    const labelStr = Object.entries(labels).sort().map(([k, v]) => `${k}=${v}`).join(',');
+    const labelStr = Object.entries(labels)
+      .sort()
+      .map(([k, v]) => `${k}=${v}`)
+      .join(',');
     return `${name}{${labelStr}}`;
   }
 

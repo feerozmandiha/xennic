@@ -1,5 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
-import type { SagaDefinition, SagaInstance, SagaStep, ISagaOrchestrator } from '../../domain/interfaces/saga.interface.js';
+import type {
+  SagaDefinition,
+  SagaInstance,
+  SagaStep,
+  ISagaOrchestrator,
+} from '../../domain/interfaces/saga.interface.js';
 import { SagaInstanceEntity } from '../../domain/entities/saga-instance.entity.js';
 
 @Injectable()
@@ -27,7 +32,9 @@ export class SagaOrchestratorService implements ISagaOrchestrator {
       try {
         await this._executeSteps(instance, definition);
       } catch (error) {
-        this.logger.error(`Saga ${instance.id} failed: ${error instanceof Error ? error.message : 'Unknown'}`);
+        this.logger.error(
+          `Saga ${instance.id} failed: ${error instanceof Error ? error.message : 'Unknown'}`,
+        );
       }
     });
 
@@ -41,14 +48,16 @@ export class SagaOrchestratorService implements ISagaOrchestrator {
 
   async list(limit = 50): Promise<SagaInstance[]> {
     const all = Array.from(this.instances.values());
-    return all.slice(-limit).reverse().map(i => i.toJSON());
+    return all
+      .slice(-limit)
+      .reverse()
+      .map((i) => i.toJSON());
   }
 
-  private async _executeSteps(instance: SagaInstanceEntity, definition: SagaDefinition): Promise<void> {
-    const timeout = new Promise<never>((_, reject) =>
-      setTimeout(() => reject(new Error(`Saga timeout after ${definition.timeoutMs}ms`)), definition.timeoutMs),
-    );
-
+  private async _executeSteps(
+    instance: SagaInstanceEntity,
+    definition: SagaDefinition,
+  ): Promise<void> {
     try {
       for (let i = instance.currentStep; i < definition.steps.length; i++) {
         const step = definition.steps[i]!;
@@ -56,7 +65,7 @@ export class SagaOrchestratorService implements ISagaOrchestrator {
         instance.setStepStatus(step.name, 'EXECUTING');
 
         try {
-          await Promise.race([step.execute(instance.context), timeout]);
+          await this._executeStepWithTimeout(step, instance.context, definition.timeoutMs);
           instance.setStepStatus(step.name, 'COMPLETED');
           this.logger.debug(`Step ${step.name} completed for saga ${instance.id}`);
         } catch (error) {
@@ -66,7 +75,12 @@ export class SagaOrchestratorService implements ISagaOrchestrator {
           this.logger.error(`Step ${step.name} failed for saga ${instance.id}: ${errMsg}`);
 
           if (definition.compensable) {
-            await this._compensate(instance, definition, step.name, error instanceof Error ? error : new Error(errMsg));
+            await this._compensate(
+              instance,
+              definition,
+              step.name,
+              error instanceof Error ? error : new Error(errMsg),
+            );
           } else {
             instance.markFailed();
           }
@@ -81,9 +95,38 @@ export class SagaOrchestratorService implements ISagaOrchestrator {
       this.logger.error(`Saga ${instance.id} execution error: ${errMsg}`);
 
       if (definition.compensable) {
-        await this._compensate(instance, definition, '', error instanceof Error ? error : new Error(errMsg));
+        await this._compensate(
+          instance,
+          definition,
+          '',
+          error instanceof Error ? error : new Error(errMsg),
+        );
       } else {
         instance.markFailed();
+      }
+    }
+  }
+
+  private async _executeStepWithTimeout(
+    step: SagaStep,
+    context: unknown,
+    timeoutMs: number,
+  ): Promise<void> {
+    let timeoutHandle: NodeJS.Timeout | undefined;
+
+    try {
+      await Promise.race([
+        step.execute(context),
+        new Promise<never>((_, reject) => {
+          timeoutHandle = setTimeout(
+            () => reject(new Error(`Saga timeout after ${timeoutMs}ms`)),
+            timeoutMs,
+          );
+        }),
+      ]);
+    } finally {
+      if (timeoutHandle) {
+        clearTimeout(timeoutHandle);
       }
     }
   }
@@ -99,7 +142,7 @@ export class SagaOrchestratorService implements ISagaOrchestrator {
 
     const completedSteps = Array.from(instance.stepStatuses.entries())
       .filter(([, status]) => status === 'COMPLETED')
-      .map(([name]) => definition.steps.find(s => s.name === name))
+      .map(([name]) => definition.steps.find((s) => s.name === name))
       .filter(Boolean) as SagaStep[];
 
     for (const step of completedSteps.reverse()) {

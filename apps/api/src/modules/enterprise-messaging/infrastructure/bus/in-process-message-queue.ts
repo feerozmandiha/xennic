@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, type OnModuleDestroy } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 import type {
   IMessageQueue,
@@ -9,16 +9,25 @@ import type {
 } from '../../domain/interfaces/message-handler.interface.js';
 
 @Injectable()
-export class InProcessMessageQueue implements IMessageQueue, IDeadLetterQueue {
+export class InProcessMessageQueue implements IMessageQueue, IDeadLetterQueue, OnModuleDestroy {
   private readonly logger = new Logger(InProcessMessageQueue.name);
   private readonly handlers = new Map<string, IMessageHandler>();
   private readonly deadLetterStore: DeadLetterRecord[] = [];
+  private readonly retryTimers = new Set<NodeJS.Timeout>();
+
+  onModuleDestroy(): void {
+    for (const timer of this.retryTimers) {
+      clearTimeout(timer);
+    }
+    this.retryTimers.clear();
+  }
 
   publish<T>(envelope: Omit<MessageEnvelope<T>, 'timestamp' | 'retryCount'>): Promise<void> {
+    const retryCount = (envelope as Partial<MessageEnvelope<T>>).retryCount ?? 0;
     const message: MessageEnvelope<T> = {
       ...envelope,
       timestamp: new Date().toISOString(),
-      retryCount: 0,
+      retryCount,
     } as MessageEnvelope<T>;
 
     const handler = this.handlers.get(message.messageType);
@@ -42,14 +51,18 @@ export class InProcessMessageQueue implements IMessageQueue, IDeadLetterQueue {
         const errMsg = error instanceof Error ? error.message : 'Unknown error';
         this.logger.error(`Message ${message.messageId} failed: ${errMsg}`);
 
-        if (message.retryCount < message.maxRetries) {
+        const nextRetryCount = message.retryCount + 1;
+
+        if (nextRetryCount < message.maxRetries) {
           const backoff = Math.min(1000 * 2 ** message.retryCount, 30000);
-          setTimeout(() => {
-            this.publish({
-              ...envelope,
-              retryCount: message.retryCount + 1,
+          const timer = setTimeout(() => {
+            this.retryTimers.delete(timer);
+            void this.publish({
+              ...message,
+              retryCount: nextRetryCount,
             } as any);
           }, backoff);
+          this.retryTimers.add(timer);
         } else {
           await this.send({
             messageId: message.messageId,
@@ -57,7 +70,7 @@ export class InProcessMessageQueue implements IMessageQueue, IDeadLetterQueue {
             payload: message.payload,
             error: errMsg,
             failedAt: new Date().toISOString(),
-            retryCount: message.retryCount,
+            retryCount: nextRetryCount,
           });
         }
       }
@@ -78,11 +91,13 @@ export class InProcessMessageQueue implements IMessageQueue, IDeadLetterQueue {
 
   async send(record: DeadLetterRecord): Promise<void> {
     this.deadLetterStore.push(record);
-    this.logger.warn(`Dead-lettered message ${record.messageId} (${record.messageType}): ${record.error}`);
+    this.logger.warn(
+      `Dead-lettered message ${record.messageId} (${record.messageType}): ${record.error}`,
+    );
   }
 
   async replay(messageId: string): Promise<void> {
-    const idx = this.deadLetterStore.findIndex(r => r.messageId === messageId);
+    const idx = this.deadLetterStore.findIndex((r) => r.messageId === messageId);
     if (idx === -1) throw new Error(`Dead letter record not found: ${messageId}`);
     const record = this.deadLetterStore[idx]!;
     this.deadLetterStore.splice(idx, 1);

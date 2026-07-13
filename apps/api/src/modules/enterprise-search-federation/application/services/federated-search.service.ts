@@ -21,16 +21,14 @@ export class FederatedSearchService implements IFederatedSearch {
   async search(query: FederatedSearchQuery): Promise<FederatedSearchResponse> {
     const startTime = Date.now();
     const sources = query.sources
-      ? this.sources.filter(s => query.sources!.includes(s.sourceName))
+      ? this.sources.filter((s) => query.sources!.includes(s.sourceName))
       : this.sources;
 
     if (sources.length === 0) {
       return { items: [], total: 0, sourceCounts: {}, tookMs: 0 };
     }
 
-    const results = await Promise.allSettled(
-      sources.map(source => source.search(query)),
-    );
+    const results = await Promise.allSettled(sources.map((source) => source.search(query)));
 
     const allItems: FederatedSearchResult[] = [];
     const sourceCounts: Record<string, number> = {};
@@ -61,16 +59,20 @@ export class FederatedSearchService implements IFederatedSearch {
     };
   }
 
-  private _rankAndMerge(items: FederatedSearchResult[], query: string, limit: number): FederatedSearchResult[] {
+  private _rankAndMerge(
+    items: FederatedSearchResult[],
+    query: string,
+    limit: number,
+  ): FederatedSearchResult[] {
     const seen = new Set<string>();
     const unique: FederatedSearchResult[] = [];
 
     const scored = items
-      .map(item => ({ item, score: this._calculateScore(item, query) }))
+      .map((item) => ({ item, score: this._calculateScore(item, query) }))
       .sort((a, b) => b.score - a.score);
 
     for (const { item } of scored) {
-      const key = `${item.source}:${item.id}`;
+      const key = item.id;
       if (!seen.has(key)) {
         seen.add(key);
         unique.push(item);
