@@ -1,0 +1,121 @@
+name: API E2E Gate
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'apps/api/**'
+      - 'packages/database/**'
+      - 'prisma/**'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
+      - '.github/workflows/api-e2e.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'apps/api/**'
+      - 'packages/database/**'
+      - 'prisma/**'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
+      - '.github/workflows/api-e2e.yml'
+
+concurrency:
+  group: api-e2e-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  CI: true
+  NODE_ENV: test
+  NODE_VERSION: '22'
+  PNPM_VERSION: '10.33.0'
+  DATABASE_URL: postgresql://xennic:xennic@localhost:5432/xennic_test
+
+jobs:
+  api-e2e:
+    name: API E2E
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: xennic
+          POSTGRES_PASSWORD: xennic
+          POSTGRES_DB: xennic_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma Client
+        run: pnpm db:generate
+
+      - name: Push Schema
+        run: npx prisma db push --skip-generate
+
+      - name: Build Database Package
+        run: pnpm --filter @xennic/database build
+        timeout-minutes: 2
+
+      - name: Generate CI JWT keys
+        run: |
+          mkdir -p /tmp/xennic-jwt
+          openssl genrsa -out /tmp/xennic-jwt/jwtRS256.key 2048
+          openssl rsa -in /tmp/xennic-jwt/jwtRS256.key -pubout -out /tmp/xennic-jwt/jwtRS256.key.pub
+          echo "JWT_PRIVATE_KEY_PATH=/tmp/xennic-jwt/jwtRS256.key" >> "$GITHUB_ENV"
+          echo "JWT_PUBLIC_KEY_PATH=/tmp/xennic-jwt/jwtRS256.key.pub" >> "$GITHUB_ENV"
+          echo "JWT_ISSUER=xennic-platform" >> "$GITHUB_ENV"
+          echo "JWT_AUDIENCE=xennic-client" >> "$GITHUB_ENV"
+          echo "JWT_ACCESS_TOKEN_TTL=900" >> "$GITHUB_ENV"
+          echo "JWT_REFRESH_TOKEN_TTL=2592000" >> "$GITHUB_ENV"
+
+      - name: Run API E2E Tests
+        run: |
+          set -o pipefail
+          pnpm --dir apps/api exec jest --config test/jest-e2e.json --runInBand --detectOpenHandles 2>&1 | tee /tmp/xennic-api-e2e.log
+        timeout-minutes: 15
+
+      - name: Upload API E2E log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-e2e-log
+          path: /tmp/xennic-api-e2e.log
+          if-no-files-found: ignore
+          retention-days: 14
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "## API E2E Gate" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Item | Status |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|------|--------|" >> "$GITHUB_STEP_SUMMARY"
+          echo "| API E2E Suites | Completed |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Log Artifact | api-e2e-log |" >> "$GITHUB_STEP_SUMMARY"
