@@ -4,40 +4,64 @@ import { useState, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import {
-  Upload, FileText, ScanEye, CheckCircle2, AlertCircle,
-  Loader2, RefreshCw, ChevronDown, ChevronUp,
-  Cpu, TrendingUp, AlertTriangle, Image, WifiOff,
+  Upload,
+  FileText,
+  ScanEye,
+  CheckCircle2,
+  AlertCircle,
+  Loader2,
+  RefreshCw,
+  ChevronDown,
+  ChevronUp,
+  Cpu,
+  TrendingUp,
+  AlertTriangle,
+  Image,
+  WifiOff,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/stores/toast.store';
 import { cn } from '@/lib/utils';
 
-const VISION_API = typeof window !== 'undefined'
-  ? `${process.env.NEXT_PUBLIC_VISION_API_URL ?? 'http://localhost:8003'}/api/v1`
-  : 'http://localhost:8003/api/v1';
+const VISION_API =
+  typeof window !== 'undefined'
+    ? `${process.env.NEXT_PUBLIC_VISION_API_URL ?? 'http://localhost:8003'}/api/v1`
+    : 'http://localhost:8003/api/v1';
 
 function authHeaders() {
   return {
-    'Authorization': `Bearer ${localStorage.getItem('xennic_token') ?? ''}`,
+    Authorization: `Bearer ${localStorage.getItem('xennic_token') ?? ''}`,
     'x-workspace-id': localStorage.getItem('xennic_workspace_id') ?? '',
   };
 }
 
-function SectionCard({ title, icon: Icon, color, children, defaultOpen = true }: {
-  title: string; icon: React.ElementType; color: string;
-  children: React.ReactNode; defaultOpen?: boolean;
+function SectionCard({
+  title,
+  icon: Icon,
+  color,
+  children,
+  defaultOpen = true,
+}: {
+  title: string;
+  icon: React.ElementType;
+  color: string;
+  children: React.ReactNode;
+  defaultOpen?: boolean;
 }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
     <Card>
-      <CardHeader className="pb-2 cursor-pointer" onClick={() => setOpen(o => !o)}>
+      <CardHeader className="pb-2 cursor-pointer" onClick={() => setOpen((o) => !o)}>
         <div className="flex items-center justify-between">
           <CardTitle className={cn('text-sm flex items-center gap-2', color)}>
-            <Icon className="h-4 w-4" />{title}
+            <Icon className="h-4 w-4" />
+            {title}
           </CardTitle>
-          {open
-            ? <ChevronUp className="h-4 w-4 text-[hsl(var(--muted-foreground))]" />
-            : <ChevronDown className="h-4 w-4 text-[hsl(var(--muted-foreground))]" />}
+          {open ? (
+            <ChevronUp className="h-4 w-4 text-[hsl(var(--muted-foreground))]" />
+          ) : (
+            <ChevronDown className="h-4 w-4 text-[hsl(var(--muted-foreground))]" />
+          )}
         </div>
       </CardHeader>
       {open && <CardContent className="pt-0">{children}</CardContent>}
@@ -45,24 +69,40 @@ function SectionCard({ title, icon: Icon, color, children, defaultOpen = true }:
   );
 }
 
-function KVRow({ label, value, unit, highlight }: {
-  label: string; value: any; unit?: string; highlight?: 'good' | 'warn' | 'bad';
+function KVRow({
+  label,
+  value,
+  unit,
+  highlight,
+}: {
+  label: string;
+  value: any;
+  unit?: string;
+  highlight?: 'good' | 'warn' | 'bad';
 }) {
   if (value === null || value === undefined) return null;
   const color =
-    highlight === 'good' ? 'text-[hsl(var(--success))]'
-    : highlight === 'warn' ? 'text-[hsl(var(--warning))]'
-    : highlight === 'bad'  ? 'text-[hsl(var(--destructive))]'
-    : 'text-[hsl(var(--foreground))]';
+    highlight === 'good'
+      ? 'text-[hsl(var(--success))]'
+      : highlight === 'warn'
+        ? 'text-[hsl(var(--warning))]'
+        : highlight === 'bad'
+          ? 'text-[hsl(var(--destructive))]'
+          : 'text-[hsl(var(--foreground))]';
   const display =
-    typeof value === 'boolean' ? (value ? '✅ بله' : '❌ خیر')
-    : typeof value === 'number' ? value.toLocaleString('fa-IR')
-    : String(value);
+    typeof value === 'boolean'
+      ? value
+        ? '✅ بله'
+        : '❌ خیر'
+      : typeof value === 'number'
+        ? value.toLocaleString('fa-IR')
+        : String(value);
   return (
     <div className="flex items-center justify-between py-1 border-b border-[hsl(var(--border)/0.4)] last:border-0">
       <span className="text-xs text-[hsl(var(--muted-foreground))]">{label}</span>
       <span className={cn('text-xs font-bold font-mono', color)}>
-        {display}{unit ? ` ${unit}` : ''}
+        {display}
+        {unit ? ` ${unit}` : ''}
       </span>
     </div>
   );
@@ -96,16 +136,32 @@ function NameplateResults({ data }: { data: any }) {
       </SectionCard>
 
       {validation.valid !== undefined && (
-        <SectionCard title="اعتبارسنجی" icon={CheckCircle2} color={validation.valid ? 'text-[hsl(var(--success))]' : 'text-[hsl(var(--destructive))]'}>
-          <KVRow label="وضعیت" value={validation.valid ? 'معتبر' : 'نامعتبر'} highlight={validation.valid ? 'good' : 'bad'} />
+        <SectionCard
+          title="اعتبارسنجی"
+          icon={CheckCircle2}
+          color={validation.valid ? 'text-[hsl(var(--success))]' : 'text-[hsl(var(--destructive))]'}
+        >
+          <KVRow
+            label="وضعیت"
+            value={validation.valid ? 'معتبر' : 'نامعتبر'}
+            highlight={validation.valid ? 'good' : 'bad'}
+          />
           {validation.errors?.map((err: string, i: number) => (
-            <div key={i} className="flex items-center gap-2 py-1 text-xs text-[hsl(var(--destructive))]">
-              <AlertCircle className="h-3 w-3 shrink-0" />{err}
+            <div
+              key={i}
+              className="flex items-center gap-2 py-1 text-xs text-[hsl(var(--destructive))]"
+            >
+              <AlertCircle className="h-3 w-3 shrink-0" />
+              {err}
             </div>
           ))}
           {validation.warnings?.map((w: string, i: number) => (
-            <div key={i} className="flex items-center gap-2 py-1 text-xs text-[hsl(var(--warning))]">
-              <AlertTriangle className="h-3 w-3 shrink-0" />{w}
+            <div
+              key={i}
+              className="flex items-center gap-2 py-1 text-xs text-[hsl(var(--warning))]"
+            >
+              <AlertTriangle className="h-3 w-3 shrink-0" />
+              {w}
             </div>
           ))}
         </SectionCard>
@@ -118,7 +174,12 @@ function NameplateResults({ data }: { data: any }) {
           <KVRow label="تعداد قطب" value={knowledge.pole_count} />
           <KVRow label="لغزش نامی" value={knowledge.nominal_slip} />
           <KVRow label="گشتاور نامی" value={knowledge.nominal_torque_nm} unit="N·m" />
-          <KVRow label="جریان راه‌اندازی" value={knowledge.starting_current_a} unit="A" highlight={'warn'} />
+          <KVRow
+            label="جریان راه‌اندازی"
+            value={knowledge.starting_current_a}
+            unit="A"
+            highlight={'warn'}
+          />
           <KVRow label="جریان بی‌باری" value={knowledge.no_load_current_a} unit="A" />
         </SectionCard>
       )}
@@ -160,11 +221,23 @@ function BillResults({ data }: { data: any }) {
       </SectionCard>
 
       {validation.valid !== undefined && (
-        <SectionCard title="اعتبارسنجی" icon={CheckCircle2} color={validation.valid ? 'text-[hsl(var(--success))]' : 'text-[hsl(var(--destructive))]'}>
-          <KVRow label="وضعیت" value={validation.valid ? 'معتبر' : 'نامعتبر'} highlight={validation.valid ? 'good' : 'bad'} />
+        <SectionCard
+          title="اعتبارسنجی"
+          icon={CheckCircle2}
+          color={validation.valid ? 'text-[hsl(var(--success))]' : 'text-[hsl(var(--destructive))]'}
+        >
+          <KVRow
+            label="وضعیت"
+            value={validation.valid ? 'معتبر' : 'نامعتبر'}
+            highlight={validation.valid ? 'good' : 'bad'}
+          />
           {validation.errors?.map((err: string, i: number) => (
-            <div key={i} className="flex items-center gap-2 py-1 text-xs text-[hsl(var(--destructive))]">
-              <AlertCircle className="h-3 w-3 shrink-0" />{err}
+            <div
+              key={i}
+              className="flex items-center gap-2 py-1 text-xs text-[hsl(var(--destructive))]"
+            >
+              <AlertCircle className="h-3 w-3 shrink-0" />
+              {err}
             </div>
           ))}
         </SectionCard>
@@ -273,7 +346,10 @@ export function VisionUploadClient() {
 
       {!result && (
         <div
-          onDragOver={e => { e.preventDefault(); setDragging(true); }}
+          onDragOver={(e) => {
+            e.preventDefault();
+            setDragging(true);
+          }}
           onDragLeave={() => setDragging(false)}
           onDrop={onDrop}
           onClick={() => !uploading && fileRef.current?.click()}
@@ -286,17 +362,31 @@ export function VisionUploadClient() {
             uploading && 'opacity-60 cursor-wait',
           )}
         >
-          <input ref={fileRef} type="file" accept=".pdf,.jpg,.jpeg,.png,.webp,.bmp,.tiff"
+          <input
+            ref={fileRef}
+            type="file"
+            accept=".pdf,.jpg,.jpeg,.png,.webp,.bmp,.tiff"
             className="hidden"
-            onChange={e => { const f = e.target.files?.[0]; if (f) handleUpload(f); }}
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              if (f) handleUpload(f);
+            }}
             disabled={uploading}
           />
 
-          <div className={cn('w-16 h-16 rounded-2xl flex items-center justify-center transition-all',
-            dragging ? 'bg-[hsl(var(--primary))]' : 'bg-[hsl(var(--primary)/0.1)]')}>
-            {uploading
-              ? <Loader2 className="h-7 w-7 text-[hsl(var(--primary))] animate-spin" />
-              : <Upload className={cn('h-7 w-7', dragging ? 'text-white' : 'text-[hsl(var(--primary))]')} />}
+          <div
+            className={cn(
+              'w-16 h-16 rounded-2xl flex items-center justify-center transition-all',
+              dragging ? 'bg-[hsl(var(--primary))]' : 'bg-[hsl(var(--primary)/0.1)]',
+            )}
+          >
+            {uploading ? (
+              <Loader2 className="h-7 w-7 text-[hsl(var(--primary))] animate-spin" />
+            ) : (
+              <Upload
+                className={cn('h-7 w-7', dragging ? 'text-white' : 'text-[hsl(var(--primary))]')}
+              />
+            )}
           </div>
 
           <div className="text-center">
@@ -311,17 +401,19 @@ export function VisionUploadClient() {
 
           <div className="flex items-center gap-3 text-[10px] text-[hsl(var(--muted-foreground))]">
             {[
-              { n:'1', t:'آپلود' },
-              { n:'2', t:'پیش‌پردازش' },
-              { n:'3', t:'تشخیص نوع' },
-              { n:'4', t:'OCR' },
-              { n:'5', t:'استخراج' },
-              { n:'6', t:'اعتبارسنجی' },
-            ].map((s,i,a) => (
+              { n: '1', t: 'آپلود' },
+              { n: '2', t: 'پیش‌پردازش' },
+              { n: '3', t: 'تشخیص نوع' },
+              { n: '4', t: 'OCR' },
+              { n: '5', t: 'استخراج' },
+              { n: '6', t: 'اعتبارسنجی' },
+            ].map((s, i, a) => (
               <div key={s.n} className="flex items-center gap-1.5">
-                <span className="w-4 h-4 rounded-full bg-[hsl(var(--primary)/0.15)] text-[hsl(var(--primary))] flex items-center justify-center text-[9px] font-bold">{s.n}</span>
+                <span className="w-4 h-4 rounded-full bg-[hsl(var(--primary)/0.15)] text-[hsl(var(--primary))] flex items-center justify-center text-[9px] font-bold">
+                  {s.n}
+                </span>
                 <span>{s.t}</span>
-                {i < a.length-1 && <span className="opacity-40">→</span>}
+                {i < a.length - 1 && <span className="opacity-40">→</span>}
               </div>
             ))}
           </div>
@@ -336,19 +428,26 @@ export function VisionUploadClient() {
               <p className="text-sm font-semibold text-[hsl(var(--destructive))]">خطا در پردازش</p>
               <p className="text-xs text-[hsl(var(--muted-foreground))] mt-0.5">{error}</p>
             </div>
-            <button onClick={reset} className="text-xs underline text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]">
+            <button
+              onClick={reset}
+              className="text-xs underline text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]"
+            >
               تلاش مجدد
             </button>
           </div>
           <div className="flex items-start gap-3 p-4 rounded-[var(--radius-lg)] bg-[hsl(var(--warning)/0.06)] border border-[hsl(var(--warning)/0.2)]">
             <WifiOff className="h-4 w-4 text-[hsl(var(--warning))] shrink-0 mt-0.5" />
             <div className="flex-1">
-              <p className="text-sm font-semibold text-[hsl(var(--warning))]">سرویس بینایی ماشین در دسترس نیست</p>
+              <p className="text-sm font-semibold text-[hsl(var(--warning))]">
+                سرویس بینایی ماشین در دسترس نیست
+              </p>
               <p className="text-xs text-[hsl(var(--muted-foreground))] mt-0.5">
-                برای آپلود خودکار، vision-service باید روی پورت 8003 اجرا شود.
-                {' '}در غیر این صورت می‌توانید از روش دستی در
-                {' '}<Link href={`/${locale}/energy`} className="text-[hsl(var(--primary))] underline">تحلیل انرژی</Link>
-                {' '}استفاده کنید.
+                برای آپلود خودکار، vision-service باید روی پورت 8003 اجرا شود. در غیر این صورت
+                می‌توانید از روش دستی در{' '}
+                <Link href={`/${locale}/energy`} className="text-[hsl(var(--primary))] underline">
+                  تحلیل انرژی
+                </Link>{' '}
+                استفاده کنید.
               </p>
             </div>
           </div>
@@ -364,7 +463,14 @@ export function VisionUploadClient() {
                 تحلیل با موفقیت انجام شد
               </p>
               <p className="text-xs text-[hsl(var(--muted-foreground))]">
-                نوع سند: <span className="font-mono">{detectedType === 'bill' ? 'قبض برق' : detectedType === 'nameplate' ? 'پلاک تجهیزات' : 'عمومی'}</span>
+                نوع سند:{' '}
+                <span className="font-mono">
+                  {detectedType === 'bill'
+                    ? 'قبض برق'
+                    : detectedType === 'nameplate'
+                      ? 'پلاک تجهیزات'
+                      : 'عمومی'}
+                </span>
                 {file?.name && ` | فایل: ${file.name}`}
               </p>
             </div>
@@ -373,13 +479,18 @@ export function VisionUploadClient() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {detectedType === 'nameplate' && <NameplateResults data={resultData} />}
             {detectedType === 'bill' && <BillResults data={resultData} />}
-            {detectedType !== 'nameplate' && detectedType !== 'bill' && <GenericResults data={resultData} />}
+            {detectedType !== 'nameplate' && detectedType !== 'bill' && (
+              <GenericResults data={resultData} />
+            )}
           </div>
 
           <div className="flex justify-center pt-2">
-            <button onClick={reset}
-              className="flex items-center gap-2 h-9 px-5 rounded-[var(--radius-lg)] border border-[hsl(var(--border))] text-sm hover:bg-[hsl(var(--secondary))] transition-colors">
-              <RefreshCw className="h-3.5 w-3.5" />تحلیل جدید
+            <button
+              onClick={reset}
+              className="flex items-center gap-2 h-9 px-5 rounded-[var(--radius-lg)] border border-[hsl(var(--border))] text-sm hover:bg-[hsl(var(--secondary))] transition-colors"
+            >
+              <RefreshCw className="h-3.5 w-3.5" />
+              تحلیل جدید
             </button>
           </div>
         </div>
@@ -388,11 +499,26 @@ export function VisionUploadClient() {
       {!result && !uploading && !error && (
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {[
-            { icon: Image,      title:'تشخیص نوع سند',      desc:'تشخیص خودکار قبض برق یا پلاک تجهیزات با استفاده از هوش مصنوعی' },
-            { icon: FileText,   title:'OCR پیشرفته',        desc:'PaddleOCR + Vision LLM برای استخراج اعداد و حروف فارسی و انگلیسی' },
-            { icon: TrendingUp, title:'استخراج ساختاریافته', desc:'تبدیل متن استخراج‌شده به داده‌های قابل محاسبه با اعتبارسنجی' },
+            {
+              icon: Image,
+              title: 'تشخیص نوع سند',
+              desc: 'تشخیص خودکار قبض برق یا پلاک تجهیزات با استفاده از هوش مصنوعی',
+            },
+            {
+              icon: FileText,
+              title: 'OCR پیشرفته',
+              desc: 'PaddleOCR + Vision LLM برای استخراج اعداد و حروف فارسی و انگلیسی',
+            },
+            {
+              icon: TrendingUp,
+              title: 'استخراج ساختاریافته',
+              desc: 'تبدیل متن استخراج‌شده به داده‌های قابل محاسبه با اعتبارسنجی',
+            },
           ].map(({ icon: Icon, title, desc }) => (
-            <div key={title} className="p-4 rounded-[var(--radius-lg)] bg-[hsl(var(--secondary)/0.5)] border border-[hsl(var(--border))]">
+            <div
+              key={title}
+              className="p-4 rounded-[var(--radius-lg)] bg-[hsl(var(--secondary)/0.5)] border border-[hsl(var(--border))]"
+            >
               <div className="flex items-center gap-2 mb-1.5">
                 <Icon className="h-4 w-4 text-[hsl(var(--primary))]" />
                 <span className="text-sm font-semibold">{title}</span>

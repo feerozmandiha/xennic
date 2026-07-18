@@ -34,7 +34,9 @@ export class ProviderMigrationService {
     private readonly encryptionService: EncryptionService,
   ) {}
 
-  async migrateFromEnv(createdBy: string): Promise<{ migrated: number; skipped: number; errors: string[] }> {
+  async migrateFromEnv(
+    createdBy: string,
+  ): Promise<{ migrated: number; skipped: number; errors: string[] }> {
     const configs = this.detectEnvProviders();
     let migrated = 0;
     let skipped = 0;
@@ -49,22 +51,37 @@ export class ProviderMigrationService {
           continue;
         }
 
-        const entity = AIProviderEntity.create(config.name, config.displayName, config.type, createdBy, {
-          baseUrl: config.baseUrl,
-        });
+        const entity = AIProviderEntity.create(
+          config.name,
+          config.displayName,
+          config.type,
+          createdBy,
+          {
+            baseUrl: config.baseUrl,
+          },
+        );
         await this.providerRepo.save(entity);
 
         if (config.apiKey) {
           const encrypted = this.encryptionService.encryptApiKey(config.apiKey);
           const masked = this.encryptionService.maskApiKey(config.apiKey);
-          const credential = ProviderCredentialEntity.create(entity.id, 'api_key', encrypted, masked);
+          const credential = ProviderCredentialEntity.create(
+            entity.id,
+            'api_key',
+            encrypted,
+            masked,
+          );
           await this.credentialRepo.save(credential);
         }
 
         const quota = ProviderQuotaEntity.create(entity.id, 60, 100000, 10);
         await this.quotaRepo.save(quota);
 
-        entity.metadata = { ...entity.metadata, migrated_from_env: true, migrated_model: config.model };
+        entity.metadata = {
+          ...entity.metadata,
+          migrated_from_env: true,
+          migrated_model: config.model,
+        };
         await this.providerRepo.save(entity);
 
         migrated++;
@@ -75,7 +92,9 @@ export class ProviderMigrationService {
       }
     }
 
-    this.logger.log(`Migration complete: ${migrated} migrated, ${skipped} skipped, ${errors.length} errors`);
+    this.logger.log(
+      `Migration complete: ${migrated} migrated, ${skipped} skipped, ${errors.length} errors`,
+    );
     return { migrated, skipped, errors };
   }
 
@@ -93,7 +112,11 @@ export class ProviderMigrationService {
       cohere: { type: 'cohere', name: 'env-cohere', display: 'Cohere (from .env)' },
       voyageai: { type: 'voyageai', name: 'env-voyageai', display: 'Voyage AI (from .env)' },
       ollama: { type: 'ollama', name: 'env-ollama', display: 'Ollama (from .env)' },
-      azure_openai: { type: 'azure_openai', name: 'env-azure-openai', display: 'Azure OpenAI (from .env)' },
+      azure_openai: {
+        type: 'azure_openai',
+        name: 'env-azure-openai',
+        display: 'Azure OpenAI (from .env)',
+      },
     };
 
     // Check AI_PROVIDER for primary provider
@@ -135,7 +158,7 @@ export class ProviderMigrationService {
 
     for (const [envKey, mapping] of Object.entries(keyMappings)) {
       const key = env[envKey];
-      if (key && !configs.some(c => c.type === mapping.type)) {
+      if (key && !configs.some((c) => c.type === mapping.type)) {
         configs.push({
           name: mapping.name,
           displayName: `${mapping.type} (from .env)`,

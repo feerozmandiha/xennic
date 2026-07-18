@@ -7,9 +7,7 @@ const config: Config = {
   transform: {
     '^.+\\.ts$': ['ts-jest', { tsconfig: 'tsconfig.test.json' }],
   },
-  transformIgnorePatterns: [
-    'node_modules/(?!@xennic/)',
-  ],
+  transformIgnorePatterns: ['node_modules/(?!@xennic/)'],
   collectCoverageFrom: ['**/*.(t|j)s', '!**/*.spec.ts', '!**/*.module.ts'],
   coverageDirectory: '../coverage',
   testEnvironment: 'node',

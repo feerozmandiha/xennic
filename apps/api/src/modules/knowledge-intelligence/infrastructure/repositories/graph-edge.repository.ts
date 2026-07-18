@@ -12,7 +12,11 @@ export class GraphEdgeRepository implements IGraphEdgeRepository {
     return this._toEntity(row);
   }
 
-  async findByNodes(sourceId: string, targetId: string, type: string): Promise<KnowledgeGraphEdge | null> {
+  async findByNodes(
+    sourceId: string,
+    targetId: string,
+    type: string,
+  ): Promise<KnowledgeGraphEdge | null> {
     const row = await prisma.knowledge_graph_edges.findFirst({
       where: { source_id: sourceId, target_id: targetId, type: type as EdgeType },
     });
@@ -23,14 +27,20 @@ export class GraphEdgeRepository implements IGraphEdgeRepository {
   async findAllBySource(sourceId: string, type?: string): Promise<KnowledgeGraphEdge[]> {
     const where: any = { source_id: sourceId };
     if (type) where.type = type as EdgeType;
-    const rows = await prisma.knowledge_graph_edges.findMany({ where, orderBy: { weight: 'desc' } });
+    const rows = await prisma.knowledge_graph_edges.findMany({
+      where,
+      orderBy: { weight: 'desc' },
+    });
     return rows.map((r) => this._toEntity(r));
   }
 
   async findAllByTarget(targetId: string, type?: string): Promise<KnowledgeGraphEdge[]> {
     const where: any = { target_id: targetId };
     if (type) where.type = type as EdgeType;
-    const rows = await prisma.knowledge_graph_edges.findMany({ where, orderBy: { weight: 'desc' } });
+    const rows = await prisma.knowledge_graph_edges.findMany({
+      where,
+      orderBy: { weight: 'desc' },
+    });
     return rows.map((r) => this._toEntity(r));
   }
 
@@ -62,15 +72,17 @@ export class GraphEdgeRepository implements IGraphEdgeRepository {
     return this._toEntity(edge);
   }
 
-  async batchCreate(data: {
-    workspaceId: string;
-    sourceId: string;
-    targetId: string;
-    type: string;
-    weight?: number;
-    properties?: Record<string, unknown>;
-  }[]): Promise<KnowledgeGraphEdge[]> {
-    const edges = data.map(d => ({
+  async batchCreate(
+    data: {
+      workspaceId: string;
+      sourceId: string;
+      targetId: string;
+      type: string;
+      weight?: number;
+      properties?: Record<string, unknown>;
+    }[],
+  ): Promise<KnowledgeGraphEdge[]> {
+    const edges = data.map((d) => ({
       workspace_id: d.workspaceId,
       source_id: d.sourceId,
       target_id: d.targetId,
@@ -81,7 +93,11 @@ export class GraphEdgeRepository implements IGraphEdgeRepository {
     await prisma.knowledge_graph_edges.createMany({ data: edges });
     const created = await prisma.knowledge_graph_edges.findMany({
       where: {
-        OR: data.map((d) => ({ source_id: d.sourceId, target_id: d.targetId, type: d.type as EdgeType })),
+        OR: data.map((d) => ({
+          source_id: d.sourceId,
+          target_id: d.targetId,
+          type: d.type as EdgeType,
+        })),
       },
       orderBy: { created_at: 'desc' },
     });

@@ -4,14 +4,8 @@ import { CacheInvalidationService } from './infrastructure/distributed/cache-inv
 
 @Global()
 @Module({
-  providers: [
-    CacheManagerService,
-    CacheInvalidationService,
-  ],
-  exports: [
-    CacheManagerService,
-    CacheInvalidationService,
-  ],
+  providers: [CacheManagerService, CacheInvalidationService],
+  exports: [CacheManagerService, CacheInvalidationService],
 })
 export class EnterpriseCacheModule implements OnModuleInit {
   private readonly logger = new Logger(EnterpriseCacheModule.name);

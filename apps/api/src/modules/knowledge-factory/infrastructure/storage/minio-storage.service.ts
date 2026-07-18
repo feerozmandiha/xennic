@@ -4,7 +4,15 @@ import { Injectable } from '@nestjs/common';
 export class MinioStorageService {
   private readonly bucket: string;
 
-  constructor(private readonly storageService: { upload(bucket: string, path: string, buffer: Buffer, contentType: string): Promise<string>; download(bucket: string, path: string): Promise<Buffer>; delete(bucket: string, path: string): Promise<void>; exists(bucket: string, path: string): Promise<boolean> }, private readonly configService: { get<T>(key: string, defaultValue?: T): T }) {
+  constructor(
+    private readonly storageService: {
+      upload(bucket: string, path: string, buffer: Buffer, contentType: string): Promise<string>;
+      download(bucket: string, path: string): Promise<Buffer>;
+      delete(bucket: string, path: string): Promise<void>;
+      exists(bucket: string, path: string): Promise<boolean>;
+    },
+    private readonly configService: { get<T>(key: string, defaultValue?: T): T },
+  ) {
     this.bucket = this.configService.get<string>('MINIO_BUCKET', 'knowledge-factory');
   }
 

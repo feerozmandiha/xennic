@@ -19,14 +19,14 @@ import { SubscriptionModule } from '../subscription/subscription.module.js';
   imports: [
     WorkspaceModule,
     RbacModule,
-    SubscriptionModule,   // ✅ برای plan-based access control
+    SubscriptionModule, // ✅ برای plan-based access control
   ],
   controllers: [EngineeringController],
   providers: [
     EngineeringService,
     EngineeringClientService,
     {
-      provide:  'ICalculationRepository',
+      provide: 'ICalculationRepository',
       useClass: CalculationRepository,
     },
   ],

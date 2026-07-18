@@ -36,16 +36,17 @@ export class QueueConfigService {
     const stalledInterval = this.config.get<number>('KF_STALLED_INTERVAL_MS', 30000);
     const maxStalled = this.config.get<number>('KF_MAX_STALLED_COUNT', 3);
 
-    const stageConfigs: Record<string, { attempts: number; delay: number; stallTimeout: number }> = {
-      intake: { attempts: 3, delay: 2000, stallTimeout: 60000 },
-      classify: { attempts: 3, delay: 1000, stallTimeout: 45000 },
-      parse: { attempts: 3, delay: 2000, stallTimeout: 120000 },
-      ocr: { attempts: 2, delay: 5000, stallTimeout: 180000 },
-      normalize: { attempts: 3, delay: 1000, stallTimeout: 30000 },
-      chunk: { attempts: 3, delay: 1000, stallTimeout: 60000 },
-      embed: { attempts: 3, delay: 2000, stallTimeout: 90000 },
-      publish: { attempts: 3, delay: 1000, stallTimeout: 45000 },
-    };
+    const stageConfigs: Record<string, { attempts: number; delay: number; stallTimeout: number }> =
+      {
+        intake: { attempts: 3, delay: 2000, stallTimeout: 60000 },
+        classify: { attempts: 3, delay: 1000, stallTimeout: 45000 },
+        parse: { attempts: 3, delay: 2000, stallTimeout: 120000 },
+        ocr: { attempts: 2, delay: 5000, stallTimeout: 180000 },
+        normalize: { attempts: 3, delay: 1000, stallTimeout: 30000 },
+        chunk: { attempts: 3, delay: 1000, stallTimeout: 60000 },
+        embed: { attempts: 3, delay: 2000, stallTimeout: 90000 },
+        publish: { attempts: 3, delay: 1000, stallTimeout: 45000 },
+      };
 
     const config = stageConfigs[stage] || { attempts: 3, delay: 1000, stallTimeout: 60000 };
 

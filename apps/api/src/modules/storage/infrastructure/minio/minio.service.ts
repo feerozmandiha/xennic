@@ -18,7 +18,12 @@ export class MinioService {
 
   // Buckets رسمی پروژه
   static readonly BUCKETS: FileBucket[] = [
-    'public', 'private', 'reports', 'documents', 'engineering', 'ai',
+    'public',
+    'private',
+    'reports',
+    'documents',
+    'engineering',
+    'ai',
   ];
 
   constructor() {
@@ -27,9 +32,9 @@ export class MinioService {
     const port = parseInt(portStr ?? '9000', 10);
 
     this.client = new MinioClient({
-      endPoint:  host ?? 'localhost',
+      endPoint: host ?? 'localhost',
       port,
-      useSSL:    process.env.MINIO_USE_SSL === 'true',
+      useSSL: process.env.MINIO_USE_SSL === 'true',
       accessKey: process.env.MINIO_ACCESS_KEY ?? 'MINIO_CREDENTIALS_FROM_ENV',
       secretKey: process.env.MINIO_SECRET_KEY ?? 'MINIO_CREDENTIALS_FROM_ENV',
     });
@@ -93,7 +98,7 @@ export class MinioService {
       return new Promise<Buffer>((resolve, reject) => {
         const chunks: Buffer[] = [];
         stream.on('data', (chunk: Buffer) => chunks.push(chunk));
-        stream.on('end',  () => resolve(Buffer.concat(chunks)));
+        stream.on('end', () => resolve(Buffer.concat(chunks)));
         stream.on('error', reject);
       });
     } catch (err) {
@@ -105,11 +110,7 @@ export class MinioService {
 
   // ── Presigned URL (برای دسترسی مستقیم مرورگر) ──────────────────────────
 
-  async getPresignedUrl(
-    bucket: string,
-    objectKey: string,
-    expirySeconds = 3600,
-  ): Promise<string> {
+  async getPresignedUrl(bucket: string, objectKey: string, expirySeconds = 3600): Promise<string> {
     try {
       return await this.client.presignedGetObject(bucket, objectKey, expirySeconds);
     } catch (err) {
@@ -137,8 +138,8 @@ export class MinioService {
     try {
       const buckets = await this.client.listBuckets();
       return {
-        status:  'ok',
-        buckets: buckets.map(b => b.name),
+        status: 'ok',
+        buckets: buckets.map((b) => b.name),
       };
     } catch {
       return { status: 'unreachable', buckets: [] };

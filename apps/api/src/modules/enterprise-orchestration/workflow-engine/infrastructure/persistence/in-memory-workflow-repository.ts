@@ -19,7 +19,7 @@ export class InMemoryWorkflowRepository implements IWorkflowRepository {
     this.definitions.set(`${entity.id}::v${entity.version}`, entity);
 
     const existing = this.nameIndex.get(entity.name) ?? [];
-    const idx = existing.findIndex(e => e.id === entity.id && e.version === entity.version);
+    const idx = existing.findIndex((e) => e.id === entity.id && e.version === entity.version);
     if (idx >= 0) {
       existing[idx] = entity;
     } else {
@@ -31,13 +31,11 @@ export class InMemoryWorkflowRepository implements IWorkflowRepository {
   }
 
   async get(id: string): Promise<WorkflowDefinition | null> {
-    const versions = Array.from(this.definitions.values()).filter(e => e.id === id);
+    const versions = Array.from(this.definitions.values()).filter((e) => e.id === id);
     if (versions.length === 0) {
       return null;
     }
-    return versions.reduce((latest, curr) =>
-      curr.version > latest.version ? curr : latest,
-    );
+    return versions.reduce((latest, curr) => (curr.version > latest.version ? curr : latest));
   }
 
   async getByName(name: string, version?: number): Promise<WorkflowDefinition | null> {
@@ -46,18 +44,16 @@ export class InMemoryWorkflowRepository implements IWorkflowRepository {
       return null;
     }
     if (version !== undefined) {
-      return versions.find(v => v.version === version) ?? null;
+      return versions.find((v) => v.version === version) ?? null;
     }
-    return versions.reduce((latest, curr) =>
-      curr.version > latest.version ? curr : latest,
-    );
+    return versions.reduce((latest, curr) => (curr.version > latest.version ? curr : latest));
   }
 
   async list(options?: ListWorkflowOptions): Promise<PaginatedResult<WorkflowDefinition>> {
     let items = Array.from(this.definitions.values());
 
     if (options?.status) {
-      items = items.filter(e => e.status === options.status);
+      items = items.filter((e) => e.status === options.status);
     }
 
     const offset = options?.offset ?? 0;
@@ -72,8 +68,8 @@ export class InMemoryWorkflowRepository implements IWorkflowRepository {
   }
 
   async findByTrigger(type: string): Promise<WorkflowDefinition[]> {
-    return Array.from(this.definitions.values()).filter(e =>
-      e.triggers.some(t => t.type === type),
+    return Array.from(this.definitions.values()).filter((e) =>
+      e.triggers.some((t) => t.type === type),
     );
   }
 
@@ -86,12 +82,12 @@ export class InMemoryWorkflowRepository implements IWorkflowRepository {
     let items = Array.from(this.templates.values());
 
     if (options?.category) {
-      items = items.filter(t => t.category === options.category);
+      items = items.filter((t) => t.category === options.category);
     }
 
     if (options?.tags && options.tags.length > 0) {
       const tagSet = new Set(options.tags);
-      items = items.filter(t => t.tags.some(tag => tagSet.has(tag)));
+      items = items.filter((t) => t.tags.some((tag) => tagSet.has(tag)));
     }
 
     const offset = options?.offset ?? 0;
@@ -106,20 +102,20 @@ export class InMemoryWorkflowRepository implements IWorkflowRepository {
   }
 
   async delete(id: string): Promise<void> {
-    const versions = Array.from(this.definitions.values()).filter(e => e.id === id);
+    const versions = Array.from(this.definitions.values()).filter((e) => e.id === id);
     for (const v of versions) {
       this.definitions.delete(`${v.id}::v${v.version}`);
     }
 
     const allEntries = Array.from(this.definitions.values());
-    const namesToKeep = new Set(allEntries.map(e => e.name));
+    const namesToKeep = new Set(allEntries.map((e) => e.name));
     for (const [name] of this.nameIndex) {
       if (!namesToKeep.has(name)) {
         this.nameIndex.delete(name);
       } else {
         this.nameIndex.set(
           name,
-          allEntries.filter(e => e.name === name),
+          allEntries.filter((e) => e.name === name),
         );
       }
     }

@@ -16,13 +16,13 @@ import { RbacModule } from '../rbac/rbac.module.js';
 @Module({
   imports: [
     WorkspaceModule, // برای WorkspaceGuard
-    RbacModule,      // برای PermissionsGuard و AuthorizationService
+    RbacModule, // برای PermissionsGuard و AuthorizationService
   ],
   controllers: [ProjectController],
   providers: [
     ProjectService,
     {
-      provide:  'IProjectRepository',
+      provide: 'IProjectRepository',
       useClass: ProjectRepository,
     },
   ],

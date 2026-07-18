@@ -17,10 +17,21 @@ export class SetFeatureFlagDto {
   @IsString()
   modelId?: string;
 
-  @ApiProperty({ description: 'Feature name', example: 'vision', enum: [
-    'vision', 'embedding', 'reasoning', 'audio', 'ocr',
-    'image_generation', 'translation', 'tools', 'json_mode',
-  ]})
+  @ApiProperty({
+    description: 'Feature name',
+    example: 'vision',
+    enum: [
+      'vision',
+      'embedding',
+      'reasoning',
+      'audio',
+      'ocr',
+      'image_generation',
+      'translation',
+      'tools',
+      'json_mode',
+    ],
+  })
   @IsString()
   @IsNotEmpty()
   feature!: string;

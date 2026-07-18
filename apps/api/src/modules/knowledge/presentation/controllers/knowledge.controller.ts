@@ -49,20 +49,23 @@ export class KnowledgeController {
 
   @Get()
   @RequirePermissions('knowledge.read')
-  @ApiOperation({ summary: 'List knowledge articles', description: 'Returns paginated list of knowledge articles in the workspace.' })
-  @ApiQuery({ name: 'page',   required: false, type: Number, example: 1 })
-  @ApiQuery({ name: 'limit',  required: false, type: Number, example: 20 })
+  @ApiOperation({
+    summary: 'List knowledge articles',
+    description: 'Returns paginated list of knowledge articles in the workspace.',
+  })
+  @ApiQuery({ name: 'page', required: false, type: Number, example: 1 })
+  @ApiQuery({ name: 'limit', required: false, type: Number, example: 20 })
   @ApiQuery({ name: 'status', required: false, enum: ['draft', 'review', 'published', 'archived'] })
   @ApiResponse({ status: 200, description: 'Articles retrieved successfully' })
   async findAll(
     @Req() req: any,
-    @Query('page')   page?: string,
-    @Query('limit')  limit?: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
     @Query('status') status?: string,
   ) {
     const result = await this.knowledgeService.findAll(
       req.workspaceId,
-      page  ? parseInt(page,  10) : 1,
+      page ? parseInt(page, 10) : 1,
       limit ? parseInt(limit, 10) : 20,
       status,
     );
@@ -78,16 +81,15 @@ export class KnowledgeController {
   @Post()
   @HttpCode(HttpStatus.CREATED)
   @RequirePermissions('knowledge.create')
-  @ApiOperation({ summary: 'Create knowledge article', description: 'Creates a new knowledge article in the workspace.' })
+  @ApiOperation({
+    summary: 'Create knowledge article',
+    description: 'Creates a new knowledge article in the workspace.',
+  })
   @ApiBody({ type: CreateKnowledgeDto })
   @ApiResponse({ status: 201, description: 'Article created', type: KnowledgeResponseDto })
   @ApiResponse({ status: 400, description: 'Validation failed' })
   async create(@Body() dto: CreateKnowledgeDto, @Req() req: any) {
-    const entity = await this.knowledgeService.create(
-      dto,
-      req.workspaceId,
-      req.user.userId,
-    );
+    const entity = await this.knowledgeService.create(dto, req.workspaceId, req.user.userId);
     return { success: true, data: KnowledgeResponseDto.fromEntity(entity) };
   }
 
@@ -95,7 +97,10 @@ export class KnowledgeController {
 
   @Get('search')
   @RequirePermissions('knowledge.read')
-  @ApiOperation({ summary: 'Search knowledge articles', description: 'Full-text search with taxonomy and status filters.' })
+  @ApiOperation({
+    summary: 'Search knowledge articles',
+    description: 'Full-text search with taxonomy and status filters.',
+  })
   @ApiResponse({ status: 200, description: 'Search results' })
   async search(@Req() req: any, @Query() query: KnowledgeSearchQueryDto) {
     const result = await this.knowledgeService.search(req.workspaceId, query);
@@ -110,7 +115,10 @@ export class KnowledgeController {
 
   @Get('slug/:slug')
   @RequirePermissions('knowledge.read')
-  @ApiOperation({ summary: 'Get article by slug', description: 'Returns a knowledge article by its slug.' })
+  @ApiOperation({
+    summary: 'Get article by slug',
+    description: 'Returns a knowledge article by its slug.',
+  })
   @ApiParam({ name: 'slug', description: 'Article slug' })
   @ApiResponse({ status: 200, description: 'Article found', type: KnowledgeResponseDto })
   @ApiResponse({ status: 404, description: 'Article not found' })
@@ -123,7 +131,10 @@ export class KnowledgeController {
 
   @Get(':id')
   @RequirePermissions('knowledge.read')
-  @ApiOperation({ summary: 'Get article by ID', description: 'Returns a specific knowledge article by ID.' })
+  @ApiOperation({
+    summary: 'Get article by ID',
+    description: 'Returns a specific knowledge article by ID.',
+  })
   @ApiParam({ name: 'id', description: 'Article UUID' })
   @ApiResponse({ status: 200, description: 'Article found', type: KnowledgeResponseDto })
   @ApiResponse({ status: 404, description: 'Article not found' })
@@ -141,11 +152,7 @@ export class KnowledgeController {
   @ApiBody({ type: UpdateKnowledgeDto })
   @ApiResponse({ status: 200, description: 'Article updated', type: KnowledgeResponseDto })
   @ApiResponse({ status: 404, description: 'Article not found' })
-  async update(
-    @Param('id') id: string,
-    @Body() dto: UpdateKnowledgeDto,
-    @Req() req: any,
-  ) {
+  async update(@Param('id') id: string, @Body() dto: UpdateKnowledgeDto, @Req() req: any) {
     const entity = await this.knowledgeService.update(id, req.workspaceId, dto);
     return { success: true, data: KnowledgeResponseDto.fromEntity(entity) };
   }
@@ -155,7 +162,10 @@ export class KnowledgeController {
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @RequirePermissions('knowledge.delete')
-  @ApiOperation({ summary: 'Soft delete article', description: 'Marks article as deleted (recoverable).' })
+  @ApiOperation({
+    summary: 'Soft delete article',
+    description: 'Marks article as deleted (recoverable).',
+  })
   @ApiParam({ name: 'id', description: 'Article UUID' })
   @ApiResponse({ status: 204, description: 'Article deleted' })
   async remove(@Param('id') id: string, @Req() req: any) {
@@ -174,16 +184,8 @@ export class KnowledgeController {
   @ApiParam({ name: 'id', description: 'Article UUID' })
   @ApiBody({ type: AssignReviewerDto })
   @ApiResponse({ status: 200, description: 'Review requested' })
-  async requestReview(
-    @Param('id') id: string,
-    @Body() dto: AssignReviewerDto,
-    @Req() req: any,
-  ) {
-    const entity = await this.knowledgeService.requestReview(
-      id,
-      req.workspaceId,
-      dto.reviewerId,
-    );
+  async requestReview(@Param('id') id: string, @Body() dto: AssignReviewerDto, @Req() req: any) {
+    const entity = await this.knowledgeService.requestReview(id, req.workspaceId, dto.reviewerId);
     return { success: true, data: KnowledgeResponseDto.fromEntity(entity) };
   }
 
@@ -191,7 +193,10 @@ export class KnowledgeController {
 
   @Post(':id/publish')
   @RequirePermissions('knowledge.publish')
-  @ApiOperation({ summary: 'Publish article', description: 'Publishes the article and creates a version snapshot.' })
+  @ApiOperation({
+    summary: 'Publish article',
+    description: 'Publishes the article and creates a version snapshot.',
+  })
   @ApiParam({ name: 'id', description: 'Article UUID' })
   @ApiResponse({ status: 200, description: 'Article published' })
   async publish(@Param('id') id: string, @Req() req: any) {
@@ -203,7 +208,10 @@ export class KnowledgeController {
 
   @Post(':id/reject')
   @RequirePermissions('knowledge.review')
-  @ApiOperation({ summary: 'Reject review', description: 'Sends article back to draft from review.' })
+  @ApiOperation({
+    summary: 'Reject review',
+    description: 'Sends article back to draft from review.',
+  })
   @ApiParam({ name: 'id', description: 'Article UUID' })
   @ApiResponse({ status: 200, description: 'Review rejected' })
   async rejectReview(@Param('id') id: string, @Req() req: any) {
@@ -227,7 +235,10 @@ export class KnowledgeController {
 
   @Post(':id/restore')
   @RequirePermissions('knowledge.update')
-  @ApiOperation({ summary: 'Restore from archive', description: 'Restores an archived article back to draft.' })
+  @ApiOperation({
+    summary: 'Restore from archive',
+    description: 'Restores an archived article back to draft.',
+  })
   @ApiParam({ name: 'id', description: 'Article UUID' })
   @ApiResponse({ status: 200, description: 'Article restored' })
   async restoreFromArchive(@Param('id') id: string, @Req() req: any) {
@@ -243,7 +254,10 @@ export class KnowledgeController {
 
   @Get(':id/taxonomy')
   @RequirePermissions('knowledge.read')
-  @ApiOperation({ summary: 'Get taxonomy', description: 'Returns all taxonomy assignments for an article.' })
+  @ApiOperation({
+    summary: 'Get taxonomy',
+    description: 'Returns all taxonomy assignments for an article.',
+  })
   @ApiParam({ name: 'id', description: 'Article UUID' })
   @ApiResponse({ status: 200, description: 'Taxonomy retrieved' })
   async getTaxonomy(@Param('id') id: string, @Req() req: any) {
@@ -256,16 +270,15 @@ export class KnowledgeController {
   @Post(':id/taxonomy')
   @HttpCode(HttpStatus.CREATED)
   @RequirePermissions('knowledge.update')
-  @ApiOperation({ summary: 'Add taxonomy', description: 'Assigns a taxonomy entry to the article.' })
+  @ApiOperation({
+    summary: 'Add taxonomy',
+    description: 'Assigns a taxonomy entry to the article.',
+  })
   @ApiParam({ name: 'id', description: 'Article UUID' })
   @ApiBody({ type: AddTaxonomyDto })
   @ApiResponse({ status: 201, description: 'Taxonomy added' })
   @ApiResponse({ status: 409, description: 'Already assigned' })
-  async addTaxonomy(
-    @Param('id') id: string,
-    @Body() dto: AddTaxonomyDto,
-    @Req() req: any,
-  ) {
+  async addTaxonomy(@Param('id') id: string, @Body() dto: AddTaxonomyDto, @Req() req: any) {
     await this.knowledgeService.addTaxonomy(id, req.workspaceId, dto);
     return { success: true, message: 'Taxonomy assigned' };
   }
@@ -295,7 +308,10 @@ export class KnowledgeController {
 
   @Get(':id/versions')
   @RequirePermissions('knowledge.read')
-  @ApiOperation({ summary: 'List versions', description: 'Returns all version snapshots for an article.' })
+  @ApiOperation({
+    summary: 'List versions',
+    description: 'Returns all version snapshots for an article.',
+  })
   @ApiParam({ name: 'id', description: 'Article UUID' })
   @ApiResponse({ status: 200, description: 'Versions retrieved' })
   async getVersions(@Param('id') id: string, @Req() req: any) {
@@ -325,7 +341,10 @@ export class KnowledgeController {
 
   @Post(':id/versions/:versionId/restore')
   @RequirePermissions('knowledge.publish')
-  @ApiOperation({ summary: 'Restore version', description: 'Restores content from a previous version (creates a new version).' })
+  @ApiOperation({
+    summary: 'Restore version',
+    description: 'Restores content from a previous version (creates a new version).',
+  })
   @ApiParam({ name: 'id', description: 'Article UUID' })
   @ApiParam({ name: 'versionId', description: 'Version UUID' })
   @ApiResponse({ status: 200, description: 'Version restored' })
@@ -335,7 +354,10 @@ export class KnowledgeController {
     @Req() req: any,
   ) {
     const entity = await this.knowledgeService.restoreVersion(
-      id, versionId, req.workspaceId, req.user.userId,
+      id,
+      versionId,
+      req.workspaceId,
+      req.user.userId,
     );
     return { success: true, data: KnowledgeResponseDto.fromEntity(entity) };
   }
@@ -348,7 +370,10 @@ export class KnowledgeController {
 
   @Get(':id/comments')
   @RequirePermissions('knowledge.read')
-  @ApiOperation({ summary: 'List comments', description: 'Returns all comments (top-level + replies) for an article.' })
+  @ApiOperation({
+    summary: 'List comments',
+    description: 'Returns all comments (top-level + replies) for an article.',
+  })
   @ApiParam({ name: 'id', description: 'Article UUID' })
   @ApiResponse({ status: 200, description: 'Comments retrieved' })
   async getComments(@Param('id') id: string, @Req() req: any) {
@@ -361,17 +386,19 @@ export class KnowledgeController {
   @Post(':id/comments')
   @HttpCode(HttpStatus.CREATED)
   @RequirePermissions('knowledge.create')
-  @ApiOperation({ summary: 'Add comment', description: 'Adds a comment to the article. Use parentId for replies.' })
+  @ApiOperation({
+    summary: 'Add comment',
+    description: 'Adds a comment to the article. Use parentId for replies.',
+  })
   @ApiParam({ name: 'id', description: 'Article UUID' })
   @ApiBody({ type: CreateCommentDto })
   @ApiResponse({ status: 201, description: 'Comment created' })
-  async createComment(
-    @Param('id') id: string,
-    @Body() dto: CreateCommentDto,
-    @Req() req: any,
-  ) {
+  async createComment(@Param('id') id: string, @Body() dto: CreateCommentDto, @Req() req: any) {
     const comment = await this.knowledgeService.createComment(
-      id, req.workspaceId, req.user.userId, dto,
+      id,
+      req.workspaceId,
+      req.user.userId,
+      dto,
     );
     return { success: true, data: comment };
   }
@@ -392,7 +419,11 @@ export class KnowledgeController {
     @Req() req: any,
   ) {
     const comment = await this.knowledgeService.updateComment(
-      id, commentId, req.workspaceId, req.user.userId, dto,
+      id,
+      commentId,
+      req.workspaceId,
+      req.user.userId,
+      dto,
     );
     return { success: true, data: comment };
   }
@@ -411,9 +442,7 @@ export class KnowledgeController {
     @Param('commentId') commentId: string,
     @Req() req: any,
   ) {
-    await this.knowledgeService.deleteComment(
-      id, commentId, req.workspaceId, req.user.userId,
-    );
+    await this.knowledgeService.deleteComment(id, commentId, req.workspaceId, req.user.userId);
     return { success: true, message: 'Comment deleted' };
   }
 
@@ -425,7 +454,10 @@ export class KnowledgeController {
 
   @Get(':id/workflow')
   @RequirePermissions('knowledge.read')
-  @ApiOperation({ summary: 'Get workflow', description: 'Returns the workflow (review/publish/reject history) for an article.' })
+  @ApiOperation({
+    summary: 'Get workflow',
+    description: 'Returns the workflow (review/publish/reject history) for an article.',
+  })
   @ApiParam({ name: 'id', description: 'Article UUID' })
   @ApiResponse({ status: 200, description: 'Workflow retrieved' })
   async getWorkflow(@Param('id') id: string, @Req() req: any) {
@@ -437,7 +469,10 @@ export class KnowledgeController {
 
   @Post(':id/workflow/submit')
   @RequirePermissions('knowledge.update')
-  @ApiOperation({ summary: 'Submit for review', description: 'Submits the article for review via workflow.' })
+  @ApiOperation({
+    summary: 'Submit for review',
+    description: 'Submits the article for review via workflow.',
+  })
   @ApiParam({ name: 'id', description: 'Article UUID' })
   @ApiBody({ type: CreateWorkflowCommentDto })
   @ApiResponse({ status: 201, description: 'Submitted for review' })
@@ -448,7 +483,10 @@ export class KnowledgeController {
     @Req() req: any,
   ) {
     const workflow = await this.knowledgeService.submitWorkflow(
-      id, req.workspaceId, req.user.userId, dto,
+      id,
+      req.workspaceId,
+      req.user.userId,
+      dto,
     );
     return { success: true, data: workflow };
   }
@@ -457,7 +495,10 @@ export class KnowledgeController {
 
   @Post(':id/workflow/approve')
   @RequirePermissions('knowledge.review')
-  @ApiOperation({ summary: 'Approve review', description: 'Approves the review, publishes the article via workflow.' })
+  @ApiOperation({
+    summary: 'Approve review',
+    description: 'Approves the review, publishes the article via workflow.',
+  })
   @ApiParam({ name: 'id', description: 'Article UUID' })
   @ApiBody({ type: CreateWorkflowCommentDto })
   @ApiResponse({ status: 200, description: 'Workflow approved' })
@@ -467,7 +508,10 @@ export class KnowledgeController {
     @Req() req: any,
   ) {
     const workflow = await this.knowledgeService.approveWorkflow(
-      id, req.workspaceId, req.user.userId, dto,
+      id,
+      req.workspaceId,
+      req.user.userId,
+      dto,
     );
     return { success: true, data: workflow };
   }
@@ -476,7 +520,10 @@ export class KnowledgeController {
 
   @Post(':id/workflow/reject')
   @RequirePermissions('knowledge.review')
-  @ApiOperation({ summary: 'Reject review', description: 'Rejects the review, returns article to draft via workflow.' })
+  @ApiOperation({
+    summary: 'Reject review',
+    description: 'Rejects the review, returns article to draft via workflow.',
+  })
   @ApiParam({ name: 'id', description: 'Article UUID' })
   @ApiBody({ type: CreateWorkflowCommentDto })
   @ApiResponse({ status: 200, description: 'Workflow rejected' })
@@ -486,7 +533,10 @@ export class KnowledgeController {
     @Req() req: any,
   ) {
     const workflow = await this.knowledgeService.rejectWorkflow(
-      id, req.workspaceId, req.user.userId, dto,
+      id,
+      req.workspaceId,
+      req.user.userId,
+      dto,
     );
     return { success: true, data: workflow };
   }
@@ -499,15 +549,20 @@ export class KnowledgeController {
 
   @Get('by-calculator/:calculatorType')
   @RequirePermissions('knowledge.read')
-  @ApiOperation({ summary: 'Find articles by calculator type', description: 'Returns knowledge articles that reference a specific calculation type (e.g. BASIC-001).' })
-  @ApiParam({ name: 'calculatorType', description: 'Calculation type code (e.g. BASIC-001, CABLE-003)' })
+  @ApiOperation({
+    summary: 'Find articles by calculator type',
+    description:
+      'Returns knowledge articles that reference a specific calculation type (e.g. BASIC-001).',
+  })
+  @ApiParam({
+    name: 'calculatorType',
+    description: 'Calculation type code (e.g. BASIC-001, CABLE-003)',
+  })
   @ApiResponse({ status: 200, description: 'Articles found' })
-  async findByCalculatorType(
-    @Param('calculatorType') calculatorType: string,
-    @Req() req: any,
-  ) {
+  async findByCalculatorType(@Param('calculatorType') calculatorType: string, @Req() req: any) {
     const entities = await this.knowledgeService.findByCalculatorType(
-      calculatorType, req.workspaceId,
+      calculatorType,
+      req.workspaceId,
     );
     return {
       success: true,
@@ -519,13 +574,14 @@ export class KnowledgeController {
 
   @Get(':id/related-calculations')
   @RequirePermissions('knowledge.read')
-  @ApiOperation({ summary: 'Get related calculations', description: 'Returns calculations that match the calculator types referenced by this article.' })
+  @ApiOperation({
+    summary: 'Get related calculations',
+    description: 'Returns calculations that match the calculator types referenced by this article.',
+  })
   @ApiParam({ name: 'id', description: 'Article UUID' })
   @ApiResponse({ status: 200, description: 'Related calculations' })
   async getRelatedCalculations(@Param('id') id: string, @Req() req: any) {
-    const calculations = await this.knowledgeService.getRelatedCalculations(
-      id, req.workspaceId,
-    );
+    const calculations = await this.knowledgeService.getRelatedCalculations(id, req.workspaceId);
     return { success: true, data: calculations };
   }
 
@@ -537,7 +593,10 @@ export class KnowledgeController {
 
   @Get('analytics/dashboard')
   @RequirePermissions('knowledge.read')
-  @ApiOperation({ summary: 'Dashboard analytics', description: 'Returns aggregate analytics for the workspace.' })
+  @ApiOperation({
+    summary: 'Dashboard analytics',
+    description: 'Returns aggregate analytics for the workspace.',
+  })
   @ApiResponse({ status: 200, description: 'Dashboard stats' })
   async getDashboardAnalytics(@Req() req: any) {
     const stats = await this.knowledgeService.getDashboardAnalytics(req.workspaceId);
@@ -548,7 +607,10 @@ export class KnowledgeController {
 
   @Get(':id/analytics')
   @RequirePermissions('knowledge.read')
-  @ApiOperation({ summary: 'Get analytics', description: 'Returns analytics for a specific article.' })
+  @ApiOperation({
+    summary: 'Get analytics',
+    description: 'Returns analytics for a specific article.',
+  })
   @ApiParam({ name: 'id', description: 'Article UUID' })
   @ApiResponse({ status: 200, description: 'Analytics retrieved' })
   async getAnalytics(@Param('id') id: string, @Req() req: any) {
@@ -560,7 +622,10 @@ export class KnowledgeController {
 
   @Post(':id/view')
   @RequirePermissions('knowledge.read')
-  @ApiOperation({ summary: 'Record view', description: 'Increments the view counter for an article.' })
+  @ApiOperation({
+    summary: 'Record view',
+    description: 'Increments the view counter for an article.',
+  })
   @ApiParam({ name: 'id', description: 'Article UUID' })
   @ApiResponse({ status: 200, description: 'View recorded' })
   async recordView(@Param('id') id: string, @Req() req: any) {

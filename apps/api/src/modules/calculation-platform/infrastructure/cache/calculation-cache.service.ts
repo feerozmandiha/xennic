@@ -102,27 +102,61 @@ export class CalculationCacheService {
     return total === 0 ? 0 : this.hits / total;
   }
 
-  getHits(): number { return this.hits; }
-  getMisses(): number { return this.misses; }
+  getHits(): number {
+    return this.hits;
+  }
+  getMisses(): number {
+    return this.misses;
+  }
 
   // Convenience methods
-  getFormula<T>(key: string): T | null { return this.get<T>('formula', key); }
-  setFormula<T>(key: string, value: T, ttlMs?: number): void { this.set('formula', key, value, ttlMs); }
-  invalidateFormula(key?: string): void { this.invalidate('formula', key); }
+  getFormula<T>(key: string): T | null {
+    return this.get<T>('formula', key);
+  }
+  setFormula<T>(key: string, value: T, ttlMs?: number): void {
+    this.set('formula', key, value, ttlMs);
+  }
+  invalidateFormula(key?: string): void {
+    this.invalidate('formula', key);
+  }
 
-  getUnit<T>(key: string): T | null { return this.get<T>('unit', key); }
-  setUnit<T>(key: string, value: T, ttlMs?: number): void { this.set('unit', key, value, ttlMs); }
-  invalidateUnit(key?: string): void { this.invalidate('unit', key); }
+  getUnit<T>(key: string): T | null {
+    return this.get<T>('unit', key);
+  }
+  setUnit<T>(key: string, value: T, ttlMs?: number): void {
+    this.set('unit', key, value, ttlMs);
+  }
+  invalidateUnit(key?: string): void {
+    this.invalidate('unit', key);
+  }
 
-  getDefinition<T>(key: string): T | null { return this.get<T>('definition', key); }
-  setDefinition<T>(key: string, value: T, ttlMs?: number): void { this.set('definition', key, value, ttlMs); }
-  invalidateDefinition(key?: string): void { this.invalidate('definition', key); }
+  getDefinition<T>(key: string): T | null {
+    return this.get<T>('definition', key);
+  }
+  setDefinition<T>(key: string, value: T, ttlMs?: number): void {
+    this.set('definition', key, value, ttlMs);
+  }
+  invalidateDefinition(key?: string): void {
+    this.invalidate('definition', key);
+  }
 
-  getAiResult<T>(key: string): T | null { return this.get<T>('ai', key); }
-  setAiResult<T>(key: string, value: T, ttlMs?: number): void { this.set('ai', key, value, ttlMs); }
-  invalidateAiResult(key?: string): void { this.invalidate('ai', key); }
+  getAiResult<T>(key: string): T | null {
+    return this.get<T>('ai', key);
+  }
+  setAiResult<T>(key: string, value: T, ttlMs?: number): void {
+    this.set('ai', key, value, ttlMs);
+  }
+  invalidateAiResult(key?: string): void {
+    this.invalidate('ai', key);
+  }
 
-  getResult<T>(key: string): T | null { return this.get<T>('result', key); }
-  setResult<T>(key: string, value: T, ttlMs?: number): void { this.set('result', key, value, ttlMs); }
-  invalidateResult(key?: string): void { this.invalidate('result', key); }
+  getResult<T>(key: string): T | null {
+    return this.get<T>('result', key);
+  }
+  setResult<T>(key: string, value: T, ttlMs?: number): void {
+    this.set('result', key, value, ttlMs);
+  }
+  invalidateResult(key?: string): void {
+    this.invalidate('result', key);
+  }
 }

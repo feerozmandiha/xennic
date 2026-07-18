@@ -8,23 +8,23 @@
 
 ## Maintainability Score: **43 / 100**
 
-| Dimension | Score | Criticality |
-|---|---|---|
-| Dead Code Elimination | 65 | Medium |
-| Code Duplication | 30 | High |
-| Method Length | 35 | High |
-| Class Size | 40 | High |
-| Magic Numbers | 50 | Medium |
-| Naming Conventions | 55 | Medium |
-| DDD Alignment | 25 | High |
-| SOLID Principles | 30 | High |
-| DRY Principle | 35 | High |
-| KISS Principle | 40 | Medium |
-| Clean Architecture | 25 | High |
-| Testability | 45 | Medium |
-| Comments/Documentation | 60 | Medium |
-| Error Handling | 30 | High |
-| Async Patterns | 50 | Medium |
+| Dimension              | Score | Criticality |
+| ---------------------- | ----- | ----------- |
+| Dead Code Elimination  | 65    | Medium      |
+| Code Duplication       | 30    | High        |
+| Method Length          | 35    | High        |
+| Class Size             | 40    | High        |
+| Magic Numbers          | 50    | Medium      |
+| Naming Conventions     | 55    | Medium      |
+| DDD Alignment          | 25    | High        |
+| SOLID Principles       | 30    | High        |
+| DRY Principle          | 35    | High        |
+| KISS Principle         | 40    | Medium      |
+| Clean Architecture     | 25    | High        |
+| Testability            | 45    | Medium      |
+| Comments/Documentation | 60    | Medium      |
+| Error Handling         | 30    | High        |
+| Async Patterns         | 50    | Medium      |
 
 ---
 
@@ -60,6 +60,7 @@ return { success: true, data, meta: { page, limit, total, totalPages: Math.ceil(
 ```
 
 Found in:
+
 - `modules/billing/application/services/billing.service.ts:68-71`
 - `modules/project/application/services/project.service.ts:58-64`
 - `modules/webhooks/application/services/webhook.service.ts:55-63`
@@ -95,15 +96,15 @@ All repositories follow the same try/catch template — correct structurally, bu
 
 ### Excessively long methods (>100 lines)
 
-| File | Method | Lines |
-|---|---|---|
-| `modules/knowledge/application/services/knowledge.service.ts` | `getPaginated` | ~120 |
-| `modules/knowledge/application/services/knowledge.service.ts` | `create` | ~95 |
-| `modules/admin/application/services/admin.service.ts` | `getStats` (entire file is one big class) | 583 total |
-| `modules/billing/application/services/billing.service.ts` | `getSubscription` | ~85 |
-| `modules/billing/infrastructure/repositories/billing.repository.ts` | `getBillingPortal` | ~120 |
-| `modules/sensored/engineering/application/services/engineering.service.ts` | `calculate` | ~150 |
-| `modules/sensored/engineering/application/services/engineering.service.ts` | `compare` | ~90 |
+| File                                                                       | Method                                    | Lines     |
+| -------------------------------------------------------------------------- | ----------------------------------------- | --------- |
+| `modules/knowledge/application/services/knowledge.service.ts`              | `getPaginated`                            | ~120      |
+| `modules/knowledge/application/services/knowledge.service.ts`              | `create`                                  | ~95       |
+| `modules/admin/application/services/admin.service.ts`                      | `getStats` (entire file is one big class) | 583 total |
+| `modules/billing/application/services/billing.service.ts`                  | `getSubscription`                         | ~85       |
+| `modules/billing/infrastructure/repositories/billing.repository.ts`        | `getBillingPortal`                        | ~120      |
+| `modules/sensored/engineering/application/services/engineering.service.ts` | `calculate`                               | ~150      |
+| `modules/sensored/engineering/application/services/engineering.service.ts` | `compare`                                 | ~90       |
 
 ---
 
@@ -111,15 +112,15 @@ All repositories follow the same try/catch template — correct structurally, bu
 
 ### Overly large classes (>300 lines)
 
-| File | Lines | Violation |
-|---|---|---|
-| `modules/knowledge/application/services/knowledge.service.ts` | **801** | **SRP — handles CRUD, taxonomy, analytics, formulas, versions** |
-| `modules/admin/application/services/admin.service.ts` | **583** | **SRP — stats, user management, workspace management, notifications** |
-| `modules/billing/infrastructure/repositories/billing.repository.ts` | **380** | Repository handles both read/write and external provider calls |
-| `modules/billing/application/services/billing.service.ts` | **360** | Multiple billing workflows in single service |
-| `modules/engineering/application/services/engineering.service.ts` | **~340** | Calculation logic, image upload, comparison |
-| `modules/workspace/application/services/workspace.service.ts` | **394** | All workspace operations |
-| `modules/marketplace/infrastructure/repositories/marketplace.repository.ts` | **357** | Single repository for orders, listings, ratings |
+| File                                                                        | Lines    | Violation                                                             |
+| --------------------------------------------------------------------------- | -------- | --------------------------------------------------------------------- |
+| `modules/knowledge/application/services/knowledge.service.ts`               | **801**  | **SRP — handles CRUD, taxonomy, analytics, formulas, versions**       |
+| `modules/admin/application/services/admin.service.ts`                       | **583**  | **SRP — stats, user management, workspace management, notifications** |
+| `modules/billing/infrastructure/repositories/billing.repository.ts`         | **380**  | Repository handles both read/write and external provider calls        |
+| `modules/billing/application/services/billing.service.ts`                   | **360**  | Multiple billing workflows in single service                          |
+| `modules/engineering/application/services/engineering.service.ts`           | **~340** | Calculation logic, image upload, comparison                           |
+| `modules/workspace/application/services/workspace.service.ts`               | **394**  | All workspace operations                                              |
+| `modules/marketplace/infrastructure/repositories/marketplace.repository.ts` | **357**  | Single repository for orders, listings, ratings                       |
 
 ---
 
@@ -142,13 +143,13 @@ No centralized constants file; values are scattered across entities, services, a
 
 ### Inconsistencies
 
-| Issue | Example |
-|---|---|
-| Module naming pluralized inconsistently | `consultations/` (plural) vs `knowledge/` (singular) vs `api-keys/` (kebab-plural) |
-| File naming mixed | Some use `*.service.ts`, some `*.repository.ts` (consistent), but controllers mix `*-controller.ts` and `*.controller.ts` |
-| Variable naming | Persian comments in `notification.service.ts:67`, `user.entity.ts:95` (Persian text mixed with English) |
-| Interface naming | Some prefixed with `I` (old style), some without (modern) — inconsistent across modules |
-| DTO naming | Inconsistent: `CreateKnowledgeDto` vs `RefreshTokenDto` vs inline `LoginDto` defined in auth.service.ts |
+| Issue                                   | Example                                                                                                                   |
+| --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| Module naming pluralized inconsistently | `consultations/` (plural) vs `knowledge/` (singular) vs `api-keys/` (kebab-plural)                                        |
+| File naming mixed                       | Some use `*.service.ts`, some `*.repository.ts` (consistent), but controllers mix `*-controller.ts` and `*.controller.ts` |
+| Variable naming                         | Persian comments in `notification.service.ts:67`, `user.entity.ts:95` (Persian text mixed with English)                   |
+| Interface naming                        | Some prefixed with `I` (old style), some without (modern) — inconsistent across modules                                   |
+| DTO naming                              | Inconsistent: `CreateKnowledgeDto` vs `RefreshTokenDto` vs inline `LoginDto` defined in auth.service.ts                   |
 
 ---
 
@@ -158,13 +159,13 @@ No centralized constants file; values are scattered across entities, services, a
 
 The Application Layer (services) should depend on Repository interfaces, not directly on Prisma. Violations found:
 
-| File | Line | Pattern |
-|---|---|---|
-| `modules/auth/application/services/auth.service.ts` | `188,203,221` | `prisma.$executeRaw`, `prisma.$queryRaw` |
-| `modules/rbac/application/services/authorization.service.ts` | `123-157` | `prisma.$queryRaw` for permission checks |
-| `modules/admin/application/services/admin.service.ts` | `20-248` | Direct `prisma.users.findUnique`, `prisma.workspaces.count` — **entire class** |
-| `modules/knowledge/application/services/knowledge.service.ts` | `65-505` | 20+ direct `prisma.*` calls through the service |
-| `modules/knowledge/presentation/controllers/taxonomy.controller.ts` | `19,33` | Controller queries Prisma directly — **worst violation** |
+| File                                                                | Line          | Pattern                                                                        |
+| ------------------------------------------------------------------- | ------------- | ------------------------------------------------------------------------------ |
+| `modules/auth/application/services/auth.service.ts`                 | `188,203,221` | `prisma.$executeRaw`, `prisma.$queryRaw`                                       |
+| `modules/rbac/application/services/authorization.service.ts`        | `123-157`     | `prisma.$queryRaw` for permission checks                                       |
+| `modules/admin/application/services/admin.service.ts`               | `20-248`      | Direct `prisma.users.findUnique`, `prisma.workspaces.count` — **entire class** |
+| `modules/knowledge/application/services/knowledge.service.ts`       | `65-505`      | 20+ direct `prisma.*` calls through the service                                |
+| `modules/knowledge/presentation/controllers/taxonomy.controller.ts` | `19,33`       | Controller queries Prisma directly — **worst violation**                       |
 
 ### Domain entities mixing concerns
 
@@ -250,22 +251,22 @@ The Application Layer (services) should depend on Repository interfaces, not dir
 
 Silent swallowing patterns:
 
-| Location | Pattern |
-|---|---|
-| `modules/api-keys/application/services/api-key.service.ts:81` | `.catch(() => {})` — **silent failure** |
-| `modules/admin/application/services/admin.service.ts:214` | `.catch(() => null)` — swallows error |
-| `modules/admin/application/services/admin.service.ts:408` | `.catch(() => null)` — silent |
+| Location                                                               | Pattern                                           |
+| ---------------------------------------------------------------------- | ------------------------------------------------- |
+| `modules/api-keys/application/services/api-key.service.ts:81`          | `.catch(() => {})` — **silent failure**           |
+| `modules/admin/application/services/admin.service.ts:214`              | `.catch(() => null)` — swallows error             |
+| `modules/admin/application/services/admin.service.ts:408`              | `.catch(() => null)` — silent                     |
 | `modules/notification/application/services/notification.service.ts:83` | `.catch(err => ...)` — logged but fire-and-forget |
 
 ### `console.error()` instead of Logger (~54 occurrences)
 
-| File | Instances |
-|---|---|
-| `modules/auth/infrastructure/repositories/refresh-token.repository.ts` | 6 |
-| `modules/auth/infrastructure/repositories/session.repository.ts` | 7 |
-| `modules/rbac/infrastructure/repositories/role.repository.ts` | 3 |
-| `modules/project/infrastructure/repositories/project.repository.ts` | 4 |
-| Other repositories | ~34 scattered |
+| File                                                                   | Instances     |
+| ---------------------------------------------------------------------- | ------------- |
+| `modules/auth/infrastructure/repositories/refresh-token.repository.ts` | 6             |
+| `modules/auth/infrastructure/repositories/session.repository.ts`       | 7             |
+| `modules/rbac/infrastructure/repositories/role.repository.ts`          | 3             |
+| `modules/project/infrastructure/repositories/project.repository.ts`    | 4             |
+| Other repositories                                                     | ~34 scattered |
 
 ### No structured error taxonomy
 
@@ -335,40 +336,40 @@ Silent swallowing patterns:
 
 ### engineering-service
 
-| File | Lines | Issues |
-|---|---|---|
-| `src/main.py` | **~308 (estimated 14K chars)** | Too long; monolithic import section; inline CORS config |
-| `src/core/registry.py` | 198 | **Singleton anti-pattern**: `_instance`, `_lock`, `_calculators` are class-level, not instance-level — shared state across threads |
-| `src/core/base_calculator.py` | 254 | Good abstraction but some calculators may be too large |
-| `src/core/validation.py` | 262 | Well-structured |
+| File                          | Lines                          | Issues                                                                                                                             |
+| ----------------------------- | ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `src/main.py`                 | **~308 (estimated 14K chars)** | Too long; monolithic import section; inline CORS config                                                                            |
+| `src/core/registry.py`        | 198                            | **Singleton anti-pattern**: `_instance`, `_lock`, `_calculators` are class-level, not instance-level — shared state across threads |
+| `src/core/base_calculator.py` | 254                            | Good abstraction but some calculators may be too large                                                                             |
+| `src/core/validation.py`      | 262                            | Well-structured                                                                                                                    |
 
 ### ai-service
 
-| File | Lines | Issues |
-|---|---|---|
-| `app/tools/document_parser.py` | 271 | Large file, likely single-responsibility violation |
-| `app/tools/minio_client.py` | 219 | Good S3 abstraction |
-| `app/rag/chunker.py` | 213 | Reasonable size |
-| `app/rag/retriever.py` | 213 | Acceptable |
+| File                           | Lines | Issues                                             |
+| ------------------------------ | ----- | -------------------------------------------------- |
+| `app/tools/document_parser.py` | 271   | Large file, likely single-responsibility violation |
+| `app/tools/minio_client.py`    | 219   | Good S3 abstraction                                |
+| `app/rag/chunker.py`           | 213   | Reasonable size                                    |
+| `app/rag/retriever.py`         | 213   | Acceptable                                         |
 
 ### vision-service
 
-| File | Lines | Issues |
-|---|---|---|
-| `app/config/providers.py` | 114 | CORS `origins=["*"]` in `main.py:72` — security risk |
-| `app/core/pipeline.py` | 48 | Clean Strategy/Chain pattern |
-| `app/core/stage.py` | 51 | Good base abstraction |
-| `app/core/result.py` | 54 | Acceptable |
+| File                      | Lines | Issues                                               |
+| ------------------------- | ----- | ---------------------------------------------------- |
+| `app/config/providers.py` | 114   | CORS `origins=["*"]` in `main.py:72` — security risk |
+| `app/core/pipeline.py`    | 48    | Clean Strategy/Chain pattern                         |
+| `app/core/stage.py`       | 51    | Good base abstraction                                |
+| `app/core/result.py`      | 54    | Acceptable                                           |
 
 ### Python-specific issues
 
-| Issue | Severity | Location |
-|---|---|---|
-| CORS `["*"]` in production | High | `vision-service/app/main.py:72`, `engineering-service/src/main.py:77` |
-| Singleton with class-level state | Medium | `engineering-service/src/core/registry.py:12-15` |
-| No request timeout on external calls | Medium | `ai-service`, `engineering-service` |
-| `main.py` files too large | Medium | `engineering-service/src/main.py` (~308 lines) |
-| No mypy strict mode | Low | All services |
+| Issue                                | Severity | Location                                                              |
+| ------------------------------------ | -------- | --------------------------------------------------------------------- |
+| CORS `["*"]` in production           | High     | `vision-service/app/main.py:72`, `engineering-service/src/main.py:77` |
+| Singleton with class-level state     | Medium   | `engineering-service/src/core/registry.py:12-15`                      |
+| No request timeout on external calls | Medium   | `ai-service`, `engineering-service`                                   |
+| `main.py` files too large            | Medium   | `engineering-service/src/main.py` (~308 lines)                        |
+| No mypy strict mode                  | Low      | All services                                                          |
 
 ---
 

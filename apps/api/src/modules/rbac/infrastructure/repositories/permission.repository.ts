@@ -5,7 +5,6 @@ import { PermissionEntity } from '../../domain/entities/permission.entity.js';
 
 @Injectable()
 export class PermissionRepository implements IPermissionRepository {
-
   // ─── save ───────────────────────────────────────────────────────────────────
 
   async save(permission: PermissionEntity): Promise<void> {
@@ -138,10 +137,7 @@ export class PermissionRepository implements IPermissionRepository {
 
   // ─── hasPermissionForRoles ───────────────────────────────────────────────────
 
-  async hasPermissionForRoles(
-    roleIds: string[],
-    permissionSlug: string,
-  ): Promise<boolean> {
+  async hasPermissionForRoles(roleIds: string[], permissionSlug: string): Promise<boolean> {
     if (!roleIds || roleIds.length === 0) return false;
     try {
       // استفاده از ANY به جای IN برای آرایه‌های Prisma raw
@@ -183,10 +179,7 @@ export class PermissionRepository implements IPermissionRepository {
 
   // ─── assignPermissionToRole ──────────────────────────────────────────────────
 
-  async assignPermissionToRole(
-    roleId: string,
-    permissionId: string,
-  ): Promise<void> {
+  async assignPermissionToRole(roleId: string, permissionId: string): Promise<void> {
     try {
       // جلوگیری از duplicate
       const existing = await prisma.$queryRaw<any[]>`
@@ -208,10 +201,7 @@ export class PermissionRepository implements IPermissionRepository {
 
   // ─── removePermissionFromRole ────────────────────────────────────────────────
 
-  async removePermissionFromRole(
-    roleId: string,
-    permissionId: string,
-  ): Promise<void> {
+  async removePermissionFromRole(roleId: string, permissionId: string): Promise<void> {
     try {
       await prisma.$executeRaw`
         DELETE FROM "role_permissions"
@@ -227,12 +217,12 @@ export class PermissionRepository implements IPermissionRepository {
 
   private _map(row: any): PermissionEntity {
     return PermissionEntity.reconstitute({
-      id:          row.id,
-      name:        row.name,
-      slug:        row.slug,
+      id: row.id,
+      name: row.name,
+      slug: row.slug,
       description: row.description ?? null,
-      domain:      row.domain,
-      createdAt:   row.created_at,
+      domain: row.domain,
+      createdAt: row.created_at,
     });
   }
 }

@@ -1,4 +1,8 @@
-export function renderPasswordResetEmail(recipientName: string, resetLink: string, language: 'fa' | 'en' = 'fa'): { subject: string; html: string } {
+export function renderPasswordResetEmail(
+  recipientName: string,
+  resetLink: string,
+  language: 'fa' | 'en' = 'fa',
+): { subject: string; html: string } {
   const isFa = language === 'fa';
   const subject = isFa ? 'بازیابی رمز عبور - Xennic' : 'Password Reset - Xennic';
 
@@ -19,9 +23,11 @@ export function renderPasswordResetEmail(recipientName: string, resetLink: strin
           ${isFa ? `سلام ${recipientName} عزیز،` : `Hello ${recipientName},`}
         </p>
         <p style="font-size: 14px; color: #4b5563; line-height: 1.6; margin: 0 0 24px;">
-          ${isFa
-            ? 'درخواست بازیابی رمز عبور برای حساب شما ثبت شده است. برای تنظیم رمز جدید روی دکمه زیر کلیک کنید:'
-            : 'A password reset was requested for your account. Click the button below to set a new password:'}
+          ${
+            isFa
+              ? 'درخواست بازیابی رمز عبور برای حساب شما ثبت شده است. برای تنظیم رمز جدید روی دکمه زیر کلیک کنید:'
+              : 'A password reset was requested for your account. Click the button below to set a new password:'
+          }
         </p>
         <table style="margin: 0 auto 24px;">
           <tr>
@@ -36,9 +42,11 @@ export function renderPasswordResetEmail(recipientName: string, resetLink: strin
           ${isFa ? 'این لینک تا ۱۵ دقیقه معتبر است.' : 'This link expires in 15 minutes.'}
         </p>
         <p style="font-size: 13px; color: #9ca3af; margin: 0;">
-          ${isFa
-            ? 'اگر درخواست بازیابی رمز نداده‌اید، این ایمیل را نادیده بگیرید.'
-            : 'If you did not request a password reset, please ignore this email.'}
+          ${
+            isFa
+              ? 'اگر درخواست بازیابی رمز نداده‌اید، این ایمیل را نادیده بگیرید.'
+              : 'If you did not request a password reset, please ignore this email.'
+          }
         </p>
       </td>
     </tr>
@@ -56,7 +64,11 @@ export function renderPasswordResetEmail(recipientName: string, resetLink: strin
   return { subject, html };
 }
 
-export function renderWelcomeEmail(recipientName: string, loginLink: string, language: 'fa' | 'en' = 'fa'): { subject: string; html: string } {
+export function renderWelcomeEmail(
+  recipientName: string,
+  loginLink: string,
+  language: 'fa' | 'en' = 'fa',
+): { subject: string; html: string } {
   const isFa = language === 'fa';
   const subject = isFa ? 'به Xennic خوش آمدید!' : 'Welcome to Xennic!';
 
@@ -76,9 +88,11 @@ export function renderWelcomeEmail(recipientName: string, loginLink: string, lan
           ${isFa ? `سلام ${recipientName} عزیز،` : `Hello ${recipientName},`}
         </p>
         <p style="font-size: 14px; color: #4b5563; line-height: 1.6; margin: 0 0 24px;">
-          ${isFa
-            ? 'حساب کاربری شما در Xennic با موفقیت ایجاد شد. اکنون می‌توانید از تمام قابلیت‌های پلتفرم مهندسی برق استفاده کنید.'
-            : 'Your Xennic account has been created successfully. You can now use all features of the electrical engineering platform.'}
+          ${
+            isFa
+              ? 'حساب کاربری شما در Xennic با موفقیت ایجاد شد. اکنون می‌توانید از تمام قابلیت‌های پلتفرم مهندسی برق استفاده کنید.'
+              : 'Your Xennic account has been created successfully. You can now use all features of the electrical engineering platform.'
+          }
         </p>
         <table style="margin: 0 auto 24px;">
           <tr>
@@ -133,9 +147,11 @@ export function renderWorkspaceInviteEmail(
           ${isFa ? `سلام ${recipientName} عزیز،` : `Hello ${recipientName},`}
         </p>
         <p style="font-size: 14px; color: #4b5563; line-height: 1.6; margin: 0 0 24px;">
-          ${isFa
-            ? `${inviterName} شما را به workspace "${workspaceName}" دعوت کرده است.`
-            : `${inviterName} has invited you to the workspace "${workspaceName}".`}
+          ${
+            isFa
+              ? `${inviterName} شما را به workspace "${workspaceName}" دعوت کرده است.`
+              : `${inviterName} has invited you to the workspace "${workspaceName}".`
+          }
         </p>
         <table style="margin: 0 auto 24px;">
           <tr>

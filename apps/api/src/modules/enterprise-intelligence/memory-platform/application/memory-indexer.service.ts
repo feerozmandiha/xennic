@@ -22,9 +22,7 @@ export class MemoryIndexerService {
     await this.memoryIndex.clear();
 
     const allResults = await this.memoryStore.search('', { offset: 0, limit: 10000 });
-    const entities = type
-      ? allResults.items.filter(e => e.type === type)
-      : allResults.items;
+    const entities = type ? allResults.items.filter((e) => e.type === type) : allResults.items;
 
     for (const entity of entities) {
       await this.memoryIndex.index(entity);
@@ -56,7 +54,9 @@ export class MemoryIndexerService {
 
   private cosineSimilarity(a: number[], b: number[]): number {
     if (a.length !== b.length) return 0;
-    let dot = 0, normA = 0, normB = 0;
+    let dot = 0,
+      normA = 0,
+      normB = 0;
     for (let i = 0; i < a.length; i++) {
       const ai = a[i]!;
       const bi = b[i]!;

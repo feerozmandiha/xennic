@@ -12,7 +12,8 @@ export class BillingCallbackController {
   @Get('callback')
   @ApiOperation({
     summary: 'Zarinpal payment callback',
-    description: 'Public endpoint called by Zarinpal after payment. Redirects user to frontend success/failure page.',
+    description:
+      'Public endpoint called by Zarinpal after payment. Redirects user to frontend success/failure page.',
   })
   @ApiQuery({ name: 'Authority', required: false, description: 'Zarinpal authority code' })
   @ApiQuery({ name: 'Status', required: false, description: 'Zarinpal payment status (OK/NOK)' })
@@ -25,16 +26,23 @@ export class BillingCallbackController {
     const frontendUrl = process.env.FRONTEND_URL ?? 'http://localhost:3001';
 
     if (!authority || status !== 'OK') {
-      this.logger.warn(`Zarinpal callback with invalid params: Authority=${authority}, Status=${status}`);
+      this.logger.warn(
+        `Zarinpal callback with invalid params: Authority=${authority}, Status=${status}`,
+      );
       return res!.redirect(HttpStatus.FOUND, `${frontendUrl}/fa/billing/checkout?payment=failed`);
     }
 
     try {
       const { payment } = await this.billingService.verifyByAuthority(authority);
       this.logger.log(`Payment ${payment.id} verified successfully via callback`);
-      return res!.redirect(HttpStatus.FOUND, `${frontendUrl}/fa/billing/checkout?payment=success&ref=${payment.gatewayReference}`);
+      return res!.redirect(
+        HttpStatus.FOUND,
+        `${frontendUrl}/fa/billing/checkout?payment=success&ref=${payment.gatewayReference}`,
+      );
     } catch (err) {
-      this.logger.error(`Callback verification failed for authority ${authority}: ${(err as Error).message}`);
+      this.logger.error(
+        `Callback verification failed for authority ${authority}: ${(err as Error).message}`,
+      );
       return res!.redirect(HttpStatus.FOUND, `${frontendUrl}/fa/billing/checkout?payment=failed`);
     }
   }

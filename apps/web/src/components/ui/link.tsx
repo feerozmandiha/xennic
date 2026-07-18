@@ -6,10 +6,5 @@ interface LinkProps extends React.ComponentProps<typeof NextLink> {
 }
 
 export function Link({ className, ...props }: LinkProps) {
-  return (
-    <NextLink
-      className={cn('transition-colors hover:opacity-80', className)}
-      {...props}
-    />
-  );
+  return <NextLink className={cn('transition-colors hover:opacity-80', className)} {...props} />;
 }

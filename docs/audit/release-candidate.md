@@ -138,10 +138,10 @@
 
 ## Sign-off
 
-| Role | Name | Date | Signature |
-|------|------|------|-----------|
-| Engineering Lead | | | |
-| Security Lead | | | |
-| DevOps Lead | | | |
-| QA Lead | | | |
-| AI Lead | | | |
+| Role             | Name | Date | Signature |
+| ---------------- | ---- | ---- | --------- |
+| Engineering Lead |      |      |           |
+| Security Lead    |      |      |           |
+| DevOps Lead      |      |      |           |
+| QA Lead          |      |      |           |
+| AI Lead          |      |      |           |

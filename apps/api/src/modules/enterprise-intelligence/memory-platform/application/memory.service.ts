@@ -39,11 +39,12 @@ export class MemoryService {
   ): Promise<{ entity: MemoryEntity; score: number }[]> {
     if (type) {
       const typedResults = await this.memoryStore.findByType(type, 'global', '');
-      const filtered = typedResults.items.filter(e =>
-        e.key.toLowerCase().includes(query.toLowerCase()) ||
-        JSON.stringify(e.value).toLowerCase().includes(query.toLowerCase()),
+      const filtered = typedResults.items.filter(
+        (e) =>
+          e.key.toLowerCase().includes(query.toLowerCase()) ||
+          JSON.stringify(e.value).toLowerCase().includes(query.toLowerCase()),
       );
-      return filtered.slice(0, topK ?? filtered.length).map(e => ({ entity: e, score: 1 }));
+      return filtered.slice(0, topK ?? filtered.length).map((e) => ({ entity: e, score: 1 }));
     }
     return this.memoryIndex.search(query, topK);
   }
@@ -83,7 +84,7 @@ export class MemoryService {
     const total = await this.memoryStore.count();
 
     const allEntities = await this.memoryStore.search('', { offset: 0, limit: 10000 });
-    const expired = allEntities.items.filter(e => e.expiresAt && e.expiresAt < new Date()).length;
+    const expired = allEntities.items.filter((e) => e.expiresAt && e.expiresAt < new Date()).length;
 
     return { total, byType, expired };
   }

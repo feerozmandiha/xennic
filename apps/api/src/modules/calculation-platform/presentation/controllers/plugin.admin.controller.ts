@@ -1,4 +1,14 @@
-import { Controller, Get, Post, Put, Param, Body, HttpStatus, HttpCode, Logger } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Param,
+  Body,
+  HttpStatus,
+  HttpCode,
+  Logger,
+} from '@nestjs/common';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { PluginRegistry, RegisteredPlugin } from '../../infrastructure/plugin-registry.js';
 

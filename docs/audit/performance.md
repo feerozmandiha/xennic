@@ -17,7 +17,7 @@ const rows = await prisma.$queryRaw<any[]>`
   SELECT * FROM "conversations" WHERE id = ${id} LIMIT 1
 `;
 if (!rows.length) return null;
-const msgs = await this.findMessages(id);  // ← second query always, even if not needed
+const msgs = await this.findMessages(id); // ← second query always, even if not needed
 return this._mapConversation(rows[0], msgs);
 ```
 
@@ -32,10 +32,10 @@ const analyticsRows = await prisma.knowledge_analytics.findMany({
   include: { knowledge: { select: { slug: true, status: true, workspace_id: true } } },
 });
 // ...
-const wsAnalytics = analyticsRows.filter(a => a.knowledge?.workspace_id === workspaceId);
+const wsAnalytics = analyticsRows.filter((a) => a.knowledge?.workspace_id === workspaceId);
 // ...
 for (const a of articles) {
-  const analytic = wsAnalytics.find(an => an.knowledge_id === a.id);  // ← O(n*m) in-memory
+  const analytic = wsAnalytics.find((an) => an.knowledge_id === a.id); // ← O(n*m) in-memory
   viewsByStatus[a.status] = (viewsByStatus[a.status] ?? 0) + (analytic?.views ?? 0);
 }
 ```
@@ -49,7 +49,7 @@ Fetches ALL analytics across ALL workspaces, then filters + loops in application
 ```typescript
 const sub = await this.subscriptionRepository.findActiveByWorkspace(workspaceId);
 if (sub) {
-  const plan = await this.subscriptionRepository.findPlanById(sub.planId);  // ← serial
+  const plan = await this.subscriptionRepository.findPlanById(sub.planId); // ← serial
   if (plan) return plan;
 }
 ```
@@ -85,17 +85,17 @@ Loads up to 100 workspaces into memory and iterates to check for a duplicate nam
 
 30+ raw SQL queries across the codebase use `SELECT *` instead of selecting only needed columns. Major instances:
 
-| File | Line | Query |
-|------|------|-------|
-| `project/infrastructure/repositories/project.repository.ts` | 67, 85, 165, 183, 238 | All `SELECT *` |
-| `ai/infrastructure/repositories/ai.repository.ts` | 16, 26, 45, 101 | All `SELECT *` |
-| `api-keys/infrastructure/repositories/api-key.repository.ts` | 34, 46, 63 | All `SELECT *` |
-| `auth/infrastructure/repositories/refresh-token.repository.ts` | 46, 70 | All `SELECT *` |
-| `auth/infrastructure/repositories/session.repository.ts` | 43, 69 | All `SELECT *` |
-| `notification/infrastructure/repositories/notification.repository.ts` | 42, 66, 74, 80, 86 | All `SELECT *` |
-| `engineering/infrastructure/repositories/calculation.repository.ts` | 40, 66, 75, 83, 91 | All `SELECT *` |
-| `feature-flags/infrastructure/repositories/feature-flag.repository.ts` | 35, 45, 57 | All `SELECT *` |
-| `consultations/infrastructure/repositories/consultations.repository.ts` | 63 | `SELECT *` |
+| File                                                                    | Line                  | Query          |
+| ----------------------------------------------------------------------- | --------------------- | -------------- |
+| `project/infrastructure/repositories/project.repository.ts`             | 67, 85, 165, 183, 238 | All `SELECT *` |
+| `ai/infrastructure/repositories/ai.repository.ts`                       | 16, 26, 45, 101       | All `SELECT *` |
+| `api-keys/infrastructure/repositories/api-key.repository.ts`            | 34, 46, 63            | All `SELECT *` |
+| `auth/infrastructure/repositories/refresh-token.repository.ts`          | 46, 70                | All `SELECT *` |
+| `auth/infrastructure/repositories/session.repository.ts`                | 43, 69                | All `SELECT *` |
+| `notification/infrastructure/repositories/notification.repository.ts`   | 42, 66, 74, 80, 86    | All `SELECT *` |
+| `engineering/infrastructure/repositories/calculation.repository.ts`     | 40, 66, 75, 83, 91    | All `SELECT *` |
+| `feature-flags/infrastructure/repositories/feature-flag.repository.ts`  | 35, 45, 57            | All `SELECT *` |
+| `consultations/infrastructure/repositories/consultations.repository.ts` | 63                    | `SELECT *`     |
 
 Projects table has 17 columns, messages table has 6 JSON/metadata columns — transferring unused bytes every query. **P1**
 
@@ -107,15 +107,15 @@ Projects table has 17 columns, messages table has 6 JSON/metadata columns — tr
 
 ### 3.1 Missing indexes on commonly filtered columns
 
-| Table | Missing Index | Impact |
-|-------|--------------|--------|
-| `messages` | `@@index([conversation_id, created_at])` | `ORDER BY created_at ASC` in `AiRepository.findMessages` does a full sort |
-| `knowledge` | `@@index([workspace_id, status, is_active])` | Common filter combo in `findAll`, `search`, `count` |
-| `knowledge` | `@@index([workspace_id, deleted_at])` | Soft-delete filtering pattern |
-| `projects` | `@@index([workspace_id, deleted_at])` | `WHERE deleted_at IS NULL` + `workspace_id` used together |
-| `usage_logs` | `@@index([workspace_id, feature, logged_at])` | Monthly usage queries scan many rows |
-| `audit_logs` | `@@index([workspace_id, entity, entity_id])` | Entity audit trail lookups |
-| `conversations` | `@@index([workspace_id, updated_at])` | List conversations sorted by `updated_at` |
+| Table           | Missing Index                                 | Impact                                                                    |
+| --------------- | --------------------------------------------- | ------------------------------------------------------------------------- |
+| `messages`      | `@@index([conversation_id, created_at])`      | `ORDER BY created_at ASC` in `AiRepository.findMessages` does a full sort |
+| `knowledge`     | `@@index([workspace_id, status, is_active])`  | Common filter combo in `findAll`, `search`, `count`                       |
+| `knowledge`     | `@@index([workspace_id, deleted_at])`         | Soft-delete filtering pattern                                             |
+| `projects`      | `@@index([workspace_id, deleted_at])`         | `WHERE deleted_at IS NULL` + `workspace_id` used together                 |
+| `usage_logs`    | `@@index([workspace_id, feature, logged_at])` | Monthly usage queries scan many rows                                      |
+| `audit_logs`    | `@@index([workspace_id, entity, entity_id])`  | Entity audit trail lookups                                                |
+| `conversations` | `@@index([workspace_id, updated_at])`         | List conversations sorted by `updated_at`                                 |
 
 **P2**
 
@@ -152,9 +152,9 @@ const existing = await prisma.$queryRaw<any[]>`
   SELECT id FROM "projects" WHERE id = ${project.id}
 `;
 if (existing && existing.length > 0) {
-  await prisma.$executeRaw`UPDATE ...`;  // ← second query
+  await prisma.$executeRaw`UPDATE ...`; // ← second query
 } else {
-  await prisma.$executeRaw`INSERT ...`;  // ← second query
+  await prisma.$executeRaw`INSERT ...`; // ← second query
 }
 ```
 
@@ -165,6 +165,7 @@ Same pattern in `project.repository.ts:140-155` (for members) and `llm.provider.
 **File:** `apps/api/src/modules/ai/infrastructure/repositories/ai.repository.ts`
 
 The entire `AiRepository` uses `$queryRaw` and `$executeRaw` instead of Prisma's generated types (`prisma.agents.findFirst`, `prisma.conversations.findUnique`, etc.). This bypasses:
+
 - Prisma query engine optimizations (batch, cache, connection pooling)
 - Type safety
 - Middleware/hooks
@@ -250,6 +251,7 @@ A hardcoded limit of 5 is fine for chat, but the same store is used for RAG cont
 ### 6.1 No Redis caching layer anywhere
 
 The entire codebase has zero Redis integration. There is no:
+
 - Cache for subscription plan lookups (`getActivePlanSlug` hits DB on EVERY calculation request)
 - Cache for workspace settings
 - Cache for user permissions/roles
@@ -330,9 +332,7 @@ An entire collection of potentially thousands of vectors is loaded into RAM for 
 **File:** `apps/api/src/modules/knowledge/application/services/knowledge.service.ts:485-488`
 
 ```typescript
-const mostViewed = wsAnalytics
-  .sort((a, b) => b.views - a.views)
-  .slice(0, 10)
+const mostViewed = wsAnalytics.sort((a, b) => b.views - a.views).slice(0, 10);
 ```
 
 Sorting all analytics rows (potentially thousands across all workspaces) in application memory. Should use `ORDER BY views DESC LIMIT 10` in SQL. **P2**
@@ -461,7 +461,7 @@ Same pattern — generates the full response first, then chunks it with artifici
 const words = response.split(' ');
 for (const word of words) {
   await this.sendToken(streamId, word + ' ');
-  await new Promise(r => setTimeout(r, delayMs));
+  await new Promise((r) => setTimeout(r, delayMs));
 }
 ```
 
@@ -488,6 +488,7 @@ External HTTP calls to the Python engineering service have no circuit breaker pa
 **File:** `apps/api/src/modules/billing/application/services/billing.service.ts:110-127`
 
 The `requestGatewayPayment` method does:
+
 1. Fetch payment from DB
 2. Save payment status update
 3. Call external Zarinpal API (network latency)
@@ -527,7 +528,10 @@ Every `add_documents`, `search`, `delete_documents`, `delete_workspace` call rea
 **File:** `apps/api/src/modules/engineering/application/services/engineering.service.ts:10`
 
 ```typescript
-import { SubscriptionService, FEATURE } from '../../../subscription/application/services/subscription.service.js';
+import {
+  SubscriptionService,
+  FEATURE,
+} from '../../../subscription/application/services/subscription.service.js';
 ```
 
 Deep cross-module import path that forces NestJS to resolve the subscription module before the engineering module can be constructed. With 29 modules, these cross-dependencies can cascade and slow startup. **P2**
@@ -575,7 +579,12 @@ The entire prompt is built as a single template string with embedded `${}`. For 
 
 ```typescript
 return KnowledgeDashboardStatsDto.fromData({
-  totalArticles, totalViews, publishedArticles, draftArticles, mostViewed, viewsByStatus,
+  totalArticles,
+  totalViews,
+  publishedArticles,
+  draftArticles,
+  mostViewed,
+  viewsByStatus,
 });
 ```
 
@@ -623,12 +632,12 @@ Called on every `_generate_dummy_embedding` call. Sets the global numpy random s
 
 ## Summary by Severity
 
-| Priority | Count | Key Issues |
-|----------|-------|------------|
-| **P0** | 4 | No Redis caching at all; fake streaming (2 instances); empty AgentRegistry on every request |
-| **P1** | 14 | N+1 queries; `SELECT *` everywhere; manual UPSERT; raw SQL abuse; Qdrant `wait=True`; sequential collection searches; full content loaded in list views; synchronous file I/O; file store loads everything in memory |
-| **P2** | 12 | Missing composite indexes; missing column selections; cascade DELETE redundancy; unbounded in-memory cache; in-memory analytics sorting; OpenAPI re-generated on every build; no circuit breaker; cross-module coupling; extra `collection_exists` call |
-| **P3** | 8 | Conservative Qdrant limit; UUID allocation; double-encoding in SSE; keyword scanning per message; hardcoded streaming delay |
+| Priority | Count | Key Issues                                                                                                                                                                                                                                              |
+| -------- | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **P0**   | 4     | No Redis caching at all; fake streaming (2 instances); empty AgentRegistry on every request                                                                                                                                                             |
+| **P1**   | 14    | N+1 queries; `SELECT *` everywhere; manual UPSERT; raw SQL abuse; Qdrant `wait=True`; sequential collection searches; full content loaded in list views; synchronous file I/O; file store loads everything in memory                                    |
+| **P2**   | 12    | Missing composite indexes; missing column selections; cascade DELETE redundancy; unbounded in-memory cache; in-memory analytics sorting; OpenAPI re-generated on every build; no circuit breaker; cross-module coupling; extra `collection_exists` call |
+| **P3**   | 8     | Conservative Qdrant limit; UUID allocation; double-encoding in SSE; keyword scanning per message; hardcoded streaming delay                                                                                                                             |
 
 ## Top 5 Quick Wins
 

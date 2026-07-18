@@ -5,7 +5,6 @@ import { RoleEntity } from '../../domain/entities/role.entity.js';
 
 @Injectable()
 export class RoleRepository implements IRoleRepository {
-
   // ─── save ───────────────────────────────────────────────────────────────────
 
   async save(role: RoleEntity): Promise<void> {
@@ -116,10 +115,7 @@ export class RoleRepository implements IRoleRepository {
 
   // ─── findUserRolesInWorkspace ────────────────────────────────────────────────
 
-  async findUserRolesInWorkspace(
-    userId: string,
-    workspaceId: string,
-  ): Promise<RoleEntity[]> {
+  async findUserRolesInWorkspace(userId: string, workspaceId: string): Promise<RoleEntity[]> {
     try {
       const rows = await prisma.$queryRaw<any[]>`
         SELECT r.*
@@ -165,11 +161,7 @@ export class RoleRepository implements IRoleRepository {
 
   // ─── removeRoleFromUser ──────────────────────────────────────────────────────
 
-  async removeRoleFromUser(
-    userId: string,
-    roleId: string,
-    workspaceId: string,
-  ): Promise<void> {
+  async removeRoleFromUser(userId: string, roleId: string, workspaceId: string): Promise<void> {
     try {
       await prisma.$executeRaw`
         DELETE FROM "user_roles"
@@ -185,12 +177,12 @@ export class RoleRepository implements IRoleRepository {
 
   private _map(row: any): RoleEntity {
     return RoleEntity.reconstitute({
-      id:          row.id,
-      name:        row.name,
-      slug:        row.slug,
+      id: row.id,
+      name: row.name,
+      slug: row.slug,
       description: row.description ?? null,
-      createdAt:   row.created_at,
-      updatedAt:   row.updated_at,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
     });
   }
 }

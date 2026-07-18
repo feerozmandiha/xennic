@@ -60,7 +60,10 @@ export class PrismaHitlRepository implements IHitlRepository {
     return this.rowToApproval(row);
   }
 
-  async findApprovals(executionId: string, options?: FindApprovalOptions): Promise<PaginatedResult<ApprovalRequest>> {
+  async findApprovals(
+    executionId: string,
+    options?: FindApprovalOptions,
+  ): Promise<PaginatedResult<ApprovalRequest>> {
     const where: Record<string, unknown> = { execution_id: executionId };
     if (options?.status) {
       where.status = options.status;
@@ -80,14 +83,17 @@ export class PrismaHitlRepository implements IHitlRepository {
     ]);
 
     return {
-      items: rows.map(row => this.rowToApproval(row)),
+      items: rows.map((row) => this.rowToApproval(row)),
       total,
       offset,
       limit,
     };
   }
 
-  async findPendingApprovals(userId: string, options?: FindApprovalOptions): Promise<PaginatedResult<ApprovalRequest>> {
+  async findPendingApprovals(
+    userId: string,
+    options?: FindApprovalOptions,
+  ): Promise<PaginatedResult<ApprovalRequest>> {
     const where: Record<string, unknown> = {
       status: 'pending',
       assigned_to: { contains: userId },
@@ -110,7 +116,7 @@ export class PrismaHitlRepository implements IHitlRepository {
     ]);
 
     return {
-      items: rows.map(row => this.rowToApproval(row)),
+      items: rows.map((row) => this.rowToApproval(row)),
       total,
       offset,
       limit,
@@ -155,7 +161,10 @@ export class PrismaHitlRepository implements IHitlRepository {
     return this.rowToReview(row);
   }
 
-  async findReviews(executionId: string, options?: FindReviewOptions): Promise<PaginatedResult<ReviewTask>> {
+  async findReviews(
+    executionId: string,
+    options?: FindReviewOptions,
+  ): Promise<PaginatedResult<ReviewTask>> {
     const where: Record<string, unknown> = { execution_id: executionId };
     if (options?.status) {
       where.status = options.status;
@@ -175,14 +184,17 @@ export class PrismaHitlRepository implements IHitlRepository {
     ]);
 
     return {
-      items: rows.map(row => this.rowToReview(row)),
+      items: rows.map((row) => this.rowToReview(row)),
       total,
       offset,
       limit,
     };
   }
 
-  async findPendingReviews(userId: string, options?: FindReviewOptions): Promise<PaginatedResult<ReviewTask>> {
+  async findPendingReviews(
+    userId: string,
+    options?: FindReviewOptions,
+  ): Promise<PaginatedResult<ReviewTask>> {
     const where: Record<string, unknown> = {
       status: 'pending',
       reviewer_id: userId,
@@ -205,7 +217,7 @@ export class PrismaHitlRepository implements IHitlRepository {
     ]);
 
     return {
-      items: rows.map(row => this.rowToReview(row)),
+      items: rows.map((row) => this.rowToReview(row)),
       total,
       offset,
       limit,
@@ -232,7 +244,8 @@ export class PrismaHitlRepository implements IHitlRepository {
 
   private rowToApproval(row: any): ApprovalRequest {
     const meta = (row.metadata as Record<string, unknown>) ?? {};
-    const assignedToList = (meta.assignedToList as string[]) ?? (row.assigned_to ? row.assigned_to.split(',') : []);
+    const assignedToList =
+      (meta.assignedToList as string[]) ?? (row.assigned_to ? row.assigned_to.split(',') : []);
     const dueAt = meta.dueAt ? new Date(meta.dueAt as string) : null;
     const escalatedAt = meta.escalatedAt ? new Date(meta.escalatedAt as string) : null;
 

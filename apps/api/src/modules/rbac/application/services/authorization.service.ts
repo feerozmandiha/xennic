@@ -29,10 +29,7 @@ export class AuthorizationService {
     }
 
     // ── بررسی roles از user_roles ─────────────────────────────────────────
-    const userRoles = await this.roleRepository.findUserRolesInWorkspace(
-      userId,
-      workspaceId,
-    );
+    const userRoles = await this.roleRepository.findUserRolesInWorkspace(userId, workspaceId);
 
     if (userRoles.length === 0) {
       // ── Fallback: بررسی workspace_members role ────────────────────────────
@@ -70,27 +67,19 @@ export class AuthorizationService {
 
     // ── بررسی هر slug ─────────────────────────────────────────────────────
     const results = await Promise.all(
-      permissionSlugs.map((slug) =>
-        this.hasPermission(userId, workspaceId, slug),
-      ),
+      permissionSlugs.map((slug) => this.hasPermission(userId, workspaceId, slug)),
     );
     return results.every((r) => r === true);
   }
 
-  async getUserPermissions(
-    userId: string,
-    workspaceId: string,
-  ): Promise<string[]> {
+  async getUserPermissions(userId: string, workspaceId: string): Promise<string[]> {
     // OWNER همه permission ها را دارد
     if (workspaceId) {
       const isOwner = await this._isWorkspaceOwner(userId, workspaceId);
       if (isOwner) return ['*'];
     }
 
-    const userRoles = await this.roleRepository.findUserRolesInWorkspace(
-      userId,
-      workspaceId,
-    );
+    const userRoles = await this.roleRepository.findUserRolesInWorkspace(userId, workspaceId);
 
     if (userRoles.some((r) => r.slug === 'SUPER_ADMIN')) {
       return ['*'];
@@ -103,9 +92,7 @@ export class AuthorizationService {
       return [];
     }
 
-    return this.permissionRepository.findPermissionsForRoles(
-      userRoles.map((r) => r.id),
-    );
+    return this.permissionRepository.findPermissionsForRoles(userRoles.map((r) => r.id));
   }
 
   // ── Private Helpers ───────────────────────────────────────────────────────
@@ -113,10 +100,7 @@ export class AuthorizationService {
   /**
    * بررسی OWNER بودن از workspace_members و workspaces.created_by
    */
-  private async _isWorkspaceOwner(
-    userId: string,
-    workspaceId: string,
-  ): Promise<boolean> {
+  private async _isWorkspaceOwner(userId: string, workspaceId: string): Promise<boolean> {
     if (!userId || !workspaceId) return false;
     try {
       // بررسی از workspace_members با role OWNER
@@ -148,10 +132,7 @@ export class AuthorizationService {
   /**
    * دریافت نقش کاربر از workspace_members (برای fallback)
    */
-  private async _getMemberRole(
-    userId: string,
-    workspaceId: string,
-  ): Promise<string | null> {
+  private async _getMemberRole(userId: string, workspaceId: string): Promise<string | null> {
     if (!userId || !workspaceId) return null;
     try {
       const rows = await prisma.$queryRaw<{ role: string }[]>`

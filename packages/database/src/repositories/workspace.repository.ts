@@ -28,7 +28,7 @@ export class WorkspaceRepository {
   async create(data: CreateWorkspaceDto) {
     // Generate unique code from name
     const code = this.generateCode(data.name);
-    
+
     return prisma.workspaces.create({
       data: {
         name: data.name,
@@ -79,7 +79,7 @@ export class WorkspaceRepository {
       .toUpperCase()
       .replace(/[^A-Z0-9]/g, '_')
       .slice(0, 30);
-    
+
     const uniqueSuffix = Math.random().toString(36).substring(2, 6).toUpperCase();
     return `${baseCode}_${uniqueSuffix}`;
   }

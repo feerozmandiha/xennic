@@ -1,4 +1,16 @@
-import { Controller, Post, Get, Param, UseGuards, Request, Body, BadRequestException, Delete, UploadedFile, UseInterceptors } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Get,
+  Param,
+  UseGuards,
+  Request,
+  Body,
+  BadRequestException,
+  Delete,
+  UploadedFile,
+  UseInterceptors,
+} from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiConsumes, ApiBody } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../../auth/infrastructure/guards/jwt-auth.guard.js';
@@ -26,7 +38,11 @@ export class DocumentsController {
   @ApiConsumes('multipart/form-data')
   @ApiOperation({ summary: 'Upload a knowledge document' })
   @ApiBody({ type: UploadDocumentDto })
-  async uploadDocument(@Request() req: any, @UploadedFile() file: any, @Body() body: UploadDocumentDto) {
+  async uploadDocument(
+    @Request() req: any,
+    @UploadedFile() file: any,
+    @Body() body: UploadDocumentDto,
+  ) {
     if (!file) throw new BadRequestException('No file uploaded');
 
     const workspaceId = req.user?.workspaceId;
@@ -44,7 +60,10 @@ export class DocumentsController {
       metadata: body.metadata ? JSON.parse(body.metadata) : undefined,
     });
 
-    return { success: true, data: { id: document.id, workspaceId: document.workspaceId, status: document.status } };
+    return {
+      success: true,
+      data: { id: document.id, workspaceId: document.workspaceId, status: document.status },
+    };
   }
 
   @Get(':id')
@@ -52,7 +71,7 @@ export class DocumentsController {
   @ApiOperation({ summary: 'Get document by ID' })
   async getDocument(@Param('id') id: string, @Request() _req: any) {
     const _workspaceId = _req.user?.workspaceId;
-    
+
     return { success: true, data: { id, workspaceId: _workspaceId } };
   }
 
@@ -61,7 +80,7 @@ export class DocumentsController {
   @ApiOperation({ summary: 'List documents' })
   async listDocuments(@Request() _req: any) {
     const _workspaceId = _req.user?.workspaceId;
-    
+
     return { success: true, data: [], meta: { total: 0 } };
   }
 

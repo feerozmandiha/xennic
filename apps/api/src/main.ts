@@ -1,10 +1,7 @@
 import 'reflect-metadata';
 
 import { NestFactory } from '@nestjs/core';
-import {
-  FastifyAdapter,
-  NestFastifyApplication,
-} from '@nestjs/platform-fastify';
+import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify';
 import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 
@@ -22,16 +19,19 @@ async function bootstrap() {
     new FastifyAdapter({ logger: true }),
   );
 
+  // ── Register @fastify/helmet (security headers) ──────────────────────────
+  await app.register((await import('@fastify/helmet')).default, {
+    contentSecurityPolicy: false, // CORS handled separately
+    crossOriginEmbedderPolicy: false, // Allow cross-origin resources
+  });
+
   // ── Register @fastify/multipart for file uploads ──────────────────────────
-  await app.register(
-    (await import('@fastify/multipart')).default,
-    {
-      limits: {
-        fileSize: 100 * 1024 * 1024, // 100 MB
-        files: 1,
-      },
+  await app.register((await import('@fastify/multipart')).default, {
+    limits: {
+      fileSize: 100 * 1024 * 1024, // 100 MB
+      files: 1,
     },
-  );
+  });
 
   // ── Global Validation Pipe ─────────────────────────────────────────────────
   app.useGlobalPipes(
@@ -62,7 +62,9 @@ async function bootstrap() {
   // ═════════════════════════════════════════════════════════════════════════════
 
   const corsOrigins = process.env.CORS_ORIGINS
-    ? process.env.CORS_ORIGINS.split(',').map(o => o.trim()).filter(Boolean)
+    ? process.env.CORS_ORIGINS.split(',')
+        .map((o) => o.trim())
+        .filter(Boolean)
     : ['http://localhost:3001', 'http://localhost:3000'];
 
   app.enableCors({
@@ -85,19 +87,19 @@ async function bootstrap() {
     .setTitle('Xennic Platform API')
     .setDescription(
       `## 🔌 Xennic Engineering Platform API Documentation\n\n` +
-      `### 🏗️ Architecture\n` +
-      `- **DDD (Domain-Driven Design)** with Clean Architecture\n` +
-      `- **Multi-Tenant** SaaS Platform for Electrical Engineering\n` +
-      `- **Workspace Isolation** at all layers\n\n` +
-      `### 🔐 Authentication\n` +
-      `- JWT Bearer Token required for protected endpoints\n` +
-      `- Use format: \`Authorization: Bearer <token>\`\n\n` +
-      `### 📊 Response Format\n` +
-      `- Success: \`{ "success": true, "data": {...}, "meta": {...} }\`\n` +
-      `- Error: \`{ "success": false, "error": { "code": "...", "message": "..." } }\`\n\n` +
-      `### 🧪 Engineering Modules\n` +
-      `- Basic, Cable, Transformer, Protection, Power Quality\n` +
-      `- Plan-based access control (Free/Pro/Enterprise)`,
+        `### 🏗️ Architecture\n` +
+        `- **DDD (Domain-Driven Design)** with Clean Architecture\n` +
+        `- **Multi-Tenant** SaaS Platform for Electrical Engineering\n` +
+        `- **Workspace Isolation** at all layers\n\n` +
+        `### 🔐 Authentication\n` +
+        `- JWT Bearer Token required for protected endpoints\n` +
+        `- Use format: \`Authorization: Bearer <token>\`\n\n` +
+        `### 📊 Response Format\n` +
+        `- Success: \`{ "success": true, "data": {...}, "meta": {...} }\`\n` +
+        `- Error: \`{ "success": false, "error": { "code": "...", "message": "..." } }\`\n\n` +
+        `### 🧪 Engineering Modules\n` +
+        `- Basic, Cable, Transformer, Protection, Power Quality\n` +
+        `- Plan-based access control (Free/Pro/Enterprise)`,
     )
     .setVersion('1.0.0')
     .setContact('Xennic Team', 'https://xennic.com', 'support@xennic.com')
@@ -113,16 +115,16 @@ async function bootstrap() {
       },
       'JWT-auth',
     )
-    .addTag('health',         'Health check endpoints')
-    .addTag('workspaces',     'Workspace management (multi-tenant isolation)')
-    .addTag('auth',           'Authentication and user management')
-    .addTag('users',          'User profile management')
-    .addTag('roles',          'Role management and assignment')
-    .addTag('permissions',    'Permission management')
-    .addTag('projects',       'Project management')
-    .addTag('engineering',    'Engineering calculations')
-    .addTag('subscriptions',  'Subscription and plan management')
-    .addTag('storage',        'File storage (MinIO)')
+    .addTag('health', 'Health check endpoints')
+    .addTag('workspaces', 'Workspace management (multi-tenant isolation)')
+    .addTag('auth', 'Authentication and user management')
+    .addTag('users', 'User profile management')
+    .addTag('roles', 'Role management and assignment')
+    .addTag('permissions', 'Permission management')
+    .addTag('projects', 'Project management')
+    .addTag('engineering', 'Engineering calculations')
+    .addTag('subscriptions', 'Subscription and plan management')
+    .addTag('storage', 'File storage (MinIO)')
     .build();
 
   const document = SwaggerModule.createDocument(app, config);

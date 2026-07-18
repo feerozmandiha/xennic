@@ -12,11 +12,15 @@ async function main() {
   const { ApiModule } = require(dist + '/api.module.js');
   console.log('ApiModule loaded');
 
-  const WorkspaceGuard = require(dist + '/modules/rbac/infrastructure/guards/workspace.guard.js').WorkspaceGuard;
+  const WorkspaceGuard = require(
+    dist + '/modules/rbac/infrastructure/guards/workspace.guard.js',
+  ).WorkspaceGuard;
   console.log('Guards loaded');
 
   class GenModule {}
-  Module({ imports: [ApiModule], providers: [{ provide: WorkspaceGuard, useValue: MOCK_GUARD }] })(GenModule);
+  Module({ imports: [ApiModule], providers: [{ provide: WorkspaceGuard, useValue: MOCK_GUARD }] })(
+    GenModule,
+  );
   Global()(GenModule);
 
   console.log('Creating builder...');
@@ -59,7 +63,10 @@ async function main() {
     const { NoopGraphInspector } = require('@nestjs/core/inspector/noop-graph-inspector');
 
     const scanner = new DependenciesScanner(
-      this.container, this.metadataScanner, NoopGraphInspector, this.applicationConfig,
+      this.container,
+      this.metadataScanner,
+      NoopGraphInspector,
+      this.applicationConfig,
     );
 
     await scanner.scan(this.module, { overrides: this.getModuleOverloads() });
@@ -81,7 +88,7 @@ async function main() {
   console.log('Compile succeeded, modules:', fixture.container.getModules().size);
 }
 
-main().catch(e => {
+main().catch((e) => {
   console.error('ERROR:', e.message);
   console.error('STACK:', e.stack?.split('\n').slice(0, 5).join('\n'));
 });

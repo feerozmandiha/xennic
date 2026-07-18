@@ -24,7 +24,10 @@ export class CitationRepository implements ICitationRepository {
   async findBySource(sourceId: string, method?: string): Promise<KnowledgeCitation[]> {
     const where: any = { source_id: sourceId };
     if (method) where.method = method;
-    const rows = await prisma.knowledge_citations.findMany({ where, orderBy: { created_at: 'desc' } });
+    const rows = await prisma.knowledge_citations.findMany({
+      where,
+      orderBy: { created_at: 'desc' },
+    });
     return rows.map((r) =>
       KnowledgeCitation.reconstitute({
         id: r.id,
@@ -41,7 +44,10 @@ export class CitationRepository implements ICitationRepository {
   }
 
   async findByTarget(targetId: string): Promise<KnowledgeCitation[]> {
-    const rows = await prisma.knowledge_citations.findMany({ where: { target_id: targetId }, orderBy: { created_at: 'desc' } });
+    const rows = await prisma.knowledge_citations.findMany({
+      where: { target_id: targetId },
+      orderBy: { created_at: 'desc' },
+    });
     return rows.map((r) =>
       KnowledgeCitation.reconstitute({
         id: r.id,
@@ -57,11 +63,18 @@ export class CitationRepository implements ICitationRepository {
     );
   }
 
-  async findByWorkspace(workspaceId: string, sourceId?: string, targetId?: string): Promise<KnowledgeCitation[]> {
+  async findByWorkspace(
+    workspaceId: string,
+    sourceId?: string,
+    targetId?: string,
+  ): Promise<KnowledgeCitation[]> {
     const where: any = { workspace_id: workspaceId };
     if (sourceId) where.source_id = sourceId;
     if (targetId) where.target_id = targetId;
-    const rows = await prisma.knowledge_citations.findMany({ where, orderBy: { created_at: 'desc' } });
+    const rows = await prisma.knowledge_citations.findMany({
+      where,
+      orderBy: { created_at: 'desc' },
+    });
     return rows.map((r) =>
       KnowledgeCitation.reconstitute({
         id: r.id,
@@ -110,15 +123,17 @@ export class CitationRepository implements ICitationRepository {
     });
   }
 
-  async batchCreate(data: {
-    workspaceId: string;
-    sourceId: string;
-    targetId: string;
-    context?: string | null;
-    location?: string | null;
-    method: 'explicit' | 'implicit' | 'inferred';
-    confidence?: number;
-  }[]): Promise<KnowledgeCitation[]> {
+  async batchCreate(
+    data: {
+      workspaceId: string;
+      sourceId: string;
+      targetId: string;
+      context?: string | null;
+      location?: string | null;
+      method: 'explicit' | 'implicit' | 'inferred';
+      confidence?: number;
+    }[],
+  ): Promise<KnowledgeCitation[]> {
     await prisma.knowledge_citations.createMany({
       data: data.map((d) => ({
         workspace_id: d.workspaceId,

@@ -32,7 +32,9 @@ export class KnowledgeCompletenessService {
     return Math.min(1, score);
   }
 
-  async analyzeWorkspaceCompleteness(workspaceId: string): Promise<{ average: number; nodes: number; completeNodes: number; incompleteNodes: number }> {
+  async analyzeWorkspaceCompleteness(
+    workspaceId: string,
+  ): Promise<{ average: number; nodes: number; completeNodes: number; incompleteNodes: number }> {
     const { nodes } = await this.nodeRepo.findAllByWorkspace(workspaceId);
     if (nodes.length === 0) return { average: 0, nodes: 0, completeNodes: 0, incompleteNodes: 0 };
 

@@ -1,11 +1,15 @@
 import {
-  Injectable, Inject, NotFoundException,
-  ForbiddenException, BadRequestException, Logger,
+  Injectable,
+  Inject,
+  NotFoundException,
+  ForbiddenException,
+  BadRequestException,
+  Logger,
 } from '@nestjs/common';
-import type { IAiRepository }        from '../../domain/interfaces/ai.repository.interface.js';
-import { ConversationEntity }         from '../../domain/entities/conversation.entity.js';
-import { LlmProvider }                from '../../infrastructure/providers/llm.provider.js';
-import type { ChatMessage }           from '../../infrastructure/providers/llm.provider.js';
+import type { IAiRepository } from '../../domain/interfaces/ai.repository.interface.js';
+import { ConversationEntity } from '../../domain/entities/conversation.entity.js';
+import { LlmProvider } from '../../infrastructure/providers/llm.provider.js';
+import type { ChatMessage } from '../../infrastructure/providers/llm.provider.js';
 
 @Injectable()
 export class AiService {
@@ -14,7 +18,7 @@ export class AiService {
   constructor(
     @Inject('IAiRepository')
     private readonly repo: IAiRepository,
-    private readonly llm:  LlmProvider,
+    private readonly llm: LlmProvider,
   ) {}
 
   // ── Agents ────────────────────────────────────────────────────────────────
@@ -32,8 +36,8 @@ export class AiService {
 
   async createConversation(
     workspaceId: string,
-    agentSlug:   string,
-    title?:      string,
+    agentSlug: string,
+    title?: string,
   ): Promise<ConversationEntity> {
     const agent = await this.repo.findAgentBySlug(agentSlug);
     if (!agent) {
@@ -45,12 +49,12 @@ export class AiService {
 
     // System prompt ذخیره می‌شود
     await this.repo.saveMessage({
-      id:             crypto.randomUUID(),
+      id: crypto.randomUUID(),
       conversationId: conv.id,
-      role:           'system',
-      content:        this.llm.systemPrompt,
-      metadata:       { type: 'system_prompt' },
-      createdAt:      new Date(),
+      role: 'system',
+      content: this.llm.systemPrompt,
+      metadata: { type: 'system_prompt' },
+      createdAt: new Date(),
     });
 
     return conv;
@@ -74,9 +78,9 @@ export class AiService {
 
   async sendMessage(
     conversationId: string,
-    workspaceId:    string,
-    userId:         string,
-    content:        string,
+    workspaceId: string,
+    userId: string,
+    content: string,
   ): Promise<{ userMsgId: string; assistantMsgId: string; reply: string; tokens: number }> {
     if (!content.trim()) throw new BadRequestException('Message cannot be empty');
 
@@ -85,16 +89,20 @@ export class AiService {
     // ذخیره پیام کاربر
     const userMsgId = crypto.randomUUID();
     await this.repo.saveMessage({
-      id: userMsgId, conversationId, role: 'user',
-      content: content.trim(), metadata: {}, createdAt: new Date(),
+      id: userMsgId,
+      conversationId,
+      role: 'user',
+      content: content.trim(),
+      metadata: {},
+      createdAt: new Date(),
     });
 
     // ساخت context (آخرین 20 پیام، بدون system)
     const messages = await this.repo.findMessages(conversationId);
     const context: ChatMessage[] = messages
-      .filter(m => m.role !== 'system')
+      .filter((m) => m.role !== 'system')
       .slice(-20)
-      .map(m => ({ role: m.role as 'user' | 'assistant', content: m.content }));
+      .map((m) => ({ role: m.role as 'user' | 'assistant', content: m.content }));
 
     // فراخوانی LLM
     let llmResult;
@@ -111,20 +119,20 @@ export class AiService {
     // ذخیره پاسخ assistant
     const assistantMsgId = crypto.randomUUID();
     await this.repo.saveMessage({
-      id:             assistantMsgId,
+      id: assistantMsgId,
       conversationId,
-      role:           'assistant',
-      content:        llmResult.content,
-      metadata:       {
-        model:    llmResult.model,
+      role: 'assistant',
+      content: llmResult.content,
+      metadata: {
+        model: llmResult.model,
         provider: llmResult.provider,
-        tokens:   llmResult.totalTokens,
+        tokens: llmResult.totalTokens,
       },
       createdAt: new Date(),
     });
 
     // Auto-title: اگر اولین پیام کاربر است
-    const userMessages = messages.filter(m => m.role === 'user');
+    const userMessages = messages.filter((m) => m.role === 'user');
     if (!conv.title && userMessages.length === 0) {
       const shortTitle = content.slice(0, 60).trim();
       await this.repo.updateConversationTitle(conversationId, shortTitle);
@@ -134,19 +142,19 @@ export class AiService {
     await this.repo.recordUsage({
       workspaceId,
       userId,
-      agentId:          conv.agentId,
-      provider:         llmResult.provider,
-      model:            llmResult.model,
-      promptTokens:     llmResult.promptTokens,
+      agentId: conv.agentId,
+      provider: llmResult.provider,
+      model: llmResult.model,
+      promptTokens: llmResult.promptTokens,
       completionTokens: llmResult.completionTokens,
-      totalTokens:      llmResult.totalTokens,
-      cost:             llmResult.totalTokens * 0.000002,
+      totalTokens: llmResult.totalTokens,
+      cost: llmResult.totalTokens * 0.000002,
     });
 
     return {
       userMsgId,
       assistantMsgId,
-      reply:  llmResult.content,
+      reply: llmResult.content,
       tokens: llmResult.totalTokens,
     };
   }
@@ -204,26 +212,31 @@ Validate this engineering calculation. Respond with a JSON object (no markdown, 
 
   private _parseValidationResponse(content: string) {
     try {
-      const cleaned = content.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+      const cleaned = content
+        .replace(/```json\s*/gi, '')
+        .replace(/```\s*/g, '')
+        .trim();
       const parsed = JSON.parse(cleaned);
       return {
-        verified:        !!parsed.verified,
-        confidence:      (['high', 'medium', 'low'].includes(parsed.confidence) ? parsed.confidence : 'low') as 'high' | 'medium' | 'low',
-        summary:         parsed.summary ?? '',
-        warnings:        Array.isArray(parsed.warnings) ? parsed.warnings : [],
+        verified: !!parsed.verified,
+        confidence: (['high', 'medium', 'low'].includes(parsed.confidence)
+          ? parsed.confidence
+          : 'low') as 'high' | 'medium' | 'low',
+        summary: parsed.summary ?? '',
+        warnings: Array.isArray(parsed.warnings) ? parsed.warnings : [],
         recommendations: Array.isArray(parsed.recommendations) ? parsed.recommendations : [],
-        standards:       Array.isArray(parsed.standards) ? parsed.standards : [],
-        details:         parsed.details ?? content,
+        standards: Array.isArray(parsed.standards) ? parsed.standards : [],
+        details: parsed.details ?? content,
       };
     } catch {
       return {
-        verified:        false,
-        confidence:      'low' as const,
-        summary:         'AI validation completed',
-        warnings:        [],
+        verified: false,
+        confidence: 'low' as const,
+        summary: 'AI validation completed',
+        warnings: [],
         recommendations: [],
-        standards:       [],
-        details:         content,
+        standards: [],
+        details: content,
       };
     }
   }

@@ -33,7 +33,7 @@ async function upsertRaw(
   }
   // INSERT جدید
   const id = newId();
-  const cols = ['id', ...allCols].map(c => `"${c}"`).join(', ');
+  const cols = ['id', ...allCols].map((c) => `"${c}"`).join(', ');
   const params = [id, ...values];
   const placeholders = params.map((_, i) => `$${i + 1}`).join(', ');
   await db.$executeRawUnsafe(
@@ -106,8 +106,26 @@ async function main(): Promise<void> {
       'plans',
       'slug',
       plan.slug,
-      ['name', 'slug', 'monthly_price', 'yearly_price', 'features', 'is_active', 'created_at', 'updated_at'],
-      [plan.name, plan.slug, plan.monthly_price, plan.yearly_price, plan.features, true, new Date(), new Date()],
+      [
+        'name',
+        'slug',
+        'monthly_price',
+        'yearly_price',
+        'features',
+        'is_active',
+        'created_at',
+        'updated_at',
+      ],
+      [
+        plan.name,
+        plan.slug,
+        plan.monthly_price,
+        plan.yearly_price,
+        plan.features,
+        true,
+        new Date(),
+        new Date(),
+      ],
     );
     planIds[plan.slug] = id;
     console.log(`  ✅ Plan: ${plan.name}`);
@@ -118,18 +136,26 @@ async function main(): Promise<void> {
   console.log('\n👥 Seeding roles...');
 
   const rolesData = [
-    { slug: 'SUPER_ADMIN',    name: 'Super Admin',    description: 'Full platform access' },
+    { slug: 'SUPER_ADMIN', name: 'Super Admin', description: 'Full platform access' },
     { slug: 'PLATFORM_ADMIN', name: 'Platform Admin', description: 'Platform management' },
-    { slug: 'SUPPORT_ADMIN',  name: 'Support Admin',  description: 'Support operations — read-only' },
-    { slug: 'OWNER',          name: 'Owner',          description: 'Workspace owner' },
-    { slug: 'ADMIN',          name: 'Admin',          description: 'Workspace admin' },
-    { slug: 'ENGINEER',       name: 'Engineer',            description: 'Engineering features' },
-    { slug: 'EDITOR',          name: 'Editor',             description: 'Knowledge editor — full content management' },
-    { slug: 'KNOWLEDGE_WRITER',name: 'Knowledge Writer',   description: 'Knowledge base writer — create & submit for review' },
-    { slug: 'REVIEWER',        name: 'Senior Reviewer',    description: 'Senior engineer / professor — review & approve knowledge, access engineering' },
-    { slug: 'CONSULTANT',     name: 'Consultant',     description: 'Consultation & analysis' },
-    { slug: 'MEMBER',         name: 'Member',         description: 'Standard usage' },
-    { slug: 'VIEWER',         name: 'Viewer',         description: 'Read-only access' },
+    { slug: 'SUPPORT_ADMIN', name: 'Support Admin', description: 'Support operations — read-only' },
+    { slug: 'OWNER', name: 'Owner', description: 'Workspace owner' },
+    { slug: 'ADMIN', name: 'Admin', description: 'Workspace admin' },
+    { slug: 'ENGINEER', name: 'Engineer', description: 'Engineering features' },
+    { slug: 'EDITOR', name: 'Editor', description: 'Knowledge editor — full content management' },
+    {
+      slug: 'KNOWLEDGE_WRITER',
+      name: 'Knowledge Writer',
+      description: 'Knowledge base writer — create & submit for review',
+    },
+    {
+      slug: 'REVIEWER',
+      name: 'Senior Reviewer',
+      description: 'Senior engineer / professor — review & approve knowledge, access engineering',
+    },
+    { slug: 'CONSULTANT', name: 'Consultant', description: 'Consultation & analysis' },
+    { slug: 'MEMBER', name: 'Member', description: 'Standard usage' },
+    { slug: 'VIEWER', name: 'Viewer', description: 'Read-only access' },
   ];
 
   const roleIds: Record<string, string> = {};
@@ -151,76 +177,76 @@ async function main(): Promise<void> {
 
   const permsData = [
     // Identity
-    { slug: 'users.read',              name: 'Read Users',              domain: 'identity' },
-    { slug: 'users.create',            name: 'Create Users',            domain: 'identity' },
-    { slug: 'users.update',            name: 'Update Users',            domain: 'identity' },
-    { slug: 'users.delete',            name: 'Delete Users',            domain: 'identity' },
-    { slug: 'roles.read',              name: 'Read Roles',              domain: 'identity' },
-    { slug: 'roles.create',            name: 'Create Roles',            domain: 'identity' },
-    { slug: 'roles.update',            name: 'Update Roles',            domain: 'identity' },
-    { slug: 'roles.delete',            name: 'Delete Roles',            domain: 'identity' },
-    { slug: 'permissions.create',      name: 'Create Permissions',      domain: 'identity' },
-    { slug: 'permissions.delete',      name: 'Delete Permissions',      domain: 'identity' },
-    { slug: 'roles.permissions.assign',name: 'Assign Permissions',      domain: 'identity' },
+    { slug: 'users.read', name: 'Read Users', domain: 'identity' },
+    { slug: 'users.create', name: 'Create Users', domain: 'identity' },
+    { slug: 'users.update', name: 'Update Users', domain: 'identity' },
+    { slug: 'users.delete', name: 'Delete Users', domain: 'identity' },
+    { slug: 'roles.read', name: 'Read Roles', domain: 'identity' },
+    { slug: 'roles.create', name: 'Create Roles', domain: 'identity' },
+    { slug: 'roles.update', name: 'Update Roles', domain: 'identity' },
+    { slug: 'roles.delete', name: 'Delete Roles', domain: 'identity' },
+    { slug: 'permissions.create', name: 'Create Permissions', domain: 'identity' },
+    { slug: 'permissions.delete', name: 'Delete Permissions', domain: 'identity' },
+    { slug: 'roles.permissions.assign', name: 'Assign Permissions', domain: 'identity' },
     // Workspace
-    { slug: 'workspace.read',            name: 'Read Workspace',            domain: 'workspace' },
-    { slug: 'workspace.update',          name: 'Update Workspace',          domain: 'workspace' },
-    { slug: 'workspace.delete',          name: 'Delete Workspace',          domain: 'workspace' },
-    { slug: 'workspace.members.manage',  name: 'Manage Members',            domain: 'workspace' },
-    { slug: 'workspace.settings.read',   name: 'Read Settings',             domain: 'workspace' },
-    { slug: 'workspace.settings.manage', name: 'Manage Settings',           domain: 'workspace' },
+    { slug: 'workspace.read', name: 'Read Workspace', domain: 'workspace' },
+    { slug: 'workspace.update', name: 'Update Workspace', domain: 'workspace' },
+    { slug: 'workspace.delete', name: 'Delete Workspace', domain: 'workspace' },
+    { slug: 'workspace.members.manage', name: 'Manage Members', domain: 'workspace' },
+    { slug: 'workspace.settings.read', name: 'Read Settings', domain: 'workspace' },
+    { slug: 'workspace.settings.manage', name: 'Manage Settings', domain: 'workspace' },
     // Projects
-    { slug: 'projects.read',   name: 'Read Projects',   domain: 'projects' },
+    { slug: 'projects.read', name: 'Read Projects', domain: 'projects' },
     { slug: 'projects.create', name: 'Create Projects', domain: 'projects' },
     { slug: 'projects.update', name: 'Update Projects', domain: 'projects' },
     { slug: 'projects.delete', name: 'Delete Projects', domain: 'projects' },
     { slug: 'projects.export', name: 'Export Projects', domain: 'projects' },
-    { slug: 'projects.share',  name: 'Share Projects',  domain: 'projects' },
+    { slug: 'projects.share', name: 'Share Projects', domain: 'projects' },
     // Engineering
-    { slug: 'engineering.read',              name: 'Read Calculations',    domain: 'engineering' },
-    { slug: 'engineering.calculate',          name: 'Run Calculations',     domain: 'engineering' },
-    { slug: 'engineering.export',             name: 'Export Calculations',  domain: 'engineering' },
-    { slug: 'engineering.templates.manage',   name: 'Manage Templates',     domain: 'engineering' },
-    { slug: 'engineering.reports.generate',   name: 'Generate Reports',     domain: 'engineering' },
-    { slug: 'engineering.reports.approve',    name: 'Approve Reports',      domain: 'engineering' },
+    { slug: 'engineering.read', name: 'Read Calculations', domain: 'engineering' },
+    { slug: 'engineering.calculate', name: 'Run Calculations', domain: 'engineering' },
+    { slug: 'engineering.export', name: 'Export Calculations', domain: 'engineering' },
+    { slug: 'engineering.templates.manage', name: 'Manage Templates', domain: 'engineering' },
+    { slug: 'engineering.reports.generate', name: 'Generate Reports', domain: 'engineering' },
+    { slug: 'engineering.reports.approve', name: 'Approve Reports', domain: 'engineering' },
     // AI
-    { slug: 'ai.chat',              name: 'AI Chat',              domain: 'ai' },
+    { slug: 'ai.chat', name: 'AI Chat', domain: 'ai' },
     { slug: 'ai.document_analysis', name: 'AI Document Analysis', domain: 'ai' },
-    { slug: 'ai.drawing_analysis',  name: 'AI Drawing Analysis',  domain: 'ai' },
-    { slug: 'ai.agent_access',      name: 'AI Agent Access',      domain: 'ai' },
-    { slug: 'ai.export',            name: 'AI Export',            domain: 'ai' },
+    { slug: 'ai.drawing_analysis', name: 'AI Drawing Analysis', domain: 'ai' },
+    { slug: 'ai.agent_access', name: 'AI Agent Access', domain: 'ai' },
+    { slug: 'ai.export', name: 'AI Export', domain: 'ai' },
     // Marketplace
-    { slug: 'products.read',   name: 'Read Products',   domain: 'marketplace' },
+    { slug: 'products.read', name: 'Read Products', domain: 'marketplace' },
     { slug: 'products.create', name: 'Create Products', domain: 'marketplace' },
     { slug: 'products.update', name: 'Update Products', domain: 'marketplace' },
     { slug: 'products.delete', name: 'Delete Products', domain: 'marketplace' },
-    { slug: 'orders.read',     name: 'Read Orders',     domain: 'marketplace' },
-    { slug: 'orders.create',   name: 'Create Orders',   domain: 'marketplace' },
-    { slug: 'orders.manage',   name: 'Manage Orders',   domain: 'marketplace' },
-    { slug: 'vendors.manage',  name: 'Manage Vendors',  domain: 'marketplace' },
+    { slug: 'orders.read', name: 'Read Orders', domain: 'marketplace' },
+    { slug: 'orders.create', name: 'Create Orders', domain: 'marketplace' },
+    { slug: 'orders.manage', name: 'Manage Orders', domain: 'marketplace' },
+    { slug: 'vendors.manage', name: 'Manage Vendors', domain: 'marketplace' },
     // Storage
-    { slug: 'files.read',   name: 'Read Files',   domain: 'storage' },
+    { slug: 'files.read', name: 'Read Files', domain: 'storage' },
     { slug: 'files.upload', name: 'Upload Files', domain: 'storage' },
     { slug: 'files.update', name: 'Update Files', domain: 'storage' },
     { slug: 'files.delete', name: 'Delete Files', domain: 'storage' },
-    { slug: 'files.share',  name: 'Share Files',  domain: 'storage' },
+    { slug: 'files.share', name: 'Share Files', domain: 'storage' },
     // Knowledge
-    { slug: 'knowledge.read',    name: 'Read Knowledge',      domain: 'knowledge' },
-    { slug: 'knowledge.create',  name: 'Create Knowledge',    domain: 'knowledge' },
-    { slug: 'knowledge.update',  name: 'Update Knowledge',    domain: 'knowledge' },
-    { slug: 'knowledge.delete',  name: 'Delete Knowledge',    domain: 'knowledge' },
-    { slug: 'knowledge.publish', name: 'Publish Knowledge',   domain: 'knowledge' },
-    { slug: 'knowledge.review',  name: 'Review Knowledge',    domain: 'knowledge' },
+    { slug: 'knowledge.read', name: 'Read Knowledge', domain: 'knowledge' },
+    { slug: 'knowledge.create', name: 'Create Knowledge', domain: 'knowledge' },
+    { slug: 'knowledge.update', name: 'Update Knowledge', domain: 'knowledge' },
+    { slug: 'knowledge.delete', name: 'Delete Knowledge', domain: 'knowledge' },
+    { slug: 'knowledge.publish', name: 'Publish Knowledge', domain: 'knowledge' },
+    { slug: 'knowledge.review', name: 'Review Knowledge', domain: 'knowledge' },
     // API
-    { slug: 'api_keys.read',   name: 'Read API Keys',   domain: 'api' },
+    { slug: 'api_keys.read', name: 'Read API Keys', domain: 'api' },
     { slug: 'api_keys.create', name: 'Create API Keys', domain: 'api' },
     { slug: 'api_keys.delete', name: 'Delete API Keys', domain: 'api' },
     { slug: 'webhooks.manage', name: 'Manage Webhooks', domain: 'api' },
     // Admin
-    { slug: 'admin.dashboard',       name: 'Admin Dashboard',       domain: 'admin' },
-    { slug: 'admin.users',           name: 'Admin Users',           domain: 'admin' },
-    { slug: 'admin.billing',         name: 'Admin Billing',         domain: 'admin' },
-    { slug: 'admin.audit_logs',      name: 'Admin Audit Logs',      domain: 'admin' },
+    { slug: 'admin.dashboard', name: 'Admin Dashboard', domain: 'admin' },
+    { slug: 'admin.users', name: 'Admin Users', domain: 'admin' },
+    { slug: 'admin.billing', name: 'Admin Billing', domain: 'admin' },
+    { slug: 'admin.audit_logs', name: 'Admin Audit Logs', domain: 'admin' },
     { slug: 'admin.system_settings', name: 'Admin System Settings', domain: 'admin' },
   ];
 
@@ -241,7 +267,7 @@ async function main(): Promise<void> {
 
   console.log('\n🔗 Assigning permissions to roles...');
 
-  const allSlugs = permsData.map(p => p.slug);
+  const allSlugs = permsData.map((p) => p.slug);
 
   const assignments: Array<{ roleSlug: string; perms: string[] }> = [
     {
@@ -250,7 +276,13 @@ async function main(): Promise<void> {
     },
     {
       roleSlug: 'PLATFORM_ADMIN',
-      perms: ['admin.dashboard', 'admin.users', 'admin.billing', 'admin.audit_logs', 'admin.system_settings'],
+      perms: [
+        'admin.dashboard',
+        'admin.users',
+        'admin.billing',
+        'admin.audit_logs',
+        'admin.system_settings',
+      ],
     },
     {
       roleSlug: 'SUPPORT_ADMIN',
@@ -259,58 +291,126 @@ async function main(): Promise<void> {
     {
       roleSlug: 'OWNER',
       perms: [
-        'workspace.read', 'workspace.update', 'workspace.delete',
-        'workspace.members.manage', 'workspace.settings.read', 'workspace.settings.manage',
-        'projects.read', 'projects.create', 'projects.update', 'projects.delete', 'projects.export', 'projects.share',
-        'engineering.read', 'engineering.calculate', 'engineering.export', 'engineering.reports.generate',
-        'knowledge.read', 'knowledge.create', 'knowledge.update', 'knowledge.delete', 'knowledge.publish',
-        'ai.chat', 'ai.document_analysis', 'ai.drawing_analysis', 'ai.agent_access', 'ai.export',
-        'files.read', 'files.upload', 'files.update', 'files.delete', 'files.share',
-        'api_keys.read', 'api_keys.create', 'api_keys.delete', 'webhooks.manage',
-        'products.read', 'orders.read', 'orders.create',
+        'workspace.read',
+        'workspace.update',
+        'workspace.delete',
+        'workspace.members.manage',
+        'workspace.settings.read',
+        'workspace.settings.manage',
+        'projects.read',
+        'projects.create',
+        'projects.update',
+        'projects.delete',
+        'projects.export',
+        'projects.share',
+        'engineering.read',
+        'engineering.calculate',
+        'engineering.export',
+        'engineering.reports.generate',
+        'knowledge.read',
+        'knowledge.create',
+        'knowledge.update',
+        'knowledge.delete',
+        'knowledge.publish',
+        'ai.chat',
+        'ai.document_analysis',
+        'ai.drawing_analysis',
+        'ai.agent_access',
+        'ai.export',
+        'files.read',
+        'files.upload',
+        'files.update',
+        'files.delete',
+        'files.share',
+        'api_keys.read',
+        'api_keys.create',
+        'api_keys.delete',
+        'webhooks.manage',
+        'products.read',
+        'orders.read',
+        'orders.create',
         'roles.read',
       ],
     },
     {
       roleSlug: 'ADMIN',
       perms: [
-        'workspace.read', 'workspace.update', 'workspace.members.manage', 'workspace.settings.read',
-        'projects.read', 'projects.create', 'projects.update', 'projects.delete',
-        'engineering.read', 'engineering.calculate', 'engineering.export', 'engineering.reports.generate',
-        'knowledge.read', 'knowledge.create', 'knowledge.update', 'knowledge.delete', 'knowledge.publish',
-        'ai.chat', 'ai.document_analysis',
-        'files.read', 'files.upload', 'files.update', 'files.delete',
-        'api_keys.read', 'api_keys.create',
-        'products.read', 'orders.read', 'orders.create',
+        'workspace.read',
+        'workspace.update',
+        'workspace.members.manage',
+        'workspace.settings.read',
+        'projects.read',
+        'projects.create',
+        'projects.update',
+        'projects.delete',
+        'engineering.read',
+        'engineering.calculate',
+        'engineering.export',
+        'engineering.reports.generate',
+        'knowledge.read',
+        'knowledge.create',
+        'knowledge.update',
+        'knowledge.delete',
+        'knowledge.publish',
+        'ai.chat',
+        'ai.document_analysis',
+        'files.read',
+        'files.upload',
+        'files.update',
+        'files.delete',
+        'api_keys.read',
+        'api_keys.create',
+        'products.read',
+        'orders.read',
+        'orders.create',
         'roles.read',
       ],
     },
     {
       roleSlug: 'ENGINEER',
       perms: [
-        'projects.read', 'projects.create', 'projects.update',
-        'engineering.read', 'engineering.calculate', 'engineering.export', 'engineering.reports.generate',
-        'knowledge.read', 'knowledge.create', 'knowledge.update',
-        'ai.chat', 'ai.document_analysis', 'ai.drawing_analysis',
-        'files.read', 'files.upload',
-        'products.read', 'orders.read',
+        'projects.read',
+        'projects.create',
+        'projects.update',
+        'engineering.read',
+        'engineering.calculate',
+        'engineering.export',
+        'engineering.reports.generate',
+        'knowledge.read',
+        'knowledge.create',
+        'knowledge.update',
+        'ai.chat',
+        'ai.document_analysis',
+        'ai.drawing_analysis',
+        'files.read',
+        'files.upload',
+        'products.read',
+        'orders.read',
       ],
     },
     {
       roleSlug: 'EDITOR',
       perms: [
-        'knowledge.read', 'knowledge.create', 'knowledge.update', 'knowledge.delete', 'knowledge.publish', 'knowledge.review',
+        'knowledge.read',
+        'knowledge.create',
+        'knowledge.update',
+        'knowledge.delete',
+        'knowledge.publish',
+        'knowledge.review',
         'engineering.read',
         'projects.read',
         'ai.chat',
-        'files.read', 'files.upload',
+        'files.read',
+        'files.upload',
         'products.read',
       ],
     },
     {
       roleSlug: 'KNOWLEDGE_WRITER',
       perms: [
-        'knowledge.read', 'knowledge.create', 'knowledge.update',
+        'knowledge.read',
+        'knowledge.create',
+        'knowledge.update',
         'engineering.read',
         'ai.chat',
         'files.read',
@@ -319,11 +419,16 @@ async function main(): Promise<void> {
     {
       roleSlug: 'REVIEWER',
       perms: [
-        'knowledge.read', 'knowledge.review',
-        'engineering.read', 'engineering.calculate', 'engineering.export',
+        'knowledge.read',
+        'knowledge.review',
+        'engineering.read',
+        'engineering.calculate',
+        'engineering.export',
         'projects.read',
-        'ai.chat', 'ai.document_analysis',
-        'files.read', 'files.upload',
+        'ai.chat',
+        'ai.document_analysis',
+        'files.read',
+        'files.upload',
         'products.read',
       ],
     },
@@ -333,20 +438,29 @@ async function main(): Promise<void> {
         'projects.read',
         'engineering.read',
         'knowledge.read',
-        'ai.chat', 'ai.document_analysis', 'ai.drawing_analysis', 'ai.export',
-        'files.read', 'files.upload',
-        'products.read', 'orders.read',
+        'ai.chat',
+        'ai.document_analysis',
+        'ai.drawing_analysis',
+        'ai.export',
+        'files.read',
+        'files.upload',
+        'products.read',
+        'orders.read',
       ],
     },
     {
       roleSlug: 'MEMBER',
       perms: [
         'projects.read',
-        'engineering.read', 'engineering.calculate',
+        'engineering.read',
+        'engineering.calculate',
         'knowledge.read',
         'ai.chat',
-        'files.read', 'files.upload',
-        'products.read', 'orders.read', 'orders.create',
+        'files.read',
+        'files.upload',
+        'products.read',
+        'orders.read',
+        'orders.create',
       ],
     },
     {
@@ -386,13 +500,13 @@ async function main(): Promise<void> {
   console.log('\n⚙️  Seeding system settings...');
 
   const settingsData = [
-    { key: 'platform.name',              value: 'Xennic' },
-    { key: 'platform.version',           value: '1.0.0' },
-    { key: 'platform.default_language',  value: 'fa' },
+    { key: 'platform.name', value: 'Xennic' },
+    { key: 'platform.version', value: '1.0.0' },
+    { key: 'platform.default_language', value: 'fa' },
     { key: 'platform.supported_locales', value: 'fa,en' },
-    { key: 'platform.maintenance_mode',  value: 'false' },
-    { key: 'email.from_address',         value: 'noreply@xennic.com' },
-    { key: 'email.from_name',            value: 'Xennic Platform' },
+    { key: 'platform.maintenance_mode', value: 'false' },
+    { key: 'email.from_address', value: 'noreply@xennic.com' },
+    { key: 'email.from_name', value: 'Xennic Platform' },
   ];
 
   for (const s of settingsData) {
@@ -411,21 +525,91 @@ async function main(): Promise<void> {
   console.log('\n📐 Seeding engineering standards...');
 
   const standardsData = [
-    { code: 'IEC 60364',    title: 'Electrical Installations of Buildings',              organization: 'IEC',   version: '2022' },
-    { code: 'IEC 60287',    title: 'Electric Cables — Calculation of Current Rating',    organization: 'IEC',   version: '2023' },
-    { code: 'IEC 60949',    title: 'Calculation of Short-Circuit Temperatures',          organization: 'IEC',   version: '1988' },
-    { code: 'IEC 60909',    title: 'Short-Circuit Currents in Three-Phase AC Systems',   organization: 'IEC',   version: '2016' },
-    { code: 'IEC 60076',    title: 'Power Transformers',                                 organization: 'IEC',   version: '2021' },
-    { code: 'IEC 60947',    title: 'Low-Voltage Switchgear and Controlgear',             organization: 'IEC',   version: '2021' },
-    { code: 'IEC 61000-3',  title: 'Electromagnetic Compatibility — Limits',             organization: 'IEC',   version: '2022' },
-    { code: 'IEC 62548',    title: 'Design Requirements for PV Arrays',                  organization: 'IEC',   version: '2016' },
-    { code: 'IEEE 519',     title: 'Harmonic Control in Electric Power Systems',         organization: 'IEEE',  version: '2022' },
-    { code: 'IEEE 80',      title: 'Guide for Safety in AC Substation Grounding',        organization: 'IEEE',  version: '2013' },
-    { code: 'IEEE 1584',    title: 'Guide for Performing Arc-Flash Hazard Calculations', organization: 'IEEE',  version: '2018' },
-    { code: 'IEEE C57.110', title: 'Transformer Compatibility with Non-Sinusoidal Loads',organization: 'IEEE',  version: '2018' },
-    { code: 'NFPA 70E',     title: 'Standard for Electrical Safety in the Workplace',    organization: 'NFPA',  version: '2024' },
-    { code: 'EN 12464',     title: 'Light and Lighting of Work Places',                  organization: 'CEN',   version: '2021' },
-    { code: 'ISIRI 3558',   title: 'Electrical Installations — Iran National Standard',  organization: 'ISIRI', version: '2016' },
+    {
+      code: 'IEC 60364',
+      title: 'Electrical Installations of Buildings',
+      organization: 'IEC',
+      version: '2022',
+    },
+    {
+      code: 'IEC 60287',
+      title: 'Electric Cables — Calculation of Current Rating',
+      organization: 'IEC',
+      version: '2023',
+    },
+    {
+      code: 'IEC 60949',
+      title: 'Calculation of Short-Circuit Temperatures',
+      organization: 'IEC',
+      version: '1988',
+    },
+    {
+      code: 'IEC 60909',
+      title: 'Short-Circuit Currents in Three-Phase AC Systems',
+      organization: 'IEC',
+      version: '2016',
+    },
+    { code: 'IEC 60076', title: 'Power Transformers', organization: 'IEC', version: '2021' },
+    {
+      code: 'IEC 60947',
+      title: 'Low-Voltage Switchgear and Controlgear',
+      organization: 'IEC',
+      version: '2021',
+    },
+    {
+      code: 'IEC 61000-3',
+      title: 'Electromagnetic Compatibility — Limits',
+      organization: 'IEC',
+      version: '2022',
+    },
+    {
+      code: 'IEC 62548',
+      title: 'Design Requirements for PV Arrays',
+      organization: 'IEC',
+      version: '2016',
+    },
+    {
+      code: 'IEEE 519',
+      title: 'Harmonic Control in Electric Power Systems',
+      organization: 'IEEE',
+      version: '2022',
+    },
+    {
+      code: 'IEEE 80',
+      title: 'Guide for Safety in AC Substation Grounding',
+      organization: 'IEEE',
+      version: '2013',
+    },
+    {
+      code: 'IEEE 1584',
+      title: 'Guide for Performing Arc-Flash Hazard Calculations',
+      organization: 'IEEE',
+      version: '2018',
+    },
+    {
+      code: 'IEEE C57.110',
+      title: 'Transformer Compatibility with Non-Sinusoidal Loads',
+      organization: 'IEEE',
+      version: '2018',
+    },
+    {
+      code: 'NFPA 70E',
+      title: 'Standard for Electrical Safety in the Workplace',
+      organization: 'NFPA',
+      version: '2024',
+    },
+    {
+      code: 'EN 12464',
+      title: 'Light and Lighting of Work Places',
+      organization: 'CEN',
+      version: '2021',
+    },
+    {
+      code: 'ISIRI 3558',
+      title: 'Electrical Installations — Iran National Standard',
+      organization: 'ISIRI',
+      version: '2016',
+    },
   ];
 
   for (const std of standardsData) {
@@ -445,18 +629,76 @@ async function main(): Promise<void> {
 
   // Categories
   const categoriesData = [
-    { slug: 'power-systems',           name: 'سیستم‌های قدرت',         name_en: 'Power Systems',           icon: '⚡', color: '#F59E0B', sort_order: 1 },
-    { slug: 'distribution',            name: 'توزیع',                  name_en: 'Distribution',            icon: '🔌', color: '#10B981', sort_order: 2 },
-    { slug: 'renewable-energy',        name: 'انرژی تجدیدپذیر',        name_en: 'Renewable Energy',        icon: '☀️', color: '#3B82F6', sort_order: 3 },
-    { slug: 'protection',              name: 'حفاظت',                  name_en: 'Protection',              icon: '🛡️', color: '#EF4444', sort_order: 4 },
-    { slug: 'power-quality',           name: 'کیفیت توان',             name_en: 'Power Quality',           icon: '📊', color: '#8B5CF6', sort_order: 5 },
-    { slug: 'earthing-lightning',      name: 'ارتینگ و صاعقه‌گیر',     name_en: 'Earthing & Lightning',    icon: '⛆', color: '#06B6D4', sort_order: 6 },
-    { slug: 'cable-busbar',            name: 'کابل و شین',             name_en: 'Cable & Busbar',          icon: '🔗', color: '#EC4899', sort_order: 7 },
-    { slug: 'control-automation',      name: 'کنترل و اتوماسیون',      name_en: 'Control & Automation',    icon: '🤖', color: '#14B8A6', sort_order: 8 },
+    {
+      slug: 'power-systems',
+      name: 'سیستم‌های قدرت',
+      name_en: 'Power Systems',
+      icon: '⚡',
+      color: '#F59E0B',
+      sort_order: 1,
+    },
+    {
+      slug: 'distribution',
+      name: 'توزیع',
+      name_en: 'Distribution',
+      icon: '🔌',
+      color: '#10B981',
+      sort_order: 2,
+    },
+    {
+      slug: 'renewable-energy',
+      name: 'انرژی تجدیدپذیر',
+      name_en: 'Renewable Energy',
+      icon: '☀️',
+      color: '#3B82F6',
+      sort_order: 3,
+    },
+    {
+      slug: 'protection',
+      name: 'حفاظت',
+      name_en: 'Protection',
+      icon: '🛡️',
+      color: '#EF4444',
+      sort_order: 4,
+    },
+    {
+      slug: 'power-quality',
+      name: 'کیفیت توان',
+      name_en: 'Power Quality',
+      icon: '📊',
+      color: '#8B5CF6',
+      sort_order: 5,
+    },
+    {
+      slug: 'earthing-lightning',
+      name: 'ارتینگ و صاعقه‌گیر',
+      name_en: 'Earthing & Lightning',
+      icon: '⛆',
+      color: '#06B6D4',
+      sort_order: 6,
+    },
+    {
+      slug: 'cable-busbar',
+      name: 'کابل و شین',
+      name_en: 'Cable & Busbar',
+      icon: '🔗',
+      color: '#EC4899',
+      sort_order: 7,
+    },
+    {
+      slug: 'control-automation',
+      name: 'کنترل و اتوماسیون',
+      name_en: 'Control & Automation',
+      icon: '🤖',
+      color: '#14B8A6',
+      sort_order: 8,
+    },
   ];
   for (const c of categoriesData) {
     await upsertRaw(
-      'categories', 'slug', c.slug,
+      'categories',
+      'slug',
+      c.slug,
       ['slug', 'name', 'name_en', 'icon', 'color', 'sort_order', 'is_active', 'created_at'],
       [c.slug, c.name, c.name_en, c.icon, c.color, c.sort_order, true, new Date()],
     );
@@ -464,20 +706,37 @@ async function main(): Promise<void> {
 
   // Topics
   const topicsData = [
-    { slug: 'short-circuit',       name: 'محاسبه اتصال کوتاه',        name_en: 'Short Circuit Calculation',    icon: '⚡' },
-    { slug: 'load-flow',           name: 'پخش بار',                   name_en: 'Load Flow Analysis',          icon: '📈' },
-    { slug: 'arc-flash',           name: 'آرک فلش',                   name_en: 'Arc Flash',                   icon: '🔥' },
-    { slug: 'harmonics',           name: 'هارمونیک‌ها',               name_en: 'Harmonics',                   icon: '〰️' },
-    { slug: 'voltage-drop',        name: 'افت ولتاژ',                 name_en: 'Voltage Drop',                icon: '📉' },
-    { slug: 'cable-sizing',        name: 'سایزینگ کابل',              name_en: 'Cable Sizing',                icon: '📏' },
-    { slug: 'transformer-design',  name: 'طراحی ترانسفورماتور',       name_en: 'Transformer Design',          icon: '🔄' },
-    { slug: 'grounding',           name: 'طراحی سیستم ارت',           name_en: 'Grounding Design',            icon: '⛆' },
-    { slug: 'protection-coordination', name: 'هماهنگی حفاظتی',        name_en: 'Protection Coordination',    icon: '🛡️' },
-    { slug: 'solar-pv',            name: 'سیستم خورشیدی',             name_en: 'Solar PV System',             icon: '☀️' },
+    {
+      slug: 'short-circuit',
+      name: 'محاسبه اتصال کوتاه',
+      name_en: 'Short Circuit Calculation',
+      icon: '⚡',
+    },
+    { slug: 'load-flow', name: 'پخش بار', name_en: 'Load Flow Analysis', icon: '📈' },
+    { slug: 'arc-flash', name: 'آرک فلش', name_en: 'Arc Flash', icon: '🔥' },
+    { slug: 'harmonics', name: 'هارمونیک‌ها', name_en: 'Harmonics', icon: '〰️' },
+    { slug: 'voltage-drop', name: 'افت ولتاژ', name_en: 'Voltage Drop', icon: '📉' },
+    { slug: 'cable-sizing', name: 'سایزینگ کابل', name_en: 'Cable Sizing', icon: '📏' },
+    {
+      slug: 'transformer-design',
+      name: 'طراحی ترانسفورماتور',
+      name_en: 'Transformer Design',
+      icon: '🔄',
+    },
+    { slug: 'grounding', name: 'طراحی سیستم ارت', name_en: 'Grounding Design', icon: '⛆' },
+    {
+      slug: 'protection-coordination',
+      name: 'هماهنگی حفاظتی',
+      name_en: 'Protection Coordination',
+      icon: '🛡️',
+    },
+    { slug: 'solar-pv', name: 'سیستم خورشیدی', name_en: 'Solar PV System', icon: '☀️' },
   ];
   for (const t of topicsData) {
     await upsertRaw(
-      'topics', 'slug', t.slug,
+      'topics',
+      'slug',
+      t.slug,
       ['slug', 'name', 'name_en', 'icon', 'is_active', 'created_at'],
       [t.slug, t.name, t.name_en, t.icon, true, new Date()],
     );
@@ -485,20 +744,22 @@ async function main(): Promise<void> {
 
   // Tags
   const tagsData = [
-    { slug: 'iec-standard',      name: 'استاندارد IEC',     name_en: 'IEC Standard' },
-    { slug: 'ieee-standard',     name: 'استاندارد IEEE',    name_en: 'IEEE Standard' },
-    { slug: 'national-code',     name: 'مبحث ملی',          name_en: 'National Code' },
-    { slug: 'tutorial',          name: 'آموزشی',            name_en: 'Tutorial' },
-    { slug: 'case-study',        name: 'مطالعه موردی',      name_en: 'Case Study' },
-    { slug: 'best-practice',     name: 'بهترین روش',        name_en: 'Best Practice' },
-    { slug: 'design-guide',      name: 'راهنمای طراحی',     name_en: 'Design Guide' },
-    { slug: 'calculation',       name: 'محاسبات',           name_en: 'Calculation' },
-    { slug: 'faq',               name: 'سوالات متداول',     name_en: 'FAQ' },
-    { slug: 'troubleshooting',   name: 'عیب‌یابی',          name_en: 'Troubleshooting' },
+    { slug: 'iec-standard', name: 'استاندارد IEC', name_en: 'IEC Standard' },
+    { slug: 'ieee-standard', name: 'استاندارد IEEE', name_en: 'IEEE Standard' },
+    { slug: 'national-code', name: 'مبحث ملی', name_en: 'National Code' },
+    { slug: 'tutorial', name: 'آموزشی', name_en: 'Tutorial' },
+    { slug: 'case-study', name: 'مطالعه موردی', name_en: 'Case Study' },
+    { slug: 'best-practice', name: 'بهترین روش', name_en: 'Best Practice' },
+    { slug: 'design-guide', name: 'راهنمای طراحی', name_en: 'Design Guide' },
+    { slug: 'calculation', name: 'محاسبات', name_en: 'Calculation' },
+    { slug: 'faq', name: 'سوالات متداول', name_en: 'FAQ' },
+    { slug: 'troubleshooting', name: 'عیب‌یابی', name_en: 'Troubleshooting' },
   ];
   for (const t of tagsData) {
     await upsertRaw(
-      'tags', 'slug', t.slug,
+      'tags',
+      'slug',
+      t.slug,
       ['slug', 'name', 'name_en', 'created_at'],
       [t.slug, t.name, t.name_en, new Date()],
     );
@@ -506,15 +767,21 @@ async function main(): Promise<void> {
 
   // Disciplines
   const disciplinesData = [
-    { slug: 'electrical-power',    name: 'مهندسی برق قدرت',              name_en: 'Electrical Power Engineering' },
-    { slug: 'renewable-energy',    name: 'مهندسی انرژی تجدیدپذیر',       name_en: 'Renewable Energy Engineering' },
-    { slug: 'control-engineering', name: 'مهندسی کنترل',                 name_en: 'Control Engineering' },
-    { slug: 'telecom',             name: 'مهندسی مخابرات',               name_en: 'Telecommunications Engineering' },
-    { slug: 'electronics',         name: 'مهندسی الکترونیک',            name_en: 'Electronics Engineering' },
+    { slug: 'electrical-power', name: 'مهندسی برق قدرت', name_en: 'Electrical Power Engineering' },
+    {
+      slug: 'renewable-energy',
+      name: 'مهندسی انرژی تجدیدپذیر',
+      name_en: 'Renewable Energy Engineering',
+    },
+    { slug: 'control-engineering', name: 'مهندسی کنترل', name_en: 'Control Engineering' },
+    { slug: 'telecom', name: 'مهندسی مخابرات', name_en: 'Telecommunications Engineering' },
+    { slug: 'electronics', name: 'مهندسی الکترونیک', name_en: 'Electronics Engineering' },
   ];
   for (const d of disciplinesData) {
     await upsertRaw(
-      'disciplines', 'slug', d.slug,
+      'disciplines',
+      'slug',
+      d.slug,
       ['slug', 'name', 'name_en', 'is_active', 'created_at'],
       [d.slug, d.name, d.name_en, true, new Date()],
     );
@@ -522,35 +789,64 @@ async function main(): Promise<void> {
 
   // Audiences
   const audiencesData = [
-    { slug: 'beginner',       name: 'مبتدی',         name_en: 'Beginner',       description: '0-2 years experience' },
-    { slug: 'intermediate',   name: 'متوسط',         name_en: 'Intermediate',   description: '2-5 years experience' },
-    { slug: 'advanced',       name: 'پیشرفته',       name_en: 'Advanced',       description: '5-10 years experience' },
-    { slug: 'expert',         name: 'متخصص',         name_en: 'Expert',         description: '10+ years experience' },
-    { slug: 'student',        name: 'دانشجو',        name_en: 'Student',        description: 'University students' },
-    { slug: 'manager',        name: 'مدیر پروژه',    name_en: 'Project Manager', description: 'Project & program managers' },
+    { slug: 'beginner', name: 'مبتدی', name_en: 'Beginner', description: '0-2 years experience' },
+    {
+      slug: 'intermediate',
+      name: 'متوسط',
+      name_en: 'Intermediate',
+      description: '2-5 years experience',
+    },
+    {
+      slug: 'advanced',
+      name: 'پیشرفته',
+      name_en: 'Advanced',
+      description: '5-10 years experience',
+    },
+    { slug: 'expert', name: 'متخصص', name_en: 'Expert', description: '10+ years experience' },
+    { slug: 'student', name: 'دانشجو', name_en: 'Student', description: 'University students' },
+    {
+      slug: 'manager',
+      name: 'مدیر پروژه',
+      name_en: 'Project Manager',
+      description: 'Project & program managers',
+    },
   ];
   for (const a of audiencesData) {
     await upsertRaw(
-      'audiences', 'slug', a.slug,
+      'audiences',
+      'slug',
+      a.slug,
       ['slug', 'name', 'name_en', 'description', 'is_active', 'created_at'],
       [a.slug, a.name, a.name_en, a.description, true, new Date()],
     );
   }
 
-  console.log(`  ✅ ${categoriesData.length} categories, ${topicsData.length} topics, ${tagsData.length} tags, ${disciplinesData.length} disciplines, ${audiencesData.length} audiences seeded`);
+  console.log(
+    `  ✅ ${categoriesData.length} categories, ${topicsData.length} topics, ${tagsData.length} tags, ${disciplinesData.length} disciplines, ${audiencesData.length} audiences seeded`,
+  );
 
   // ── 8. AI AGENTS ──────────────────────────────────────────────────────────
 
   console.log('\n🤖 Seeding AI agents...');
 
   const agentsData = [
-    { slug: 'electrical-engineer', name: 'Electrical Engineer Agent', version: '1.0', is_active: true },
-    { slug: 'solar-consultant',    name: 'Solar Consultant Agent',    version: '1.0', is_active: true },
-    { slug: 'protection-engineer', name: 'Protection Engineer Agent', version: '1.0', is_active: true },
-    { slug: 'power-quality',       name: 'Power Quality Agent',       version: '1.0', is_active: true },
-    { slug: 'researcher',          name: 'Research Agent',            version: '1.0', is_active: true },
-    { slug: 'document-analyst',    name: 'Document Analyst Agent',    version: '1.0', is_active: true },
-    { slug: 'drawing-analyst',     name: 'Drawing Analyst Agent',     version: '1.0', is_active: false },
+    {
+      slug: 'electrical-engineer',
+      name: 'Electrical Engineer Agent',
+      version: '1.0',
+      is_active: true,
+    },
+    { slug: 'solar-consultant', name: 'Solar Consultant Agent', version: '1.0', is_active: true },
+    {
+      slug: 'protection-engineer',
+      name: 'Protection Engineer Agent',
+      version: '1.0',
+      is_active: true,
+    },
+    { slug: 'power-quality', name: 'Power Quality Agent', version: '1.0', is_active: true },
+    { slug: 'researcher', name: 'Research Agent', version: '1.0', is_active: true },
+    { slug: 'document-analyst', name: 'Document Analyst Agent', version: '1.0', is_active: true },
+    { slug: 'drawing-analyst', name: 'Drawing Analyst Agent', version: '1.0', is_active: false },
   ];
 
   for (const agent of agentsData) {
@@ -576,7 +872,16 @@ async function main(): Promise<void> {
     'users',
     'email',
     adminEmail,
-    ['email', 'password', 'first_name', 'last_name', 'is_admin', 'is_active', 'created_at', 'updated_at'],
+    [
+      'email',
+      'password',
+      'first_name',
+      'last_name',
+      'is_admin',
+      'is_active',
+      'created_at',
+      'updated_at',
+    ],
     [adminEmail, '', 'Admin', 'Xennic', true, true, new Date(), new Date()],
   );
 
@@ -589,7 +894,8 @@ async function main(): Promise<void> {
   });
   await db.$executeRawUnsafe(
     `UPDATE "users" SET "password" = $1 WHERE "id" = $2`,
-    hashedPassword, userId,
+    hashedPassword,
+    userId,
   );
 
   // Default workspace
@@ -604,13 +910,17 @@ async function main(): Promise<void> {
   // Workspace membership
   const existingMem = await db.$queryRawUnsafe<{ id: string }[]>(
     `SELECT id FROM "workspace_members" WHERE "workspace_id" = $1 AND "user_id" = $2 LIMIT 1`,
-    wsId, userId,
+    wsId,
+    userId,
   );
   if (existingMem.length === 0) {
     const memId = newId();
     await db.$executeRawUnsafe(
       `INSERT INTO "workspace_members" ("id", "workspace_id", "user_id", "role") VALUES ($1, $2, $3, $4)`,
-      memId, wsId, userId, 'OWNER',
+      memId,
+      wsId,
+      userId,
+      'OWNER',
     );
   }
 
@@ -619,13 +929,18 @@ async function main(): Promise<void> {
   if (superAdminRoleId) {
     const existingRole = await db.$queryRawUnsafe<{ id: string }[]>(
       `SELECT id FROM "user_roles" WHERE "user_id" = $1 AND "role_id" = $2 AND "workspace_id" = $3 LIMIT 1`,
-      userId, superAdminRoleId, wsId,
+      userId,
+      superAdminRoleId,
+      wsId,
     );
     if (existingRole.length === 0) {
       const urId = newId();
       await db.$executeRawUnsafe(
         `INSERT INTO "user_roles" ("id", "user_id", "role_id", "workspace_id") VALUES ($1, $2, $3, $4)`,
-        urId, userId, superAdminRoleId, wsId,
+        urId,
+        userId,
+        superAdminRoleId,
+        wsId,
       );
     }
   }
@@ -639,7 +954,7 @@ async function main(): Promise<void> {
 main()
   .catch((e: unknown) => {
     console.error('❌ Seed failed:', e);
-    process.exit(1);  // process از /// <reference types="node" /> می‌آید
+    process.exit(1); // process از /// <reference types="node" /> می‌آید
   })
   .finally(async () => {
     await db.$disconnect();

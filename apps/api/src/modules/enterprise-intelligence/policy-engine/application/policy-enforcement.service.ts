@@ -27,12 +27,14 @@ export class PolicyEnforcementService {
     const allPolicies = await this.policyRepository.list();
     const policies = options?.includeDisabled
       ? allPolicies.items
-      : allPolicies.items.filter(p => p.enabled);
+      : allPolicies.items.filter((p) => p.enabled);
 
     const matched = this.evaluationService.matchPolicies(action, resource, context, policies);
-    const matchedWithConditions = matched.filter(p => this.evaluationService.evaluateConditions(p, context));
+    const matchedWithConditions = matched.filter((p) =>
+      this.evaluationService.evaluateConditions(p, context),
+    );
 
-    const matches: PolicyMatch[] = matchedWithConditions.map(p => ({
+    const matches: PolicyMatch[] = matchedWithConditions.map((p) => ({
       policyId: p.id,
       name: p.name,
       effect: p.effect,
@@ -55,7 +57,7 @@ export class PolicyEnforcementService {
 
   async getUserPolicies(userId: string): Promise<PolicyEntity[]> {
     const allPolicies = await this.policyRepository.list();
-    return allPolicies.items.filter(p => {
+    return allPolicies.items.filter((p) => {
       if (!p.enabled) return false;
       if (p.conditions && p.conditions.userId && p.conditions.userId !== userId) return false;
       return true;

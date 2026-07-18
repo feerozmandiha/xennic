@@ -7,7 +7,6 @@ import { SubscriptionEntity } from '../../domain/entities/subscription.entity.js
 
 @Injectable()
 export class SubscriptionRepository implements ISubscriptionRepository {
-
   // ══════════════════════════════════════════════════════════════════════════
   // PLANS
   // ══════════════════════════════════════════════════════════════════════════
@@ -18,7 +17,7 @@ export class SubscriptionRepository implements ISubscriptionRepository {
         where: { is_active: true },
         orderBy: { monthly_price: 'asc' },
       });
-      return rows.map(r => this._mapPlan(r));
+      return rows.map((r) => this._mapPlan(r));
     } catch (err) {
       console.error('SubscriptionRepository.findAllPlans error:', (err as Error).message);
       return [];
@@ -30,7 +29,9 @@ export class SubscriptionRepository implements ISubscriptionRepository {
       const row = await prisma.plans.findUnique({ where: { id } });
       if (!row) return null;
       return this._mapPlan(row);
-    } catch { return null; }
+    } catch {
+      return null;
+    }
   }
 
   async findPlanBySlug(slug: string): Promise<PlanEntity | null> {
@@ -38,7 +39,9 @@ export class SubscriptionRepository implements ISubscriptionRepository {
       const row = await prisma.plans.findUnique({ where: { slug } });
       if (!row) return null;
       return this._mapPlan(row);
-    } catch { return null; }
+    } catch {
+      return null;
+    }
   }
 
   // ══════════════════════════════════════════════════════════════════════════
@@ -74,7 +77,9 @@ export class SubscriptionRepository implements ISubscriptionRepository {
       });
       if (!row) return null;
       return this._mapSub(row);
-    } catch { return null; }
+    } catch {
+      return null;
+    }
   }
 
   async findActiveByWorkspace(workspaceId: string): Promise<SubscriptionEntity | null> {
@@ -90,7 +95,9 @@ export class SubscriptionRepository implements ISubscriptionRepository {
       });
       if (!row) return null;
       return this._mapSub(row);
-    } catch { return null; }
+    } catch {
+      return null;
+    }
   }
 
   async findAllByWorkspace(workspaceId: string): Promise<SubscriptionEntity[]> {
@@ -100,8 +107,10 @@ export class SubscriptionRepository implements ISubscriptionRepository {
         include: { plan: { select: { slug: true } } },
         orderBy: { created_at: 'desc' },
       });
-      return rows.map(r => this._mapSub(r));
-    } catch { return []; }
+      return rows.map((r) => this._mapSub(r));
+    } catch {
+      return [];
+    }
   }
 
   // ══════════════════════════════════════════════════════════════════════════
@@ -139,7 +148,9 @@ export class SubscriptionRepository implements ISubscriptionRepository {
         _sum: { amount: true },
       });
       return result._sum.amount ?? 0;
-    } catch { return 0; }
+    } catch {
+      return 0;
+    }
   }
 
   // ══════════════════════════════════════════════════════════════════════════
@@ -149,41 +160,43 @@ export class SubscriptionRepository implements ISubscriptionRepository {
   private _mapPlan(row: any): PlanEntity {
     let features: PlanFeatures;
     try {
-      features = typeof row.features === 'string'
-        ? JSON.parse(row.features)
-        : row.features;
+      features = typeof row.features === 'string' ? JSON.parse(row.features) : row.features;
     } catch {
       features = {
-        projects: 3, calculations_month: 100, ai_requests_month: 50,
-        storage_gb: 1, api_access: false, report_formats: ['pdf'],
+        projects: 3,
+        calculations_month: 100,
+        ai_requests_month: 50,
+        storage_gb: 1,
+        api_access: false,
+        report_formats: ['pdf'],
       };
     }
 
     return PlanEntity.reconstitute({
-      id:           row.id,
-      name:         row.name,
-      slug:         row.slug,
+      id: row.id,
+      name: row.name,
+      slug: row.slug,
       monthlyPrice: Number(row.monthly_price),
-      yearlyPrice:  Number(row.yearly_price),
+      yearlyPrice: Number(row.yearly_price),
       features,
-      isActive:     row.is_active,
-      createdAt:    row.created_at,
-      updatedAt:    row.updated_at,
+      isActive: row.is_active,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
     });
   }
 
   private _mapSub(row: any): SubscriptionEntity {
     return SubscriptionEntity.reconstitute({
-      id:          row.id,
+      id: row.id,
       workspaceId: row.workspace_id,
-      planId:      row.plan_id,
-      planSlug:    (row.plan?.slug ?? row.plan_slug) ?? 'free',
-      status:      row.status,
-      startsAt:    row.starts_at,
-      expiresAt:   row.ends_at     ?? null,
+      planId: row.plan_id,
+      planSlug: row.plan?.slug ?? row.plan_slug ?? 'free',
+      status: row.status,
+      startsAt: row.starts_at,
+      expiresAt: row.ends_at ?? null,
       cancelledAt: row.cancelled_at ?? null,
-      createdAt:   row.created_at,
-      updatedAt:   row.updated_at,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
     });
   }
 }

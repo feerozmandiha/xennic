@@ -61,15 +61,6 @@ export class CompensationEntry {
     error: string | null,
     createdAt: Date,
   ): CompensationEntry {
-    return new CompensationEntry(
-      id,
-      executionId,
-      stepId,
-      action,
-      status,
-      output,
-      error,
-      createdAt,
-    );
+    return new CompensationEntry(id, executionId, stepId, action, status, output, error, createdAt);
   }
 }

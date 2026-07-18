@@ -10,7 +10,7 @@ export const DOCUMENT_STATUSES = {
   FAILED: 'failed',
 } as const;
 
-export type DocumentStatus = typeof DOCUMENT_STATUSES[keyof typeof DOCUMENT_STATUSES];
+export type DocumentStatus = (typeof DOCUMENT_STATUSES)[keyof typeof DOCUMENT_STATUSES];
 
 export const VALID_STATUS_TRANSITIONS: Record<DocumentStatus, DocumentStatus[]> = {
   uploaded: ['classified'],

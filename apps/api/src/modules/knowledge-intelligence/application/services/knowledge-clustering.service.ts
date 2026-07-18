@@ -20,7 +20,12 @@ export class KnowledgeClusteringService {
   ) {}
 
   async computeClusters(workspaceId: string, threshold = 0.6): Promise<any[]> {
-    const similarities = await this.similarityRepo.findByWorkspace(workspaceId, 'semantic', threshold, 200);
+    const similarities = await this.similarityRepo.findByWorkspace(
+      workspaceId,
+      'semantic',
+      threshold,
+      200,
+    );
     const clusters: Map<string, Set<string>> = new Map();
     const nodeToCluster = new Map<string, string>();
 

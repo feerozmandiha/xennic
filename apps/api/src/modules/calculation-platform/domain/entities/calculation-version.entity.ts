@@ -60,7 +60,14 @@ export class CalculationVersionEntity {
     );
   }
 
-  publish(): void { this.status = 'active'; this.publishedAt = new Date(); }
-  deprecate(): void { this.status = 'deprecated'; }
-  supersede(): void { this.status = 'superseded'; }
+  publish(): void {
+    this.status = 'active';
+    this.publishedAt = new Date();
+  }
+  deprecate(): void {
+    this.status = 'deprecated';
+  }
+  supersede(): void {
+    this.status = 'superseded';
+  }
 }

@@ -3,7 +3,10 @@ import { prisma } from '@xennic/database';
 import { BenchmarkEntity } from '../../domain/benchmark.entity.js';
 import { GoldenDataset, type GoldenItem } from '../../domain/golden-dataset.entity.js';
 import { EvaluationRun, type EvaluationResult } from '../../domain/evaluation-run.entity.js';
-import type { IEvaluationRepository, ListOptions } from '../../domain/evaluation-repository.interface.js';
+import type {
+  IEvaluationRepository,
+  ListOptions,
+} from '../../domain/evaluation-repository.interface.js';
 import type { PaginatedResult } from '../../../shared/types/index.js';
 
 @Injectable()
@@ -73,7 +76,7 @@ export class PrismaEvaluationRepository implements IEvaluationRepository {
       prisma.evaluation_benchmarks.count({ where }),
     ]);
     return {
-      items: items.map(r =>
+      items: items.map((r) =>
         BenchmarkEntity.reconstitute(
           r.id,
           r.name,
@@ -154,7 +157,7 @@ export class PrismaEvaluationRepository implements IEvaluationRepository {
       prisma.evaluation_datasets.count({ where }),
     ]);
     return {
-      items: items.map(r =>
+      items: items.map((r) =>
         GoldenDataset.reconstitute(
           r.id,
           r.name,
@@ -245,7 +248,7 @@ export class PrismaEvaluationRepository implements IEvaluationRepository {
       prisma.evaluation_runs.count({ where }),
     ]);
     return {
-      items: items.map(r =>
+      items: items.map((r) =>
         EvaluationRun.reconstitute(
           r.id,
           r.benchmark_id,

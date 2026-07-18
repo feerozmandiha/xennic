@@ -91,7 +91,9 @@ export class ArtifactService {
     });
 
     await this.repository.saveArtifact(copy);
-    this.logger.log(`Shared artifact ${artifactId} to execution ${targetExecutionId} as ${copy.id}`);
+    this.logger.log(
+      `Shared artifact ${artifactId} to execution ${targetExecutionId} as ${copy.id}`,
+    );
     return copy;
   }
 }

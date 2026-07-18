@@ -10,11 +10,13 @@ import { WorkspaceModule } from '../workspace/workspace.module.js';
 import { RbacModule } from '../rbac/rbac.module.js';
 
 @Module({
-  imports: [
-    WorkspaceModule,
-    RbacModule,
+  imports: [WorkspaceModule, RbacModule],
+  controllers: [
+    KnowledgeController,
+    KnowledgeStandardsController,
+    PublicKnowledgeController,
+    TaxonomyController,
   ],
-  controllers: [KnowledgeController, KnowledgeStandardsController, PublicKnowledgeController, TaxonomyController],
   providers: [
     KnowledgeService,
     {

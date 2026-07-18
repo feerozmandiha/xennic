@@ -60,7 +60,7 @@ export class PlanEntity {
 
   static create(opts: PlanEntityOptions): PlanEntity {
     const now = new Date();
-    const tasks = opts.tasks.map(t => ({
+    const tasks = opts.tasks.map((t) => ({
       ...t,
       id: t.id ?? randomUUID(),
       status: t.status ?? ('pending' as TaskStatus),

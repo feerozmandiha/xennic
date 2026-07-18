@@ -8,12 +8,12 @@ export interface ChatMessage {
 }
 
 export interface LlmResponse {
-  content:          string;
-  promptTokens:     number;
+  content: string;
+  promptTokens: number;
   completionTokens: number;
-  totalTokens:      number;
-  model:            string;
-  provider:         string;
+  totalTokens: number;
+  model: string;
+  provider: string;
 }
 
 const SYSTEM_PROMPT = `You are Xennic AI, an expert electrical engineering assistant.
@@ -41,7 +41,9 @@ export class LlmProvider {
 
   constructor(private readonly execution: ProviderExecutionService) {}
 
-  get systemPrompt(): string { return SYSTEM_PROMPT; }
+  get systemPrompt(): string {
+    return SYSTEM_PROMPT;
+  }
 
   async chat(messages: ChatMessage[]): Promise<LlmResponse> {
     try {
@@ -49,7 +51,9 @@ export class LlmProvider {
         messages: messages as ExecChatMessage[],
         systemPrompt: SYSTEM_PROMPT,
       });
-      this.logger.log(`AI call: provider=${result.providerName}, model=${result.model}, tokens=${result.totalTokens}`);
+      this.logger.log(
+        `AI call: provider=${result.providerName}, model=${result.model}, tokens=${result.totalTokens}`,
+      );
       return {
         content: result.content,
         promptTokens: result.promptTokens,
@@ -68,7 +72,7 @@ export class LlmProvider {
     const result = await this.chat(messages);
     for (const word of result.content.split(' ')) {
       yield word + ' ';
-      await new Promise(r => setTimeout(r, 15));
+      await new Promise((r) => setTimeout(r, 15));
     }
   }
 

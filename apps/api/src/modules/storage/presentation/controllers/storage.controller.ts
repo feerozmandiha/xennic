@@ -79,7 +79,7 @@ export class StorageController {
       }
 
       originalName = data.filename;
-      mimeType     = data.mimetype;
+      mimeType = data.mimetype;
 
       const chunks: Buffer[] = [];
       for await (const chunk of data.file) {
@@ -97,18 +97,16 @@ export class StorageController {
     }
 
     const uploaded = await this.storageService.upload({
-      workspaceId:  req.workspaceId,
-      uploadedBy:   req.user.userId,
-      buffer:       fileBuffer!,
+      workspaceId: req.workspaceId,
+      uploadedBy: req.user.userId,
+      buffer: fileBuffer!,
       originalName,
       mimeType,
     });
 
     // presigned URL برای دانلود فوری
     try {
-      const { url } = await this.storageService.getDownloadUrl(
-        uploaded.id, req.workspaceId, 3600,
-      );
+      const { url } = await this.storageService.getDownloadUrl(uploaded.id, req.workspaceId, 3600);
       return { success: true, data: FileResponseDto.fromEntity(uploaded, url) };
     } catch {
       return { success: true, data: FileResponseDto.fromEntity(uploaded) };
@@ -120,28 +118,29 @@ export class StorageController {
   @Get('files')
   @RequirePermissions('files.read')
   @ApiOperation({ summary: 'List files', description: 'Returns paginated files in the workspace.' })
-  @ApiQuery({ name: 'page',   required: false, type: Number, example: 1 })
-  @ApiQuery({ name: 'limit',  required: false, type: Number, example: 20 })
+  @ApiQuery({ name: 'page', required: false, type: Number, example: 1 })
+  @ApiQuery({ name: 'limit', required: false, type: Number, example: 20 })
   @ApiQuery({
-    name: 'bucket', required: false,
-    enum: ['public','private','reports','documents','engineering','ai'],
+    name: 'bucket',
+    required: false,
+    enum: ['public', 'private', 'reports', 'documents', 'engineering', 'ai'],
   })
   @ApiResponse({ status: 200, description: 'Files retrieved' })
   async findAll(
     @Req() req: any,
-    @Query('page')   page?: string,
-    @Query('limit')  limit?: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
     @Query('bucket') bucket?: string,
   ) {
     const result = await this.storageService.findAll(
       req.workspaceId,
-      page  ? parseInt(page,  10) : 1,
+      page ? parseInt(page, 10) : 1,
       limit ? parseInt(limit, 10) : 20,
       bucket,
     );
     return {
       success: true,
-      data: result.data.map(f => FileResponseDto.fromEntity(f)),
+      data: result.data.map((f) => FileResponseDto.fromEntity(f)),
       meta: result.meta,
     };
   }
@@ -156,9 +155,7 @@ export class StorageController {
   @ApiResponse({ status: 404, description: 'File not found' })
   async findOne(@Param('id') id: string, @Req() req: any) {
     try {
-      const { url, file } = await this.storageService.getDownloadUrl(
-        id, req.workspaceId,
-      );
+      const { url, file } = await this.storageService.getDownloadUrl(id, req.workspaceId);
       return { success: true, data: FileResponseDto.fromEntity(file, url) };
     } catch {
       const file = await this.storageService.findOne(id, req.workspaceId);
@@ -175,15 +172,14 @@ export class StorageController {
     description: 'Streams the file content directly as binary.',
   })
   @ApiParam({ name: 'id', description: 'File UUID' })
-  async download(
-    @Param('id') id: string,
-    @Req() req: any,
-    @Res() res: any,
-  ) {
+  async download(@Param('id') id: string, @Req() req: any, @Res() res: any) {
     const { buffer, file } = await this.storageService.download(id, req.workspaceId);
     res
       .header('Content-Type', file.mimeType)
-      .header('Content-Disposition', `attachment; filename="${encodeURIComponent(file.originalName)}"`)
+      .header(
+        'Content-Disposition',
+        `attachment; filename="${encodeURIComponent(file.originalName)}"`,
+      )
       .header('Content-Length', buffer.length.toString())
       .send(buffer);
   }

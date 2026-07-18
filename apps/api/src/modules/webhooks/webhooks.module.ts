@@ -8,7 +8,7 @@ import { RbacModule } from '../rbac/rbac.module.js';
 @Module({
   imports: [
     WorkspaceModule, // WorkspaceGuard ← WorkspaceService
-    RbacModule,      // PermissionsGuard ← AuthorizationService
+    RbacModule, // PermissionsGuard ← AuthorizationService
   ],
   controllers: [WebhookController],
   providers: [

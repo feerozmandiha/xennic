@@ -25,19 +25,22 @@ export class ProviderMetricsService {
 
   async recordStats(providerId: string, success: boolean, latencyMs: number): Promise<void> {
     const existing = await this.statsRepo.findLatestByProviderId(providerId);
-    const data = existing ? {
-      successCount: existing.successCount + (success ? 1 : 0),
-      failureCount: existing.failureCount + (success ? 0 : 1),
-      totalRequests: existing.totalRequests + 1,
-      avgLatencyMs: existing.avgLatencyMs
-        ? (existing.avgLatencyMs * existing.totalRequests + latencyMs) / (existing.totalRequests + 1)
-        : latencyMs,
-    } : {
-      successCount: success ? 1 : 0,
-      failureCount: success ? 0 : 1,
-      totalRequests: 1,
-      avgLatencyMs: latencyMs,
-    };
+    const data = existing
+      ? {
+          successCount: existing.successCount + (success ? 1 : 0),
+          failureCount: existing.failureCount + (success ? 0 : 1),
+          totalRequests: existing.totalRequests + 1,
+          avgLatencyMs: existing.avgLatencyMs
+            ? (existing.avgLatencyMs * existing.totalRequests + latencyMs) /
+              (existing.totalRequests + 1)
+            : latencyMs,
+        }
+      : {
+          successCount: success ? 1 : 0,
+          failureCount: success ? 0 : 1,
+          totalRequests: 1,
+          avgLatencyMs: latencyMs,
+        };
 
     const stats = ProviderStatisticsEntity.create(providerId, '5m', {
       ...data,
@@ -67,11 +70,14 @@ export class ProviderMetricsService {
   }
 
   async getAggregatedMetrics(): Promise<{
-    totalProviders: number; healthyCount: number; degradedCount: number; unhealthyCount: number;
+    totalProviders: number;
+    healthyCount: number;
+    degradedCount: number;
+    unhealthyCount: number;
   }> {
     const unhealthy = await this.healthRepo.findUnhealthyProviders();
-    const unhealthyCount = unhealthy.filter(u => u.status === 'unhealthy').length;
-    const degradedCount = unhealthy.filter(u => u.status === 'degraded').length;
+    const unhealthyCount = unhealthy.filter((u) => u.status === 'unhealthy').length;
+    const degradedCount = unhealthy.filter((u) => u.status === 'degraded').length;
     return {
       totalProviders: 0,
       healthyCount: 0,

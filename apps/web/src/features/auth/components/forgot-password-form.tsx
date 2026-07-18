@@ -7,19 +7,20 @@ import { KeyRound, ArrowLeft, CheckCircle2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 
-const API_BASE = typeof window !== 'undefined'
-  ? `${process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000'}/api/v1`
-  : `${process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000'}/api/v1`;
+const API_BASE =
+  typeof window !== 'undefined'
+    ? `${process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000'}/api/v1`
+    : `${process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000'}/api/v1`;
 
 export function ForgotPasswordForm() {
-  const t      = useTranslations('auth');
+  const t = useTranslations('auth');
   const params = useParams();
   const locale = (params?.locale as string) ?? 'fa';
 
-  const [email,   setEmail]   = useState('');
+  const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
-  const [sent,    setSent]    = useState(false);
-  const [error,   setError]   = useState('');
+  const [sent, setSent] = useState(false);
+  const [error, setError] = useState('');
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -29,9 +30,9 @@ export function ForgotPasswordForm() {
 
     try {
       const res = await fetch(`${API_BASE}/auth/forgot-password`, {
-        method:  'POST',
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ email }),
+        body: JSON.stringify({ email }),
       });
       // NestJS همیشه 202 برمی‌گرداند حتی اگر email وجود نداشته باشد
       if (res.status === 202 || res.ok) {
@@ -56,7 +57,8 @@ export function ForgotPasswordForm() {
           <div>
             <h2 className="font-bold text-base mb-1">ایمیل ارسال شد</h2>
             <p className="text-sm text-[hsl(var(--muted-foreground))]">
-              اگر ایمیل <strong>{email}</strong> در سیستم ثبت شده باشد، لینک بازنشانی رمز ارسال خواهد شد.
+              اگر ایمیل <strong>{email}</strong> در سیستم ثبت شده باشد، لینک بازنشانی رمز ارسال
+              خواهد شد.
             </p>
           </div>
           <a
@@ -80,9 +82,7 @@ export function ForgotPasswordForm() {
           </div>
         </div>
         <CardTitle className="text-xl">{t('forgotPassword')}</CardTitle>
-        <CardDescription>
-          ایمیل خود را وارد کنید تا لینک بازنشانی برایتان ارسال شود
-        </CardDescription>
+        <CardDescription>ایمیل خود را وارد کنید تا لینک بازنشانی برایتان ارسال شود</CardDescription>
       </CardHeader>
 
       <CardContent>
@@ -98,7 +98,7 @@ export function ForgotPasswordForm() {
             label={t('email')}
             placeholder={t('emailPlaceholder')}
             value={email}
-            onChange={e => setEmail(e.target.value)}
+            onChange={(e) => setEmail(e.target.value)}
             autoComplete="email"
             required
             disabled={loading}

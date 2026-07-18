@@ -1,9 +1,23 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
-  IsString, IsNotEmpty, IsOptional, IsEnum, IsUUID, IsObject,
-  MinLength, MaxLength, IsInt, Min, IsArray,
+  IsString,
+  IsNotEmpty,
+  IsOptional,
+  IsEnum,
+  IsUUID,
+  IsObject,
+  MinLength,
+  MaxLength,
+  IsInt,
+  Min,
+  IsArray,
 } from 'class-validator';
-import { KnowledgeEntity, type KnowledgeStatus, type KnowledgeVisibility, type KnowledgeDifficulty } from '../../domain/entities/knowledge.entity.js';
+import {
+  KnowledgeEntity,
+  type KnowledgeStatus,
+  type KnowledgeVisibility,
+  type KnowledgeDifficulty,
+} from '../../domain/entities/knowledge.entity.js';
 
 // ─── Enums for Swagger ─────────────────────────────────────────────────────────
 
@@ -15,7 +29,10 @@ export const TAXONOMY_TYPES = ['category', 'topic', 'tag', 'discipline', 'audien
 // ─── Request DTOs ──────────────────────────────────────────────────────────────
 
 export class CreateKnowledgeDto {
-  @ApiProperty({ example: 'understanding-arc-flash', description: 'URL-friendly slug (auto-generated if omitted)' })
+  @ApiProperty({
+    example: 'understanding-arc-flash',
+    description: 'URL-friendly slug (auto-generated if omitted)',
+  })
   @IsOptional()
   @IsString()
   @MinLength(2)

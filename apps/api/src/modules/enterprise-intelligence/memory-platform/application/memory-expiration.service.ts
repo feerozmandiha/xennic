@@ -6,9 +6,7 @@ export class MemoryExpirationService {
   private readonly logger = new Logger(MemoryExpirationService.name);
   private intervalId: ReturnType<typeof setInterval> | null = null;
 
-  constructor(
-    @Inject('IMemoryStore') private readonly store: IMemoryStore,
-  ) {}
+  constructor(@Inject('IMemoryStore') private readonly store: IMemoryStore) {}
 
   async checkExpiration(): Promise<number> {
     const deleted = await this.store.deleteExpired();
@@ -23,7 +21,7 @@ export class MemoryExpirationService {
       clearInterval(this.intervalId);
     }
     this.intervalId = setInterval(() => {
-      this.checkExpiration().catch(err => {
+      this.checkExpiration().catch((err) => {
         this.logger.error('Expiration check failed', err);
       });
     }, ms);

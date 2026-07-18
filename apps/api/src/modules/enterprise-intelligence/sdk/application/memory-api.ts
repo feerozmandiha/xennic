@@ -17,9 +17,7 @@ export interface MemorySearchOptions {
 export class MemoryApi {
   private readonly logger = new Logger(MemoryApi.name);
 
-  constructor(
-    private readonly memoryService: MemoryService,
-  ) {}
+  constructor(private readonly memoryService: MemoryService) {}
 
   async store(
     type: MemoryType,

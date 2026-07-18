@@ -18,9 +18,6 @@ export interface IToolExecutor {
     input: Record<string, unknown>,
     context?: Record<string, unknown>,
   ): Promise<ToolExecutionVO>;
-  validate(
-    toolId: string,
-    input: Record<string, unknown>,
-  ): Promise<ValidationResult>;
+  validate(toolId: string, input: Record<string, unknown>): Promise<ValidationResult>;
   getContract(toolId: string): Promise<ToolContract>;
 }

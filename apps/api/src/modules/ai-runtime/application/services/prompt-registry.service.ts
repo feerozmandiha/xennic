@@ -24,14 +24,7 @@ export class PromptRegistryService {
     if (existing) {
       await this.store.delete(existing.id);
     }
-    const template = PromptTemplate.create(
-      key,
-      name,
-      sections,
-      variables,
-      description,
-      tags,
-    );
+    const template = PromptTemplate.create(key, name, sections, variables, description, tags);
     await this.store.save(template);
     return template;
   }

@@ -46,7 +46,7 @@ export class SubscriptionController {
     const plans = await this.subscriptionService.getPlans();
     return {
       success: true,
-      data: plans.map(p => PlanResponseDto.fromEntity(p)),
+      data: plans.map((p) => PlanResponseDto.fromEntity(p)),
     };
   }
 
@@ -93,8 +93,8 @@ export class WorkspaceSubscriptionController {
       success: true,
       data: {
         subscription: sub ? SubscriptionResponseDto.fromEntity(sub) : null,
-        plan:         PlanResponseDto.fromEntity(plan),
-        isActive:     sub?.isActive() ?? false,
+        plan: PlanResponseDto.fromEntity(plan),
+        isActive: sub?.isActive() ?? false,
       },
     };
   }
@@ -109,12 +109,13 @@ export class WorkspaceSubscriptionController {
   })
   @ApiParam({ name: 'workspaceId', description: 'Workspace UUID' })
   @ApiBody({ type: SubscribeDto })
-  @ApiResponse({ status: 201, description: 'Subscribed successfully', type: SubscriptionResponseDto })
+  @ApiResponse({
+    status: 201,
+    description: 'Subscribed successfully',
+    type: SubscriptionResponseDto,
+  })
   @ApiResponse({ status: 409, description: 'Already subscribed to this plan' })
-  async subscribe(
-    @Req() req: any,
-    @Body() dto: SubscribeDto,
-  ) {
+  async subscribe(@Req() req: any, @Body() dto: SubscribeDto) {
     const sub = await this.subscriptionService.subscribe(
       req.workspaceId,
       dto.planId,
@@ -128,13 +129,10 @@ export class WorkspaceSubscriptionController {
   @Post(':subscriptionId/cancel')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Cancel subscription' })
-  @ApiParam({ name: 'workspaceId',     description: 'Workspace UUID' })
-  @ApiParam({ name: 'subscriptionId',  description: 'Subscription UUID' })
+  @ApiParam({ name: 'workspaceId', description: 'Workspace UUID' })
+  @ApiParam({ name: 'subscriptionId', description: 'Subscription UUID' })
   @ApiResponse({ status: 200, description: 'Subscription cancelled' })
-  async cancel(
-    @Param('subscriptionId') subscriptionId: string,
-    @Req() req: any,
-  ) {
+  async cancel(@Param('subscriptionId') subscriptionId: string, @Req() req: any) {
     const sub = await this.subscriptionService.cancel(subscriptionId, req.workspaceId);
     return { success: true, data: SubscriptionResponseDto.fromEntity(sub) };
   }
@@ -149,7 +147,7 @@ export class WorkspaceSubscriptionController {
     const subs = await this.subscriptionService.getWorkspaceSubscriptions(req.workspaceId);
     return {
       success: true,
-      data: subs.map(s => SubscriptionResponseDto.fromEntity(s)),
+      data: subs.map((s) => SubscriptionResponseDto.fromEntity(s)),
     };
   }
 

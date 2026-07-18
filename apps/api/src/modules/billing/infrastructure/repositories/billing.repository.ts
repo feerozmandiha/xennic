@@ -9,7 +9,6 @@ import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class BillingRepository implements IBillingRepository {
-
   // ══════════════════════════════════════════════════════════════════════════
   // INVOICES
   // ══════════════════════════════════════════════════════════════════════════
@@ -48,7 +47,9 @@ export class BillingRepository implements IBillingRepository {
       const row = await prisma.invoices.findUnique({ where: { id } });
       if (!row) return null;
       return this._mapInvoice(row);
-    } catch { return null; }
+    } catch {
+      return null;
+    }
   }
 
   async findInvoiceByNumber(number: string): Promise<InvoiceEntity | null> {
@@ -56,11 +57,15 @@ export class BillingRepository implements IBillingRepository {
       const row = await prisma.invoices.findUnique({ where: { invoice_number: number } });
       if (!row) return null;
       return this._mapInvoice(row);
-    } catch { return null; }
+    } catch {
+      return null;
+    }
   }
 
   async findAllInvoicesByWorkspace(
-    workspaceId: string, offset = 0, limit = 20,
+    workspaceId: string,
+    offset = 0,
+    limit = 20,
   ): Promise<InvoiceEntity[]> {
     try {
       const rows = await prisma.invoices.findMany({
@@ -69,14 +74,18 @@ export class BillingRepository implements IBillingRepository {
         skip: offset,
         take: limit,
       });
-      return rows.map(r => this._mapInvoice(r));
-    } catch { return []; }
+      return rows.map((r) => this._mapInvoice(r));
+    } catch {
+      return [];
+    }
   }
 
   async countInvoicesByWorkspace(workspaceId: string): Promise<number> {
     try {
       return await prisma.invoices.count({ where: { workspace_id: workspaceId } });
-    } catch { return 0; }
+    } catch {
+      return 0;
+    }
   }
 
   // ══════════════════════════════════════════════════════════════════════════
@@ -110,7 +119,9 @@ export class BillingRepository implements IBillingRepository {
       const row = await prisma.payments.findUnique({ where: { id } });
       if (!row) return null;
       return this._mapPayment(row);
-    } catch { return null; }
+    } catch {
+      return null;
+    }
   }
 
   async findPaymentsByInvoice(invoiceId: string): Promise<PaymentEntity[]> {
@@ -119,8 +130,10 @@ export class BillingRepository implements IBillingRepository {
         where: { invoice_id: invoiceId },
         orderBy: { created_at: 'desc' },
       });
-      return rows.map(r => this._mapPayment(r));
-    } catch { return []; }
+      return rows.map((r) => this._mapPayment(r));
+    } catch {
+      return [];
+    }
   }
 
   async findPaymentByAuthority(authority: string): Promise<PaymentEntity | null> {
@@ -128,11 +141,15 @@ export class BillingRepository implements IBillingRepository {
       const row = await prisma.payments.findFirst({ where: { authority } });
       if (!row) return null;
       return this._mapPayment(row);
-    } catch { return null; }
+    } catch {
+      return null;
+    }
   }
 
   async findAllPaymentsByWorkspace(
-    workspaceId: string, offset = 0, limit = 20,
+    workspaceId: string,
+    offset = 0,
+    limit = 20,
   ): Promise<PaymentEntity[]> {
     try {
       const rows = await prisma.payments.findMany({
@@ -141,14 +158,18 @@ export class BillingRepository implements IBillingRepository {
         skip: offset,
         take: limit,
       });
-      return rows.map(r => this._mapPayment(r));
-    } catch { return []; }
+      return rows.map((r) => this._mapPayment(r));
+    } catch {
+      return [];
+    }
   }
 
   async countPaymentsByWorkspace(workspaceId: string): Promise<number> {
     try {
       return await prisma.payments.count({ where: { workspace_id: workspaceId } });
-    } catch { return 0; }
+    } catch {
+      return 0;
+    }
   }
 
   // ══════════════════════════════════════════════════════════════════════════
@@ -180,12 +201,16 @@ export class BillingRepository implements IBillingRepository {
         where: { payment_id: paymentId },
         orderBy: { created_at: 'desc' },
       });
-      return rows.map(r => this._mapTransaction(r));
-    } catch { return []; }
+      return rows.map((r) => this._mapTransaction(r));
+    } catch {
+      return [];
+    }
   }
 
   async findAllTransactionsByWorkspace(
-    workspaceId: string, offset = 0, limit = 20,
+    workspaceId: string,
+    offset = 0,
+    limit = 20,
   ): Promise<TransactionEntity[]> {
     try {
       const rows = await prisma.transactions.findMany({
@@ -194,8 +219,10 @@ export class BillingRepository implements IBillingRepository {
         skip: offset,
         take: limit,
       });
-      return rows.map(r => this._mapTransaction(r));
-    } catch { return []; }
+      return rows.map((r) => this._mapTransaction(r));
+    } catch {
+      return [];
+    }
   }
 
   // ══════════════════════════════════════════════════════════════════════════
@@ -233,7 +260,9 @@ export class BillingRepository implements IBillingRepository {
       });
       if (!row) return null;
       return this._mapPaymentMethod(row);
-    } catch { return null; }
+    } catch {
+      return null;
+    }
   }
 
   async findPaymentMethodsByWorkspace(workspaceId: string): Promise<PaymentMethodEntity[]> {
@@ -242,8 +271,10 @@ export class BillingRepository implements IBillingRepository {
         where: { workspace_id: workspaceId, deleted_at: null },
         orderBy: [{ is_default: 'desc' }, { created_at: 'desc' }],
       });
-      return rows.map(r => this._mapPaymentMethod(r));
-    } catch { return []; }
+      return rows.map((r) => this._mapPaymentMethod(r));
+    } catch {
+      return [];
+    }
   }
 
   async findDefaultPaymentMethod(workspaceId: string): Promise<PaymentMethodEntity | null> {
@@ -253,7 +284,9 @@ export class BillingRepository implements IBillingRepository {
       });
       if (!row) return null;
       return this._mapPaymentMethod(row);
-    } catch { return null; }
+    } catch {
+      return null;
+    }
   }
 
   async unsetAllDefaultMethods(workspaceId: string): Promise<void> {
@@ -262,7 +295,9 @@ export class BillingRepository implements IBillingRepository {
         where: { workspace_id: workspaceId },
         data: { is_default: false },
       });
-    } catch { /* silent */ }
+    } catch {
+      /* silent */
+    }
   }
 
   async deletePaymentMethod(id: string): Promise<void> {
@@ -348,7 +383,11 @@ export class BillingRepository implements IBillingRepository {
 
   private _mapTransaction(row: any): TransactionEntity {
     let metadata: Record<string, unknown> = {};
-    try { metadata = typeof row.metadata === 'string' ? JSON.parse(row.metadata) : (row.metadata ?? {}); } catch { /* noop */ }
+    try {
+      metadata = typeof row.metadata === 'string' ? JSON.parse(row.metadata) : (row.metadata ?? {});
+    } catch {
+      /* noop */
+    }
     return TransactionEntity.reconstitute({
       id: row.id,
       workspaceId: row.workspace_id,

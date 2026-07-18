@@ -8,12 +8,12 @@
 
 ## Priority Matrix
 
-| Priority | Count | Criteria |
-|----------|-------|----------|
-| **P0 — Critical** | 8 | Data loss risk, security hole, blocking dev workflow |
-| **P1 — High** | 14 | Significant perf/correctness impact, high friction |
-| **P2 — Medium** | 18 | Best-practice violations, inconsistent patterns |
-| **P3 — Low** | 8 | Cosmetic, nice-to-have, speculative |
+| Priority          | Count | Criteria                                             |
+| ----------------- | ----- | ---------------------------------------------------- |
+| **P0 — Critical** | 8     | Data loss risk, security hole, blocking dev workflow |
+| **P1 — High**     | 14    | Significant perf/correctness impact, high friction   |
+| **P2 — Medium**   | 18    | Best-practice violations, inconsistent patterns      |
+| **P3 — Low**      | 8     | Cosmetic, nice-to-have, speculative                  |
 
 ---
 
@@ -31,28 +31,28 @@
 
 **Affected relations (missing `onDelete`):**
 
-| Relation | File |
-|----------|------|
-| `subscriptions → workspaces` | `prisma/schema.prisma:277` |
-| `subscriptions → plans` | `prisma/schema.prisma:278` |
-| `usage_logs → workspaces` | `prisma/schema.prisma:292` |
-| `invoices → workspaces` | `prisma/schema.prisma:318` |
-| `payments → invoices` | `prisma/schema.prisma:339` |
-| `payments → workspaces` (no relation defined — column only) | `prisma/schema.prisma:329` |
-| `transactions → payments` | `prisma/schema.prisma:358` |
-| `payment_methods → workspaces` | `prisma/schema.prisma:378` |
-| `payment_methods → users` | `prisma/schema.prisma:379` |
-| `subscription_payments → {workspace, subscription, invoice, payment}` | `prisma/schema.prisma:402-405` |
-| `projects → workspaces` | `prisma/schema.prisma:431` |
-| `calculations → {workspace, project, user}` | `prisma/schema.prisma:498-500` |
-| `conversations → {workspace, agent}` | `prisma/schema.prisma:559-560` |
-| `ai_usage → {workspace, user, agent}` | `prisma/schema.prisma:593-595` |
-| `orders → {workspace, user}` | `prisma/schema.prisma:1003-1004` |
-| `order_items → products` | `prisma/schema.prisma:1021` |
-| `files → {workspace, user}` | `prisma/schema.prisma:1045-1046` |
-| `feature_flags → plans` | `prisma/schema.prisma:1144` |
-| `audit_logs → {workspace, user}` | `prisma/schema.prisma:1163-1164` |
-| `workspace_invitations → inviter (users)` | `prisma/schema.prisma:228` |
+| Relation                                                              | File                             |
+| --------------------------------------------------------------------- | -------------------------------- |
+| `subscriptions → workspaces`                                          | `prisma/schema.prisma:277`       |
+| `subscriptions → plans`                                               | `prisma/schema.prisma:278`       |
+| `usage_logs → workspaces`                                             | `prisma/schema.prisma:292`       |
+| `invoices → workspaces`                                               | `prisma/schema.prisma:318`       |
+| `payments → invoices`                                                 | `prisma/schema.prisma:339`       |
+| `payments → workspaces` (no relation defined — column only)           | `prisma/schema.prisma:329`       |
+| `transactions → payments`                                             | `prisma/schema.prisma:358`       |
+| `payment_methods → workspaces`                                        | `prisma/schema.prisma:378`       |
+| `payment_methods → users`                                             | `prisma/schema.prisma:379`       |
+| `subscription_payments → {workspace, subscription, invoice, payment}` | `prisma/schema.prisma:402-405`   |
+| `projects → workspaces`                                               | `prisma/schema.prisma:431`       |
+| `calculations → {workspace, project, user}`                           | `prisma/schema.prisma:498-500`   |
+| `conversations → {workspace, agent}`                                  | `prisma/schema.prisma:559-560`   |
+| `ai_usage → {workspace, user, agent}`                                 | `prisma/schema.prisma:593-595`   |
+| `orders → {workspace, user}`                                          | `prisma/schema.prisma:1003-1004` |
+| `order_items → products`                                              | `prisma/schema.prisma:1021`      |
+| `files → {workspace, user}`                                           | `prisma/schema.prisma:1045-1046` |
+| `feature_flags → plans`                                               | `prisma/schema.prisma:1144`      |
+| `audit_logs → {workspace, user}`                                      | `prisma/schema.prisma:1163-1164` |
+| `workspace_invitations → inviter (users)`                             | `prisma/schema.prisma:228`       |
 
 ---
 
@@ -156,6 +156,7 @@
 - **Recommended fix**: Enable `noImplicitAny` and `strictNullChecks` in tsconfig. Add proper types to all function signatures. Replace raw SQL wrappers with typed Prisma client calls where possible.
 
 **Hotspots**:
+
 - `apps/api/src/shared/filters/all-exceptions.filter.ts` — 5 `as any` casts
 - `apps/api/src/modules/api-keys/infrastructure/repositories/api-key.repository.ts` — 6 `as any` on `$queryRaw`
 - `apps/api/src/modules/consultations/...` — `$queryRaw<any[]>`
@@ -468,6 +469,7 @@
 - **Recommended fix**: Standardize on English for all code comments. Move Persian docs to Persian-language documentation files if needed.
 
 **Examples**:
+
 - `apps/api/src/api.module.ts` — `// ✅ صورتحساب`, `// ✅ ادمین`
 - `apps/api/src/modules/notification/application/services/notification.service.ts:67` — `// TODO: برای email/sms در آینده با queue ارسال می‌شود`
 - `apps/api/src/modules/webhooks/infrastructure/repositories/webhook.repository.ts` — Persian inline comments
@@ -730,31 +732,31 @@
 
 ## Summary
 
-| Category | P0 | P1 | P2 | P3 | Total |
-|----------|----|----|----|----|-------|
-| Architecture | 0 | 3 | 1 | 1 | 5 |
-| Code Quality | 0 | 3 | 6 | 2 | 11 |
-| Data Integrity | 3 | 2 | 1 | 1 | 7 |
-| Dependency | 1 | 0 | 1 | 0 | 2 |
-| DevOps | 2 | 3 | 0 | 2 | 7 |
-| Documentation | 0 | 0 | 2 | 0 | 2 |
-| Observability | 0 | 0 | 1 | 0 | 1 |
-| Performance | 1 | 2 | 2 | 2 | 7 |
-| Reliability | 2 | 0 | 0 | 0 | 2 |
-| Security | 1 | 0 | 0 | 0 | 1 |
-| Test | 0 | 3 | 0 | 0 | 3 |
-| **Total** | **8** | **14** | **18** | **8** | **48** |
+| Category       | P0    | P1     | P2     | P3    | Total  |
+| -------------- | ----- | ------ | ------ | ----- | ------ |
+| Architecture   | 0     | 3      | 1      | 1     | 5      |
+| Code Quality   | 0     | 3      | 6      | 2     | 11     |
+| Data Integrity | 3     | 2      | 1      | 1     | 7      |
+| Dependency     | 1     | 0      | 1      | 0     | 2      |
+| DevOps         | 2     | 3      | 0      | 2     | 7      |
+| Documentation  | 0     | 0      | 2      | 0     | 2      |
+| Observability  | 0     | 0      | 1      | 0     | 1      |
+| Performance    | 1     | 2      | 2      | 2     | 7      |
+| Reliability    | 2     | 0      | 0      | 0     | 2      |
+| Security       | 1     | 0      | 0      | 0     | 1      |
+| Test           | 0     | 3      | 0      | 0     | 3      |
+| **Total**      | **8** | **14** | **18** | **8** | **48** |
 
 ### Recommended sprint plan
 
-| Sprint | Items | Theme | Estimated hours |
-|--------|-------|-------|-----------------|
-| **Sprint 1** | CRIT-01, CRIT-02, CRIT-06, MED-01, HIGH-10 | Quick wins + data integrity | 12h |
-| **Sprint 2** | CRIT-03, CRIT-04, CRIT-08, MED-02 | Reliability & config | 10h |
-| **Sprint 3** | HIGH-01, HIGH-11, MED-05 | Type safety & raw SQL elimination | 30h |
-| **Sprint 4** | HIGH-03, HIGH-12, HIGH-14, MED-08 | Architecture gaps | 40h+ |
-| **Sprint 5** | CRIT-05, HIGH-06, MED-03, MED-13, MED-14 | Database optimization | 24h+ |
-| **Sprint 6** | HIGH-04, MED-10, MED-11, MED-15, MED-16 | Schema quality | 30h |
-| **Sprint 7** | CRIT-07, HIGH-13, LOW-07, LOW-08 | CI/CD & deployment | 42h |
-| **Sprint 8** | HIGH-08, HIGH-09, MED-17 | Test coverage & observability | 200h+ |
-| **Ongoing** | HIGH-05, MED-04, MED-06, MED-07, LOW-01 → LOW-06 | Low-priority cleanup | 16h |
+| Sprint       | Items                                            | Theme                             | Estimated hours |
+| ------------ | ------------------------------------------------ | --------------------------------- | --------------- |
+| **Sprint 1** | CRIT-01, CRIT-02, CRIT-06, MED-01, HIGH-10       | Quick wins + data integrity       | 12h             |
+| **Sprint 2** | CRIT-03, CRIT-04, CRIT-08, MED-02                | Reliability & config              | 10h             |
+| **Sprint 3** | HIGH-01, HIGH-11, MED-05                         | Type safety & raw SQL elimination | 30h             |
+| **Sprint 4** | HIGH-03, HIGH-12, HIGH-14, MED-08                | Architecture gaps                 | 40h+            |
+| **Sprint 5** | CRIT-05, HIGH-06, MED-03, MED-13, MED-14         | Database optimization             | 24h+            |
+| **Sprint 6** | HIGH-04, MED-10, MED-11, MED-15, MED-16          | Schema quality                    | 30h             |
+| **Sprint 7** | CRIT-07, HIGH-13, LOW-07, LOW-08                 | CI/CD & deployment                | 42h             |
+| **Sprint 8** | HIGH-08, HIGH-09, MED-17                         | Test coverage & observability     | 200h+           |
+| **Ongoing**  | HIGH-05, MED-04, MED-06, MED-07, LOW-01 → LOW-06 | Low-priority cleanup              | 16h             |

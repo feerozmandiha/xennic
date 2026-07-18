@@ -33,10 +33,7 @@ export class IntelligenceClient {
     this.logger.debug(`executeWorkflow(skillId=${skillId})`);
 
     if (context) {
-      const ctx = await this.context.getContext(
-        context.scope as never,
-        context.scopeId,
-      );
+      const ctx = await this.context.getContext(context.scope as never, context.scopeId);
       input = { ...input, _context: ctx };
     }
 
@@ -56,10 +53,9 @@ export class IntelligenceClient {
   ): Promise<{ plan: unknown; response: unknown }> {
     this.logger.debug(`evaluateAndReason(promptId=${promptId})`);
 
-    const plan = await this.reasoning.plan(
-      `Evaluate prompt ${promptId}`,
-      [{ description: 'Evaluate prompt', input }],
-    );
+    const plan = await this.reasoning.plan(`Evaluate prompt ${promptId}`, [
+      { description: 'Evaluate prompt', input },
+    ]);
 
     const executedPlan = await this.reasoning.execute(plan.id);
 

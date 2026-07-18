@@ -24,7 +24,11 @@ import { WorkspaceGuard } from '../../../rbac/infrastructure/guards/workspace.gu
 import { RequirePermissions } from '../../../rbac/infrastructure/decorators/permissions.decorator.js';
 import { PermissionsGuard } from '../../../rbac/infrastructure/guards/permissions.guard.js';
 import { ApiKeyService } from '../../application/services/api-key.service.js';
-import { CreateApiKeyDto, ApiKeyResponseDto, ValidateApiKeyResponseDto } from '../dtos/api-key.dto.js';
+import {
+  CreateApiKeyDto,
+  ApiKeyResponseDto,
+  ValidateApiKeyResponseDto,
+} from '../dtos/api-key.dto.js';
 
 @ApiTags('api-keys')
 @ApiBearerAuth('JWT-auth')
@@ -53,7 +57,10 @@ export class ApiKeyController {
 
   @Get()
   @RequirePermissions('api_keys.read')
-  @ApiOperation({ summary: 'List API keys', description: 'Returns paginated API keys for the workspace.' })
+  @ApiOperation({
+    summary: 'List API keys',
+    description: 'Returns paginated API keys for the workspace.',
+  })
   @ApiQuery({ name: 'page', required: false, type: Number, example: 1 })
   @ApiQuery({ name: 'limit', required: false, type: Number, example: 20 })
   @ApiResponse({ status: 200, description: 'API keys retrieved' })
@@ -65,7 +72,7 @@ export class ApiKeyController {
     );
     return {
       success: true,
-      data: result.data.map(k => ApiKeyResponseDto.fromEntity(k)),
+      data: result.data.map((k) => ApiKeyResponseDto.fromEntity(k)),
       meta: result.meta,
     };
   }
@@ -83,7 +90,10 @@ export class ApiKeyController {
 
   @Post(':id/revoke')
   @RequirePermissions('api_keys.revoke')
-  @ApiOperation({ summary: 'Revoke an API key', description: 'Once revoked, the key cannot be used again.' })
+  @ApiOperation({
+    summary: 'Revoke an API key',
+    description: 'Once revoked, the key cannot be used again.',
+  })
   @ApiParam({ name: 'id', description: 'API key UUID' })
   @ApiResponse({ status: 200, description: 'API key revoked' })
   async revoke(@Param('id') id: string, @Req() req: any) {

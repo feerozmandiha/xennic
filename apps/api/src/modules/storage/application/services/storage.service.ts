@@ -22,12 +22,20 @@ const ALLOWED_MIME_TYPES = new Set([
   'application/vnd.ms-excel',
   'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
   // Images
-  'image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml',
+  'image/jpeg',
+  'image/png',
+  'image/gif',
+  'image/webp',
+  'image/svg+xml',
   // Text / Data
-  'text/plain', 'text/csv', 'application/json',
+  'text/plain',
+  'text/csv',
+  'application/json',
   // Engineering
-  'application/octet-stream', 'application/zip',
-  'application/x-dwg', 'application/x-dxf',
+  'application/octet-stream',
+  'application/zip',
+  'application/x-dwg',
+  'application/x-dxf',
 ]);
 
 @Injectable()
@@ -51,18 +59,18 @@ export class StorageService {
     // validation
     if (data.buffer.length > MAX_FILE_SIZE_BYTES) {
       throw new BadRequestException(
-        `File too large. Maximum size is ${MAX_FILE_SIZE_BYTES / 1024 / 1024} MB`
+        `File too large. Maximum size is ${MAX_FILE_SIZE_BYTES / 1024 / 1024} MB`,
       );
     }
     if (!ALLOWED_MIME_TYPES.has(data.mimeType)) {
       throw new BadRequestException(`File type "${data.mimeType}" is not allowed`);
     }
 
-    const ext        = path.extname(data.originalName).toLowerCase().slice(1);
-    const filename   = `${crypto.randomUUID()}.${ext || 'bin'}`;
-    const bucket     = data.bucket ?? this._detectBucket(data.mimeType);
+    const ext = path.extname(data.originalName).toLowerCase().slice(1);
+    const filename = `${crypto.randomUUID()}.${ext || 'bin'}`;
+    const bucket = data.bucket ?? this._detectBucket(data.mimeType);
     const objectPath = `${new Date().getFullYear()}/${String(new Date().getMonth() + 1).padStart(2, '0')}/${filename}`;
-    const checksum   = crypto.createHash('sha256').update(data.buffer).digest('hex');
+    const checksum = crypto.createHash('sha256').update(data.buffer).digest('hex');
 
     // upload به MinIO
     await this.minioService.uploadBuffer(
@@ -75,16 +83,16 @@ export class StorageService {
 
     // ذخیره metadata در DB
     const file = FileEntity.create({
-      workspaceId:  data.workspaceId,
+      workspaceId: data.workspaceId,
       bucket,
-      path:         objectPath,
+      path: objectPath,
       filename,
       originalName: data.originalName,
-      extension:    ext,
-      mimeType:     data.mimeType,
-      size:         data.buffer.length,
+      extension: ext,
+      mimeType: data.mimeType,
+      size: data.buffer.length,
       checksum,
-      uploadedBy:   data.uploadedBy,
+      uploadedBy: data.uploadedBy,
     });
 
     await this.storageRepository.save(file);
@@ -99,16 +107,12 @@ export class StorageService {
     expirySeconds = 3600,
   ): Promise<{ url: string; file: FileEntity }> {
     const file = await this._getFile(id, workspaceId);
-    const url  = await this.minioService.getPresignedUrl(
-      file.bucket,
-      file.objectKey,
-      expirySeconds,
-    );
+    const url = await this.minioService.getPresignedUrl(file.bucket, file.objectKey, expirySeconds);
     return { url, file };
   }
 
   async download(id: string, workspaceId: string): Promise<{ buffer: Buffer; file: FileEntity }> {
-    const file   = await this._getFile(id, workspaceId);
+    const file = await this._getFile(id, workspaceId);
     const buffer = await this.minioService.getObject(file.bucket, file.objectKey);
     return { buffer, file };
   }
@@ -120,7 +124,10 @@ export class StorageService {
     page = 1,
     limit = 20,
     bucket?: string,
-  ): Promise<{ data: FileEntity[]; meta: { page: number; limit: number; total: number; totalPages: number } }> {
+  ): Promise<{
+    data: FileEntity[];
+    meta: { page: number; limit: number; total: number; totalPages: number };
+  }> {
     const offset = (page - 1) * limit;
     const [data, total] = await Promise.all([
       this.storageRepository.findAll(workspaceId, { bucket, offset, limit }),
@@ -163,9 +170,9 @@ export class StorageService {
     ]);
 
     return {
-      totalFiles:      total,
-      totalSizeBytes:  sizeBytes,
-      totalSizeHuman:  this._formatBytes(sizeBytes),
+      totalFiles: total,
+      totalSizeBytes: sizeBytes,
+      totalSizeHuman: this._formatBytes(sizeBytes),
     };
   }
 
@@ -189,17 +196,17 @@ export class StorageService {
   }
 
   private _detectBucket(mimeType: string): FileBucket {
-    if (mimeType === 'application/pdf')              return 'documents';
-    if (mimeType.startsWith('image/'))               return 'public';
+    if (mimeType === 'application/pdf') return 'documents';
+    if (mimeType.startsWith('image/')) return 'public';
     if (mimeType.includes('spreadsheet') || mimeType.includes('excel')) return 'reports';
-    if (mimeType.includes('word'))                   return 'documents';
+    if (mimeType.includes('word')) return 'documents';
     return 'private';
   }
 
   private _formatBytes(bytes: number): string {
-    if (bytes < 1024)             return `${bytes} B`;
-    if (bytes < 1024 * 1024)      return `${(bytes / 1024).toFixed(1)} KB`;
-    if (bytes < 1024 ** 3)        return `${(bytes / 1024 ** 2).toFixed(1)} MB`;
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    if (bytes < 1024 ** 3) return `${(bytes / 1024 ** 2).toFixed(1)} MB`;
     return `${(bytes / 1024 ** 3).toFixed(2)} GB`;
   }
 }

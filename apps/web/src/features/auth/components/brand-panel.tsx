@@ -36,9 +36,7 @@ export async function BrandPanel() {
       </div>
 
       {/* Footer */}
-      <p className="text-[11px] opacity-30">
-        © 2026 Xennic Platform — All rights reserved
-      </p>
+      <p className="text-[11px] opacity-30">© 2026 Xennic Platform — All rights reserved</p>
     </div>
   );
 }

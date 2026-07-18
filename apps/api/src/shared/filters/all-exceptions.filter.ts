@@ -45,9 +45,10 @@ export class AllExceptionsFilter implements ExceptionFilter {
         details = this.formatValidationErrors(exceptionResponse.message);
       } else {
         errorCode = this.getErrorCodeFromHttpStatus(statusCode);
-        message = typeof exceptionResponse === 'string'
-          ? exceptionResponse
-          : exceptionResponse.message || exception.message;
+        message =
+          typeof exceptionResponse === 'string'
+            ? exceptionResponse
+            : exceptionResponse.message || exception.message;
       }
     }
     // Handle Prisma Known Errors
@@ -60,9 +61,8 @@ export class AllExceptionsFilter implements ExceptionFilter {
     else if (exception instanceof Error) {
       statusCode = HttpStatus.INTERNAL_SERVER_ERROR;
       errorCode = 'INTERNAL_SERVER_ERROR';
-      message = process.env.NODE_ENV === 'production'
-        ? 'An unexpected error occurred'
-        : exception.message;
+      message =
+        process.env.NODE_ENV === 'production' ? 'An unexpected error occurred' : exception.message;
 
       // Log error for debugging
       console.error('Unhandled exception:', exception);
@@ -91,10 +91,11 @@ export class AllExceptionsFilter implements ExceptionFilter {
     statusCode: number,
     body: ErrorResponse,
   ): void {
-    const res = response as FastifyReply & ServerResponse & {
-      code?: (statusCode: number) => FastifyReply;
-      raw?: ServerResponse;
-    };
+    const res = response as FastifyReply &
+      ServerResponse & {
+        code?: (statusCode: number) => FastifyReply;
+        raw?: ServerResponse;
+      };
 
     // Normal Fastify reply path.
     if (typeof res.status === 'function' && typeof res.send === 'function') {
@@ -163,10 +164,12 @@ export class AllExceptionsFilter implements ExceptionFilter {
   }
 
   private isPrismaError(exception: unknown): boolean {
-    return exception instanceof Error &&
-           'code' in exception &&
-           typeof (exception as any).code === 'string' &&
-           (exception as any).code.startsWith('P');
+    return (
+      exception instanceof Error &&
+      'code' in exception &&
+      typeof (exception as any).code === 'string' &&
+      (exception as any).code.startsWith('P')
+    );
   }
 
   private getPrismaErrorCode(exception: unknown): string {

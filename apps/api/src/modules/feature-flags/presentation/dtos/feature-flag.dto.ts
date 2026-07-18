@@ -3,7 +3,10 @@ import { IsString, IsBoolean, IsOptional, MaxLength, MinLength } from 'class-val
 import type { FeatureFlagEntity } from '../../domain/entities/feature-flag.entity.js';
 
 export class CreateFeatureFlagDto {
-  @ApiProperty({ description: 'Unique name (alphanumeric, underscores allowed)', example: 'ai_advanced_chat' })
+  @ApiProperty({
+    description: 'Unique name (alphanumeric, underscores allowed)',
+    example: 'ai_advanced_chat',
+  })
   @IsString()
   @MinLength(2)
   @MaxLength(100)

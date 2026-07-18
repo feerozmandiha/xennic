@@ -31,7 +31,11 @@ export class CalculationValidationService {
     return {
       valid: inputValidation.valid && ruleValidation.valid,
       errors: [...inputValidation.errors, ...ruleValidation.errors],
-      warnings: [...inputValidation.warnings, ...limitValidation.warnings, ...ruleValidation.warnings],
+      warnings: [
+        ...inputValidation.warnings,
+        ...limitValidation.warnings,
+        ...ruleValidation.warnings,
+      ],
       inputCount: dsl.inputs.length,
       outputCount: dsl.outputs.length,
       formulaCount: dsl.formulas.length,
@@ -67,7 +71,9 @@ export class CalculationValidationService {
     ]);
 
     const version = await this.repo.findActiveVersion(definitionId);
-    const formulas = version ? version.dslDefinition.formulas.map(f => ({ name: f.name, expression: f.expression })) : [];
+    const formulas = version
+      ? version.dslDefinition.formulas.map((f) => ({ name: f.name, expression: f.expression }))
+      : [];
     const circularResult = await this.detectCircularDependencies(formulas);
 
     return {

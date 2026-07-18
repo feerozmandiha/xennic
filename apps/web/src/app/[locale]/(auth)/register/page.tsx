@@ -10,9 +10,10 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t('registerTitle') };
 }
 
-export default async function RegisterPage(
-  props: { params?: Promise<{ locale: string }>; searchParams?: Promise<{ plan?: string }> },
-) {
+export default async function RegisterPage(props: {
+  params?: Promise<{ locale: string }>;
+  searchParams?: Promise<{ plan?: string }>;
+}) {
   const params = await props.params;
   const searchParams = await props.searchParams;
   const locale = params?.locale ?? 'fa';

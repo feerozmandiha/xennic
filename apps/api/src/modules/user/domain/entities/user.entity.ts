@@ -87,23 +87,49 @@ export class UserEntity {
 
   // ─── Getters ────────────────────────────────────────────────────────────────
 
-  get email(): string { return this._email.value; }
-  get emailValue(): Email { return this._email; }
-  get password(): Password { return this._password; }
-  get firstName(): string { return this._firstName; }
+  get email(): string {
+    return this._email.value;
+  }
+  get emailValue(): Email {
+    return this._email;
+  }
+  get password(): Password {
+    return this._password;
+  }
+  get firstName(): string {
+    return this._firstName;
+  }
 
   // BUG FIX: was `return this._firstName + ' ' + this._lastName`
-  get lastName(): string { return this._lastName; }
+  get lastName(): string {
+    return this._lastName;
+  }
 
-  get fullName(): string { return `${this._firstName} ${this._lastName}`; }
+  get fullName(): string {
+    return `${this._firstName} ${this._lastName}`;
+  }
 
-  get phone(): string | null { return this._phone; }
-  get avatarFileId(): string | null { return this._avatarFileId; }
-  get status(): string { return this._status; }
-  get emailVerifiedAt(): Date | null { return this._emailVerifiedAt; }
-  get lastLoginAt(): Date | null { return this._lastLoginAt; }
-  get createdBy(): string | null { return this._createdBy; }
-  get updatedBy(): string | null { return this._updatedBy; }
+  get phone(): string | null {
+    return this._phone;
+  }
+  get avatarFileId(): string | null {
+    return this._avatarFileId;
+  }
+  get status(): string {
+    return this._status;
+  }
+  get emailVerifiedAt(): Date | null {
+    return this._emailVerifiedAt;
+  }
+  get lastLoginAt(): Date | null {
+    return this._lastLoginAt;
+  }
+  get createdBy(): string | null {
+    return this._createdBy;
+  }
+  get updatedBy(): string | null {
+    return this._updatedBy;
+  }
 
   // ─── Business Methods ────────────────────────────────────────────────────────
 

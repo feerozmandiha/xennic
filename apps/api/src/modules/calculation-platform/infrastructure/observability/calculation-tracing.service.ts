@@ -13,7 +13,11 @@ export class CalculationTracingService {
   private readonly logger = new Logger(CalculationTracingService.name);
   private readonly spans = new Map<string, TraceSpan>();
 
-  startSpan(traceId: string, name: string, attributes: Record<string, string | number | boolean> = {}): void {
+  startSpan(
+    traceId: string,
+    name: string,
+    attributes: Record<string, string | number | boolean> = {},
+  ): void {
     const span: TraceSpan = {
       name,
       attributes,
@@ -29,7 +33,11 @@ export class CalculationTracingService {
     }
   }
 
-  endSpan(traceId: string, name: string, additionalAttributes?: Record<string, string | number | boolean>): void {
+  endSpan(
+    traceId: string,
+    name: string,
+    additionalAttributes?: Record<string, string | number | boolean>,
+  ): void {
     const span = this.findSpan(traceId, name);
     if (span) {
       span.endTime = Date.now();

@@ -14,7 +14,8 @@ export const CalculationDomainEventTypes = {
   PLUGIN_DISABLED: 'calculation.plugin.disabled',
 } as const;
 
-export type CalculationDomainEventType = (typeof CalculationDomainEventTypes)[keyof typeof CalculationDomainEventTypes];
+export type CalculationDomainEventType =
+  (typeof CalculationDomainEventTypes)[keyof typeof CalculationDomainEventTypes];
 
 export interface CalculationDomainEvent {
   eventType: CalculationDomainEventType;

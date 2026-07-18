@@ -62,12 +62,19 @@ export class FileEntity {
     deletedAt: Date | null;
   }): FileEntity {
     return new FileEntity(
-      data.id, data.workspaceId,
+      data.id,
+      data.workspaceId,
       data.bucket as FileBucket,
-      data.path, data.filename, data.originalName,
-      data.extension, data.mimeType, data.size,
-      data.checksum, data.uploadedBy,
-      data.createdAt, data.deletedAt,
+      data.path,
+      data.filename,
+      data.originalName,
+      data.extension,
+      data.mimeType,
+      data.size,
+      data.checksum,
+      data.uploadedBy,
+      data.createdAt,
+      data.deletedAt,
     );
   }
 
@@ -75,7 +82,9 @@ export class FileEntity {
     this.deletedAt = new Date();
   }
 
-  isDeleted(): boolean { return this.deletedAt !== null; }
+  isDeleted(): boolean {
+    return this.deletedAt !== null;
+  }
 
   isImage(): boolean {
     return this.mimeType.startsWith('image/');

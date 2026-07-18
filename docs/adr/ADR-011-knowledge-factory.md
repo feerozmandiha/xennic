@@ -38,6 +38,7 @@ Implement the Knowledge Factory as a **full DDD NestJS module** with the followi
 ## Consequences
 
 ### Benefits
+
 - Automated ingestion removes manual entry bottleneck
 - Source provenance enables citation and audit
 - Background workers prevent API thread exhaustion on large files
@@ -45,12 +46,14 @@ Implement the Knowledge Factory as a **full DDD NestJS module** with the followi
 - Retry + dead-letter queue handles transient failures without data loss
 
 ### Tradeoffs
+
 - BullMQ adds Redis dependency (already required by spec)
 - OCR failures on poor-quality scans require manual intervention
 - Complex documents need human classification override path
 - Large documents increase queue processing time
 
 ### Risks
+
 - Queue backlog if ai-service is slow/unavailable — mitigated by circuit breaker + fallback queues
 - MinIO unavailability blocks all uploads — mitigated by graceful 503 with retry guidance
 

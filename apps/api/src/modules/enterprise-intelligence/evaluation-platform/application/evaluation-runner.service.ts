@@ -1,15 +1,27 @@
 import { Injectable, Inject, Logger, NotFoundException } from '@nestjs/common';
 import type { IEvaluationRepository } from '../domain/evaluation-repository.interface.js';
-import { EvaluationRun, EvaluationRunStatus, EvaluationTargetType } from '../domain/evaluation-run.entity.js';
+import {
+  EvaluationRun,
+  EvaluationRunStatus,
+  EvaluationTargetType,
+} from '../domain/evaluation-run.entity.js';
 import type { EvaluationResult } from '../domain/evaluation-run.entity.js';
 import { BenchmarkStatus } from '../domain/benchmark.entity.js';
 
 export interface ComparisonStrategy {
-  compare(actual: Record<string, unknown>, expected: Record<string, unknown>, metric: string): number;
+  compare(
+    actual: Record<string, unknown>,
+    expected: Record<string, unknown>,
+    metric: string,
+  ): number;
 }
 
 export class ExactMatchStrategy implements ComparisonStrategy {
-  compare(actual: Record<string, unknown>, expected: Record<string, unknown>, _metric: string): number {
+  compare(
+    actual: Record<string, unknown>,
+    expected: Record<string, unknown>,
+    _metric: string,
+  ): number {
     const actualVal = JSON.stringify(actual);
     const expectedVal = JSON.stringify(expected);
     return actualVal === expectedVal ? 1 : 0;
@@ -17,10 +29,14 @@ export class ExactMatchStrategy implements ComparisonStrategy {
 }
 
 export class PartialMatchStrategy implements ComparisonStrategy {
-  compare(actual: Record<string, unknown>, expected: Record<string, unknown>, _metric: string): number {
+  compare(
+    actual: Record<string, unknown>,
+    expected: Record<string, unknown>,
+    _metric: string,
+  ): number {
     const keys = Object.keys(expected);
     if (keys.length === 0) return 0;
-    const matched = keys.filter(k => JSON.stringify(actual[k]) === JSON.stringify(expected[k]));
+    const matched = keys.filter((k) => JSON.stringify(actual[k]) === JSON.stringify(expected[k]));
     return matched.length / keys.length;
   }
 }
@@ -30,9 +46,7 @@ export class EvaluationRunnerService {
   private readonly logger = new Logger(EvaluationRunnerService.name);
   private strategies: Map<string, ComparisonStrategy> = new Map();
 
-  constructor(
-    @Inject('IEvaluationRepository') private readonly repo: IEvaluationRepository,
-  ) {
+  constructor(@Inject('IEvaluationRepository') private readonly repo: IEvaluationRepository) {
     this.strategies.set('exact', new ExactMatchStrategy());
     this.strategies.set('partial', new PartialMatchStrategy());
   }
@@ -95,9 +109,10 @@ export class EvaluationRunnerService {
         }
       }
 
-      const aggregateScore = benchmark.metrics.length > 0
-        ? totalScore / (dataset.items.length * benchmark.metrics.length)
-        : 0;
+      const aggregateScore =
+        benchmark.metrics.length > 0
+          ? totalScore / (dataset.items.length * benchmark.metrics.length)
+          : 0;
 
       const completedRun = EvaluationRun.reconstitute(
         run.id,

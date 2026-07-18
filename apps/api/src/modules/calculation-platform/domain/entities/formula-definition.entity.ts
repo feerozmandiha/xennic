@@ -63,7 +63,15 @@ export class FormulaDefinitionEntity {
     );
   }
 
-  update(data: Partial<{ name: string; expression: string; description: string | null; returnType: string; metadata: Record<string, unknown> }>): void {
+  update(
+    data: Partial<{
+      name: string;
+      expression: string;
+      description: string | null;
+      returnType: string;
+      metadata: Record<string, unknown>;
+    }>,
+  ): void {
     if (data.name !== undefined) this.name = data.name;
     if (data.expression !== undefined) this.expression = data.expression;
     if (data.description !== undefined) this.description = data.description;

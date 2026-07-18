@@ -68,14 +68,12 @@ export class WorkspaceSettingsEntity {
     public updatedAt: Date,
   ) {}
 
-  static create(workspaceId: string, settings?: Partial<WorkspaceSettingsData>): WorkspaceSettingsEntity {
+  static create(
+    workspaceId: string,
+    settings?: Partial<WorkspaceSettingsData>,
+  ): WorkspaceSettingsEntity {
     const merged = this.mergeDeep(DEFAULT_WORKSPACE_SETTINGS, settings ?? {});
-    return new WorkspaceSettingsEntity(
-      crypto.randomUUID(),
-      workspaceId,
-      merged,
-      new Date(),
-    );
+    return new WorkspaceSettingsEntity(crypto.randomUUID(), workspaceId, merged, new Date());
   }
 
   static reconstitute(data: {
@@ -101,7 +99,11 @@ export class WorkspaceSettingsEntity {
     const result = { ...base };
     for (const key of Object.keys(override)) {
       if (override[key] !== undefined && override[key] !== null) {
-        if (typeof override[key] === 'object' && !Array.isArray(override[key]) && typeof base[key] === 'object') {
+        if (
+          typeof override[key] === 'object' &&
+          !Array.isArray(override[key]) &&
+          typeof base[key] === 'object'
+        ) {
           result[key] = this.mergeDeep(base[key] ?? {}, override[key]);
         } else {
           result[key] = override[key];

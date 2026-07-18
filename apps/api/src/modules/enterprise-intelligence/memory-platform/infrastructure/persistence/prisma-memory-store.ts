@@ -123,7 +123,7 @@ export class PrismaMemoryStore implements IMemoryStore {
       prisma.memories.count({ where }),
     ]);
     return {
-      items: items.map(r => this.toEntity(r)),
+      items: items.map((r) => this.toEntity(r)),
       total,
       offset,
       limit,

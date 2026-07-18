@@ -16,20 +16,46 @@ export class DuplicateDetectionService {
     private readonly edgeRepo: IGraphEdgeRepository,
   ) {}
 
-  async findDuplicates(workspaceId: string, entityId: string, threshold = 0.85): Promise<{ entityId: string; similarity: number; method: string }[]> {
-    const all = await this.similarityRepo.similarTo(entityId, workspaceId, 'semantic', threshold, 20);
+  async findDuplicates(
+    workspaceId: string,
+    entityId: string,
+    threshold = 0.85,
+  ): Promise<{ entityId: string; similarity: number; method: string }[]> {
+    const all = await this.similarityRepo.similarTo(
+      entityId,
+      workspaceId,
+      'semantic',
+      threshold,
+      20,
+    );
     return all.filter((s) => s.similarity >= threshold).map((s) => ({ ...s, method: 'semantic' }));
   }
 
-  async findNearDuplicatesGraph(workspaceId: string, threshold = 0.7): Promise<{ pair: [string, string]; similarity: number }[]> {
-    const all = await this.similarityRepo.findByWorkspace(workspaceId, 'graph_overlap', threshold, 100);
+  async findNearDuplicatesGraph(
+    workspaceId: string,
+    threshold = 0.7,
+  ): Promise<{ pair: [string, string]; similarity: number }[]> {
+    const all = await this.similarityRepo.findByWorkspace(
+      workspaceId,
+      'graph_overlap',
+      threshold,
+      100,
+    );
     return all.map((s) => ({
       pair: [s.sourceId, s.targetId] as [string, string],
       similarity: s.similarity,
     }));
   }
 
-  async analyzeDuplicateCandidates(nodeId: string, workspaceId: string): Promise<{ nodeId: string; duplicates: string[]; nearDuplicates: string[]; confidence: number }> {
+  async analyzeDuplicateCandidates(
+    nodeId: string,
+    workspaceId: string,
+  ): Promise<{
+    nodeId: string;
+    duplicates: string[];
+    nearDuplicates: string[];
+    confidence: number;
+  }> {
     const duplicates = await this.findDuplicates(workspaceId, nodeId, 0.9);
     const nearDuplicates = await this.findDuplicates(workspaceId, nodeId, 0.7);
 

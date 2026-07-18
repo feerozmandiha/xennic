@@ -27,7 +27,7 @@ describe('ConversationContextManagerService', () => {
     );
     expect(messages.length).toBeGreaterThan(0);
     expect(totalTokens).toBeGreaterThan(0);
-    const systemMsgs = messages.filter(m => m.role === 'system');
+    const systemMsgs = messages.filter((m) => m.role === 'system');
     expect(systemMsgs.length).toBeGreaterThan(0);
   });
 

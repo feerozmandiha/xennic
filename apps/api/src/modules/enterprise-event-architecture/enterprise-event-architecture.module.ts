@@ -11,15 +11,14 @@ import { DomainEventPublisher } from '../semantic-integration/application/servic
     EventOutboxRepository,
     DomainEventPublisher,
   ],
-  exports: [
-    SchemaRegistryService,
-    EventReplayService,
-  ],
+  exports: [SchemaRegistryService, EventReplayService],
 })
 export class EnterpriseEventArchitectureModule implements OnModuleInit {
   private readonly logger = new Logger(EnterpriseEventArchitectureModule.name);
 
   onModuleInit(): void {
-    this.logger.log('Enterprise Event Architecture Module initialized: schema registry + replay ready');
+    this.logger.log(
+      'Enterprise Event Architecture Module initialized: schema registry + replay ready',
+    );
   }
 }

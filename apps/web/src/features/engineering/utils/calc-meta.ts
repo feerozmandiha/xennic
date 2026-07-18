@@ -11,7 +11,11 @@ export const CALC_META: Record<string, CalcMeta> = {
   'BASIC-004': { name: 'ضریب قدرت', standard: '—', engineVersion: '1.0' },
   'BASIC-005': { name: 'زاویه فاز', standard: '—', engineVersion: '1.0' },
 
-  'CABLE-001': { name: 'انتخاب کابل (جریان‌دهی)', standard: 'IEC 60364-5-52', engineVersion: '1.0' },
+  'CABLE-001': {
+    name: 'انتخاب کابل (جریان‌دهی)',
+    standard: 'IEC 60364-5-52',
+    engineVersion: '1.0',
+  },
   'CABLE-002': { name: 'افت ولتاژ کابل', standard: 'IEC 60364-5-52', engineVersion: '1.0' },
   'CABLE-003': { name: 'مقاومت در برابر اتصال کوتاه', standard: 'IEC 60949', engineVersion: '1.0' },
   'CABLE-004': { name: 'سایزینگ هادی PE', standard: 'IEC 60364-5-54', engineVersion: '1.0' },
@@ -24,7 +28,11 @@ export const CALC_META: Record<string, CalcMeta> = {
   'TRF-005': { name: 'بازده انرژی ترانس', standard: 'EU 548/2014', engineVersion: '1.0' },
 
   'PROT-001': { name: 'انتخاب کلید حفاظتی', standard: 'IEC 60947-2', engineVersion: '1.0' },
-  'PROT-002': { name: 'قوس الکتریکی (Arc Flash)', standard: 'IEEE 1584-2018', engineVersion: '1.0' },
+  'PROT-002': {
+    name: 'قوس الکتریکی (Arc Flash)',
+    standard: 'IEEE 1584-2018',
+    engineVersion: '1.0',
+  },
   'PROT-004': { name: 'انتخاب فیوز', standard: 'IEC 60269', engineVersion: '1.0' },
   'PROT-005': { name: 'هماهنگی حفاظتی (TCC)', standard: 'IEC 60255-151', engineVersion: '1.0' },
 
@@ -47,7 +55,11 @@ export const CALC_META: Record<string, CalcMeta> = {
   'SOLAR-002': { name: 'سایزینگ اینورتر خورشیدی', standard: 'IEC 62548', engineVersion: '1.0' },
   'SOLAR-003': { name: 'سایزینگ باتری خورشیدی', standard: 'IEC 62548', engineVersion: '1.0' },
 
-  'EA-001': { name: 'صورتحساب برق (Energy Audit)', standard: 'توانیر / وزارت نیرو', engineVersion: '1.0' },
+  'EA-001': {
+    name: 'صورتحساب برق (Energy Audit)',
+    standard: 'توانیر / وزارت نیرو',
+    engineVersion: '1.0',
+  },
   'ECO-001': { name: 'ROI (بازگشت سرمایه)', standard: '—', engineVersion: '1.0' },
   'ECO-002': { name: 'NPV (ارزش فعلی خالص)', standard: '—', engineVersion: '1.0' },
   'ECO-003': { name: 'IRR (نرخ بازده داخلی)', standard: '—', engineVersion: '1.0' },
@@ -57,7 +69,11 @@ export const CALC_META: Record<string, CalcMeta> = {
 
   'BAT-001': { name: 'محاسبه بانک باتری', standard: 'IEC 61427', engineVersion: '1.0' },
   'BAT-BU-001': { name: 'زمان پشتیبانی باتری', standard: 'IEC 61427', engineVersion: '1.0' },
-  'BATTERY-002': { name: 'انتخاب شارژر باتری', standard: 'IEEE 485 / IEC 60146', engineVersion: '1.0' },
+  'BATTERY-002': {
+    name: 'انتخاب شارژر باتری',
+    standard: 'IEEE 485 / IEC 60146',
+    engineVersion: '1.0',
+  },
 
   'SWT-001': { name: 'انتخاب کلید ورودی', standard: 'IEC 60947-2', engineVersion: '1.0' },
   'PFC-001': { name: 'سایزینگ بانک خازنی', standard: 'IEC 60831', engineVersion: '1.0' },

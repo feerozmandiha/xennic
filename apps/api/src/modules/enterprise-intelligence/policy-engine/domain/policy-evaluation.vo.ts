@@ -28,11 +28,6 @@ export class PolicyEvaluationResult {
     reason: string;
     matchedPolicies: PolicyMatch[];
   }): PolicyEvaluationResult {
-    return new PolicyEvaluationResult(
-      data.allowed,
-      data.reason,
-      data.matchedPolicies,
-      new Date(),
-    );
+    return new PolicyEvaluationResult(data.allowed, data.reason, data.matchedPolicies, new Date());
   }
 }

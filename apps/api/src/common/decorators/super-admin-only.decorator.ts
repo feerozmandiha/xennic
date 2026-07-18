@@ -1,5 +1,5 @@
 import { SetMetadata, applyDecorators, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiForbiddenResponse} from '@nestjs/swagger';
+import { ApiBearerAuth, ApiForbiddenResponse } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../modules/auth/infrastructure/guards/jwt-auth.guard.js';
 import { SuperAdminGuard } from '../guards/super-admin.guard.js';
 

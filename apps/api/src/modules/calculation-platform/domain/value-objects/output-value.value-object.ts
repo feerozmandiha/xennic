@@ -6,11 +6,21 @@ export class OutputValue {
     public readonly label: string | null,
   ) {}
 
-  static create(name: string, value: unknown, unit?: string | null, label?: string | null): OutputValue {
+  static create(
+    name: string,
+    value: unknown,
+    unit?: string | null,
+    label?: string | null,
+  ): OutputValue {
     return new OutputValue(name, value, unit ?? null, label ?? null);
   }
 
-  static fromJson(json: { name: string; value: unknown; unit?: string | null; label?: string | null }): OutputValue {
+  static fromJson(json: {
+    name: string;
+    value: unknown;
+    unit?: string | null;
+    label?: string | null;
+  }): OutputValue {
     return new OutputValue(json.name, json.value, json.unit ?? null, json.label ?? null);
   }
 

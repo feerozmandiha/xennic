@@ -1,6 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { createTransport, type Transporter } from 'nodemailer';
-import type { IEmailProvider, SendMailInput } from '../../domain/interfaces/email-provider.interface.js';
+import type {
+  IEmailProvider,
+  SendMailInput,
+} from '../../domain/interfaces/email-provider.interface.js';
 
 @Injectable()
 export class NodemailerProvider implements IEmailProvider {
@@ -33,7 +36,9 @@ export class NodemailerProvider implements IEmailProvider {
 
   async send(input: SendMailInput): Promise<void> {
     if (!this.transporter) {
-      this.logger.warn(`Email not sent (SMTP not configured): to=${input.to}, subject="${input.subject}"`);
+      this.logger.warn(
+        `Email not sent (SMTP not configured): to=${input.to}, subject="${input.subject}"`,
+      );
       return;
     }
 

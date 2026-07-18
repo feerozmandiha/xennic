@@ -19,9 +19,21 @@ describe('CircuitBreaker', () => {
   });
 
   it('should open circuit after threshold failures', async () => {
-    await expect(breaker.call(async () => { throw new Error('fail 1'); })).rejects.toThrow('fail 1');
-    await expect(breaker.call(async () => { throw new Error('fail 2'); })).rejects.toThrow('fail 2');
-    await expect(breaker.call(async () => { throw new Error('fail 3'); })).rejects.toThrow('fail 3');
+    await expect(
+      breaker.call(async () => {
+        throw new Error('fail 1');
+      }),
+    ).rejects.toThrow('fail 1');
+    await expect(
+      breaker.call(async () => {
+        throw new Error('fail 2');
+      }),
+    ).rejects.toThrow('fail 2');
+    await expect(
+      breaker.call(async () => {
+        throw new Error('fail 3');
+      }),
+    ).rejects.toThrow('fail 3');
 
     expect(breaker.getState()).toBe('OPEN');
     expect(breaker.getFailureCount()).toBe(3);
@@ -29,15 +41,25 @@ describe('CircuitBreaker', () => {
 
   it('should reject calls with CircuitBreakerOpenError when OPEN', async () => {
     for (let i = 0; i < 3; i++) {
-      await expect(breaker.call(async () => { throw new Error(`fail ${i}`); })).rejects.toThrow();
+      await expect(
+        breaker.call(async () => {
+          throw new Error(`fail ${i}`);
+        }),
+      ).rejects.toThrow();
     }
 
-    await expect(breaker.call(async () => 'should not reach')).rejects.toThrow(CircuitBreakerOpenError);
+    await expect(breaker.call(async () => 'should not reach')).rejects.toThrow(
+      CircuitBreakerOpenError,
+    );
   });
 
   it('should transition to HALF_OPEN after timeout', async () => {
     for (let i = 0; i < 3; i++) {
-      await expect(breaker.call(async () => { throw new Error(`fail ${i}`); })).rejects.toThrow();
+      await expect(
+        breaker.call(async () => {
+          throw new Error(`fail ${i}`);
+        }),
+      ).rejects.toThrow();
     }
 
     expect(breaker.getState()).toBe('OPEN');
@@ -50,12 +72,20 @@ describe('CircuitBreaker', () => {
 
   it('should close circuit after success threshold in HALF_OPEN', async () => {
     for (let i = 0; i < 3; i++) {
-      await expect(breaker.call(async () => { throw new Error(`fail ${i}`); })).rejects.toThrow();
+      await expect(
+        breaker.call(async () => {
+          throw new Error(`fail ${i}`);
+        }),
+      ).rejects.toThrow();
     }
 
     const shortBreaker = new CircuitBreaker('short', 3, 1, 50);
     for (let i = 0; i < 3; i++) {
-      await expect(shortBreaker.call(async () => { throw new Error(`fail ${i}`); })).rejects.toThrow();
+      await expect(
+        shortBreaker.call(async () => {
+          throw new Error(`fail ${i}`);
+        }),
+      ).rejects.toThrow();
     }
 
     await new Promise((resolve) => setTimeout(resolve, 100));
@@ -66,19 +96,31 @@ describe('CircuitBreaker', () => {
 
   it('should open circuit again on HALF_OPEN failure', async () => {
     for (let i = 0; i < 3; i++) {
-      await expect(breaker.call(async () => { throw new Error(`fail ${i}`); })).rejects.toThrow();
+      await expect(
+        breaker.call(async () => {
+          throw new Error(`fail ${i}`);
+        }),
+      ).rejects.toThrow();
     }
 
     await new Promise((resolve) => setTimeout(resolve, 150));
 
-    await expect(breaker.call(async () => { throw new Error('half-open fail'); })).rejects.toThrow('half-open fail');
+    await expect(
+      breaker.call(async () => {
+        throw new Error('half-open fail');
+      }),
+    ).rejects.toThrow('half-open fail');
 
     expect(breaker.getState()).toBe('OPEN');
   });
 
   it('should reset on success in CLOSED state', async () => {
     for (let i = 0; i < 2; i++) {
-      await expect(breaker.call(async () => { throw new Error('fail'); })).rejects.toThrow();
+      await expect(
+        breaker.call(async () => {
+          throw new Error('fail');
+        }),
+      ).rejects.toThrow();
     }
 
     expect(breaker.getFailureCount()).toBe(2);
@@ -108,14 +150,20 @@ describe('CircuitBreaker', () => {
 
   it('should not open circuit for CircuitBreakerOpenError', async () => {
     for (let i = 0; i < 3; i++) {
-      await expect(breaker.call(async () => { throw new Error(`fail ${i}`); })).rejects.toThrow();
+      await expect(
+        breaker.call(async () => {
+          throw new Error(`fail ${i}`);
+        }),
+      ).rejects.toThrow();
     }
 
     expect(breaker.getState()).toBe('OPEN');
 
     const failureCountBefore = breaker.getFailureCount();
 
-    await expect(breaker.call(async () => 'should not reach')).rejects.toThrow(CircuitBreakerOpenError);
+    await expect(breaker.call(async () => 'should not reach')).rejects.toThrow(
+      CircuitBreakerOpenError,
+    );
     expect(breaker.getFailureCount()).toBe(failureCountBefore);
   });
 });

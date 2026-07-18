@@ -18,14 +18,19 @@ export function UpgradePrompt({ feature, variant = 'card', className }: UpgradeP
 
   if (variant === 'inline') {
     return (
-      <div className={cn(
-        'flex items-center gap-2 px-3 py-2.5 rounded-lg bg-[hsl(var(--warning)/0.08)] border border-[hsl(var(--warning)/0.2)] text-xs',
-        className,
-      )}>
+      <div
+        className={cn(
+          'flex items-center gap-2 px-3 py-2.5 rounded-lg bg-[hsl(var(--warning)/0.08)] border border-[hsl(var(--warning)/0.2)] text-xs',
+          className,
+        )}
+      >
         <TrendingUp className="h-3.5 w-3.5 text-[hsl(var(--warning))] shrink-0" />
         <span>
           {feature ?? 'این قابلیت'} نیاز به پلن Pro دارد.{' '}
-          <Link href={`/${locale}/billing/checkout?plan=pro`} className="underline font-semibold whitespace-nowrap">
+          <Link
+            href={`/${locale}/billing/checkout?plan=pro`}
+            className="underline font-semibold whitespace-nowrap"
+          >
             ارتقا دهید
           </Link>
         </span>
@@ -34,10 +39,12 @@ export function UpgradePrompt({ feature, variant = 'card', className }: UpgradeP
   }
 
   return (
-    <Card className={cn(
-      'border-[hsl(var(--warning)/0.35)] bg-gradient-to-r from-[hsl(var(--warning)/0.06)] to-[hsl(var(--primary)/0.04)]',
-      className,
-    )}>
+    <Card
+      className={cn(
+        'border-[hsl(var(--warning)/0.35)] bg-gradient-to-r from-[hsl(var(--warning)/0.06)] to-[hsl(var(--primary)/0.04)]',
+        className,
+      )}
+    >
       <CardContent className="flex flex-col sm:flex-row items-center justify-between gap-4 p-5">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-[var(--radius-lg)] bg-[hsl(var(--warning)/0.15)] flex items-center justify-center shrink-0">

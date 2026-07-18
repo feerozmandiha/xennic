@@ -7,7 +7,10 @@ export class RunCalculationDto {
   @IsNotEmpty()
   definitionId!: string;
 
-  @ApiProperty({ description: 'Calculation inputs key-value pairs', example: { voltage: 400, current: 100, length: 50, cableSize: '16mm²' } })
+  @ApiProperty({
+    description: 'Calculation inputs key-value pairs',
+    example: { voltage: 400, current: 100, length: 50, cableSize: '16mm²' },
+  })
   @IsObject()
   inputs!: Record<string, unknown>;
 

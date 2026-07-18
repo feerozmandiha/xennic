@@ -1,6 +1,16 @@
 import {
-  Controller, Get, Post, Patch, Delete,
-  Body, Param, Query, UseGuards, HttpCode, HttpStatus, NotFoundException,
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Delete,
+  Body,
+  Param,
+  Query,
+  UseGuards,
+  HttpCode,
+  HttpStatus,
+  NotFoundException,
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation, ApiQuery } from '@nestjs/swagger';
 import { prisma } from '@xennic/database';
@@ -9,11 +19,11 @@ import { AdminGuard } from '../../infrastructure/guards/admin.guard.js';
 import { CreateTaxonomyItemDto, UpdateTaxonomyItemDto } from '../dtos/taxonomy-admin.dto.js';
 
 const TAXONOMY_MODELS: Record<string, string> = {
-  category:   'categories',
-  topic:      'topics',
-  tag:        'tags',
+  category: 'categories',
+  topic: 'topics',
+  tag: 'tags',
   discipline: 'disciplines',
-  audience:   'audiences',
+  audience: 'audiences',
 } as const;
 
 @ApiTags('admin-taxonomy')
@@ -35,16 +45,17 @@ export class AdminTaxonomyController {
     const where: any = {};
     if (search) {
       where.OR = [
-        { name:     { contains: search, mode: 'insensitive' } },
-        { name_en:  { contains: search, mode: 'insensitive' } },
-        { slug:     { contains: search, mode: 'insensitive' } },
+        { name: { contains: search, mode: 'insensitive' } },
+        { name_en: { contains: search, mode: 'insensitive' } },
+        { slug: { contains: search, mode: 'insensitive' } },
       ];
     }
     const data = await (prisma as any)[model].findMany({
       where,
-      orderBy: model === 'categories'
-        ? [{ sort_order: 'asc' as const }, { name: 'asc' as const }]
-        : [{ name: 'asc' as const }],
+      orderBy:
+        model === 'categories'
+          ? [{ sort_order: 'asc' as const }, { name: 'asc' as const }]
+          : [{ name: 'asc' as const }],
     });
     return { success: true, data };
   }

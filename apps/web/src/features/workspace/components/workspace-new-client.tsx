@@ -10,16 +10,16 @@ import { useToast } from '@/stores/toast.store';
 import { cn } from '@/lib/utils';
 
 export function WorkspaceNewClient() {
-  const router      = useRouter();
-  const params      = useParams();
-  const locale      = (params?.locale as string) ?? 'fa';
-  const setWorkspace = useAuthStore(s => s.setWorkspace);
-  const toast       = useToast();
+  const router = useRouter();
+  const params = useParams();
+  const locale = (params?.locale as string) ?? 'fa';
+  const setWorkspace = useAuthStore((s) => s.setWorkspace);
+  const toast = useToast();
   const queryClient = useQueryClient();
 
-  const [name, setName]       = useState('');
+  const [name, setName] = useState('');
   const [submitting, setSubmitting] = useState(false);
-  const [error, setError]     = useState('');
+  const [error, setError] = useState('');
 
   const isValid = name.trim().length >= 2 && name.trim().length <= 100;
 
@@ -32,7 +32,7 @@ export function WorkspaceNewClient() {
 
     try {
       const res = await apiClient.post<any>('/workspaces', { name: name.trim() });
-      const ws  = res.data;
+      const ws = res.data;
 
       setWorkspace(ws.id);
       queryClient.invalidateQueries({ queryKey: ['workspaces-list'] });
@@ -49,7 +49,6 @@ export function WorkspaceNewClient() {
   return (
     <div className="min-h-[70vh] flex items-center justify-center">
       <div className="w-full max-w-lg mx-auto">
-
         {/* ── Header ── */}
         <div className="text-center mb-8">
           <div className="w-16 h-16 rounded-2xl bg-[hsl(var(--primary)/0.1)] flex items-center justify-center mx-auto mb-4">
@@ -57,14 +56,14 @@ export function WorkspaceNewClient() {
           </div>
           <h1 className="text-2xl font-bold tracking-tight">ایجاد فضای کاری جدید</h1>
           <p className="text-sm text-[hsl(var(--muted-foreground))] mt-2 max-w-sm mx-auto leading-relaxed">
-            یک فضای کاری برای تیم خود ایجاد کنید. می‌توانید بعداً تنظیمات برند، اعضا و محاسبات را پیکربندی کنید.
+            یک فضای کاری برای تیم خود ایجاد کنید. می‌توانید بعداً تنظیمات برند، اعضا و محاسبات را
+            پیکربندی کنید.
           </p>
         </div>
 
         {/* ── Form Card ── */}
         <div className="rounded-[var(--radius-lg)] border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 sm:p-8 shadow-sm">
           <form onSubmit={handleSubmit} className="space-y-5">
-
             {/* Name */}
             <div className="space-y-2">
               <label className="text-sm font-medium" htmlFor="ws-name">
@@ -74,7 +73,10 @@ export function WorkspaceNewClient() {
                 id="ws-name"
                 type="text"
                 value={name}
-                onChange={e => { setName(e.target.value); setError(''); }}
+                onChange={(e) => {
+                  setName(e.target.value);
+                  setError('');
+                }}
                 placeholder="مثلاً: شرکت مهندسی برق پارس"
                 autoFocus
                 maxLength={100}
@@ -87,13 +89,15 @@ export function WorkspaceNewClient() {
                 )}
               />
               <div className="flex items-center justify-between">
-                <p className="text-xs text-[hsl(var(--muted-foreground))]">
-                  بین ۲ تا ۱۰۰ کاراکتر
-                </p>
-                <p className={cn(
-                  'text-xs tabular-nums',
-                  name.length > 100 ? 'text-[hsl(var(--destructive))]' : 'text-[hsl(var(--muted-foreground))]',
-                )}>
+                <p className="text-xs text-[hsl(var(--muted-foreground))]">بین ۲ تا ۱۰۰ کاراکتر</p>
+                <p
+                  className={cn(
+                    'text-xs tabular-nums',
+                    name.length > 100
+                      ? 'text-[hsl(var(--destructive))]'
+                      : 'text-[hsl(var(--muted-foreground))]',
+                  )}
+                >
                   {name.length}/100
                 </p>
               </div>
@@ -128,7 +132,6 @@ export function WorkspaceNewClient() {
                 </>
               )}
             </button>
-
           </form>
         </div>
 
@@ -139,7 +142,10 @@ export function WorkspaceNewClient() {
             'تنظیمات برند، محلی‌سازی و محاسبات پیش‌فرض قابل شخصی‌سازی است',
             'همه محاسبات و پروژه‌ها در این فضای کاری ذخیره می‌شوند',
           ].map((tip, i) => (
-            <div key={i} className="flex items-start gap-2.5 text-xs text-[hsl(var(--muted-foreground))]">
+            <div
+              key={i}
+              className="flex items-start gap-2.5 text-xs text-[hsl(var(--muted-foreground))]"
+            >
               <CheckCircle2 className="h-3.5 w-3.5 text-[hsl(var(--primary)/0.6)] shrink-0 mt-0.5" />
               <span>{tip}</span>
             </div>
@@ -156,10 +162,7 @@ export function WorkspaceNewClient() {
             بازگشت
           </button>
         </div>
-
       </div>
     </div>
   );
 }
-
-

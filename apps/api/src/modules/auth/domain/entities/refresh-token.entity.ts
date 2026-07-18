@@ -10,7 +10,11 @@ export class RefreshTokenEntity {
     public readonly createdAt: Date,
   ) {}
 
-  static create(userId: string, tokenHash: string, expiresInSeconds: number = 30 * 24 * 60 * 60): RefreshTokenEntity {
+  static create(
+    userId: string,
+    tokenHash: string,
+    expiresInSeconds: number = 30 * 24 * 60 * 60,
+  ): RefreshTokenEntity {
     const expiresAt = new Date(Date.now() + expiresInSeconds * 1000);
     return new RefreshTokenEntity(
       crypto.randomUUID(),

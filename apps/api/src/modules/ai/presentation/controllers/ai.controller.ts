@@ -1,19 +1,35 @@
 import {
-  Controller, Get, Post, Delete,
-  Body, Param, Query, Req,
-  UseGuards, HttpCode, HttpStatus,
+  Controller,
+  Get,
+  Post,
+  Delete,
+  Body,
+  Param,
+  Query,
+  Req,
+  UseGuards,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
 import {
-  ApiTags, ApiBearerAuth, ApiOperation,
-  ApiResponse, ApiParam, ApiQuery, ApiBody,
+  ApiTags,
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiParam,
+  ApiQuery,
+  ApiBody,
 } from '@nestjs/swagger';
-import { JwtAuthGuard }   from '../../../auth/infrastructure/guards/jwt-auth.guard.js';
+import { JwtAuthGuard } from '../../../auth/infrastructure/guards/jwt-auth.guard.js';
 import { WorkspaceGuard } from '../../../rbac/infrastructure/guards/workspace.guard.js';
-import { AiService }      from '../../application/services/ai.service.js';
+import { AiService } from '../../application/services/ai.service.js';
 import {
-  CreateConversationDto, SendMessageDto,
-  AgentResponseDto, ConversationResponseDto,
-  ValidateCalculationDto, ValidationResponseDto,
+  CreateConversationDto,
+  SendMessageDto,
+  AgentResponseDto,
+  ConversationResponseDto,
+  ValidateCalculationDto,
+  ValidationResponseDto,
 } from '../dtos/ai.dto.js';
 
 @ApiTags('ai')
@@ -37,22 +53,22 @@ export class AiController {
 
   @Get('conversations')
   @ApiOperation({ summary: 'List conversations in workspace' })
-  @ApiQuery({ name: 'page',  required: false, type: Number })
+  @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'limit', required: false, type: Number })
   @ApiResponse({ status: 200, description: 'Conversations retrieved' })
   async listConversations(
     @Req() req: any,
-    @Query('page')  page?:  string,
+    @Query('page') page?: string,
     @Query('limit') limit?: string,
   ) {
     const convs = await this.aiService.listConversations(
       req.workspaceId,
-      page  ? parseInt(page,  10) : 1,
+      page ? parseInt(page, 10) : 1,
       limit ? parseInt(limit, 10) : 20,
     );
     return {
       success: true,
-      data: convs.map(c => ConversationResponseDto.fromEntity(c)),
+      data: convs.map((c) => ConversationResponseDto.fromEntity(c)),
     };
   }
 
@@ -63,13 +79,8 @@ export class AiController {
   @ApiOperation({ summary: 'Create a new conversation' })
   @ApiBody({ type: CreateConversationDto })
   @ApiResponse({ status: 201, description: 'Conversation created' })
-  async createConversation(
-    @Req() req: any,
-    @Body() dto: CreateConversationDto,
-  ) {
-    const conv = await this.aiService.createConversation(
-      req.workspaceId, dto.agentSlug, dto.title,
-    );
+  async createConversation(@Req() req: any, @Body() dto: CreateConversationDto) {
+    const conv = await this.aiService.createConversation(req.workspaceId, dto.agentSlug, dto.title);
     return { success: true, data: ConversationResponseDto.fromEntity(conv) };
   }
 
@@ -101,21 +112,20 @@ export class AiController {
   @ApiParam({ name: 'id', description: 'Conversation UUID' })
   @ApiBody({ type: SendMessageDto })
   @ApiResponse({ status: 200, description: 'AI response returned' })
-  async sendMessage(
-    @Param('id') id: string,
-    @Req() req: any,
-    @Body() dto: SendMessageDto,
-  ) {
+  async sendMessage(@Param('id') id: string, @Req() req: any, @Body() dto: SendMessageDto) {
     const result = await this.aiService.sendMessage(
-      id, req.workspaceId, req.user.userId, dto.content,
+      id,
+      req.workspaceId,
+      req.user.userId,
+      dto.content,
     );
     return {
       success: true,
       data: {
-        userMessageId:      result.userMsgId,
+        userMessageId: result.userMsgId,
         assistantMessageId: result.assistantMsgId,
-        reply:              result.reply,
-        tokens:             result.tokens,
+        reply: result.reply,
+        tokens: result.tokens,
       },
     };
   }
@@ -127,9 +137,7 @@ export class AiController {
   @ApiBody({ type: ValidateCalculationDto })
   @ApiResponse({ status: 200, description: 'Validation completed' })
   async validateCalculation(@Req() req: any, @Body() dto: ValidateCalculationDto) {
-    const result = await this.aiService.validateCalculation(
-      dto.type, dto.inputs, dto.result,
-    );
+    const result = await this.aiService.validateCalculation(dto.type, dto.inputs, dto.result);
     return { success: true, data: ValidationResponseDto.fromAiResponse(result.details, result) };
   }
 

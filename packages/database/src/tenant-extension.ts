@@ -83,15 +83,13 @@ function applyTenantFilter(operation: string, args: any, workspaceId: string): a
       };
 
     case 'update':
-    case 'updateMany':
-    {
+    case 'updateMany': {
       const where = args.where ?? {};
       return { ...args, where: { ...where, workspace_id: workspaceId } };
     }
 
     case 'delete':
-    case 'deleteMany':
-    {
+    case 'deleteMany': {
       const where = args.where ?? {};
       return { ...args, where: { ...where, workspace_id: workspaceId } };
     }

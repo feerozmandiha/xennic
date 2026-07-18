@@ -1,4 +1,10 @@
-import { Injectable, UnauthorizedException, ConflictException, Inject, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  UnauthorizedException,
+  ConflictException,
+  Inject,
+  BadRequestException,
+} from '@nestjs/common';
 import { JwtService } from '../../infrastructure/jwt/jwt.service.js';
 import { UserService } from '../../../user/application/services/user.service.js';
 import { Argon2Service } from '../../../user/infrastructure/hashing/argon2.service.js';
@@ -51,7 +57,11 @@ export class AuthService {
     private readonly sessionRepository: ISessionRepository,
   ) {}
 
-  async register(registerDto: RegisterDto, ipAddress?: string, userAgent?: string): Promise<AuthResponse> {
+  async register(
+    registerDto: RegisterDto,
+    ipAddress?: string,
+    userAgent?: string,
+  ): Promise<AuthResponse> {
     const existingUser = await this.userService.findByEmail(registerDto.email);
     if (existingUser) {
       throw new ConflictException('User with this email already exists');
@@ -63,9 +73,9 @@ export class AuthService {
     await this.sessionRepository.save(session);
 
     // ارسال ایمیل خوش‌آمدگویی (non-blocking)
-    this.emailService.sendWelcome(user.email, `${user.firstName} ${user.lastName}`).catch(err =>
-      console.error(`[EMAIL] Welcome email failed: ${err.message}`),
-    );
+    this.emailService
+      .sendWelcome(user.email, `${user.firstName} ${user.lastName}`)
+      .catch((err) => console.error(`[EMAIL] Welcome email failed: ${err.message}`));
 
     return this.formatAuthResponse(accessToken, refreshToken, user);
   }
@@ -101,7 +111,7 @@ export class AuthService {
   async refreshToken(refreshToken: string): Promise<AuthResponse> {
     const tokenHash = crypto.createHash('sha256').update(refreshToken).digest('hex');
     const storedToken = await this.refreshTokenRepository.findByTokenHash(tokenHash);
-    
+
     if (!storedToken || !storedToken.isValid()) {
       throw new UnauthorizedException('Invalid or expired refresh token');
     }
@@ -112,7 +122,10 @@ export class AuthService {
     }
 
     await this.refreshTokenRepository.revoke(storedToken.id);
-    const { accessToken, refreshToken: newRefreshToken } = await this.generateTokens(user.id, user.email);
+    const { accessToken, refreshToken: newRefreshToken } = await this.generateTokens(
+      user.id,
+      user.email,
+    );
 
     return this.formatAuthResponse(accessToken, newRefreshToken, user);
   }
@@ -120,7 +133,7 @@ export class AuthService {
   async logout(userId: string, refreshToken?: string): Promise<void> {
     await this.refreshTokenRepository.revokeAllByUserId(userId);
     await this.sessionRepository.deleteByUserId(userId);
-    
+
     if (refreshToken) {
       const tokenHash = crypto.createHash('sha256').update(refreshToken).digest('hex');
       const storedToken = await this.refreshTokenRepository.findByTokenHash(tokenHash);
@@ -149,7 +162,10 @@ export class AuthService {
     };
   }
 
-  private async generateTokens(userId: string, email: string): Promise<{ accessToken: string; refreshToken: string }> {
+  private async generateTokens(
+    userId: string,
+    email: string,
+  ): Promise<{ accessToken: string; refreshToken: string }> {
     const payload = JwtPayloadVO.create(userId, email, ['user']);
     const accessToken = await this.jwtService.sign(payload);
     const refreshToken = crypto.randomBytes(64).toString('hex');
@@ -191,15 +207,15 @@ export class AuthService {
     `;
 
     // ارسال ایمیل بازیابی رمز (non-blocking)
-    this.emailService.sendPasswordReset(email, `${user.firstName} ${user.lastName}`, resetToken).catch(err =>
-      console.error(`[EMAIL] Password reset email failed: ${err.message}`),
-    );
+    this.emailService
+      .sendPasswordReset(email, `${user.firstName} ${user.lastName}`, resetToken)
+      .catch((err) => console.error(`[EMAIL] Password reset email failed: ${err.message}`));
     console.log(`[AUDIT] Password reset requested for: ${email} from ${ipAddress}`);
   }
 
   async resetPassword(token: string, newPassword: string, ipAddress?: string): Promise<void> {
     const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
-    
+
     const resetRequest = await prisma.$queryRaw<any[]>`
       SELECT * FROM password_reset_tokens 
       WHERE token_hash = ${tokenHash} AND used_at IS NULL AND expires_at > NOW()
@@ -227,7 +243,12 @@ export class AuthService {
     console.log(`[AUDIT] Password reset successful for user: ${user.email} from ${ipAddress}`);
   }
 
-  async changePassword(userId: string, currentPassword: string, newPassword: string, ipAddress?: string): Promise<void> {
+  async changePassword(
+    userId: string,
+    currentPassword: string,
+    newPassword: string,
+    ipAddress?: string,
+  ): Promise<void> {
     const user = await this.userService.findOne(userId);
     if (!user) {
       throw new UnauthorizedException('User not found');

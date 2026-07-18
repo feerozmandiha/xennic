@@ -1,4 +1,14 @@
-import { Controller, Get, Post, Param, Query, Body, UseGuards, HttpCode, HttpStatus } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Param,
+  Query,
+  Body,
+  UseGuards,
+  HttpCode,
+  HttpStatus,
+} from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation, ApiQuery } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../../auth/infrastructure/guards/jwt-auth.guard.js';
 import { UnitConversionService } from '../../application/services/unit-conversion.service.js';
@@ -8,9 +18,7 @@ import { UnitConversionService } from '../../application/services/unit-conversio
 @UseGuards(JwtAuthGuard)
 @Controller('calculations/units')
 export class CalculationUnitsController {
-  constructor(
-    private readonly unitService: UnitConversionService,
-  ) {}
+  constructor(private readonly unitService: UnitConversionService) {}
 
   @Get()
   @ApiOperation({ summary: 'List all units' })

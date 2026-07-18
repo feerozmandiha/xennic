@@ -4,7 +4,10 @@ import { IHEALTH_REPOSITORY } from '../ports/health-repository.interface.js';
 import type { IProviderRepository } from '../ports/provider-repository.interface.js';
 import { IPROVIDER_REPOSITORY } from '../ports/provider-repository.interface.js';
 import { Inject } from '@nestjs/common';
-import { ProviderHealthEntity, HealthStatus } from '../../domain/entities/provider-health.entity.js';
+import {
+  ProviderHealthEntity,
+  HealthStatus,
+} from '../../domain/entities/provider-health.entity.js';
 import { ProviderHttpClient } from '../../infrastructure/http/provider-http.client.js';
 
 @Injectable()

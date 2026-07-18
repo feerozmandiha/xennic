@@ -45,11 +45,16 @@ export class EmbedWorker extends BasePipelineWorker {
           const embedding = embeddings[i];
           const chunk = chunks[i];
           if (embedding && chunk) {
-            await this.chunkRepository.linkEmbedding(chunk.id, String((embedding as number[]).length));
+            await this.chunkRepository.linkEmbedding(
+              chunk.id,
+              String((embedding as number[]).length),
+            );
           }
         }
       } catch (error) {
-        this.logger.warn(`Embedding generation failed for document ${documentId}: ${error instanceof Error ? error.message : 'unknown'}`);
+        this.logger.warn(
+          `Embedding generation failed for document ${documentId}: ${error instanceof Error ? error.message : 'unknown'}`,
+        );
       }
     }
 

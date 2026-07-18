@@ -1,15 +1,35 @@
 import {
-  Controller, Get, Post, Patch, Delete,
-  Body, Param, Query, UseGuards, HttpCode, HttpStatus,
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Delete,
+  Body,
+  Param,
+  Query,
+  UseGuards,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiParam, ApiQuery, ApiBody } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+  ApiParam,
+  ApiQuery,
+  ApiBody,
+} from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../../auth/infrastructure/guards/jwt-auth.guard.js';
 import { WorkspaceGuard } from '../../../rbac/infrastructure/guards/workspace.guard.js';
 import { RequirePermissions } from '../../../rbac/infrastructure/decorators/permissions.decorator.js';
 import { PermissionsGuard } from '../../../rbac/infrastructure/guards/permissions.guard.js';
 import { StandardService } from '../../application/services/standard.service.js';
 import {
-  CreateStandardDto, UpdateStandardDto, StandardSearchQueryDto, StandardResponseDto,
+  CreateStandardDto,
+  UpdateStandardDto,
+  StandardSearchQueryDto,
+  StandardResponseDto,
 } from '../dtos/standard.dto.js';
 
 @ApiTags('standards')

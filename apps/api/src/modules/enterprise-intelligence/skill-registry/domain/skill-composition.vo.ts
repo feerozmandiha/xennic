@@ -30,11 +30,6 @@ export class SkillComposition {
     steps: SkillCompositionStep[],
     metadata?: Record<string, unknown>,
   ): SkillComposition {
-    return new SkillComposition(
-      randomUUID(),
-      name,
-      steps,
-      metadata ?? {},
-    );
+    return new SkillComposition(randomUUID(), name, steps, metadata ?? {});
   }
 }

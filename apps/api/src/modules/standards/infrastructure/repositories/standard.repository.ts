@@ -1,6 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { prisma } from '@xennic/database';
-import type { IStandardRepository, StandardSearchParams, StandardSearchResult } from '../../domain/interfaces/standard.repository.interface.js';
+import type {
+  IStandardRepository,
+  StandardSearchParams,
+  StandardSearchResult,
+} from '../../domain/interfaces/standard.repository.interface.js';
 import { StandardEntity } from '../../domain/entities/standard.entity.js';
 
 @Injectable()
@@ -39,7 +43,7 @@ export class StandardRepository implements IStandardRepository {
       prisma.engineering_standards.count({ where }),
     ]);
 
-    return { data: data.map(r => this._toEntity(r)), total };
+    return { data: data.map((r) => this._toEntity(r)), total };
   }
 
   async save(entity: StandardEntity): Promise<void> {

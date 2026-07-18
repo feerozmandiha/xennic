@@ -24,7 +24,10 @@ export class PrismaWorkflowRepository implements IWorkflowRepository {
         status: entity.status,
         triggers: entity.triggers as unknown as Record<string, unknown>,
         steps: entity.steps as unknown as Record<string, unknown>,
-        metadata: { ...entity.metadata, timeout: entity.timeout } as unknown as Record<string, unknown>,
+        metadata: { ...entity.metadata, timeout: entity.timeout } as unknown as Record<
+          string,
+          unknown
+        >,
       },
       update: {
         name: entity.name,
@@ -33,7 +36,10 @@ export class PrismaWorkflowRepository implements IWorkflowRepository {
         status: entity.status,
         triggers: entity.triggers as unknown as Record<string, unknown>,
         steps: entity.steps as unknown as Record<string, unknown>,
-        metadata: { ...entity.metadata, timeout: entity.timeout } as unknown as Record<string, unknown>,
+        metadata: { ...entity.metadata, timeout: entity.timeout } as unknown as Record<
+          string,
+          unknown
+        >,
       },
     });
     this.logger.debug(`Saved workflow definition ${entity.id} v${entity.version}`);
@@ -56,7 +62,7 @@ export class PrismaWorkflowRepository implements IWorkflowRepository {
       row.steps as unknown as any[],
       row.triggers as unknown as any[],
       (meta?.timeout as number | null) ?? null,
-      meta as any ?? {},
+      (meta as any) ?? {},
       row.created_at,
       row.updated_at,
       row.status as any,
@@ -84,7 +90,7 @@ export class PrismaWorkflowRepository implements IWorkflowRepository {
       row.steps as unknown as any[],
       row.triggers as unknown as any[],
       (meta?.timeout as number | null) ?? null,
-      meta as any ?? {},
+      (meta as any) ?? {},
       row.created_at,
       row.updated_at,
       row.status as any,
@@ -111,7 +117,7 @@ export class PrismaWorkflowRepository implements IWorkflowRepository {
     ]);
 
     const { WorkflowDefinition: Wf } = await import('../../domain/workflow-definition.entity.js');
-    const items = rows.map(row => {
+    const items = rows.map((row) => {
       const meta = row.metadata as Record<string, unknown> | null;
       return Wf.reconstitute(
         row.id,
@@ -121,7 +127,7 @@ export class PrismaWorkflowRepository implements IWorkflowRepository {
         row.steps as unknown as any[],
         row.triggers as unknown as any[],
         (meta?.timeout as number | null) ?? null,
-        meta as any ?? {},
+        (meta as any) ?? {},
         row.created_at,
         row.updated_at,
         row.status as any,
@@ -133,13 +139,13 @@ export class PrismaWorkflowRepository implements IWorkflowRepository {
 
   async findByTrigger(type: string): Promise<WorkflowDefinition[]> {
     const rows = await prisma.workflow_definitions.findMany();
-    const filtered = rows.filter(row => {
+    const filtered = rows.filter((row) => {
       const triggers = row.triggers as unknown as Array<{ type: string }>;
-      return triggers?.some(t => t.type === type);
+      return triggers?.some((t) => t.type === type);
     });
 
     const { WorkflowDefinition: Wf } = await import('../../domain/workflow-definition.entity.js');
-    return filtered.map(row => {
+    return filtered.map((row) => {
       const meta = row.metadata as Record<string, unknown> | null;
       return Wf.reconstitute(
         row.id,
@@ -149,7 +155,7 @@ export class PrismaWorkflowRepository implements IWorkflowRepository {
         row.steps as unknown as any[],
         row.triggers as unknown as any[],
         (meta?.timeout as number | null) ?? null,
-        meta as any ?? {},
+        (meta as any) ?? {},
         row.created_at,
         row.updated_at,
         row.status as any,
@@ -168,14 +174,24 @@ export class PrismaWorkflowRepository implements IWorkflowRepository {
         description: template.description,
         category: template.category,
         tags: template.tags,
-        definition: { ...def, _version: template.version, _variables: variables, _metadata: template.metadata } as unknown as Record<string, unknown>,
+        definition: {
+          ...def,
+          _version: template.version,
+          _variables: variables,
+          _metadata: template.metadata,
+        } as unknown as Record<string, unknown>,
       },
       update: {
         name: template.name,
         description: template.description,
         category: template.category,
         tags: template.tags,
-        definition: { ...def, _version: template.version, _variables: variables, _metadata: template.metadata } as unknown as Record<string, unknown>,
+        definition: {
+          ...def,
+          _version: template.version,
+          _variables: variables,
+          _metadata: template.metadata,
+        } as unknown as Record<string, unknown>,
       },
     });
     this.logger.debug(`Saved workflow template ${template.id}`);
@@ -199,17 +215,19 @@ export class PrismaWorkflowRepository implements IWorkflowRepository {
 
     if (options?.tags && options.tags.length > 0) {
       const tagSet = new Set(options.tags);
-      rows = rows.filter(r => r.tags?.some(t => tagSet.has(t)));
+      rows = rows.filter((r) => r.tags?.some((t) => tagSet.has(t)));
     }
 
-    const [total] = await Promise.all([
-      prisma.workflow_templates.count({ where: where as any }),
-    ]);
+    const [total] = await Promise.all([prisma.workflow_templates.count({ where: where as any })]);
 
     const { WorkflowTemplate: Tpl } = await import('../../domain/workflow-template.entity.js');
-    const items = rows.map(row => {
+    const items = rows.map((row) => {
       const def = row.definition as Record<string, unknown>;
-      const definition = { steps: def.steps, triggers: def.triggers, timeout: def.timeout ?? null } as any;
+      const definition = {
+        steps: def.steps,
+        triggers: def.triggers,
+        timeout: def.timeout ?? null,
+      } as any;
       const version = (def._version as number) ?? 1;
       const variables = (def._variables as any[]) ?? [];
       const metadata = (def._metadata as any) ?? {};

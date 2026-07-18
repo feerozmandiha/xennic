@@ -1,12 +1,20 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { prisma } from '@xennic/database';
-import type { IGraphTraversalRepository, ITraversalResult, ICitationPath } from '../../domain/interfaces/graph-traversal.repository.interface.js';
+import type {
+  IGraphTraversalRepository,
+  ITraversalResult,
+  ICitationPath,
+} from '../../domain/interfaces/graph-traversal.repository.interface.js';
 
 @Injectable()
 export class GraphTraversalRepository implements IGraphTraversalRepository {
   private readonly logger = new Logger(GraphTraversalRepository.name);
 
-  async shortestPath(sourceId: string, targetId: string, maxDepth: number): Promise<ITraversalResult | null> {
+  async shortestPath(
+    sourceId: string,
+    targetId: string,
+    maxDepth: number,
+  ): Promise<ITraversalResult | null> {
     const rows = await prisma.$queryRaw<any[]>`
       WITH RECURSIVE path AS (
         SELECT 
@@ -47,7 +55,12 @@ export class GraphTraversalRepository implements IGraphTraversalRepository {
     };
   }
 
-  async allPaths(sourceId: string, targetId: string, maxDepth: number, maxPaths: number): Promise<ITraversalResult[]> {
+  async allPaths(
+    sourceId: string,
+    targetId: string,
+    maxDepth: number,
+    maxPaths: number,
+  ): Promise<ITraversalResult[]> {
     const rows = await prisma.$queryRaw<any[]>`
       WITH RECURSIVE path AS (
         SELECT 
@@ -86,7 +99,10 @@ export class GraphTraversalRepository implements IGraphTraversalRepository {
     }));
   }
 
-  async ancestors(nodeId: string, maxDepth: number): Promise<{ nodeId: string; distance: number; edgeType: string }[]> {
+  async ancestors(
+    nodeId: string,
+    maxDepth: number,
+  ): Promise<{ nodeId: string; distance: number; edgeType: string }[]> {
     const rows = await prisma.$queryRaw<any[]>`
       WITH RECURSIVE ancestors AS (
         SELECT 
@@ -113,7 +129,10 @@ export class GraphTraversalRepository implements IGraphTraversalRepository {
     return rows.map((r) => ({ nodeId: r.node_id, distance: r.distance, edgeType: r.edge_type }));
   }
 
-  async descendants(nodeId: string, maxDepth: number): Promise<{ nodeId: string; distance: number; edgeType: string }[]> {
+  async descendants(
+    nodeId: string,
+    maxDepth: number,
+  ): Promise<{ nodeId: string; distance: number; edgeType: string }[]> {
     const rows = await prisma.$queryRaw<any[]>`
       WITH RECURSIVE descendants AS (
         SELECT 
@@ -140,7 +159,11 @@ export class GraphTraversalRepository implements IGraphTraversalRepository {
     return rows.map((r) => ({ nodeId: r.node_id, distance: r.distance, edgeType: r.edge_type }));
   }
 
-  async neighbors(nodeId: string, direction: 'in' | 'out' | 'both', edgeType?: string): Promise<{ nodeId: string; edgeType: string; weight: number }[]> {
+  async neighbors(
+    nodeId: string,
+    direction: 'in' | 'out' | 'both',
+    edgeType?: string,
+  ): Promise<{ nodeId: string; edgeType: string; weight: number }[]> {
     const incoming = direction === 'in' || direction === 'both';
     const outgoing = direction === 'out' || direction === 'both';
 
@@ -164,7 +187,11 @@ export class GraphTraversalRepository implements IGraphTraversalRepository {
 
     const [inRows, outRows] = await Promise.all([incomingQuery, outgoingQuery]);
     const combined = [...(inRows ?? []), ...(outRows ?? [])];
-    return combined.map((r) => ({ nodeId: r.node_id, edgeType: r.edge_type, weight: Number(r.weight) }));
+    return combined.map((r) => ({
+      nodeId: r.node_id,
+      edgeType: r.edge_type,
+      weight: Number(r.weight),
+    }));
   }
 
   async subgraph(nodeIds: string[]): Promise<{ nodes: any[]; edges: any[] }> {
@@ -174,15 +201,23 @@ export class GraphTraversalRepository implements IGraphTraversalRepository {
     });
     const edges = await prisma.knowledge_graph_edges.findMany({
       where: {
-        AND: [
-          { source_id: { in: nodeIds } },
-          { target_id: { in: nodeIds } },
-        ],
+        AND: [{ source_id: { in: nodeIds } }, { target_id: { in: nodeIds } }],
       },
     });
     return {
-      nodes: nodes.map((n) => ({ id: n.id, type: n.type, label: n.label, properties: n.properties })),
-      edges: edges.map((e) => ({ id: e.id, sourceId: e.source_id, targetId: e.target_id, type: e.type, weight: e.weight })),
+      nodes: nodes.map((n) => ({
+        id: n.id,
+        type: n.type,
+        label: n.label,
+        properties: n.properties,
+      })),
+      edges: edges.map((e) => ({
+        id: e.id,
+        sourceId: e.source_id,
+        targetId: e.target_id,
+        type: e.type,
+        weight: e.weight,
+      })),
     };
   }
 
@@ -309,10 +344,7 @@ export class GraphTraversalRepository implements IGraphTraversalRepository {
     if (uniqueNodes.length > 0) {
       const edges = await prisma.knowledge_graph_edges.findMany({
         where: {
-          AND: [
-            { source_id: { in: uniqueNodes } },
-            { target_id: { in: uniqueNodes } },
-          ],
+          AND: [{ source_id: { in: uniqueNodes } }, { target_id: { in: uniqueNodes } }],
         },
       });
       resultEdges = edges.map((e) => ({

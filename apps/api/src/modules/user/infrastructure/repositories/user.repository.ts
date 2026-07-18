@@ -120,7 +120,7 @@ export class UserRepository implements IUserRepository {
 
   async findByPhone(phone: string): Promise<UserEntity | null> {
     if (!phone) return null;
-    
+
     try {
       const users = await prisma.$queryRaw<any[]>`
         SELECT * FROM "users" WHERE phone = ${phone} AND deleted_at IS NULL
@@ -194,7 +194,7 @@ export class UserRepository implements IUserRepository {
         SELECT COUNT(*) as count FROM "users" 
         WHERE deleted_at IS NULL
       `;
-      
+
       if (filters?.status) {
         const isActive = filters.status === 'active';
         query = prisma.$queryRaw<any[]>`
@@ -202,7 +202,7 @@ export class UserRepository implements IUserRepository {
           WHERE deleted_at IS NULL AND is_active = ${isActive}
         `;
       }
-      
+
       const result = await query;
       return Number(result[0]?.count || 0);
     } catch (err) {
@@ -242,13 +242,13 @@ export class UserRepository implements IUserRepository {
       let query = prisma.$queryRaw<any[]>`
         SELECT 1 FROM "users" WHERE email = ${email.toLowerCase()}
       `;
-      
+
       if (excludeId) {
         query = prisma.$queryRaw<any[]>`
           SELECT 1 FROM "users" WHERE email = ${email.toLowerCase()} AND id != ${excludeId}
         `;
       }
-      
+
       const result = await query;
       return result && result.length > 0;
     } catch (err) {

@@ -118,7 +118,7 @@ export class InvoiceResponseDto {
   }
 
   static fromEntities(list: InvoiceEntity[]): InvoiceResponseDto[] {
-    return list.map(e => InvoiceResponseDto.fromEntity(e));
+    return list.map((e) => InvoiceResponseDto.fromEntity(e));
   }
 }
 
@@ -148,7 +148,7 @@ export class PaymentResponseDto {
   }
 
   static fromEntities(list: PaymentEntity[]): PaymentResponseDto[] {
-    return list.map(p => PaymentResponseDto.fromEntity(p));
+    return list.map((p) => PaymentResponseDto.fromEntity(p));
   }
 }
 
@@ -174,7 +174,7 @@ export class TransactionResponseDto {
   }
 
   static fromEntities(list: TransactionEntity[]): TransactionResponseDto[] {
-    return list.map(t => TransactionResponseDto.fromEntity(t));
+    return list.map((t) => TransactionResponseDto.fromEntity(t));
   }
 }
 
@@ -200,7 +200,7 @@ export class PaymentMethodResponseDto {
   }
 
   static fromEntities(list: PaymentMethodEntity[]): PaymentMethodResponseDto[] {
-    return list.map(m => PaymentMethodResponseDto.fromEntity(m));
+    return list.map((m) => PaymentMethodResponseDto.fromEntity(m));
   }
 }
 

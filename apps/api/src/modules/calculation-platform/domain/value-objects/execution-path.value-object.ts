@@ -26,9 +26,13 @@ export class ExecutionPath {
   }
 
   toJson(): Record<string, unknown>[] {
-    return this.steps.map(s => ({ ...s }));
+    return this.steps.map((s) => ({ ...s }));
   }
 
-  get failed(): boolean { return this.steps.some(s => s.status === 'failed'); }
-  get duration(): number { return this.steps.reduce((acc, s) => acc + (s.durationMs ?? 0), 0); }
+  get failed(): boolean {
+    return this.steps.some((s) => s.status === 'failed');
+  }
+  get duration(): number {
+    return this.steps.reduce((acc, s) => acc + (s.durationMs ?? 0), 0);
+  }
 }

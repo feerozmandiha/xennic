@@ -52,7 +52,9 @@ export class EventReplayService implements IEventReplayer {
         }
       }
 
-      this.logger.log(`Replay ${replayId}: ${replayedCount} events reinserted, ${errors.length} failed`);
+      this.logger.log(
+        `Replay ${replayId}: ${replayedCount} events reinserted, ${errors.length} failed`,
+      );
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error';
       this.logger.error(`Replay ${replayId} failed: ${message}`);

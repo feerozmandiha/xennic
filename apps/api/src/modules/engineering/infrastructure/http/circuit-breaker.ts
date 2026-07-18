@@ -26,7 +26,10 @@ export class CircuitBreaker {
         this.state = CircuitState.HALF_OPEN;
         this.logger.warn(`[${this.name}] Circuit HALF_OPEN — testing recovery`);
       } else {
-        throw new CircuitBreakerOpenError(this.name, this.timeoutMs - (Date.now() - this.lastFailureTime));
+        throw new CircuitBreakerOpenError(
+          this.name,
+          this.timeoutMs - (Date.now() - this.lastFailureTime),
+        );
       }
     }
 

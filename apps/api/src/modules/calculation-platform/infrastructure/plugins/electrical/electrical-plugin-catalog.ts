@@ -29,13 +29,11 @@ export const ELECTRICAL_PLUGINS = {
       formulas: [
         {
           name: 'method',
-          expression:
-            'isNaN(V) ? (isNaN(I) ? "V=I*R" : "V=I*R") : (isNaN(I) ? "I=V/R" : "R=V/I")',
+          expression: 'isNaN(V) ? (isNaN(I) ? "V=I*R" : "V=I*R") : (isNaN(I) ? "I=V/R" : "R=V/I")',
         },
         {
           name: 'calculated',
-          expression:
-            'isNaN(V) ? (isNaN(I) ? I*R : V/R) : (isNaN(I) ? V/R : V/I)',
+          expression: 'isNaN(V) ? (isNaN(I) ? I*R : V/R) : (isNaN(I) ? V/R : V/I)',
         },
       ],
       validations: [
@@ -56,8 +54,7 @@ export const ELECTRICAL_PLUGINS = {
         standard: 'IEC 60027',
         category: 'foundation',
         tags: ['ohm', 'law', 'voltage', 'current', 'resistance'],
-        aiExplanation:
-          "Ohm's law relates voltage, current, and resistance in DC circuits",
+        aiExplanation: "Ohm's law relates voltage, current, and resistance in DC circuits",
         aiAssumptions: 'Linear resistive circuit, DC steady-state',
         aiWarnings: 'Verify circuit topology before application',
         aiOptimization: 'Use for initial component sizing',
@@ -107,8 +104,7 @@ export const ELECTRICAL_PLUGINS = {
         standard: 'IEC 60027',
         category: 'foundation',
         tags: ['power', 'active', 'reactive', 'apparent'],
-        aiExplanation:
-          'Power calculation using voltage, current, and power factor for AC circuits',
+        aiExplanation: 'Power calculation using voltage, current, and power factor for AC circuits',
         aiAssumptions: 'Sinusoidal AC waveform, linear load',
         aiWarnings: 'For DC circuits use cosPhi=1',
         aiOptimization: 'N/A (direct calculation)',
@@ -153,15 +149,14 @@ export const ELECTRICAL_PLUGINS = {
         standard: 'IEC 60027',
         category: 'foundation',
         tags: ['energy', 'power', 'time', 'consumption'],
-        aiExplanation:
-          'Energy calculation from power consumption over time',
+        aiExplanation: 'Energy calculation from power consumption over time',
         aiAssumptions: 'Constant power draw over time period',
         aiWarnings: 'Peak loads may exceed average for short durations',
         aiOptimization: 'Use time-of-use tariff for cost optimization',
       },
     }),
 
-  'efficiency': (): DslDefinition =>
+  efficiency: (): DslDefinition =>
     DslDefinition.create({
       id: 'efficiency',
       version: '1.0.0',
@@ -212,8 +207,7 @@ export const ELECTRICAL_PLUGINS = {
         standard: 'IEC 60034-1',
         category: 'foundation',
         tags: ['efficiency', 'losses', 'power', 'motor'],
-        aiExplanation:
-          'Efficiency is the ratio of useful output to total input power',
+        aiExplanation: 'Efficiency is the ratio of useful output to total input power',
         aiAssumptions: 'Steady-state operation at rated conditions',
         aiWarnings: 'Actual efficiency varies with load factor',
         aiOptimization: 'Consider IE4/IE5 class motors for best efficiency',
@@ -267,8 +261,7 @@ export const ELECTRICAL_PLUGINS = {
         standard: 'IEEE 1459',
         category: 'foundation',
         tags: ['power-factor', 'phase-angle', 'reactive'],
-        aiExplanation:
-          'Power factor is the ratio of active to apparent power in AC systems',
+        aiExplanation: 'Power factor is the ratio of active to apparent power in AC systems',
         aiAssumptions: 'Sinusoidal waveform with linear load',
         aiWarnings: 'Low PF increases line losses and utility penalties',
         aiOptimization: 'Target PF > 0.95 to avoid utility penalties',
@@ -353,11 +346,9 @@ export const ELECTRICAL_PLUGINS = {
         standard: 'IEC 60027',
         category: 'foundation',
         tags: ['three-phase', 'power', 'wye', 'delta'],
-        aiExplanation:
-          'Three-phase power calculation using line-to-line voltage and current',
+        aiExplanation: 'Three-phase power calculation using line-to-line voltage and current',
         aiAssumptions: 'Balanced three-phase system',
-        aiWarnings:
-          'This assumes a balanced system; unbalanced loads require sequence components',
+        aiWarnings: 'This assumes a balanced system; unbalanced loads require sequence components',
         aiOptimization: 'N/A (standard power computation)',
       },
     }),
@@ -428,8 +419,7 @@ export const ELECTRICAL_PLUGINS = {
         standard: 'IEEE 141',
         category: 'foundation',
         tags: ['per-unit', 'pu', 'base', 'conversion'],
-        aiExplanation:
-          'Per-unit conversion normalizes electrical quantities to a common base',
+        aiExplanation: 'Per-unit conversion normalizes electrical quantities to a common base',
         aiAssumptions: 'Same power base throughout the system study',
         aiWarnings: 'Maintain consistent base values across the system',
         aiOptimization: 'Standardize on common base for interoperability',
@@ -475,13 +465,11 @@ export const ELECTRICAL_PLUGINS = {
         { name: 'I0', expression: '(Ia + Ib + Ic) / 3' },
         {
           name: 'I1_mag',
-          expression:
-            '(Ia + Ib * cos(-120*pi/180) + Ic * cos(120*pi/180)) / 3',
+          expression: '(Ia + Ib * cos(-120*pi/180) + Ic * cos(120*pi/180)) / 3',
         },
         {
           name: 'I2_mag',
-          expression:
-            '(Ia + Ib * cos(120*pi/180) + Ic * cos(-120*pi/180)) / 3',
+          expression: '(Ia + Ib * cos(120*pi/180) + Ic * cos(-120*pi/180)) / 3',
         },
         { name: 'I1', expression: 'I1_mag' },
         { name: 'I2', expression: 'I2_mag' },
@@ -489,8 +477,7 @@ export const ELECTRICAL_PLUGINS = {
       validations: [
         {
           rule: 'balanced_check',
-          expression:
-            'abs(I0) < max(abs(Ia),abs(Ib),abs(Ic)) * 0.1 or Ia + Ib + Ic > 0',
+          expression: 'abs(I0) < max(abs(Ia),abs(Ib),abs(Ic)) * 0.1 or Ia + Ib + Ic > 0',
           message: 'Unbalanced currents detected',
           severity: 'warning',
         },
@@ -502,8 +489,7 @@ export const ELECTRICAL_PLUGINS = {
         aiExplanation:
           'Symmetrical components decompose unbalanced three-phase quantities into balanced sequence sets',
         aiAssumptions: 'Linear system, superposition applies',
-        aiWarnings:
-          'Zero sequence indicates ground fault or unbalance',
+        aiWarnings: 'Zero sequence indicates ground fault or unbalance',
         aiOptimization: 'Used for fault analysis and protection settings',
       },
     }),
@@ -566,11 +552,9 @@ export const ELECTRICAL_PLUGINS = {
         standard: 'IEC 60909',
         category: 'foundation',
         tags: ['fault', 'current', 'base', 'short-circuit'],
-        aiExplanation:
-          'Fault current base calculation per IEC 60909 for short-circuit studies',
+        aiExplanation: 'Fault current base calculation per IEC 60909 for short-circuit studies',
         aiAssumptions: 'Pre-fault voltage at nominal value',
-        aiWarnings:
-          'Use appropriate voltage factor per IEC 60909 Table 1',
+        aiWarnings: 'Use appropriate voltage factor per IEC 60909 Table 1',
         aiOptimization: 'Coordinate with protection device ratings',
       },
     }),
@@ -619,13 +603,7 @@ export const ELECTRICAL_PLUGINS = {
           label: 'Load Type',
           type: 'enum',
           required: true,
-          enumValues: [
-            'general',
-            'motor_dominant',
-            'lighting',
-            'mixed',
-            'critical',
-          ],
+          enumValues: ['general', 'motor_dominant', 'lighting', 'mixed', 'critical'],
         },
       ],
       outputs: [
@@ -673,12 +651,9 @@ export const ELECTRICAL_PLUGINS = {
         tags: ['transformer', 'sizing', 'rating', 'kva'],
         aiExplanation:
           'Determines the recommended transformer rating based on connected load, demand factor, and growth margin',
-        aiAssumptions:
-          'Nominal loading at unity power factor for generalized sizing',
-        aiWarnings:
-          'Motors with high starting current may require larger transformer',
-        aiOptimization:
-          'Consider IE3-rated transformer for lower no-load losses',
+        aiAssumptions: 'Nominal loading at unity power factor for generalized sizing',
+        aiWarnings: 'Motors with high starting current may require larger transformer',
+        aiOptimization: 'Consider IE3-rated transformer for lower no-load losses',
       },
     }),
 
@@ -764,8 +739,7 @@ export const ELECTRICAL_PLUGINS = {
         },
         {
           name: 'efficiency',
-          expression:
-            'P_out / (P_out + total_losses) * 100',
+          expression: 'P_out / (P_out + total_losses) * 100',
         },
       ],
       validations: [
@@ -782,12 +756,9 @@ export const ELECTRICAL_PLUGINS = {
         tags: ['efficiency', 'losses', 'transformer', 'loading'],
         aiExplanation:
           'Calculates transformer efficiency at a given load factor using no-load and load losses',
-        aiAssumptions:
-          'Load losses vary with square of load current',
-        aiWarnings:
-          'Maximum efficiency typically occurs at 50-70% loading',
-        aiOptimization:
-          'Size transformer for peak efficiency at typical load point',
+        aiAssumptions: 'Load losses vary with square of load current',
+        aiWarnings: 'Maximum efficiency typically occurs at 50-70% loading',
+        aiOptimization: 'Size transformer for peak efficiency at typical load point',
       },
     }),
 
@@ -857,23 +828,19 @@ export const ELECTRICAL_PLUGINS = {
         },
         {
           name: 'P_total_full',
-          expression:
-            'P_out_full * (1 - efficiency_at_full / 100) / (efficiency_at_full / 100)',
+          expression: 'P_out_full * (1 - efficiency_at_full / 100) / (efficiency_at_full / 100)',
         },
         {
           name: 'P_total_half',
-          expression:
-            'P_out_half * (1 - efficiency_at_half / 100) / (efficiency_at_half / 100)',
+          expression: 'P_out_half * (1 - efficiency_at_half / 100) / (efficiency_at_half / 100)',
         },
         {
           name: 'P_no_load',
-          expression:
-            '(4 * P_total_half - P_total_full) / 3',
+          expression: '(4 * P_total_half - P_total_full) / 3',
         },
         {
           name: 'P_load',
-          expression:
-            'P_total_full - P_no_load',
+          expression: 'P_total_full - P_no_load',
         },
       ],
       validations: [
@@ -890,12 +857,9 @@ export const ELECTRICAL_PLUGINS = {
         tags: ['losses', 'no-load', 'load-loss', 'transformer'],
         aiExplanation:
           'Estimates transformer no-load and load losses from efficiency data at different load levels',
-        aiAssumptions:
-          'Load losses vary with square of load, no-load losses are constant',
-        aiWarnings:
-          'This is an estimation; actual values require factory test reports',
-        aiOptimization:
-          'Compare calculated losses against IE code classes',
+        aiAssumptions: 'Load losses vary with square of load, no-load losses are constant',
+        aiWarnings: 'This is an estimation; actual values require factory test reports',
+        aiOptimization: 'Compare calculated losses against IE code classes',
       },
     }),
 
@@ -994,12 +958,9 @@ export const ELECTRICAL_PLUGINS = {
         standard: 'IEC 60076-1',
         category: 'transformer',
         tags: ['regulation', 'voltage-drop', 'impedance', 'transformer'],
-        aiExplanation:
-          'Calculates transformer voltage regulation based on impedance and loading',
-        aiAssumptions:
-          'Sinusoidal waveform, constant primary voltage',
-        aiWarnings:
-          'Regulation increases significantly at low power factor',
+        aiExplanation: 'Calculates transformer voltage regulation based on impedance and loading',
+        aiAssumptions: 'Sinusoidal waveform, constant primary voltage',
+        aiWarnings: 'Regulation increases significantly at low power factor',
         aiOptimization:
           'Specify lower impedance for better regulation at the cost of higher fault current',
       },
@@ -1093,16 +1054,14 @@ export const ELECTRICAL_PLUGINS = {
         },
         {
           name: 'I_fault',
-          expression:
-            'S_rated * 1000000 / (sqrt(3) * V_primary * 1000) / (Z_pct / 100) * 10',
+          expression: 'S_rated * 1000000 / (sqrt(3) * V_primary * 1000) / (Z_pct / 100) * 10',
         },
       ],
       validations: [
         {
           rule: 'impedance_range',
           expression: 'Z_pct >= 2 and Z_pct <= 25',
-          message:
-            'Typical transformer impedance is 2-25%',
+          message: 'Typical transformer impedance is 2-25%',
           severity: 'warning',
         },
       ],
@@ -1112,12 +1071,9 @@ export const ELECTRICAL_PLUGINS = {
         tags: ['impedance', 'fault-current', 'reactance', 'resistance'],
         aiExplanation:
           'Converts transformer percentage impedance to actual ohmic values and calculates fault current contribution',
-        aiAssumptions:
-          'Impedance at rated tap, nominal frequency',
-        aiWarnings:
-          'Fault current assumes infinite bus source; actual values may be lower',
-        aiOptimization:
-          'Higher impedance limits fault current but increases regulation',
+        aiAssumptions: 'Impedance at rated tap, nominal frequency',
+        aiWarnings: 'Fault current assumes infinite bus source; actual values may be lower',
+        aiOptimization: 'Higher impedance limits fault current but increases regulation',
       },
     }),
 
@@ -1198,8 +1154,7 @@ export const ELECTRICAL_PLUGINS = {
         {
           rule: 'rise_limit',
           expression: 'temp_rise <= 65 or load_factor <= 1',
-          message:
-            'Temperature rise exceeds 65K limit per IEC 60076-2',
+          message: 'Temperature rise exceeds 65K limit per IEC 60076-2',
           severity: 'warning',
         },
       ],
@@ -1207,14 +1162,10 @@ export const ELECTRICAL_PLUGINS = {
         standard: 'IEC 60076-2',
         category: 'transformer',
         tags: ['temperature-rise', 'cooling', 'losses', 'thermal'],
-        aiExplanation:
-          'Estimates transformer temperature rise based on losses and cooling system',
-        aiAssumptions:
-          'Uniform heat distribution, ambient temperature 40\u00b0C',
-        aiWarnings:
-          'Hot spots may exceed average winding temperature rise',
-        aiOptimization:
-          'Forced cooling (ONAF/OFAF) significantly reduces temperature rise',
+        aiExplanation: 'Estimates transformer temperature rise based on losses and cooling system',
+        aiAssumptions: 'Uniform heat distribution, ambient temperature 40\u00b0C',
+        aiWarnings: 'Hot spots may exceed average winding temperature rise',
+        aiOptimization: 'Forced cooling (ONAF/OFAF) significantly reduces temperature rise',
       },
     }),
 
@@ -1288,8 +1239,7 @@ export const ELECTRICAL_PLUGINS = {
         },
         {
           name: 'hot_spot_temp',
-          expression:
-            'ambient_temp + 65 * pow(loading_factor, 1.6) + 15',
+          expression: 'ambient_temp + 65 * pow(loading_factor, 1.6) + 15',
         },
         {
           name: 'status',
@@ -1298,13 +1248,11 @@ export const ELECTRICAL_PLUGINS = {
         },
         {
           name: 'aging_rate',
-          expression:
-            'pow(2, (hot_spot_temp - 98) / 6)',
+          expression: 'pow(2, (hot_spot_temp - 98) / 6)',
         },
         {
           name: 'normal_life',
-          expression:
-            '180000 / (aging_rate * 8760)',
+          expression: '180000 / (aging_rate * 8760)',
         },
       ],
       validations: [
@@ -1321,12 +1269,9 @@ export const ELECTRICAL_PLUGINS = {
         tags: ['loading', 'life-expectancy', 'hot-spot', 'aging'],
         aiExplanation:
           'Assesses transformer loading condition and estimates insulation aging per IEC 60076-7',
-        aiAssumptions:
-          'Insulation class A (98\u00b0C hot spot reference), 65K rise',
-        aiWarnings:
-          'Loading above 1.3 pu causes rapid insulation degradation',
-        aiOptimization:
-          'Reduce loading in high ambient temperature to extend transformer life',
+        aiAssumptions: 'Insulation class A (98\u00b0C hot spot reference), 65K rise',
+        aiWarnings: 'Loading above 1.3 pu causes rapid insulation degradation',
+        aiOptimization: 'Reduce loading in high ambient temperature to extend transformer life',
       },
     }),
 
@@ -1413,13 +1358,11 @@ export const ELECTRICAL_PLUGINS = {
       formulas: [
         {
           name: 'S_1_share',
-          expression:
-            'S_total * S_1 / Z_1 / (S_1 / Z_1 + S_2 / Z_2)',
+          expression: 'S_total * S_1 / Z_1 / (S_1 / Z_1 + S_2 / Z_2)',
         },
         {
           name: 'S_2_share',
-          expression:
-            'S_total * S_2 / Z_2 / (S_1 / Z_1 + S_2 / Z_2)',
+          expression: 'S_total * S_2 / Z_2 / (S_1 / Z_1 + S_2 / Z_2)',
         },
         {
           name: 'load_ratio_1',
@@ -1431,23 +1374,20 @@ export const ELECTRICAL_PLUGINS = {
         },
         {
           name: 'is_balanced',
-          expression:
-            'abs(load_ratio_1 - load_ratio_2) <= 10',
+          expression: 'abs(load_ratio_1 - load_ratio_2) <= 10',
         },
       ],
       validations: [
         {
           rule: 'impedance_tolerance',
           expression: 'abs(Z_1 - Z_2) / min(Z_1, Z_2) <= 0.1',
-          message:
-            'Impedance values differ by more than 10%; load sharing will be uneven',
+          message: 'Impedance values differ by more than 10%; load sharing will be uneven',
           severity: 'warning',
         },
         {
           rule: 'total_load_ok',
           expression: 'S_total <= S_1 + S_2',
-          message:
-            'Total load exceeds combined transformer rating',
+          message: 'Total load exceeds combined transformer rating',
           severity: 'error',
         },
       ],
@@ -1455,14 +1395,10 @@ export const ELECTRICAL_PLUGINS = {
         standard: 'IEC 60076-1',
         category: 'transformer',
         tags: ['parallel', 'load-sharing'],
-        aiExplanation:
-          'Calculates load sharing between two transformers operating in parallel',
-        aiAssumptions:
-          'Same voltage ratio, same vector group, same tap position',
-        aiWarnings:
-          'Impedance mismatch below 10% is mandatory for satisfactory parallel operation',
-        aiOptimization:
-          'Match Z% values to within 7.5% of each other for best load sharing',
+        aiExplanation: 'Calculates load sharing between two transformers operating in parallel',
+        aiAssumptions: 'Same voltage ratio, same vector group, same tap position',
+        aiWarnings: 'Impedance mismatch below 10% is mandatory for satisfactory parallel operation',
+        aiOptimization: 'Match Z% values to within 7.5% of each other for best load sharing',
       },
     }),
 
@@ -1516,13 +1452,7 @@ export const ELECTRICAL_PLUGINS = {
           label: 'Installation Method',
           type: 'enum',
           required: true,
-          enumValues: [
-            'clipped',
-            'tray',
-            'conduit',
-            'direct_buried',
-            'underground_duct',
-          ],
+          enumValues: ['clipped', 'tray', 'conduit', 'direct_buried', 'underground_duct'],
         },
       ],
       outputs: [
@@ -1570,12 +1500,9 @@ export const ELECTRICAL_PLUGINS = {
         tags: ['cable', 'sizing', 'ampacity', 'cross-section'],
         aiExplanation:
           'Determines minimum cable cross-sectional area based on design current, cable type, and installation conditions',
-        aiAssumptions:
-          'Standard copper conductor, PVC/XLPE insulation per IEC 60364',
-        aiWarnings:
-          'For aluminium conductors, increase by one standard size',
-        aiOptimization:
-          'Select next standard size up to avoid excessive voltage drop',
+        aiAssumptions: 'Standard copper conductor, PVC/XLPE insulation per IEC 60364',
+        aiWarnings: 'For aluminium conductors, increase by one standard size',
+        aiOptimization: 'Select next standard size up to avoid excessive voltage drop',
       },
     }),
 
@@ -1650,9 +1577,17 @@ export const ELECTRICAL_PLUGINS = {
       formulas: [
         { name: 'R_per_km', expression: '1000 * 0.0225 / csa' },
         { name: 'X_per_km', expression: '0.08' },
-        { name: 'V_drop', expression: 'sqrt(3) * I_b * L * (R_per_km * cosPhi + X_per_km * sin(acos(cosPhi))) / 1000' },
+        {
+          name: 'V_drop',
+          expression:
+            'sqrt(3) * I_b * L * (R_per_km * cosPhi + X_per_km * sin(acos(cosPhi))) / 1000',
+        },
         { name: 'V_drop_pct', expression: 'V_drop / 230 * 100' },
-        { name: 'status', expression: 'V_drop_pct <= 5 ? "compliant_5pct" : (V_drop_pct <= 3 ? "compliant_3pct" : "non_compliant")' },
+        {
+          name: 'status',
+          expression:
+            'V_drop_pct <= 5 ? "compliant_5pct" : (V_drop_pct <= 3 ? "compliant_3pct" : "non_compliant")',
+        },
       ],
       validations: [
         {
@@ -1674,12 +1609,9 @@ export const ELECTRICAL_PLUGINS = {
         tags: ['voltage-drop', 'cable', 'distribution'],
         aiExplanation:
           'Calculates voltage drop along a cable run and checks compliance with IEC limits',
-        aiAssumptions:
-          'Copper conductor at 70\u00b0C operating temperature, 230/400V system',
-        aiWarnings:
-          'Voltage drop increases with conductor temperature',
-        aiOptimization:
-          'Increase cable size by one step if exceeding 3% limit',
+        aiAssumptions: 'Copper conductor at 70\u00b0C operating temperature, 230/400V system',
+        aiWarnings: 'Voltage drop increases with conductor temperature',
+        aiOptimization: 'Increase cable size by one step if exceeding 3% limit',
       },
     }),
 
@@ -1719,13 +1651,7 @@ export const ELECTRICAL_PLUGINS = {
           label: 'Installation Method',
           type: 'enum',
           required: true,
-          enumValues: [
-            'clipped',
-            'tray',
-            'conduit',
-            'direct_buried',
-            'underground_duct',
-          ],
+          enumValues: ['clipped', 'tray', 'conduit', 'direct_buried', 'underground_duct'],
         },
         {
           name: 'ambient_temp',
@@ -1775,12 +1701,9 @@ export const ELECTRICAL_PLUGINS = {
         tags: ['ampacity', 'current-rating', 'derating'],
         aiExplanation:
           'Calculates cable current-carrying capacity with derating factors for temperature and grouping',
-        aiAssumptions:
-          'Copper conductor, standard installation conditions per IEC 60364-5-52',
-        aiWarnings:
-          'Derating factors are multiplicative; verify actual installation conditions',
-        aiOptimization:
-          'Increase spacing between cables to improve grouping factor',
+        aiAssumptions: 'Copper conductor, standard installation conditions per IEC 60364-5-52',
+        aiWarnings: 'Derating factors are multiplicative; verify actual installation conditions',
+        aiOptimization: 'Increase spacing between cables to improve grouping factor',
       },
     }),
 
@@ -1859,8 +1782,7 @@ export const ELECTRICAL_PLUGINS = {
         {
           rule: 'duration_limit',
           expression: 't_sc <= 5',
-          message:
-            'SC duration should not exceed 5 seconds per IEC 60364',
+          message: 'SC duration should not exceed 5 seconds per IEC 60364',
           severity: 'warning',
         },
       ],
@@ -1870,12 +1792,9 @@ export const ELECTRICAL_PLUGINS = {
         tags: ['short-circuit', 'withstand', 'thermal', 'cable'],
         aiExplanation:
           'Calculates the short-circuit withstand capability of a cable based on adiabatic heating',
-        aiAssumptions:
-          'Adiabatic heating (no heat loss during fault duration)',
-        aiWarnings:
-          'For faults longer than 5 seconds, non-adiabatic effects must be considered',
-        aiOptimization:
-          'For repeated faults, allow thermal recovery between events',
+        aiAssumptions: 'Adiabatic heating (no heat loss during fault duration)',
+        aiWarnings: 'For faults longer than 5 seconds, non-adiabatic effects must be considered',
+        aiOptimization: 'For repeated faults, allow thermal recovery between events',
       },
     }),
 
@@ -1944,14 +1863,10 @@ export const ELECTRICAL_PLUGINS = {
         standard: 'IEC 60364-5-52',
         category: 'cable',
         tags: ['derating', 'grouping', 'cable', 'correction-factor'],
-        aiExplanation:
-          'Determines the grouping correction factor for multiple cables in proximity',
-        aiAssumptions:
-          'Cables are identical and equally loaded',
-        aiWarnings:
-          'Mixed cable sizes require more detailed analysis',
-        aiOptimization:
-          'Maintain minimum one cable diameter spacing to improve rating',
+        aiExplanation: 'Determines the grouping correction factor for multiple cables in proximity',
+        aiAssumptions: 'Cables are identical and equally loaded',
+        aiWarnings: 'Mixed cable sizes require more detailed analysis',
+        aiOptimization: 'Maintain minimum one cable diameter spacing to improve rating',
       },
     }),
 
@@ -2009,15 +1924,18 @@ export const ELECTRICAL_PLUGINS = {
       ],
       formulas: [
         { name: 'derating_factor', expression: 'sqrt((90 - ambient_temp) / (90 - base_temp))' },
-        { name: 'status', expression: 'derating_factor >= 1 ? "no_derating_needed" : (derating_factor >= 0.85 ? "moderate_derating" : (derating_factor >= 0.7 ? "significant_derating" : "severe_derating"))' },
+        {
+          name: 'status',
+          expression:
+            'derating_factor >= 1 ? "no_derating_needed" : (derating_factor >= 0.85 ? "moderate_derating" : (derating_factor >= 0.7 ? "significant_derating" : "severe_derating"))',
+        },
       ],
       validations: [
         {
           rule: 'temp_not_exceed_insulation',
           expression:
             '(insulation == 3 and ambient_temp < 70) or (insulation != 3 and ambient_temp < 90)',
-          message:
-            'Ambient temperature exceeds insulation rating',
+          message: 'Ambient temperature exceeds insulation rating',
           severity: 'error',
         },
       ],
@@ -2027,12 +1945,9 @@ export const ELECTRICAL_PLUGINS = {
         tags: ['derating', 'ambient', 'temperature', 'correction'],
         aiExplanation:
           'Calculates ambient temperature derating factor for cables using the formula from IEC 60364',
-        aiAssumptions:
-          'Standard conductor temperature limits: 70\u00b0C PVC, 90\u00b0C XLPE/EPR',
-        aiWarnings:
-          'Derating becomes severe above 50\u00b0C; consider higher-rated cable',
-        aiOptimization:
-          'Use XLPE insulated cable in high-temperature environments',
+        aiAssumptions: 'Standard conductor temperature limits: 70\u00b0C PVC, 90\u00b0C XLPE/EPR',
+        aiWarnings: 'Derating becomes severe above 50\u00b0C; consider higher-rated cable',
+        aiOptimization: 'Use XLPE insulated cable in high-temperature environments',
       },
     }),
 
@@ -2104,8 +2019,7 @@ export const ELECTRICAL_PLUGINS = {
         {
           rule: 'soil_rho_range',
           expression: 'soil_rho >= 0.5 and soil_rho <= 3.5',
-          message:
-            'Soil thermal resistivity should be 0.5-3.5 K·m/W',
+          message: 'Soil thermal resistivity should be 0.5-3.5 K·m/W',
           severity: 'warning',
         },
       ],
@@ -2115,12 +2029,9 @@ export const ELECTRICAL_PLUGINS = {
         tags: ['derating', 'soil', 'burial', 'thermal-resistivity'],
         aiExplanation:
           'Derating factors for buried cables based on soil thermal resistivity and depth of burial',
-        aiAssumptions:
-          'Typical soil conditions, no external heat sources nearby',
-        aiWarnings:
-          'Dry or sandy soil substantially reduces cable rating',
-        aiOptimization:
-          'Use thermal backfill material around cables to improve heat dissipation',
+        aiAssumptions: 'Typical soil conditions, no external heat sources nearby',
+        aiWarnings: 'Dry or sandy soil substantially reduces cable rating',
+        aiOptimization: 'Use thermal backfill material around cables to improve heat dissipation',
       },
     }),
 
@@ -2211,12 +2122,9 @@ export const ELECTRICAL_PLUGINS = {
         tags: ['three-phase', 'short-circuit', 'fault', 'IEC-60909'],
         aiExplanation:
           'Three-phase short-circuit calculation per IEC 60909 using the equivalent voltage source method',
-        aiAssumptions:
-          'Pre-fault voltage = c x V_n / sqrt(3), balanced three-phase fault',
-        aiWarnings:
-          'Use c_max for maximum SC, c_min for minimum SC current',
-        aiOptimization:
-          'Consider motor contribution separately per IEC 60909',
+        aiAssumptions: 'Pre-fault voltage = c x V_n / sqrt(3), balanced three-phase fault',
+        aiWarnings: 'Use c_max for maximum SC, c_min for minimum SC current',
+        aiOptimization: 'Consider motor contribution separately per IEC 60909',
       },
     }),
 
@@ -2276,7 +2184,10 @@ export const ELECTRICAL_PLUGINS = {
       ],
       formulas: [
         { name: 'I_k2', expression: 'c_factor * V_n / ((Z_positive + Z_negative) * 1000)' },
-        { name: 'ratio_to_3ph', expression: 'sqrt(3) / 2 * ((Z_positive + Z_negative) / (2 * Z_positive))' },
+        {
+          name: 'ratio_to_3ph',
+          expression: 'sqrt(3) / 2 * ((Z_positive + Z_negative) / (2 * Z_positive))',
+        },
       ],
       validations: [
         {
@@ -2362,7 +2273,10 @@ export const ELECTRICAL_PLUGINS = {
       ],
       formulas: [
         { name: 'Z_total', expression: 'Z_positive + Z_negative + Z_zero' },
-        { name: 'I_k1', expression: 'sqrt(3) * c_factor * V_n / ((Z_positive + Z_negative + Z_zero) * 1000)' },
+        {
+          name: 'I_k1',
+          expression: 'sqrt(3) * c_factor * V_n / ((Z_positive + Z_negative + Z_zero) * 1000)',
+        },
       ],
       validations: [
         {
@@ -2376,7 +2290,8 @@ export const ELECTRICAL_PLUGINS = {
         standard: 'IEC 60909',
         category: 'short-circuit',
         tags: ['single-line-ground', 'SLG', 'ground-fault', 'sequence'],
-        aiExplanation: 'Single line-to-ground short-circuit calculation per IEC 60909 using symmetrical components',
+        aiExplanation:
+          'Single line-to-ground short-circuit calculation per IEC 60909 using symmetrical components',
         aiAssumptions: 'Bolted fault with zero fault impedance',
         aiWarnings: 'Zero sequence impedance significantly affects SLG fault magnitude',
         aiOptimization: 'Grounding impedance limits SLG fault current for safety',
@@ -2443,7 +2358,8 @@ export const ELECTRICAL_PLUGINS = {
         standard: 'IEC 60909',
         category: 'short-circuit',
         tags: ['peak-current', 'making-capacity', 'kappa', 'asymmetry'],
-        aiExplanation: 'Calculates peak short-circuit current (making current) per IEC 60909 using the \u03ba factor',
+        aiExplanation:
+          'Calculates peak short-circuit current (making current) per IEC 60909 using the \u03ba factor',
         aiAssumptions: 'Peak factor derived from R/X ratio using \u03ba = 1.02 + 0.98e^(-3R/X)',
         aiWarnings: '\u03ba is limited to \u2264 2.0 per IEC 60909; near generators \u03ba = 2.0',
         aiOptimization: 'High R/X ratio reduces peak current (damped faster)',
@@ -2512,9 +2428,16 @@ export const ELECTRICAL_PLUGINS = {
         },
       ],
       formulas: [
-        { name: 'mu', expression: 't_min <= 0.02 ? 1.0 : (t_min <= 0.05 ? 0.95 : (t_min <= 0.1 ? 0.9 : (t_min <= 0.25 ? 0.85 : 0.8)))' },
+        {
+          name: 'mu',
+          expression:
+            't_min <= 0.02 ? 1.0 : (t_min <= 0.05 ? 0.95 : (t_min <= 0.1 ? 0.9 : (t_min <= 0.25 ? 0.85 : 0.8)))',
+        },
         { name: 'I_b', expression: 'mu * I_k' },
-        { name: 'DC_component', expression: '100 * sqrt(2) * exp(-2 * pi * 50 * R_X_ratio * t_min)' },
+        {
+          name: 'DC_component',
+          expression: '100 * sqrt(2) * exp(-2 * pi * 50 * R_X_ratio * t_min)',
+        },
       ],
       validations: [
         {
@@ -2528,7 +2451,8 @@ export const ELECTRICAL_PLUGINS = {
         standard: 'IEC 60909',
         category: 'short-circuit',
         tags: ['breaking-current', 'mu-factor', 'DC-component', 'breaker'],
-        aiExplanation: 'Calculates symmetrical breaking current per IEC 60909 for circuit breaker selection',
+        aiExplanation:
+          'Calculates symmetrical breaking current per IEC 60909 for circuit breaker selection',
         aiAssumptions: 'Minimum time delay based on protection relay + breaker mechanism time',
         aiWarnings: 'DC component decays exponentially; verify against breaker DC rating',
         aiOptimization: 'Faster breaker operation reduces required breaking capacity',
@@ -2604,7 +2528,8 @@ export const ELECTRICAL_PLUGINS = {
         standard: 'IEC 60909',
         category: 'short-circuit',
         tags: ['making-current', 'peak', 'kappa', 'breaker'],
-        aiExplanation: 'Calculates the making current (peak and RMS) for circuit breaker closing duty',
+        aiExplanation:
+          'Calculates the making current (peak and RMS) for circuit breaker closing duty',
         aiAssumptions: 'Worst-case closing at voltage zero crossing giving maximum asymmetry',
         aiWarnings: 'Making current capability must exceed calculated peak SC current',
         aiOptimization: 'Vacuum and SF6 breakers have the highest making capacity ratio',
@@ -2670,7 +2595,11 @@ export const ELECTRICAL_PLUGINS = {
         },
       ],
       formulas: [
-        { name: 'm_factor', expression: 't_k <= 0.02 ? 0 : (t_k <= 0.05 ? 0.15 : (t_k <= 0.1 ? 0.35 : (t_k <= 0.25 ? 0.55 : (t_k <= 0.5 ? 0.7 : (t_k <= 1.0 ? 0.85 : 1.0)))))' },
+        {
+          name: 'm_factor',
+          expression:
+            't_k <= 0.02 ? 0 : (t_k <= 0.05 ? 0.15 : (t_k <= 0.1 ? 0.35 : (t_k <= 0.25 ? 0.55 : (t_k <= 0.5 ? 0.7 : (t_k <= 1.0 ? 0.85 : 1.0)))))',
+        },
         { name: 'n_factor', expression: '1.0' },
         { name: 'I_th', expression: 'sqrt(I_b * I_b * m_factor + I_k * I_k * n_factor) / sqrt(2)' },
         { name: 'I2t', expression: 'I_th * I_th * t_k' },
@@ -2687,10 +2616,12 @@ export const ELECTRICAL_PLUGINS = {
         standard: 'IEC 60909',
         category: 'short-circuit',
         tags: ['thermal-equivalent', 'I2t', 'heating', 'short-circuit'],
-        aiExplanation: 'Calculates the thermal equivalent short-circuit current (I_th) for conductor heating assessment per IEC 60909',
+        aiExplanation:
+          'Calculates the thermal equivalent short-circuit current (I_th) for conductor heating assessment per IEC 60909',
         aiAssumptions: 'Adiabatic heating during fault duration',
         aiWarnings: 'For durations >5s, non-adiabatic effects must be considered',
-        aiOptimization: 'Verify I\u00b2t rating of downstream equipment is greater than calculated value',
+        aiOptimization:
+          'Verify I\u00b2t rating of downstream equipment is greater than calculated value',
       },
     }),
 
@@ -2792,10 +2723,12 @@ export const ELECTRICAL_PLUGINS = {
         standard: 'IEEE 80',
         category: 'grounding',
         tags: ['earth-resistance', 'rod', 'grounding', 'IEEE-80'],
-        aiExplanation: 'Calculates earth resistance of grounding rods using the standard IEEE 80 formula',
+        aiExplanation:
+          'Calculates earth resistance of grounding rods using the standard IEEE 80 formula',
         aiAssumptions: 'Uniform soil resistivity, hemispherical electrode approximation',
         aiWarnings: 'Soil resistivity varies seasonally; use worst-case measured value',
-        aiOptimization: 'Multiple rods in parallel reduce resistance but mutual coupling reduces efficiency',
+        aiOptimization:
+          'Multiple rods in parallel reduce resistance but mutual coupling reduces efficiency',
       },
     }),
 
@@ -2879,7 +2812,8 @@ export const ELECTRICAL_PLUGINS = {
         standard: 'IEEE 80',
         category: 'grounding',
         tags: ['grid-resistance', 'substation', 'grounding', 'IEEE-80'],
-        aiExplanation: 'Calculates the resistance of a substation grounding grid using the Sverak formula per IEEE 80',
+        aiExplanation:
+          'Calculates the resistance of a substation grounding grid using the Sverak formula per IEEE 80',
         aiAssumptions: 'Uniform soil, rectangular grid, grid conductors at uniform depth',
         aiWarnings: 'Actual soil is rarely uniform; use two-layer soil model for accuracy',
         aiOptimization: 'Adding grid conductors (reducing mesh spacing) reduces resistance',
@@ -2984,7 +2918,8 @@ export const ELECTRICAL_PLUGINS = {
         },
         {
           name: 'K_m',
-          expression: '(1 / (2 * pi)) * (log(D * D / (16 * h * d) + (D + 2 * h) * (D + 2 * h) / (8 * D * d) - h / (4 * d)) + (1 / pi) * log(8 / (pi * (2 * n - 1))))',
+          expression:
+            '(1 / (2 * pi)) * (log(D * D / (16 * h * d) + (D + 2 * h) * (D + 2 * h) / (8 * D * d) - h / (4 * d)) + (1 / pi) * log(8 / (pi * (2 * n - 1))))',
         },
         {
           name: 'K_i',
@@ -3019,10 +2954,12 @@ export const ELECTRICAL_PLUGINS = {
         standard: 'IEEE 80',
         category: 'grounding',
         tags: ['touch-voltage', 'safety', 'IEEE-80', 'grounding'],
-        aiExplanation: 'Calculates actual and allowable touch voltage per IEEE 80 for substation grounding safety',
+        aiExplanation:
+          'Calculates actual and allowable touch voltage per IEEE 80 for substation grounding safety',
         aiAssumptions: 'Crushed rock surface layer, uniform soil, 50kg body weight',
         aiWarnings: 'Touch voltage must be below the IEEE 80 tolerable limit for safety',
-        aiOptimization: 'Thicker surface layer or higher resistivity rock increases tolerable touch voltage',
+        aiOptimization:
+          'Thicker surface layer or higher resistivity rock increases tolerable touch voltage',
       },
     }),
 
@@ -3141,7 +3078,8 @@ export const ELECTRICAL_PLUGINS = {
         standard: 'IEEE 80',
         category: 'grounding',
         tags: ['step-voltage', 'safety', 'IEEE-80', 'grounding'],
-        aiExplanation: 'Calculates actual and allowable step voltage per IEEE 80 for substation grounding safety',
+        aiExplanation:
+          'Calculates actual and allowable step voltage per IEEE 80 for substation grounding safety',
         aiAssumptions: 'Crushed rock surface layer, 50kg body weight, 0.5m step distance',
         aiWarnings: 'Step voltage limits are less restrictive than touch voltage limits',
         aiOptimization: 'Tighter grid spacing reduces step voltage near grid perimeter',
@@ -3217,10 +3155,13 @@ export const ELECTRICAL_PLUGINS = {
         standard: 'IEEE 80 / NEC 250',
         category: 'grounding',
         tags: ['conductor-sizing', 'grounding', 'IEEE-80', 'NEC-250'],
-        aiExplanation: 'Sizes grounding conductors per IEEE 80 based on fault current magnitude and duration',
-        aiAssumptions: 'Adiabatic heating, ambient temperature 40\u00b0C, final temperature at melting point',
+        aiExplanation:
+          'Sizes grounding conductors per IEEE 80 based on fault current magnitude and duration',
+        aiAssumptions:
+          'Adiabatic heating, ambient temperature 40\u00b0C, final temperature at melting point',
         aiWarnings: 'For buried conductors, consider corrosion and mechanical strength',
-        aiOptimization: 'Copper-clad steel offers a good balance of conductivity and mechanical strength',
+        aiOptimization:
+          'Copper-clad steel offers a good balance of conductivity and mechanical strength',
       },
     }),
 
@@ -3296,7 +3237,8 @@ export const ELECTRICAL_PLUGINS = {
         },
         {
           name: 'L_required',
-          expression: 'rho / (2 * pi * target_R) * (log(8 * rho / (2 * pi * target_R) / (rod_diameter / 1000)) - 1)',
+          expression:
+            'rho / (2 * pi * target_R) * (log(8 * rho / (2 * pi * target_R) / (rod_diameter / 1000)) - 1)',
         },
       ],
       validations: [
@@ -3317,10 +3259,12 @@ export const ELECTRICAL_PLUGINS = {
         standard: 'IEEE 80 / NEC 250.52',
         category: 'grounding',
         tags: ['rod-sizing', 'electrode', 'grounding', 'NEC'],
-        aiExplanation: 'Determines required grounding rod length and number of rods to achieve target earth resistance',
+        aiExplanation:
+          'Determines required grounding rod length and number of rods to achieve target earth resistance',
         aiAssumptions: 'Uniform soil resistivity, vertical rod, hemispherical electrode theory',
         aiWarnings: 'In rocky soil, driven rods may not achieve full calculated length',
-        aiOptimization: 'Multiple shorter rods spaced > rod length apart are more efficient than one long rod',
+        aiOptimization:
+          'Multiple shorter rods spaced > rod length apart are more efficient than one long rod',
       },
     }),
 
@@ -3403,7 +3347,8 @@ export const ELECTRICAL_PLUGINS = {
         standard: 'IEC 60269 / NEC 240',
         category: 'protection',
         tags: ['fuse', 'sizing', 'overcurrent', 'protection'],
-        aiExplanation: 'Selects appropriate fuse rating based on load type and starting conditions per IEC 60269',
+        aiExplanation:
+          'Selects appropriate fuse rating based on load type and starting conditions per IEC 60269',
         aiAssumptions: 'Ambient temperature 40\u00b0C, standard fuse-links per IEC 60269',
         aiWarnings: 'Fuse must coordinate with downstream cable rating',
         aiOptimization: 'gG fuses for general protection, aM for motor circuits',
@@ -3474,7 +3419,10 @@ export const ELECTRICAL_PLUGINS = {
         { name: 'In_rated', expression: 'ceil(I_nominal * 1.1 / 10) * 10' },
         { name: 'trip_curve', expression: 'I_nominal <= 50 ? "C" : "D"' },
         { name: 'standard_rating', expression: 'ceil(In_rated / 10) * 10' },
-        { name: 'breaking_capacity', expression: 'I_sc <= 6 ? 6 : (I_sc <= 10 ? 10 : (I_sc <= 25 ? 25 : 50))' },
+        {
+          name: 'breaking_capacity',
+          expression: 'I_sc <= 6 ? 6 : (I_sc <= 10 ? 10 : (I_sc <= 25 ? 25 : 50))',
+        },
       ],
       validations: [
         {
@@ -3488,7 +3436,8 @@ export const ELECTRICAL_PLUGINS = {
         standard: 'IEC 60898',
         category: 'protection',
         tags: ['MCB', 'miniature-circuit-breaker', 'trip-curve', 'selection'],
-        aiExplanation: 'Selects miniature circuit breaker rating and trip curve based on load characteristics per IEC 60898',
+        aiExplanation:
+          'Selects miniature circuit breaker rating and trip curve based on load characteristics per IEC 60898',
         aiAssumptions: 'Ambient temperature 30\u00b0C, standard MCB per IEC 60898-1',
         aiWarnings: 'Curve B: resistive/lighting; Curve C: general/transformer; Curve D: motor',
         aiOptimization: 'Use curve C as default for mixed loads; curve B for residential lighting',
@@ -3524,7 +3473,13 @@ export const ELECTRICAL_PLUGINS = {
           label: 'Application',
           type: 'enum',
           required: true,
-          enumValues: ['main_switchboard', 'distribution', 'motor_feeder', 'transformer_feeder', 'generator_feeder'],
+          enumValues: [
+            'main_switchboard',
+            'distribution',
+            'motor_feeder',
+            'transformer_feeder',
+            'generator_feeder',
+          ],
         },
         {
           name: 'num_poles',
@@ -3572,7 +3527,11 @@ export const ELECTRICAL_PLUGINS = {
         { name: 'In_rated', expression: 'ceil(I_nominal * 1.1 / 10) * 10' },
         { name: 'Icu_required', expression: 'I_sc' },
         { name: 'Ics_required', expression: 'Icu_required * 0.75' },
-        { name: 'frame_size', expression: 'In_rated <= 160 ? "160A_frame" : (In_rated <= 250 ? "250A_frame" : (In_rated <= 630 ? "630A_frame" : (In_rated <= 1250 ? "1250A_frame" : "2500A_frame")))' },
+        {
+          name: 'frame_size',
+          expression:
+            'In_rated <= 160 ? "160A_frame" : (In_rated <= 250 ? "250A_frame" : (In_rated <= 630 ? "630A_frame" : (In_rated <= 1250 ? "1250A_frame" : "2500A_frame")))',
+        },
       ],
       validations: [
         {
@@ -3622,7 +3581,13 @@ export const ELECTRICAL_PLUGINS = {
           label: 'Application',
           type: 'enum',
           required: true,
-          enumValues: ['main_incomer', 'bus_tie', 'generator_outgoing', 'transformer_outgoing', 'feeder'],
+          enumValues: [
+            'main_incomer',
+            'bus_tie',
+            'generator_outgoing',
+            'transformer_outgoing',
+            'feeder',
+          ],
         },
         {
           name: 'num_poles',
@@ -3684,10 +3649,12 @@ export const ELECTRICAL_PLUGINS = {
         standard: 'IEC 60947-2',
         category: 'protection',
         tags: ['ACB', 'air-circuit-breaker', 'main-switchboard', 'selection'],
-        aiExplanation: 'Selects air circuit breaker rating and protection functions per IEC 60947-2',
+        aiExplanation:
+          'Selects air circuit breaker rating and protection functions per IEC 60947-2',
         aiAssumptions: 'Draw-out type ACB for main switchboard application',
         aiWarnings: '4-pole ACB with neutral protection required for TN-S systems',
-        aiOptimization: 'Electronic trip units (LSIG) provide adjustable protection curves for selectivity',
+        aiOptimization:
+          'Electronic trip units (LSIG) provide adjustable protection curves for selectivity',
       },
     }),
 
@@ -3720,7 +3687,13 @@ export const ELECTRICAL_PLUGINS = {
           label: 'Protection Relay Type',
           type: 'enum',
           required: true,
-          enumValues: ['overcurrent', 'differential', 'distance', 'earth_fault', 'transformer_differential'],
+          enumValues: [
+            'overcurrent',
+            'differential',
+            'distance',
+            'earth_fault',
+            'transformer_differential',
+          ],
         },
         {
           name: 'lead_length',
@@ -3766,7 +3739,11 @@ export const ELECTRICAL_PLUGINS = {
       ],
       formulas: [
         { name: 'CT_primary', expression: 'ceil(I_nominal * 1.25 / 50) * 50' },
-        { name: 'CT_ratio', expression: 'CT_primary <= 100 ? "100/1" : (CT_primary <= 200 ? "200/1" : (CT_primary <= 300 ? "300/1" : (CT_primary <= 400 ? "400/1" : (CT_primary <= 500 ? "500/1" : (CT_primary <= 600 ? "600/1" : (CT_primary <= 800 ? "800/1" : (CT_primary <= 1000 ? "1000/1" : (CT_primary <= 1200 ? "1200/1" : (CT_primary <= 1500 ? "1500/1" : "2000/1")))))))))' },
+        {
+          name: 'CT_ratio',
+          expression:
+            'CT_primary <= 100 ? "100/1" : (CT_primary <= 200 ? "200/1" : (CT_primary <= 300 ? "300/1" : (CT_primary <= 400 ? "400/1" : (CT_primary <= 500 ? "500/1" : (CT_primary <= 600 ? "600/1" : (CT_primary <= 800 ? "800/1" : (CT_primary <= 1000 ? "1000/1" : (CT_primary <= 1200 ? "1200/1" : (CT_primary <= 1500 ? "1500/1" : "2000/1")))))))))',
+        },
         { name: 'lead_resistance', expression: '2 * lead_length / (lead_size * 58)' },
         { name: 'relay_burden', expression: '0.2' },
         { name: 'VA_required', expression: 'relay_burden + lead_resistance' },
@@ -3785,7 +3762,8 @@ export const ELECTRICAL_PLUGINS = {
         standard: 'IEC 61869-2 / IEEE C57.13',
         category: 'protection',
         tags: ['CT', 'current-transformer', 'relay', 'sizing', 'burden'],
-        aiExplanation: 'Sizes current transformers for protection relays including ratio, burden, and accuracy class per IEC 61869-2',
+        aiExplanation:
+          'Sizes current transformers for protection relays including ratio, burden, and accuracy class per IEC 61869-2',
         aiAssumptions: 'Protection CT with 5P or 10P accuracy class, 1A secondary',
         aiWarnings: 'CT saturation must be avoided for maximum through-fault current',
         aiOptimization: 'Use 1A secondary CTs for long lead runs to reduce burden',
@@ -3871,7 +3849,8 @@ export const ELECTRICAL_PLUGINS = {
         },
         {
           name: 'recommendation',
-          expression: 'is_selective ? "selective_coordination_ok" : (time_margin > 0 ? "insufficient_margin_increase_t_main_or_decrease_t_downstream" : "downstream_faster_than_main_invert_settings")',
+          expression:
+            'is_selective ? "selective_coordination_ok" : (time_margin > 0 ? "insufficient_margin_increase_t_main_or_decrease_t_downstream" : "downstream_faster_than_main_invert_settings")',
         },
       ],
       validations: [
@@ -3886,7 +3865,8 @@ export const ELECTRICAL_PLUGINS = {
         standard: 'IEC 60909 / IEEE 242',
         category: 'protection',
         tags: ['coordination', 'selectivity', 'relay', 'protection'],
-        aiExplanation: 'Checks selective coordination between upstream and downstream protection devices',
+        aiExplanation:
+          'Checks selective coordination between upstream and downstream protection devices',
         aiAssumptions: 'Both devices operate on the same fault current level',
         aiWarnings: 'Verify coordination at minimum and maximum fault current levels',
         aiOptimization: 'Use time-current curves from manufacturer for precise coordination study',
@@ -3964,7 +3944,8 @@ export const ELECTRICAL_PLUGINS = {
         },
         {
           name: 'recommended_class',
-          expression: 'Icu_min <= 6 ? "6kA" : (Icu_min <= 10 ? "10kA" : (Icu_min <= 15 ? "15kA" : (Icu_min <= 25 ? "25kA" : (Icu_min <= 36 ? "36kA" : (Icu_min <= 50 ? "50kA" : (Icu_min <= 65 ? "65kA" : "100kA+"))))))',
+          expression:
+            'Icu_min <= 6 ? "6kA" : (Icu_min <= 10 ? "10kA" : (Icu_min <= 15 ? "15kA" : (Icu_min <= 25 ? "25kA" : (Icu_min <= 36 ? "36kA" : (Icu_min <= 50 ? "50kA" : (Icu_min <= 65 ? "65kA" : "100kA+"))))))',
         },
       ],
       validations: [
@@ -3979,10 +3960,13 @@ export const ELECTRICAL_PLUGINS = {
         standard: 'IEC 60947-2',
         category: 'protection',
         tags: ['breaking-capacity', 'Icu', 'Ics', 'short-circuit'],
-        aiExplanation: 'Determines the minimum breaking capacity requirement for protection devices based on prospective short-circuit current',
+        aiExplanation:
+          'Determines the minimum breaking capacity requirement for protection devices based on prospective short-circuit current',
         aiAssumptions: 'Worst-case bolted three-phase fault at installation point',
-        aiWarnings: 'Breaking capacity must exceed the maximum prospective fault current at the installation point',
-        aiOptimization: 'Apply safety factor of 1.25 for general distribution, 1.5 for critical applications',
+        aiWarnings:
+          'Breaking capacity must exceed the maximum prospective fault current at the installation point',
+        aiOptimization:
+          'Apply safety factor of 1.25 for general distribution, 1.5 for critical applications',
       },
     }),
 
@@ -4062,7 +4046,10 @@ export const ELECTRICAL_PLUGINS = {
         },
       ],
       formulas: [
-        { name: 'I_FL', expression: 'P_rated * 1000 / (sqrt(3) * V_rated * cosPhi * (efficiency / 100))' },
+        {
+          name: 'I_FL',
+          expression: 'P_rated * 1000 / (sqrt(3) * V_rated * cosPhi * (efficiency / 100))',
+        },
         { name: 'I_NL', expression: 'I_FL * 0.3' },
         { name: 'kVA_rating', expression: 'sqrt(3) * V_rated * I_FL / 1000' },
       ],
@@ -4078,7 +4065,8 @@ export const ELECTRICAL_PLUGINS = {
         standard: 'IEC 60034-1 / NEMA MG-1',
         category: 'motor',
         tags: ['motor', 'full-load-current', 'FLA', 'starting'],
-        aiExplanation: 'Calculates motor full load current based on power rating, voltage, efficiency, and power factor',
+        aiExplanation:
+          'Calculates motor full load current based on power rating, voltage, efficiency, and power factor',
         aiAssumptions: 'Standard induction motor, nominal voltage and frequency',
         aiWarnings: 'Actual FLA may vary by motor design and manufacturer',
         aiOptimization: 'Use NEMA design B values for standard induction motors',
@@ -4159,9 +4147,11 @@ export const ELECTRICAL_PLUGINS = {
         standard: 'IEC 60034-1 / NEMA MG-1',
         category: 'motor',
         tags: ['starting-current', 'LRC', 'inrush', 'DOL', 'star-delta'],
-        aiExplanation: 'Calculates motor locked rotor current and effective starting current based on NEMA code and starting method',
+        aiExplanation:
+          'Calculates motor locked rotor current and effective starting current based on NEMA code and starting method',
         aiAssumptions: 'NEMA locked rotor code per MG-1, typical starting method factors',
-        aiWarnings: 'DOL starting can cause voltage dips; use reduced voltage starting for large motors',
+        aiWarnings:
+          'DOL starting can cause voltage dips; use reduced voltage starting for large motors',
         aiOptimization: 'VFD starting provides lowest inrush and best control but highest cost',
       },
     }),
@@ -4253,8 +4243,10 @@ export const ELECTRICAL_PLUGINS = {
         standard: 'IEC 60034-1',
         category: 'motor',
         tags: ['voltage-drop', 'starting', 'dip', 'motor'],
-        aiExplanation: 'Calculates voltage dip during motor starting due to inrush current and source impedance',
-        aiAssumptions: 'Motor starting at low power factor (~0.3), stiff source with known impedance',
+        aiExplanation:
+          'Calculates voltage dip during motor starting due to inrush current and source impedance',
+        aiAssumptions:
+          'Motor starting at low power factor (~0.3), stiff source with known impedance',
         aiWarnings: 'Voltage dip > 15% can affect other loads; > 20% may cause contactor dropout',
         aiOptimization: 'Use reduced voltage starting or increase transformer size to limit dip',
       },
@@ -4330,9 +4322,17 @@ export const ELECTRICAL_PLUGINS = {
       ],
       formulas: [
         { name: 'supply_ratio', expression: 'supply_capacity * 1000 / P_rated' },
-        { name: 'V_dip_estimated', expression: 'supply_ratio < 100 ? 25 : (supply_ratio < 200 ? 15 : (supply_ratio < 500 ? 10 : (supply_ratio < 1000 ? 5 : 3)))' },
+        {
+          name: 'V_dip_estimated',
+          expression:
+            'supply_ratio < 100 ? 25 : (supply_ratio < 200 ? 15 : (supply_ratio < 500 ? 10 : (supply_ratio < 1000 ? 5 : 3)))',
+        },
         { name: 'feasible_DOL', expression: 'V_dip_estimated <= max_dip_allowed ? 1 : 0' },
-        { name: 'recommended_method', expression: 'feasible_DOL ? "DOL" : (P_rated <= 75 ? "star_delta" : (P_rated <= 250 ? "soft_starter" : "VFD"))' },
+        {
+          name: 'recommended_method',
+          expression:
+            'feasible_DOL ? "DOL" : (P_rated <= 75 ? "star_delta" : (P_rated <= 250 ? "soft_starter" : "VFD"))',
+        },
       ],
       validations: [
         {
@@ -4346,7 +4346,8 @@ export const ELECTRICAL_PLUGINS = {
         standard: 'IEC 60034-1 / NEMA MG-1',
         category: 'motor',
         tags: ['starting-method', 'DOL', 'star-delta', 'VFD', 'soft-starter'],
-        aiExplanation: 'Recommends motor starting method based on power rating, supply capacity, and allowable voltage dip',
+        aiExplanation:
+          'Recommends motor starting method based on power rating, supply capacity, and allowable voltage dip',
         aiAssumptions: 'Typical supply impedance, standard motor starting characteristics',
         aiWarnings: 'VFD recommended for conveyors and crushers requiring controlled torque',
         aiOptimization: 'Soft starter for pumps to reduce water hammer effect',
@@ -4438,7 +4439,10 @@ export const ELECTRICAL_PLUGINS = {
       ],
       formulas: [
         { name: 'min_csa_continuous', expression: 'ceil(I_FL * 100 / 250 * 10) / 10' },
-        { name: 'V_drop_start_pct', expression: 'sqrt(3) * I_start * L * 0.0225 / (min_csa_continuous * 1000) / 400 * 100' },
+        {
+          name: 'V_drop_start_pct',
+          expression: 'sqrt(3) * I_start * L * 0.0225 / (min_csa_continuous * 1000) / 400 * 100',
+        },
         { name: 'min_csa_vdrop', expression: 'min_csa_continuous * (V_drop_start_pct / 15)' },
         { name: 'recommended_csa', expression: 'ceil(min_csa_vdrop / 10) * 10' },
       ],
@@ -4454,7 +4458,8 @@ export const ELECTRICAL_PLUGINS = {
         standard: 'IEC 60364-5-52 / NEMA MG-1',
         category: 'motor',
         tags: ['motor-cable', 'sizing', 'voltage-drop', 'starting'],
-        aiExplanation: 'Sizes motor feeder cables considering continuous rating, starting current, and voltage drop',
+        aiExplanation:
+          'Sizes motor feeder cables considering continuous rating, starting current, and voltage drop',
         aiAssumptions: 'Three-phase motor, copper conductor, 400V system',
         aiWarnings: 'Starting voltage drop must not exceed 15% for reliable motor starting',
         aiOptimization: 'Use XLPE cable for higher ampacity in same cross-section',
@@ -4537,7 +4542,10 @@ export const ELECTRICAL_PLUGINS = {
         { name: 'sc_protection_rating', expression: 'I_LRC / 1.25' },
         { name: 'sc_standard_rating', expression: 'ceil(sc_protection_rating / 20) * 20' },
         { name: 'type2_coordination', expression: 'I_sc <= 50 ? 1 : 0' },
-        { name: 'recommended_device', expression: 'I_sc < 50 ? "MCCB_with_motor_protection" : "CPS_or_MSC"' },
+        {
+          name: 'recommended_device',
+          expression: 'I_sc < 50 ? "MCCB_with_motor_protection" : "CPS_or_MSC"',
+        },
       ],
       validations: [
         {
@@ -4551,7 +4559,8 @@ export const ELECTRICAL_PLUGINS = {
         standard: 'IEC 60947-4-1 / NEMA ICS 2',
         category: 'motor',
         tags: ['motor-protection', 'overload', 'short-circuit', 'starter'],
-        aiExplanation: 'Sizes motor overload and short-circuit protection devices per IEC 60947-4-1',
+        aiExplanation:
+          'Sizes motor overload and short-circuit protection devices per IEC 60947-4-1',
         aiAssumptions: 'Class 10 or Class 20 overload relay, standard motor starting duty',
         aiWarnings: 'Hazardous area motors require additional thermal protection',
         aiOptimization: 'Use electronic overload relays for better protection and diagnostics',
@@ -4653,7 +4662,8 @@ export const ELECTRICAL_PLUGINS = {
         },
         {
           name: 'savings_kW',
-          expression: 'P * (1 / (cosPhi_actual * cosPhi_actual) - 1 / (cosPhi_target * cosPhi_target)) * 0.02',
+          expression:
+            'P * (1 / (cosPhi_actual * cosPhi_actual) - 1 / (cosPhi_target * cosPhi_target)) * 0.02',
         },
       ],
       validations: [
@@ -4674,7 +4684,8 @@ export const ELECTRICAL_PLUGINS = {
         standard: 'IEEE 1459 / IEC 61000',
         category: 'power-quality',
         tags: ['power-factor', 'correction', 'capacitor', 'savings'],
-        aiExplanation: 'Calculates required reactive power compensation to achieve target power factor',
+        aiExplanation:
+          'Calculates required reactive power compensation to achieve target power factor',
         aiAssumptions: 'Sinusoidal waveform, shunt capacitor compensation, linear load',
         aiWarnings: 'Excessive correction can cause overvoltage and leading PF',
         aiOptimization: 'Target PF 0.95-0.98 typically avoids utility penalties and reduces losses',
@@ -4757,7 +4768,10 @@ export const ELECTRICAL_PLUGINS = {
       ],
       formulas: [
         { name: 'Q_per_step', expression: 'Q_total / num_steps' },
-        { name: 'C_per_step', expression: 'Q_per_step * 1000 / (2 * pi * 50 * V_system * V_system / 3) * 1000000' },
+        {
+          name: 'C_per_step',
+          expression: 'Q_per_step * 1000 / (2 * pi * 50 * V_system * V_system / 3) * 1000000',
+        },
         { name: 'I_rated', expression: 'Q_per_step * 1000 / (sqrt(3) * V_system)' },
         { name: 'resonant_freq', expression: '50 / sqrt(0.07)' },
       ],
@@ -4773,7 +4787,8 @@ export const ELECTRICAL_PLUGINS = {
         standard: 'IEC 60831 / IEEE 18',
         category: 'power-quality',
         tags: ['capacitor-bank', 'kVAR', 'detuning', 'harmonic-filter'],
-        aiExplanation: 'Designs capacitor bank configuration including step size, connection type, and detuning reactor',
+        aiExplanation:
+          'Designs capacitor bank configuration including step size, connection type, and detuning reactor',
         aiAssumptions: '50Hz system, standard capacitor units per IEC 60831',
         aiWarnings: 'Detuning reactors required when harmonic distortion exceeds 10% THD',
         aiOptimization: 'Use 7% detuning (189Hz tuning) for typical 5th harmonic dominant loads',
@@ -4888,7 +4903,16 @@ export const ELECTRICAL_PLUGINS = {
           label: 'Load Type',
           type: 'enum',
           required: true,
-          enumValues: ['VFD_6_pulse', 'VFD_12_pulse', 'VFD_18_pulse', 'UPS', 'LED_lighting', 'arc_furnace', 'welding', 'general_industrial'],
+          enumValues: [
+            'VFD_6_pulse',
+            'VFD_12_pulse',
+            'VFD_18_pulse',
+            'UPS',
+            'LED_lighting',
+            'arc_furnace',
+            'welding',
+            'general_industrial',
+          ],
         },
         {
           name: 'S_load',
@@ -4959,7 +4983,8 @@ export const ELECTRICAL_PLUGINS = {
         standard: 'IEEE 519 / IEC 61000-2-4',
         category: 'power-quality',
         tags: ['harmonics', 'THD', 'TDD', 'IEEE-519', 'filter'],
-        aiExplanation: 'Estimates harmonic distortion levels based on load type and system strength per IEEE 519',
+        aiExplanation:
+          'Estimates harmonic distortion levels based on load type and system strength per IEEE 519',
         aiAssumptions: 'Typical harmonic spectrum for given load type, standard impedance',
         aiWarnings: 'Actual harmonics depend on system impedance and background distortion',
         aiOptimization: 'Use 12-pulse or 18-pulse VFDs for inherent harmonic reduction',
@@ -5034,10 +5059,18 @@ export const ELECTRICAL_PLUGINS = {
       formulas: [
         { name: 'deviation_pct', expression: '(V_actual - V_nominal) / V_nominal * 100' },
         { name: 'tolerance_pct', expression: '10' },
-        { name: 'status', expression: 'abs(deviation_pct) <= 10 ? "compliant" : (abs(deviation_pct) <= 15 ? "marginal" : "non_compliant")' },
+        {
+          name: 'status',
+          expression:
+            'abs(deviation_pct) <= 10 ? "compliant" : (abs(deviation_pct) <= 15 ? "marginal" : "non_compliant")',
+        },
         { name: 'regulation_step', expression: '0.05' },
         { name: 'regulation_available_pct', expression: 'regulation_step * 100' },
-        { name: 'corrected_voltage', expression: 'abs(deviation_pct) <= 10 ? V_actual : V_actual * (1 - regulation_step * sign(deviation_pct))' },
+        {
+          name: 'corrected_voltage',
+          expression:
+            'abs(deviation_pct) <= 10 ? V_actual : V_actual * (1 - regulation_step * sign(deviation_pct))',
+        },
       ],
       validations: [
         {
@@ -5051,7 +5084,8 @@ export const ELECTRICAL_PLUGINS = {
         standard: 'IEC 60038 / IEEE 141',
         category: 'power-quality',
         tags: ['voltage-regulation', 'OLTC', 'AVR', 'compliance'],
-        aiExplanation: 'Assesses voltage regulation against IEC 60038 nominal voltage tolerances and recommends corrective action',
+        aiExplanation:
+          'Assesses voltage regulation against IEC 60038 nominal voltage tolerances and recommends corrective action',
         aiAssumptions: 'Steady-state voltage, standard IEC tolerance bands',
         aiWarnings: 'LV tolerance is \u00b110%; MV \u00b110%; HV \u00b15% per IEC 60038',
         aiOptimization: 'Install OLTC transformer for continuous voltage regulation',
@@ -5061,4 +5095,3 @@ export const ELECTRICAL_PLUGINS = {
 
 export const ELECTRICAL_PLUGIN_LIST = Object.keys(ELECTRICAL_PLUGINS);
 export const ELECTRICAL_PLUGIN_COUNT = ELECTRICAL_PLUGIN_LIST.length;
-

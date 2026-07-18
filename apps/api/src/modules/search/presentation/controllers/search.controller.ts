@@ -1,10 +1,4 @@
-import {
-  Controller,
-  Get,
-  Query,
-  UseGuards,
-  Req,
-} from '@nestjs/common';
+import { Controller, Get, Query, UseGuards, Req } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiQuery } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../../auth/infrastructure/guards/jwt-auth.guard.js';
 import { WorkspaceGuard } from '../../../rbac/infrastructure/guards/workspace.guard.js';
@@ -21,7 +15,12 @@ export class SearchController {
   @Get()
   @ApiOperation({ summary: 'Global search across all domains' })
   @ApiQuery({ name: 'q', required: true, description: 'Search query (min 2 characters)' })
-  @ApiQuery({ name: 'type', required: false, description: 'Filter by type (can repeat)', isArray: true })
+  @ApiQuery({
+    name: 'type',
+    required: false,
+    description: 'Filter by type (can repeat)',
+    isArray: true,
+  })
   @ApiQuery({ name: 'page', required: false, description: 'Page number (default: 1)' })
   @ApiQuery({ name: 'limit', required: false, description: 'Items per page (default: 10)' })
   async search(
@@ -38,7 +37,8 @@ export class SearchController {
     const workspaceId = req?.workspaceId ?? req?.user?.workspaceId;
     const typeArray = types
       ? (Array.isArray(types) ? types : [types]).filter((t): t is SearchResultType =>
-          ['project', 'standard', 'conversation', 'article', 'file', 'notification'].includes(t))
+          ['project', 'standard', 'conversation', 'article', 'file', 'notification'].includes(t),
+        )
       : undefined;
 
     const pageNum = Math.max(1, Number(page) || 1);

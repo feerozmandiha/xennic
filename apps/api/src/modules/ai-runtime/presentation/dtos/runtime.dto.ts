@@ -4,11 +4,14 @@ import type { ExecutionResult } from '../../domain/types/execution.types.js';
 
 export class ExecuteDto {
   @ApiProperty({ example: 'محاسبه جریان نامی موتور' })
-  @IsString() @IsNotEmpty() @MaxLength(4000)
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(4000)
   input!: string;
 
   @ApiPropertyOptional({ example: { conversationId: 'uuid' } })
-  @IsOptional() @IsObject()
+  @IsOptional()
+  @IsObject()
   metadata?: Record<string, unknown>;
 }
 
@@ -21,11 +24,11 @@ export class ExecutionResultDto {
 
   static fromResult(result: ExecutionResult): ExecutionResultDto {
     return {
-      success:         result.success,
-      output:          result.output,
-      error:           result.error,
+      success: result.success,
+      output: result.output,
+      error: result.error,
       totalDurationMs: result.totalDurationMs,
-      stages:          result.stages.map(s => ({ stage: s.stage, durationMs: s.durationMs })),
+      stages: result.stages.map((s) => ({ stage: s.stage, durationMs: s.durationMs })),
     };
   }
 }

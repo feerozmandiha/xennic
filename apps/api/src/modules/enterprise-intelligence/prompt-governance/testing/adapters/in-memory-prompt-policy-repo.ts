@@ -1,7 +1,10 @@
 import { Logger } from '@nestjs/common';
 import type { PaginatedResult } from '../../../shared/types/index.js';
 import type { PromptPolicyEntity, PolicyEffect } from '../../domain/prompt-policy.entity.js';
-import type { IPromptPolicyRepository, PolicyFindOptions } from '../../domain/prompt-policy-repository.interface.js';
+import type {
+  IPromptPolicyRepository,
+  PolicyFindOptions,
+} from '../../domain/prompt-policy-repository.interface.js';
 
 export class InMemoryPromptPolicyRepo implements IPromptPolicyRepository {
   private readonly logger = new Logger(InMemoryPromptPolicyRepo.name);
@@ -22,7 +25,7 @@ export class InMemoryPromptPolicyRepo implements IPromptPolicyRepository {
   }
 
   async findByEffect(effect: PolicyEffect): Promise<PromptPolicyEntity[]> {
-    return Array.from(this.store.values()).filter(e => e.effect === effect);
+    return Array.from(this.store.values()).filter((e) => e.effect === effect);
   }
 
   async delete(id: string): Promise<void> {

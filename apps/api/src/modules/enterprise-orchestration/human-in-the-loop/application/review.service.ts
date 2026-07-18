@@ -32,7 +32,11 @@ export class ReviewService {
     return entity;
   }
 
-  async complete(reviewId: string, output: Record<string, unknown>, feedback?: string): Promise<ReviewTask> {
+  async complete(
+    reviewId: string,
+    output: Record<string, unknown>,
+    feedback?: string,
+  ): Promise<ReviewTask> {
     const entity = await this.getReviewOrThrow(reviewId);
 
     if (entity.status !== 'pending') {
@@ -67,11 +71,17 @@ export class ReviewService {
     return entity;
   }
 
-  async getPendingReviews(userId: string, options?: FindReviewOptions): Promise<PaginatedResult<ReviewTask>> {
+  async getPendingReviews(
+    userId: string,
+    options?: FindReviewOptions,
+  ): Promise<PaginatedResult<ReviewTask>> {
     return this.repository.findPendingReviews(userId, options);
   }
 
-  async getByExecution(executionId: string, options?: FindReviewOptions): Promise<PaginatedResult<ReviewTask>> {
+  async getByExecution(
+    executionId: string,
+    options?: FindReviewOptions,
+  ): Promise<PaginatedResult<ReviewTask>> {
     return this.repository.findReviews(executionId, options);
   }
 

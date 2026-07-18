@@ -1,7 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
 import type { GatewayRequest, Message } from '../domain/gateway-request.vo.js';
 import { GatewayResponse } from '../domain/gateway-response.vo.js';
-import { ProviderExecutionService, type ChatMessage } from '../../../ai-provider-management/application/services/provider-execution.service.js';
+import {
+  ProviderExecutionService,
+  type ChatMessage,
+} from '../../../ai-provider-management/application/services/provider-execution.service.js';
 import { GatewayTelemetryService } from './gateway-telemetry.service.js';
 
 export interface RoutingPreferences {
@@ -20,11 +23,13 @@ export class AIGatewayService {
   ) {}
 
   private mapMessages(messages: Message[] | null, prompt: string | null): ChatMessage[] {
-    const msgs = messages ?? (prompt
-      ? [{ role: 'user' as const, content: prompt }]
-      : [{ role: 'user' as const, content: '' }]);
-    return msgs.map(m => ({
-      role: m.role === 'tool' ? 'user' as const : m.role as 'system' | 'user' | 'assistant',
+    const msgs =
+      messages ??
+      (prompt
+        ? [{ role: 'user' as const, content: prompt }]
+        : [{ role: 'user' as const, content: '' }]);
+    return msgs.map((m) => ({
+      role: m.role === 'tool' ? ('user' as const) : (m.role as 'system' | 'user' | 'assistant'),
       content: m.content,
     }));
   }
@@ -56,7 +61,11 @@ export class AIGatewayService {
 
       return GatewayResponse.create(
         result.content,
-        { promptTokens: result.promptTokens, completionTokens: result.completionTokens, totalTokens: result.totalTokens },
+        {
+          promptTokens: result.promptTokens,
+          completionTokens: result.completionTokens,
+          totalTokens: result.totalTokens,
+        },
         latency,
         result.providerName,
         result.model,
@@ -64,7 +73,13 @@ export class AIGatewayService {
       );
     } catch (error) {
       const latency = Date.now() - start;
-      this.telemetryService.recordCall('unknown', request.model, latency, { promptTokens: 0, completionTokens: 0 }, false);
+      this.telemetryService.recordCall(
+        'unknown',
+        request.model,
+        latency,
+        { promptTokens: 0, completionTokens: 0 },
+        false,
+      );
       throw error;
     }
   }
@@ -96,7 +111,11 @@ export class AIGatewayService {
 
       return GatewayResponse.create(
         result.content,
-        { promptTokens: result.promptTokens, completionTokens: result.completionTokens, totalTokens: result.totalTokens },
+        {
+          promptTokens: result.promptTokens,
+          completionTokens: result.completionTokens,
+          totalTokens: result.totalTokens,
+        },
         latency,
         result.providerName,
         result.model,
@@ -104,15 +123,18 @@ export class AIGatewayService {
       );
     } catch (error) {
       const latency = Date.now() - start;
-      this.telemetryService.recordCall('unknown', request.model, latency, { promptTokens: 0, completionTokens: 0 }, false);
+      this.telemetryService.recordCall(
+        'unknown',
+        request.model,
+        latency,
+        { promptTokens: 0, completionTokens: 0 },
+        false,
+      );
       throw error;
     }
   }
 
-  async embed(
-    input: string,
-    _options?: { preferences?: RoutingPreferences },
-  ): Promise<number[]> {
+  async embed(input: string, _options?: { preferences?: RoutingPreferences }): Promise<number[]> {
     const start = Date.now();
     try {
       const result = await this.executionService.embed({ input });
@@ -121,13 +143,22 @@ export class AIGatewayService {
         result.providerName,
         result.model,
         latency,
-        { promptTokens: typeof input === 'string' ? input.length : 0, completionTokens: result.embeddings.length },
+        {
+          promptTokens: typeof input === 'string' ? input.length : 0,
+          completionTokens: result.embeddings.length,
+        },
         true,
       );
       return result.embeddings[0] ?? [];
     } catch (error) {
       const latency = Date.now() - start;
-      this.telemetryService.recordCall('unknown', 'embedding', latency, { promptTokens: 0, completionTokens: 0 }, false);
+      this.telemetryService.recordCall(
+        'unknown',
+        'embedding',
+        latency,
+        { promptTokens: 0, completionTokens: 0 },
+        false,
+      );
       throw error;
     }
   }
@@ -157,7 +188,11 @@ export class AIGatewayService {
               done: false,
               value: GatewayResponse.create(
                 result.content,
-                { promptTokens: result.promptTokens, completionTokens: result.completionTokens, totalTokens: result.totalTokens },
+                {
+                  promptTokens: result.promptTokens,
+                  completionTokens: result.completionTokens,
+                  totalTokens: result.totalTokens,
+                },
                 0,
                 result.providerName,
                 result.model,

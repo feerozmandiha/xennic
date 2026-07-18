@@ -46,7 +46,7 @@ export class ExecutionPipelineService {
       context.stage = 'llm_call';
       const llmStart = Date.now();
       const llmMessages = [
-        ...context.contextMessages.map(m => ({ role: m.role, content: m.content })),
+        ...context.contextMessages.map((m) => ({ role: m.role, content: m.content })),
         { role: 'user' as const, content: context.input },
       ];
       const response = await llmCall(llmMessages);

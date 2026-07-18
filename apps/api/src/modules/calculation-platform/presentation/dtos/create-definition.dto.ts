@@ -1,5 +1,13 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsString, IsNotEmpty, IsOptional, IsBoolean, IsObject, MinLength, MaxLength } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  IsOptional,
+  IsBoolean,
+  IsObject,
+  MinLength,
+  MaxLength,
+} from 'class-validator';
 
 export class CreateDefinitionDto {
   @ApiProperty({ description: 'Category ID', example: 'uuid' })

@@ -57,8 +57,8 @@ export class CoordinatorService {
         continue;
       }
 
-      const depsMet = task.dependsOn.every(depId => {
-        const dep = plan.tasks.find(t => t.id === depId);
+      const depsMet = task.dependsOn.every((depId) => {
+        const dep = plan.tasks.find((t) => t.id === depId);
         return dep && dep.status === 'completed';
       });
 
@@ -81,7 +81,10 @@ export class CoordinatorService {
 
     for (const plan of plans) {
       for (const task of plan.tasks) {
-        if (task.assignedTo === agentId && (task.status === 'running' || task.status === 'pending')) {
+        if (
+          task.assignedTo === agentId &&
+          (task.status === 'running' || task.status === 'pending')
+        ) {
           currentTasks.push(task);
         }
       }
@@ -96,8 +99,8 @@ export class CoordinatorService {
 
   async rebalance(planId: string): Promise<CoordinationPlan> {
     const plan = await this.getPlanOrThrow(planId);
-    const runningTasks = plan.tasks.filter(t => t.status === 'running');
-    const pendingTasks = plan.tasks.filter(t => t.status === 'pending');
+    const runningTasks = plan.tasks.filter((t) => t.status === 'running');
+    const pendingTasks = plan.tasks.filter((t) => t.status === 'pending');
 
     if (runningTasks.length === 0 && pendingTasks.length === 0) {
       return plan;

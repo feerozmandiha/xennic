@@ -33,16 +33,19 @@ export class ReasoningVerificationService {
     existing.push(vr);
     this.verifications.set(stepId, existing);
 
-    this.logger.debug(`Verification for step ${stepId}: verified=${verified}, confidence=${confidence}`);
+    this.logger.debug(
+      `Verification for step ${stepId}: verified=${verified}, confidence=${confidence}`,
+    );
     return vr;
   }
 
   async calculateConfidence(verifications: VerificationResult[]): Promise<number> {
     if (verifications.length === 0) return 1;
 
-    const avgConfidence = verifications.reduce((sum, v) => sum + v.confidence, 0) / verifications.length;
+    const avgConfidence =
+      verifications.reduce((sum, v) => sum + v.confidence, 0) / verifications.length;
 
-    const verifiedCount = verifications.filter(v => v.verified).length;
+    const verifiedCount = verifications.filter((v) => v.verified).length;
     const successRate = verifiedCount / verifications.length;
 
     return avgConfidence * 0.6 + successRate * 0.4;
@@ -74,14 +77,16 @@ export class ReasoningVerificationService {
           aVal as Record<string, unknown>,
           eVal as Record<string, unknown>,
         );
-        errors.push(...nested.errors.map(e => `${key}.${e}`));
+        errors.push(...nested.errors.map((e) => `${key}.${e}`));
         if (nested.match) matchedKeys++;
       } else if (aVal === eVal) {
         matchedKeys++;
       } else if (String(aVal) === String(eVal)) {
         matchedKeys++;
       } else {
-        errors.push(`Mismatch for ${key}: expected ${JSON.stringify(eVal)}, got ${JSON.stringify(aVal)}`);
+        errors.push(
+          `Mismatch for ${key}: expected ${JSON.stringify(eVal)}, got ${JSON.stringify(aVal)}`,
+        );
       }
     }
 
@@ -98,10 +103,7 @@ export class ReasoningVerificationService {
     return this.verifications.get(stepId) ?? [];
   }
 
-  private computeConfidence(
-    result: Record<string, unknown>,
-    errors: string[],
-  ): number {
+  private computeConfidence(result: Record<string, unknown>, errors: string[]): number {
     let confidence = 1;
 
     if (errors.length > 0) {

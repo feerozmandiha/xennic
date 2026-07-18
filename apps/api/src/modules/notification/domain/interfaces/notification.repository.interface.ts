@@ -1,4 +1,8 @@
-import type { NotificationEntity, NotificationStatus, NotificationChannel } from '../entities/notification.entity.js';
+import type {
+  NotificationEntity,
+  NotificationStatus,
+  NotificationChannel,
+} from '../entities/notification.entity.js';
 
 export interface INotificationRepository {
   save(notification: NotificationEntity): Promise<void>;
@@ -11,7 +15,7 @@ export interface INotificationRepository {
       channel?: NotificationChannel;
       offset?: number;
       limit?: number;
-    }
+    },
   ): Promise<NotificationEntity[]>;
   countUnread(userId: string): Promise<number>;
   delete(id: string): Promise<void>;

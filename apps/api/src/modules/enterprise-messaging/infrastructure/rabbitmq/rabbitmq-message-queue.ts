@@ -72,11 +72,13 @@ export class RabbitMQMessageQueue implements IMessageQueue, IDeadLetterQueue {
 
   async send(record: DeadLetterRecord): Promise<void> {
     this.deadLetterStore.push(record);
-    this.logger.warn(`Dead-lettered message ${record.messageId} (${record.messageType}): ${record.error}`);
+    this.logger.warn(
+      `Dead-lettered message ${record.messageId} (${record.messageType}): ${record.error}`,
+    );
   }
 
   async replay(messageId: string): Promise<void> {
-    const idx = this.deadLetterStore.findIndex(r => r.messageId === messageId);
+    const idx = this.deadLetterStore.findIndex((r) => r.messageId === messageId);
     if (idx === -1) throw new Error(`Dead letter record not found: ${messageId}`);
     const record = this.deadLetterStore.splice(idx, 1)[0];
     if (!record) throw new Error(`Dead letter record not found: ${messageId}`);

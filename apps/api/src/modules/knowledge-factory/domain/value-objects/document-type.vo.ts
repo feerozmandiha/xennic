@@ -8,4 +8,4 @@ export const DOCUMENT_TYPES = {
   MARKDOWN: 'markdown',
 } as const;
 
-export type DocumentType = typeof DOCUMENT_TYPES[keyof typeof DOCUMENT_TYPES];
+export type DocumentType = (typeof DOCUMENT_TYPES)[keyof typeof DOCUMENT_TYPES];

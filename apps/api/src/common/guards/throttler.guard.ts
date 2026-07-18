@@ -23,9 +23,7 @@ export class XennicThrottlerGuard extends ThrottlerGuard {
 
   protected override async throwThrottlingException(): Promise<void> {
     this.logger.warn('Rate limit exceeded');
-    throw new ThrottlerException(
-      'تعداد درخواست‌ها بیش از حد مجاز است. لطفاً کمی صبر کنید.',
-    );
+    throw new ThrottlerException('تعداد درخواست‌ها بیش از حد مجاز است. لطفاً کمی صبر کنید.');
   }
 
   protected override getRequestResponse(context: ExecutionContext) {

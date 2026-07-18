@@ -12,10 +12,7 @@ import { PrismaPlannerRepository } from './infrastructure/persistence/prisma-pla
     ReplannerService,
     { provide: 'IPlannerRepository', useClass: PrismaPlannerRepository },
   ],
-  exports: [
-    PlannerService,
-    ReplannerService,
-  ],
+  exports: [PlannerService, ReplannerService],
 })
 export class PlanningEngineModule implements OnModuleInit {
   private readonly logger = new Logger(PlanningEngineModule.name);

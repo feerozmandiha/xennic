@@ -48,10 +48,7 @@ export class WorkspaceController {
   @ApiResponse({ status: 400, description: 'Validation failed' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 409, description: 'Workspace with this name already exists' })
-  async create(
-    @Body() createWorkspaceDto: CreateWorkspaceDto,
-    @Req() req: any,
-  ) {
+  async create(@Body() createWorkspaceDto: CreateWorkspaceDto, @Req() req: any) {
     const userId = req.user.userId;
     const workspace = await this.workspaceService.create(createWorkspaceDto, userId);
     // ✅ فرمت یکسان { success, data } برای همه endpoint ها
@@ -69,19 +66,15 @@ export class WorkspaceController {
     summary: 'Get my workspaces',
     description: 'Returns workspaces where the current user is owner or member.',
   })
-  @ApiQuery({ name: 'page',  required: false, type: Number, example: 1 })
+  @ApiQuery({ name: 'page', required: false, type: Number, example: 1 })
   @ApiQuery({ name: 'limit', required: false, type: Number, example: 20 })
   @ApiResponse({ status: 200, description: 'Workspaces retrieved' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async findAll(
-    @Req() req: any,
-    @Query('page')  page?: string,
-    @Query('limit') limit?: string,
-  ) {
+  async findAll(@Req() req: any, @Query('page') page?: string, @Query('limit') limit?: string) {
     // ✅ فیلتر بر اساس userId — نه همه workspace ها
     const { data, meta } = await this.workspaceService.findByUser(
       req.user.userId,
-      page  ? parseInt(page,  10) : 1,
+      page ? parseInt(page, 10) : 1,
       limit ? parseInt(limit, 10) : 20,
     );
     return {
@@ -111,11 +104,7 @@ export class WorkspaceController {
   @ApiBody({ type: UpdateWorkspaceDto })
   @ApiResponse({ status: 200, description: 'Workspace updated', type: WorkspaceResponseDto })
   @ApiResponse({ status: 404, description: 'Workspace not found' })
-  async update(
-    @Param('id') id: string,
-    @Body() dto: UpdateWorkspaceDto,
-    @Req() req: any,
-  ) {
+  async update(@Param('id') id: string, @Body() dto: UpdateWorkspaceDto, @Req() req: any) {
     const userId = req.user.userId;
     const workspace = await this.workspaceService.update(id, dto.name, userId);
     return { success: true, data: WorkspaceResponseDto.fromEntity(workspace) };

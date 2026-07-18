@@ -38,7 +38,15 @@ export class ClusterRepository implements IClusterRepository {
     return this._toEntity(row);
   }
 
-  async update(id: string, data: { name?: string; description?: string | null; nodeIds?: string[]; properties?: Record<string, unknown> }): Promise<KnowledgeCluster> {
+  async update(
+    id: string,
+    data: {
+      name?: string;
+      description?: string | null;
+      nodeIds?: string[];
+      properties?: Record<string, unknown>;
+    },
+  ): Promise<KnowledgeCluster> {
     const row = await prisma.knowledge_clusters.update({
       where: { id },
       data: {

@@ -1,11 +1,20 @@
 import {
-  Controller, Get, Post, Patch, Body, Param, Query,
-  Req, UseGuards, HttpCode, HttpStatus,
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Body,
+  Param,
+  Query,
+  Req,
+  UseGuards,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation, ApiQuery, ApiParam } from '@nestjs/swagger';
-import { JwtAuthGuard }            from '../../../auth/infrastructure/guards/jwt-auth.guard.js';
-import { WorkspaceGuard }          from '../../../rbac/infrastructure/guards/workspace.guard.js';
-import { ConsultationsService }    from '../../application/services/consultations.service.js';
+import { JwtAuthGuard } from '../../../auth/infrastructure/guards/jwt-auth.guard.js';
+import { WorkspaceGuard } from '../../../rbac/infrastructure/guards/workspace.guard.js';
+import { ConsultationsService } from '../../application/services/consultations.service.js';
 
 @ApiTags('consultations')
 @ApiBearerAuth('JWT-auth')
@@ -17,18 +26,18 @@ export class ConsultationsController {
   // GET /consultations
   @Get()
   @ApiOperation({ summary: 'لیست مشاوره‌های workspace' })
-  @ApiQuery({ name: 'page',   required: false, type: Number })
-  @ApiQuery({ name: 'limit',  required: false, type: Number })
+  @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'limit', required: false, type: Number })
   @ApiQuery({ name: 'status', required: false, type: String })
   async findAll(
-    @Req()             req:     any,
-    @Query('page')     page?:   string,
-    @Query('limit')    limit?:  string,
-    @Query('status')   status?: string,
+    @Req() req: any,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+    @Query('status') status?: string,
   ) {
     const result = await this.svc.findAll(
       req.workspaceId,
-      page  ? parseInt(page,  10) : 1,
+      page ? parseInt(page, 10) : 1,
       limit ? parseInt(limit, 10) : 20,
       status || undefined,
     );
@@ -50,7 +59,8 @@ export class ConsultationsController {
   @ApiOperation({ summary: 'ارسال سوال مشاوره جدید' })
   async create(@Body() dto: any, @Req() req: any) {
     const c = await this.svc.create(
-      req.workspaceId, req.user.userId,
+      req.workspaceId,
+      req.user.userId,
       req.user.name ?? req.user.email ?? 'کاربر',
       dto,
     );
@@ -63,7 +73,8 @@ export class ConsultationsController {
   @ApiOperation({ summary: 'پاسخ به مشاوره' })
   async reply(@Param('id') id: string, @Body() dto: any, @Req() req: any) {
     const reply = await this.svc.addReply(
-      id, req.user.userId,
+      id,
+      req.user.userId,
       req.user.name ?? 'کاربر',
       dto.content,
       dto.isExpert ?? false,

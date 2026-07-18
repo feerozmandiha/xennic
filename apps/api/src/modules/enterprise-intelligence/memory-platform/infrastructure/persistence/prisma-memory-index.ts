@@ -29,10 +29,12 @@ export class PrismaMemoryIndex implements IMemoryIndex {
       where: { content: { contains: query } },
       take: topK,
     });
-    return rows.map(r => ({
-      entity: null as unknown as MemoryEntity,
-      score: this.computeScore(r.content, query),
-    })).filter(r => r.score > 0);
+    return rows
+      .map((r) => ({
+        entity: null as unknown as MemoryEntity,
+        score: this.computeScore(r.content, query),
+      }))
+      .filter((r) => r.score > 0);
   }
 
   async remove(id: string): Promise<void> {

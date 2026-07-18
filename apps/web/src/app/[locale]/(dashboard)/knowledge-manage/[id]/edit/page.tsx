@@ -7,11 +7,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t('editArticle') };
 }
 
-export default async function KnowledgeEditPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+export default async function KnowledgeEditPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   return <KnowledgeEditClient articleId={id} />;
 }

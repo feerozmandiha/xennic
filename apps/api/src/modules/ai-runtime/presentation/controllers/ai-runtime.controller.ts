@@ -65,14 +65,10 @@ export class AiRuntimeController {
       dto.metadata,
     );
 
-    const result = await this.pipeline.execute(
-      context,
-      [],
-      async (messages) => {
-        const last = messages[messages.length - 1]!;
-        return { content: last.content };
-      },
-    );
+    const result = await this.pipeline.execute(context, [], async (messages) => {
+      const last = messages[messages.length - 1]!;
+      return { content: last.content };
+    });
 
     return { success: true, data: ExecutionResultDto.fromResult(result) };
   }
@@ -92,7 +88,7 @@ export class AiRuntimeController {
   async registerTool(
     @Body() dto: RegisterToolDto,
   ): Promise<{ success: true; data: ToolResponseDto }> {
-    const params: ToolParameter[] = (dto.parameters ?? []).map(p => ({
+    const params: ToolParameter[] = (dto.parameters ?? []).map((p) => ({
       name: p.name,
       type: p.type as ToolParameter['type'],
       description: p.description,

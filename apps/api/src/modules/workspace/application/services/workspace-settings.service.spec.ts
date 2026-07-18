@@ -1,7 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { NotFoundException } from '@nestjs/common';
 import { WorkspaceSettingsService } from './workspace-settings.service.js';
-import { WorkspaceSettingsEntity, DEFAULT_WORKSPACE_SETTINGS } from '../../domain/entities/workspace-settings.entity.js';
+import {
+  WorkspaceSettingsEntity,
+  DEFAULT_WORKSPACE_SETTINGS,
+} from '../../domain/entities/workspace-settings.entity.js';
 import type { IWorkspaceSettingsRepository } from '../../domain/interfaces/workspace-settings.repository.interface.js';
 import type { WorkspaceSettingsData } from '../../domain/entities/workspace-settings.entity.js';
 import type { UpdateWorkspaceSettingsDto } from '../../presentation/dtos/workspace-settings.dto.js';
@@ -91,7 +94,13 @@ describe('WorkspaceSettingsService', () => {
       repo.findByWorkspaceId.mockResolvedValue(null);
 
       const dto: UpdateWorkspaceSettingsDto = {
-        localization: { locale: 'en', timezone: 'UTC', date_format: 'YYYY-MM-DD', number_format: 'en', direction: 'ltr' },
+        localization: {
+          locale: 'en',
+          timezone: 'UTC',
+          date_format: 'YYYY-MM-DD',
+          number_format: 'en',
+          direction: 'ltr',
+        },
       };
 
       const result = await service.updateSettings(WS_ID, dto);

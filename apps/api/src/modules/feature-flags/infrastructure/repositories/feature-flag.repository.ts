@@ -36,7 +36,9 @@ export class FeatureFlagRepository implements IFeatureFlagRepository {
       `;
       if (!rows || rows.length === 0) return null;
       return this._map(rows[0]);
-    } catch { return null; }
+    } catch {
+      return null;
+    }
   }
 
   async findByName(name: string): Promise<FeatureFlagEntity | null> {
@@ -46,7 +48,9 @@ export class FeatureFlagRepository implements IFeatureFlagRepository {
       `;
       if (!rows || rows.length === 0) return null;
       return this._map(rows[0]);
-    } catch { return null; }
+    } catch {
+      return null;
+    }
   }
 
   async findAll(options?: { offset?: number; limit?: number }): Promise<FeatureFlagEntity[]> {
@@ -56,8 +60,10 @@ export class FeatureFlagRepository implements IFeatureFlagRepository {
       const rows = await prisma.$queryRaw<any[]>`
         SELECT * FROM "feature_flags" ORDER BY name ASC LIMIT ${limit} OFFSET ${offset}
       `;
-      return rows.map(r => this._map(r));
-    } catch { return []; }
+      return rows.map((r) => this._map(r));
+    } catch {
+      return [];
+    }
   }
 
   async count(): Promise<number> {
@@ -66,7 +72,9 @@ export class FeatureFlagRepository implements IFeatureFlagRepository {
         SELECT COUNT(*)::text as count FROM "feature_flags"
       `;
       return Number(result[0]?.count ?? 0);
-    } catch { return 0; }
+    } catch {
+      return 0;
+    }
   }
 
   async delete(id: string): Promise<void> {

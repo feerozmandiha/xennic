@@ -2,7 +2,14 @@
 
 import { useMemo } from 'react';
 import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ReferenceLine, Cell,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ReferenceLine,
+  Cell,
   ResponsiveContainer,
 } from 'recharts';
 
@@ -35,7 +42,7 @@ export function HarmonicChart({
   baseFrequency = 50,
 }: HarmonicChartProps) {
   const data = useMemo(() => {
-    const maxOrder = Math.max(...harmonics.map(h => h.order), 25);
+    const maxOrder = Math.max(...harmonics.map((h) => h.order), 25);
     const bins: Record<number, HarmonicBin> = {};
     for (const h of harmonics) bins[h.order] = h;
     const result: (HarmonicBin & { fill: string })[] = [];
@@ -53,12 +60,19 @@ export function HarmonicChart({
   if (!data.length) return null;
 
   return (
-    <div dir="ltr" className="rounded-[var(--radius-lg)] border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-4">
+    <div
+      dir="ltr"
+      className="rounded-[var(--radius-lg)] border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-4"
+    >
       <div className="flex items-center justify-between mb-3">
         <h4 className="text-sm font-semibold text-[hsl(var(--foreground))]">{title}</h4>
         <div className="flex items-center gap-3 text-[10px] text-[hsl(var(--muted-foreground))]">
           {thdPercent != null && (
-            <span className={thdPercent > limitPercent ? 'text-[hsl(var(--destructive))] font-semibold' : ''}>
+            <span
+              className={
+                thdPercent > limitPercent ? 'text-[hsl(var(--destructive))] font-semibold' : ''
+              }
+            >
               THD: {thdPercent.toFixed(1)}%
             </span>
           )}
@@ -72,11 +86,22 @@ export function HarmonicChart({
           <XAxis
             dataKey="order"
             tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }}
-            label={{ value: 'Harmonic Order', position: 'insideBottomRight', offset: -4, style: { fontSize: 10, fill: 'hsl(var(--muted-foreground))' } }}
+            label={{
+              value: 'Harmonic Order',
+              position: 'insideBottomRight',
+              offset: -4,
+              style: { fontSize: 10, fill: 'hsl(var(--muted-foreground))' },
+            }}
           />
           <YAxis
             tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }}
-            label={{ value: 'Magnitude (%)', angle: -90, position: 'insideLeft', offset: 8, style: { fontSize: 10, fill: 'hsl(var(--muted-foreground))' } }}
+            label={{
+              value: 'Magnitude (%)',
+              angle: -90,
+              position: 'insideLeft',
+              offset: 8,
+              style: { fontSize: 10, fill: 'hsl(var(--muted-foreground))' },
+            }}
             tickFormatter={(v: number) => `${v}%`}
           />
           <Tooltip
@@ -87,10 +112,21 @@ export function HarmonicChart({
               fontSize: 12,
             }}
             formatter={(value: any) => [`${Number(value).toFixed(2)}%`, 'Magnitude']}
-            labelFormatter={(label: any) => `h${label} (${(Number(label) * baseFrequency).toFixed(0)} Hz)`}
+            labelFormatter={(label: any) =>
+              `h${label} (${(Number(label) * baseFrequency).toFixed(0)} Hz)`
+            }
           />
-          <ReferenceLine y={limitPercent} stroke={COLORS.limit} strokeWidth={1.5} strokeDasharray="4 2"
-            label={{ value: `IEEE 519 Limit (${limitPercent}%)`, position: 'right', fontSize: 9, fill: COLORS.limit }}
+          <ReferenceLine
+            y={limitPercent}
+            stroke={COLORS.limit}
+            strokeWidth={1.5}
+            strokeDasharray="4 2"
+            label={{
+              value: `IEEE 519 Limit (${limitPercent}%)`,
+              position: 'right',
+              fontSize: 9,
+              fill: COLORS.limit,
+            }}
           />
           <Bar dataKey="magnitudePercent" radius={[2, 2, 0, 0]} maxBarSize={16}>
             {data.map((entry, idx) => (

@@ -1,6 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import type { PaginatedResult } from '../../../shared/types/index.js';
-import type { IReasoningRepository, ListPlansOptions } from '../../domain/reasoning-repository.interface.js';
+import type {
+  IReasoningRepository,
+  ListPlansOptions,
+} from '../../domain/reasoning-repository.interface.js';
 import { ReasoningPlan } from '../../domain/reasoning-plan.entity.js';
 import { ExecutionGraph } from '../../domain/execution-graph.entity.js';
 
@@ -23,7 +26,7 @@ export class InMemoryReasoningRepository implements IReasoningRepository {
     let items = Array.from(this.plans.values());
 
     if (options?.status) {
-      items = items.filter(p => p.status === options.status);
+      items = items.filter((p) => p.status === options.status);
     }
 
     items.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());

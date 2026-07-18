@@ -1,7 +1,10 @@
 import { Logger } from '@nestjs/common';
 import type { PaginatedResult } from '../../../shared/types/index.js';
 import type { PromptTemplateEntity } from '../../domain/prompt-template.entity.js';
-import type { ITemplateRegistry, TemplateFindOptions } from '../../domain/prompt-template-registry.interface.js';
+import type {
+  ITemplateRegistry,
+  TemplateFindOptions,
+} from '../../domain/prompt-template-registry.interface.js';
 
 export class InMemoryTemplateRegistry implements ITemplateRegistry {
   private readonly logger = new Logger(InMemoryTemplateRegistry.name);
@@ -17,10 +20,10 @@ export class InMemoryTemplateRegistry implements ITemplateRegistry {
   }
 
   async getByName(name: string, version?: number): Promise<PromptTemplateEntity | null> {
-    const candidates = Array.from(this.store.values()).filter(e => e.name === name);
+    const candidates = Array.from(this.store.values()).filter((e) => e.name === name);
     if (candidates.length === 0) return null;
     if (version !== undefined) {
-      return candidates.find(e => e.version === version) ?? null;
+      return candidates.find((e) => e.version === version) ?? null;
     }
     return candidates.reduce((a, b) => (a.version > b.version ? a : b));
   }

@@ -7,9 +7,7 @@ import type { IPromptRegistry, PromptFindOptions } from '../domain/prompt-regist
 export class PromptRegistryService {
   private readonly logger = new Logger(PromptRegistryService.name);
 
-  constructor(
-    @Inject('IPromptRegistry') private readonly registry: IPromptRegistry,
-  ) {}
+  constructor(@Inject('IPromptRegistry') private readonly registry: IPromptRegistry) {}
 
   async register(
     name: string,

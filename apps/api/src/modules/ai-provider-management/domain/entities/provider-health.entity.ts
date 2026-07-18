@@ -21,25 +21,43 @@ export class ProviderHealthEntity {
   ): ProviderHealthEntity {
     const now = new Date();
     return new ProviderHealthEntity(
-      randomUUID(), providerId, status,
-      latencyMs ?? null, errorMsg ?? null, now, now,
+      randomUUID(),
+      providerId,
+      status,
+      latencyMs ?? null,
+      errorMsg ?? null,
+      now,
+      now,
     );
   }
 
   static reconstitute(data: {
-    id: string; provider_id: string; status: string;
-    latency_ms: number | null; error_msg: string | null;
-    checked_at: Date; created_at: Date;
+    id: string;
+    provider_id: string;
+    status: string;
+    latency_ms: number | null;
+    error_msg: string | null;
+    checked_at: Date;
+    created_at: Date;
   }): ProviderHealthEntity {
     return new ProviderHealthEntity(
-      data.id, data.provider_id,
+      data.id,
+      data.provider_id,
       data.status as HealthStatus,
-      data.latency_ms, data.error_msg,
-      data.checked_at, data.created_at,
+      data.latency_ms,
+      data.error_msg,
+      data.checked_at,
+      data.created_at,
     );
   }
 
-  get isHealthy(): boolean { return this.status === 'healthy'; }
-  get isDegraded(): boolean { return this.status === 'degraded'; }
-  get isUnhealthy(): boolean { return this.status === 'unhealthy'; }
+  get isHealthy(): boolean {
+    return this.status === 'healthy';
+  }
+  get isDegraded(): boolean {
+    return this.status === 'degraded';
+  }
+  get isUnhealthy(): boolean {
+    return this.status === 'unhealthy';
+  }
 }

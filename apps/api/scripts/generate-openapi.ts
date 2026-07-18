@@ -11,7 +11,7 @@ const __dirname = join(__filename, '..');
 
 async function generateOpenAPI() {
   console.log('📝 Generating OpenAPI specification...');
-  
+
   try {
     const { ApiModule } = await import(resolve(process.cwd(), 'dist/api.module.js'));
     const app = await NestFactory.create(ApiModule, { logger: false });
@@ -22,7 +22,17 @@ async function generateOpenAPI() {
       .setVersion('1.0.0')
       .setContact('Xennic Team', 'https://xennic.com', 'support@xennic.com')
       .setLicense('Proprietary', 'https://xennic.com/terms')
-      .addBearerAuth({ type: 'http', scheme: 'bearer', bearerFormat: 'JWT', name: 'JWT', description: 'Enter JWT token', in: 'header' }, 'JWT-auth')
+      .addBearerAuth(
+        {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
+          name: 'JWT',
+          description: 'Enter JWT token',
+          in: 'header',
+        },
+        'JWT-auth',
+      )
       .addTag('health', 'Health check endpoints')
       .addTag('workspaces', 'Workspace management (multi-tenant isolation)')
       .addTag('auth', 'Authentication and user management')
@@ -39,9 +49,7 @@ async function generateOpenAPI() {
     const outputPath = join(outputDir, 'openapi.json');
     writeFileSync(outputPath, JSON.stringify(document, null, 2));
 
-    const endpointCount = Object.keys(document.paths).filter(
-      (path) => path !== '/api/v1'
-    ).length;
+    const endpointCount = Object.keys(document.paths).filter((path) => path !== '/api/v1').length;
     console.log(`✅ OpenAPI specification saved to: ${outputPath}`);
     console.log(`📊 Total endpoints: ${endpointCount}`);
     await app.close();

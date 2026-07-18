@@ -25,13 +25,20 @@ import { UserService } from '../../application/services/user.service.js';
 import { UserResponseDto } from '../dtos/user-response.dto.js';
 
 // برای Swagger نیاز به کلاس داریم، بنابراین کلاس‌های مجزا ایجاد می‌کنیم
-import { IsEmail, IsString, IsNotEmpty, MinLength, MaxLength, IsOptional, Matches } from 'class-validator';
+import {
+  IsEmail,
+  IsString,
+  IsNotEmpty,
+  MinLength,
+  MaxLength,
+  IsOptional,
+  Matches,
+} from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 @ApiTags('user')
 @ApiBearerAuth('JWT-auth')
 @Controller('user')
-
 export class CreateUserHttpDto {
   @ApiProperty({ example: 'user@example.com', description: 'User email address' })
   @IsEmail({}, { message: 'Invalid email format' })
@@ -56,7 +63,8 @@ export class CreateUserHttpDto {
   @IsString()
   @MinLength(8, { message: 'Password must be at least 8 characters' })
   @Matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/, {
-    message: 'Password must contain at least one uppercase, one lowercase, one number, and one special character',
+    message:
+      'Password must contain at least one uppercase, one lowercase, one number, and one special character',
   })
   password!: string;
 
@@ -98,7 +106,10 @@ export class UserController {
   @ApiResponse({ status: 201, description: 'User created successfully', type: UserResponseDto })
   @ApiResponse({ status: 400, description: 'Validation failed' })
   @ApiResponse({ status: 409, description: 'User with this email already exists' })
-  async create(@Body() createUserDto: CreateUserHttpDto, @Req() req: any): Promise<UserResponseDto> {
+  async create(
+    @Body() createUserDto: CreateUserHttpDto,
+    @Req() req: any,
+  ): Promise<UserResponseDto> {
     const userId = req.headers['x-user-id'] || 'system';
     const user = await this.userService.create(createUserDto, userId);
     return UserResponseDto.fromEntity(user);
@@ -148,7 +159,10 @@ export class UserController {
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiOperation({ summary: 'Soft delete user', description: 'Marks user as deleted (can be restored).' })
+  @ApiOperation({
+    summary: 'Soft delete user',
+    description: 'Marks user as deleted (can be restored).',
+  })
   @ApiParam({ name: 'id', description: 'User UUID' })
   @ApiResponse({ status: 204, description: 'User soft deleted successfully' })
   @ApiResponse({ status: 404, description: 'User not found' })
@@ -158,7 +172,10 @@ export class UserController {
   }
 
   @Patch(':id/restore')
-  @ApiOperation({ summary: 'Restore soft-deleted user', description: 'Restores a previously soft-deleted user.' })
+  @ApiOperation({
+    summary: 'Restore soft-deleted user',
+    description: 'Restores a previously soft-deleted user.',
+  })
   @ApiParam({ name: 'id', description: 'User UUID' })
   @ApiResponse({ status: 200, description: 'User restored successfully', type: UserResponseDto })
   @ApiResponse({ status: 404, description: 'User not found' })
@@ -170,7 +187,10 @@ export class UserController {
 
   @Delete(':id/hard')
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiOperation({ summary: 'Permanently delete user', description: '⚠️ IRREVERSIBLE - Completely removes user from database.' })
+  @ApiOperation({
+    summary: 'Permanently delete user',
+    description: '⚠️ IRREVERSIBLE - Completely removes user from database.',
+  })
   @ApiParam({ name: 'id', description: 'User UUID' })
   @ApiResponse({ status: 204, description: 'User permanently deleted' })
   @ApiResponse({ status: 404, description: 'User not found' })

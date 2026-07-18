@@ -24,9 +24,7 @@ export interface ResolvedDependencies {
 export class SkillRegistryService {
   private readonly logger = new Logger(SkillRegistryService.name);
 
-  constructor(
-    @Inject('ISkillRegistry') private readonly registry: ISkillRegistry,
-  ) {}
+  constructor(@Inject('ISkillRegistry') private readonly registry: ISkillRegistry) {}
 
   async register(data: RegisterSkillData): Promise<SkillEntity> {
     const entity = SkillEntity.create(
@@ -68,10 +66,7 @@ export class SkillRegistryService {
     return this.registry.findCapable(inputs, outputs);
   }
 
-  async update(
-    id: string,
-    partial: Partial<SkillEntity>,
-  ): Promise<SkillEntity | null> {
+  async update(id: string, partial: Partial<SkillEntity>): Promise<SkillEntity | null> {
     return this.registry.update(id, partial);
   }
 

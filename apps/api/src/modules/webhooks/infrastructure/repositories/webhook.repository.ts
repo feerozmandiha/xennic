@@ -55,7 +55,7 @@ export class WebhookRepository implements IWebhookRepository {
         ORDER BY created_at DESC
         LIMIT ${limit} OFFSET ${offset}
       `;
-      return rows.map(r => this._map(r));
+      return rows.map((r) => this._map(r));
     } catch {
       return [];
     }
@@ -70,7 +70,7 @@ export class WebhookRepository implements IWebhookRepository {
           AND events @> ${JSON.stringify([event])}::jsonb
         ORDER BY created_at ASC
       `;
-      return rows.map(r => this._map(r));
+      return rows.map((r) => this._map(r));
     } catch {
       return [];
     }

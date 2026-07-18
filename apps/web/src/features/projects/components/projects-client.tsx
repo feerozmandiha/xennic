@@ -5,51 +5,66 @@ import { useTranslations } from 'next-intl';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useParams } from 'next/navigation';
 import {
-  FolderKanban, Plus, Search,
-  Calendar, ArrowUpRight, Trash2,
-  LayoutGrid, List, Filter,
+  FolderKanban,
+  Plus,
+  Search,
+  Calendar,
+  ArrowUpRight,
+  Trash2,
+  LayoutGrid,
+  List,
+  Filter,
 } from 'lucide-react';
-import { Input }      from '@/components/ui/input';
-import { Badge }      from '@/components/ui/badge';
-import { Skeleton }   from '@/components/ui/skeleton';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 import { PageHeader } from '@/components/ui/page-header';
 import { Card, CardContent } from '@/components/ui/card';
 import { useAuthStore } from '@/stores/auth.store';
-import { useToast }     from '@/stores/toast.store';
-import { apiClient }    from '@/lib/api/client';
-import { cn }           from '@/lib/utils';
+import { useToast } from '@/stores/toast.store';
+import { apiClient } from '@/lib/api/client';
+import { cn } from '@/lib/utils';
 import { NewProjectModal } from './new-project-modal';
 
 const STATUS_VARIANT: Record<string, 'success' | 'secondary' | 'destructive' | 'warning'> = {
-  active:    'success',
+  active: 'success',
   completed: 'secondary',
-  archived:  'secondary',
+  archived: 'secondary',
   cancelled: 'destructive',
 };
 
 const STATUS_FA: Record<string, string> = {
-  active:    'فعال',
+  active: 'فعال',
   completed: 'تکمیل‌شده',
-  archived:  'آرشیو',
+  archived: 'آرشیو',
   cancelled: 'لغوشده',
 };
 
 // ── Confirm Delete Dialog ──────────────────────────────────────────────────────
 
-function ConfirmDialog({ name, onConfirm, onCancel }: {
-  name: string; onConfirm: () => void; onCancel: () => void;
+function ConfirmDialog({
+  name,
+  onConfirm,
+  onCancel,
+}: {
+  name: string;
+  onConfirm: () => void;
+  onCancel: () => void;
 }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm animate-fade-in-fast" onClick={onCancel} />
+      <div
+        className="absolute inset-0 bg-black/50 backdrop-blur-sm animate-fade-in-fast"
+        onClick={onCancel}
+      />
       <div className="relative z-10 w-full max-w-sm bg-[hsl(var(--card))] rounded-[var(--radius-xl)] border border-[hsl(var(--border))] shadow-[var(--shadow-lg)] p-6 animate-scale-in">
         <div className="w-12 h-12 rounded-full bg-[hsl(var(--destructive)/0.1)] flex items-center justify-center mx-auto mb-4">
           <Trash2 className="h-5 w-5 text-[hsl(var(--destructive))]" />
         </div>
         <h3 className="text-base font-semibold text-center mb-2">حذف پروژه</h3>
         <p className="text-sm text-[hsl(var(--muted-foreground))] text-center mb-6">
-          آیا از حذف <span className="font-medium text-[hsl(var(--foreground))]">«{name}»</span> مطمئن هستید؟
-          این عمل قابل بازگشت نیست.
+          آیا از حذف <span className="font-medium text-[hsl(var(--foreground))]">«{name}»</span>{' '}
+          مطمئن هستید؟ این عمل قابل بازگشت نیست.
         </p>
         <div className="flex gap-3">
           <button
@@ -72,19 +87,27 @@ function ConfirmDialog({ name, onConfirm, onCancel }: {
 
 // ── Project Card ──────────────────────────────────────────────────────────────
 
-function ProjectCard({ project, locale, onDelete }: {
-  project: any; locale: string; onDelete: (id: string, name: string) => void;
+function ProjectCard({
+  project,
+  locale,
+  onDelete,
+}: {
+  project: any;
+  locale: string;
+  onDelete: (id: string, name: string) => void;
 }) {
   return (
     <Card className="card-hover group overflow-hidden">
       {/* Status strip */}
-      <div className={cn(
-        'h-0.5 w-full',
-        project.status === 'active'    && 'bg-[hsl(var(--success))]',
-        project.status === 'completed' && 'bg-[hsl(var(--primary))]',
-        project.status === 'archived'  && 'bg-[hsl(var(--muted-foreground))]',
-        project.status === 'cancelled' && 'bg-[hsl(var(--destructive))]',
-      )} />
+      <div
+        className={cn(
+          'h-0.5 w-full',
+          project.status === 'active' && 'bg-[hsl(var(--success))]',
+          project.status === 'completed' && 'bg-[hsl(var(--primary))]',
+          project.status === 'archived' && 'bg-[hsl(var(--muted-foreground))]',
+          project.status === 'cancelled' && 'bg-[hsl(var(--destructive))]',
+        )}
+      />
 
       <CardContent className="p-5">
         <div className="flex items-start gap-3 mb-4">
@@ -98,11 +121,16 @@ function ProjectCard({ project, locale, onDelete }: {
                 {project.description}
               </p>
             ) : (
-              <p className="text-xs text-[hsl(var(--muted-foreground)/0.5)] mt-1 italic">بدون توضیحات</p>
+              <p className="text-xs text-[hsl(var(--muted-foreground)/0.5)] mt-1 italic">
+                بدون توضیحات
+              </p>
             )}
           </div>
           <button
-            onClick={(e) => { e.preventDefault(); onDelete(project.id, project.name); }}
+            onClick={(e) => {
+              e.preventDefault();
+              onDelete(project.id, project.name);
+            }}
             className="p-1.5 rounded-[var(--radius)] hover:bg-[hsl(var(--destructive)/0.08)] text-[hsl(var(--muted-foreground)/0.4)] hover:text-[hsl(var(--destructive))] opacity-0 group-hover:opacity-100 transition-all shrink-0"
             title="حذف پروژه"
           >
@@ -137,8 +165,14 @@ function ProjectCard({ project, locale, onDelete }: {
 
 // ── Project Row (list view) ───────────────────────────────────────────────────
 
-function ProjectRow({ project, locale, onDelete }: {
-  project: any; locale: string; onDelete: (id: string, name: string) => void;
+function ProjectRow({
+  project,
+  locale,
+  onDelete,
+}: {
+  project: any;
+  locale: string;
+  onDelete: (id: string, name: string) => void;
 }) {
   return (
     <div className="flex items-center gap-4 px-5 py-3.5 hover:bg-[hsl(var(--secondary)/0.4)] transition-colors group border-b border-[hsl(var(--border))] last:border-0">
@@ -148,10 +182,15 @@ function ProjectRow({ project, locale, onDelete }: {
       <div className="min-w-0 flex-1">
         <p className="text-sm font-medium truncate">{project.name}</p>
         {project.description && (
-          <p className="text-xs text-[hsl(var(--muted-foreground))] truncate">{project.description}</p>
+          <p className="text-xs text-[hsl(var(--muted-foreground))] truncate">
+            {project.description}
+          </p>
         )}
       </div>
-      <Badge variant={STATUS_VARIANT[project.status] ?? 'secondary'} className="text-[10px] shrink-0">
+      <Badge
+        variant={STATUS_VARIANT[project.status] ?? 'secondary'}
+        className="text-[10px] shrink-0"
+      >
         {STATUS_FA[project.status] ?? project.status}
       </Badge>
       {project.startDate && (
@@ -181,33 +220,33 @@ function ProjectRow({ project, locale, onDelete }: {
 // ── Status Filter ─────────────────────────────────────────────────────────────
 
 const STATUS_FILTERS = [
-  { key: 'all',       label: 'همه' },
-  { key: 'active',    label: 'فعال' },
+  { key: 'all', label: 'همه' },
+  { key: 'active', label: 'فعال' },
   { key: 'completed', label: 'تکمیل‌شده' },
-  { key: 'archived',  label: 'آرشیو' },
+  { key: 'archived', label: 'آرشیو' },
 ];
 
 // ── Main ──────────────────────────────────────────────────────────────────────
 
 export function ProjectsClient() {
-  const t           = useTranslations('projects');
-  const tCommon     = useTranslations('common');
-  const params      = useParams();
-  const locale      = (params?.locale as string) ?? 'fa';
-  const wsId        = useAuthStore(s => s.workspaceId);
-  const toast       = useToast();
+  const t = useTranslations('projects');
+  const tCommon = useTranslations('common');
+  const params = useParams();
+  const locale = (params?.locale as string) ?? 'fa';
+  const wsId = useAuthStore((s) => s.workspaceId);
+  const toast = useToast();
   const queryClient = useQueryClient();
 
-  const [search,      setSearch]      = useState('');
-  const [statusFilter, setStatus]     = useState('all');
-  const [viewMode,    setViewMode]    = useState<'grid' | 'list'>('grid');
-  const [showNew,     setShowNew]     = useState(false);
-  const [deleteTarget, setDelete]     = useState<{ id: string; name: string } | null>(null);
+  const [search, setSearch] = useState('');
+  const [statusFilter, setStatus] = useState('all');
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [showNew, setShowNew] = useState(false);
+  const [deleteTarget, setDelete] = useState<{ id: string; name: string } | null>(null);
 
   const { data, isLoading } = useQuery({
     queryKey: ['projects', wsId],
-    queryFn:  () => apiClient.get<any>('/projects?limit=100'),
-    enabled:  !!wsId,
+    queryFn: () => apiClient.get<any>('/projects?limit=100'),
+    enabled: !!wsId,
     retry: false,
   });
 
@@ -251,7 +290,7 @@ export function ProjectsClient() {
         <Input
           placeholder={tCommon('search')}
           value={search}
-          onChange={e => setSearch(e.target.value)}
+          onChange={(e) => setSearch(e.target.value)}
           startIcon={<Search className="h-4 w-4" />}
           className="max-w-xs"
         />
@@ -259,7 +298,7 @@ export function ProjectsClient() {
         {/* Status filter */}
         <div className="flex items-center gap-1.5 flex-wrap">
           <Filter className="h-3.5 w-3.5 text-[hsl(var(--muted-foreground))]" />
-          {STATUS_FILTERS.map(f => (
+          {STATUS_FILTERS.map((f) => (
             <button
               key={f.key}
               onClick={() => setStatus(f.key)}
@@ -281,7 +320,9 @@ export function ProjectsClient() {
             onClick={() => setViewMode('grid')}
             className={cn(
               'p-1.5 rounded-[var(--radius-sm)] transition-colors',
-              viewMode === 'grid' ? 'bg-[hsl(var(--secondary))]' : 'hover:bg-[hsl(var(--secondary)/0.5)]',
+              viewMode === 'grid'
+                ? 'bg-[hsl(var(--secondary))]'
+                : 'hover:bg-[hsl(var(--secondary)/0.5)]',
             )}
           >
             <LayoutGrid className="h-3.5 w-3.5" />
@@ -290,7 +331,9 @@ export function ProjectsClient() {
             onClick={() => setViewMode('list')}
             className={cn(
               'p-1.5 rounded-[var(--radius-sm)] transition-colors',
-              viewMode === 'list' ? 'bg-[hsl(var(--secondary))]' : 'hover:bg-[hsl(var(--secondary)/0.5)]',
+              viewMode === 'list'
+                ? 'bg-[hsl(var(--secondary))]'
+                : 'hover:bg-[hsl(var(--secondary)/0.5)]',
             )}
           >
             <List className="h-3.5 w-3.5" />
@@ -300,11 +343,13 @@ export function ProjectsClient() {
 
       {/* Content */}
       {isLoading ? (
-        <div className={cn(
-          viewMode === 'grid'
-            ? 'grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4'
-            : 'space-y-0',
-        )}>
+        <div
+          className={cn(
+            viewMode === 'grid'
+              ? 'grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4'
+              : 'space-y-0',
+          )}
+        >
           {Array.from({ length: 6 }).map((_, i) => (
             <Skeleton key={i} className="h-36" />
           ))}

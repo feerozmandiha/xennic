@@ -24,7 +24,10 @@ export interface ConfidenceSummary {
 
 export interface IExplainabilityRepository {
   saveDecision(log: DecisionLog): Promise<void>;
-  getDecisions(executionId: string, options?: FindDecisionOptions): Promise<PaginatedResult<DecisionLog>>;
+  getDecisions(
+    executionId: string,
+    options?: FindDecisionOptions,
+  ): Promise<PaginatedResult<DecisionLog>>;
   getDecisionsByType(executionId: string, type: DecisionType): Promise<DecisionLog[]>;
   saveRationale(rationale: SelectionRationale): Promise<void>;
   getRationale(executionId: string, selectionType?: SelectionType): Promise<SelectionRationale[]>;

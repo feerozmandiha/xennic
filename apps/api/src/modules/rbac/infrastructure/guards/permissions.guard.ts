@@ -30,8 +30,8 @@ export class PermissionsGuard implements CanActivate {
     // اگر هیچ permission لازم نیست، عبور کن
     if (!required || required.length === 0) return true;
 
-    const request     = context.switchToHttp().getRequest();
-    const user        = request.user;
+    const request = context.switchToHttp().getRequest();
+    const user = request.user;
     const workspaceId = request.workspaceId as string | undefined;
 
     if (!user?.userId) {
@@ -40,9 +40,7 @@ export class PermissionsGuard implements CanActivate {
 
     // ── اگر workspaceId نیست، اجازه بده (global endpoints) ──────────
     if (!workspaceId) {
-      this.logger.debug(
-        `PermissionsGuard: no workspaceId — allowing (global endpoint)`,
-      );
+      this.logger.debug(`PermissionsGuard: no workspaceId — allowing (global endpoint)`);
       return true;
     }
 
@@ -58,14 +56,10 @@ export class PermissionsGuard implements CanActivate {
         this.logger.warn(
           `PermissionsGuard: user ${user.userId} missing permissions [${required.join(',')}] in workspace ${workspaceId}`,
         );
-        throw new ForbiddenException(
-          `Missing required permissions: ${required.join(', ')}`,
-        );
+        throw new ForbiddenException(`Missing required permissions: ${required.join(', ')}`);
       }
 
-      this.logger.debug(
-        `PermissionsGuard: ✅ user ${user.userId} has [${required.join(',')}]`,
-      );
+      this.logger.debug(`PermissionsGuard: ✅ user ${user.userId} has [${required.join(',')}]`);
       return true;
     } catch (err) {
       if (err instanceof ForbiddenException) throw err;

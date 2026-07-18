@@ -10,7 +10,12 @@ export class PermissionEntity {
     public readonly createdAt: Date,
   ) {}
 
-  static create(name: string, slug: string, domain: string, description?: string): PermissionEntity {
+  static create(
+    name: string,
+    slug: string,
+    domain: string,
+    description?: string,
+  ): PermissionEntity {
     return new PermissionEntity(
       crypto.randomUUID(),
       name,
@@ -39,8 +44,16 @@ export class PermissionEntity {
     );
   }
 
-  get name(): string { return this._name; }
-  get slug(): string { return this._slug.value; }
-  get description(): string | null { return this._description; }
-  get domain(): string { return this._domain; }
+  get name(): string {
+    return this._name;
+  }
+  get slug(): string {
+    return this._slug.value;
+  }
+  get description(): string | null {
+    return this._description;
+  }
+  get domain(): string {
+    return this._domain;
+  }
 }

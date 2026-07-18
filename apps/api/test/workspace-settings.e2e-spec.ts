@@ -136,7 +136,11 @@ describe('Workspace Settings (e2e)', () => {
         imports: [WorkspaceModule],
       })
         .overrideGuard(JwtAuthGuard)
-        .useValue({ canActivate: () => { throw new UnauthorizedException(); } })
+        .useValue({
+          canActivate: () => {
+            throw new UnauthorizedException();
+          },
+        })
         .overrideGuard(WorkspaceGuard)
         .useValue({ canActivate: () => true })
         .overrideProvider(WorkspaceSettingsService)

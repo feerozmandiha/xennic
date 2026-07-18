@@ -49,11 +49,7 @@ export class ProjectService {
 
   // ── findAll ─────────────────────────────────────────────────────────────────
 
-  async findAll(
-    workspaceId: string,
-    page = 1,
-    limit = 20,
-  ): Promise<PaginatedProjects> {
+  async findAll(workspaceId: string, page = 1, limit = 20): Promise<PaginatedProjects> {
     const offset = (page - 1) * limit;
     const [data, total] = await Promise.all([
       this.projectRepository.findAll(workspaceId, offset, limit),
@@ -81,10 +77,7 @@ export class ProjectService {
 
   // ── create ──────────────────────────────────────────────────────────────────
 
-  async create(
-    input: CreateProjectInput,
-    userId: string,
-  ): Promise<ProjectEntity> {
+  async create(input: CreateProjectInput, userId: string): Promise<ProjectEntity> {
     const project = ProjectEntity.create(
       input.workspaceId,
       input.name,
@@ -146,10 +139,7 @@ export class ProjectService {
   // MEMBERS
   // ══════════════════════════════════════════════════════════════════════════
 
-  async getMembers(
-    projectId: string,
-    workspaceId: string,
-  ): Promise<ProjectMember[]> {
+  async getMembers(projectId: string, workspaceId: string): Promise<ProjectMember[]> {
     await this.findOne(projectId, workspaceId);
     return this.projectRepository.findMembers(projectId);
   }
@@ -173,11 +163,7 @@ export class ProjectService {
     return member;
   }
 
-  async removeMember(
-    projectId: string,
-    workspaceId: string,
-    userId: string,
-  ): Promise<void> {
+  async removeMember(projectId: string, workspaceId: string, userId: string): Promise<void> {
     await this.findOne(projectId, workspaceId);
     await this.projectRepository.removeMember(projectId, userId);
   }
@@ -186,10 +172,7 @@ export class ProjectService {
   // NOTES
   // ══════════════════════════════════════════════════════════════════════════
 
-  async getNotes(
-    projectId: string,
-    workspaceId: string,
-  ): Promise<ProjectNote[]> {
+  async getNotes(projectId: string, workspaceId: string): Promise<ProjectNote[]> {
     await this.findOne(projectId, workspaceId);
     return this.projectRepository.findNotes(projectId);
   }
@@ -206,11 +189,7 @@ export class ProjectService {
     return note;
   }
 
-  async deleteNote(
-    projectId: string,
-    workspaceId: string,
-    noteId: string,
-  ): Promise<void> {
+  async deleteNote(projectId: string, workspaceId: string, noteId: string): Promise<void> {
     await this.findOne(projectId, workspaceId);
     await this.projectRepository.deleteNote(noteId);
   }

@@ -33,7 +33,10 @@ export interface DiscoveryResult {
 export interface IDiscoveryStrategy {
   readonly providerType: string;
   discover(apiKey: string, baseUrl?: string): Promise<DiscoveryResult>;
-  testConnection(apiKey: string, baseUrl?: string): Promise<{ success: boolean; latencyMs: number; error?: string }>;
+  testConnection(
+    apiKey: string,
+    baseUrl?: string,
+  ): Promise<{ success: boolean; latencyMs: number; error?: string }>;
 }
 
 export const IDISCOVERY_STRATEGY = 'IDiscoveryStrategy';

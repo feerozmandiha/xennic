@@ -4,28 +4,34 @@ import { useState, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
-  Upload, FileText, Image, Archive,
-  Download, Trash2, HardDrive, MoreHorizontal,
+  Upload,
+  FileText,
+  Image,
+  Archive,
+  Download,
+  Trash2,
+  HardDrive,
+  MoreHorizontal,
 } from 'lucide-react';
 import { PageHeader } from '@/components/ui/page-header';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge }    from '@/components/ui/badge';
+import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import { useAuthStore } from '@/stores/auth.store';
-import { useToast }     from '@/stores/toast.store';
-import { apiClient }    from '@/lib/api/client';
-import { cn }           from '@/lib/utils';
+import { useToast } from '@/stores/toast.store';
+import { apiClient } from '@/lib/api/client';
+import { cn } from '@/lib/utils';
 
-const API_BASE = typeof window !== 'undefined'
-  ? `${process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000'}/api/v1`
-  : `${process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000'}/api/v1`;
+const API_BASE =
+  typeof window !== 'undefined'
+    ? `${process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000'}/api/v1`
+    : `${process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000'}/api/v1`;
 
 // ── File Icon ─────────────────────────────────────────────────────────────────
 
 function FileIcon({ mimeType }: { mimeType: string }) {
-  if (mimeType.startsWith('image/'))
-    return <Image className="h-5 w-5 text-[hsl(var(--accent))]" />;
+  if (mimeType.startsWith('image/')) return <Image className="h-5 w-5 text-[hsl(var(--accent))]" />;
   if (mimeType === 'application/pdf' || mimeType.includes('word') || mimeType.includes('excel'))
     return <FileText className="h-5 w-5 text-[hsl(var(--primary))]" />;
   return <Archive className="h-5 w-5 text-[hsl(var(--muted-foreground))]" />;
@@ -34,12 +40,12 @@ function FileIcon({ mimeType }: { mimeType: string }) {
 // ── Bucket Badge ──────────────────────────────────────────────────────────────
 
 const BUCKET_VARIANT: Record<string, string> = {
-  public:      'default',
-  private:     'secondary',
-  documents:   'default',
-  reports:     'success',
+  public: 'default',
+  private: 'secondary',
+  documents: 'default',
+  reports: 'success',
   engineering: 'warning',
-  ai:          'info',
+  ai: 'info',
 };
 
 // ── Upload Zone ───────────────────────────────────────────────────────────────
@@ -58,7 +64,10 @@ function UploadZone({ onUpload }: { onUpload: (file: File) => void }) {
 
   return (
     <div
-      onDragOver={e => { e.preventDefault(); setDragging(true); }}
+      onDragOver={(e) => {
+        e.preventDefault();
+        setDragging(true);
+      }}
       onDragLeave={() => setDragging(false)}
       onDrop={handleDrop}
       onClick={() => inputRef.current?.click()}
@@ -87,7 +96,7 @@ function UploadZone({ onUpload }: { onUpload: (file: File) => void }) {
         ref={inputRef}
         type="file"
         className="hidden"
-        onChange={e => e.target.files?.[0] && onUpload(e.target.files[0])}
+        onChange={(e) => e.target.files?.[0] && onUpload(e.target.files[0])}
       />
     </div>
   );
@@ -95,9 +104,13 @@ function UploadZone({ onUpload }: { onUpload: (file: File) => void }) {
 
 // ── File Row ──────────────────────────────────────────────────────────────────
 
-function FileRow({ file, onDelete, onDownload }: {
+function FileRow({
+  file,
+  onDelete,
+  onDownload,
+}: {
   file: any;
-  onDelete:   (id: string) => void;
+  onDelete: (id: string) => void;
   onDownload: (id: string, name: string) => void;
 }) {
   return (
@@ -118,7 +131,10 @@ function FileRow({ file, onDelete, onDownload }: {
       </div>
 
       {/* Bucket */}
-      <Badge variant={(BUCKET_VARIANT[file.bucket] ?? 'secondary') as any} className="shrink-0 hidden sm:inline-flex text-[10px]">
+      <Badge
+        variant={(BUCKET_VARIANT[file.bucket] ?? 'secondary') as any}
+        className="shrink-0 hidden sm:inline-flex text-[10px]"
+      >
         {file.bucket}
       </Badge>
 
@@ -132,7 +148,8 @@ function FileRow({ file, onDelete, onDownload }: {
         <DropdownMenu.Portal>
           <DropdownMenu.Content
             className="z-50 min-w-[140px] rounded-[var(--radius-lg)] border border-[hsl(var(--border))] bg-[hsl(var(--popover))] shadow-lg p-1 animate-fade-in"
-            align="end" sideOffset={4}
+            align="end"
+            sideOffset={4}
           >
             <DropdownMenu.Item
               className={menuItem}
@@ -165,25 +182,25 @@ const menuItem = cn(
 // ── Main ──────────────────────────────────────────────────────────────────────
 
 export function StorageClient() {
-  const t           = useTranslations('storage');
-  const wsId        = useAuthStore(s => s.workspaceId);
-  const token       = useAuthStore(s => s.token);
-  const toast       = useToast();
+  const t = useTranslations('storage');
+  const wsId = useAuthStore((s) => s.workspaceId);
+  const token = useAuthStore((s) => s.token);
+  const toast = useToast();
   const queryClient = useQueryClient();
   const [uploading, setUploading] = useState(false);
 
   // Files list
   const { data, isLoading } = useQuery({
     queryKey: ['files', wsId],
-    queryFn:  () => apiClient.get<any>('/storage/files?limit=50'),
-    enabled:  !!wsId,
+    queryFn: () => apiClient.get<any>('/storage/files?limit=50'),
+    enabled: !!wsId,
   });
 
   // Stats
   const { data: stats } = useQuery({
     queryKey: ['storage-stats-page', wsId],
-    queryFn:  () => apiClient.get<any>('/storage/stats'),
-    enabled:  !!wsId,
+    queryFn: () => apiClient.get<any>('/storage/stats'),
+    enabled: !!wsId,
   });
 
   // Delete
@@ -208,7 +225,7 @@ export function StorageClient() {
       const res = await fetch(`${API_BASE}/storage/upload`, {
         method: 'POST',
         headers: {
-          'Authorization':  `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
           'x-workspace-id': wsId,
         },
         body: formData,
@@ -250,7 +267,9 @@ export function StorageClient() {
     <div className="space-y-5">
       <PageHeader
         title={t('title')}
-        description={stats?.data ? `${stats.data.totalFiles} فایل — ${stats.data.totalSizeHuman}` : undefined}
+        description={
+          stats?.data ? `${stats.data.totalFiles} فایل — ${stats.data.totalSizeHuman}` : undefined
+        }
       />
 
       {/* Stats */}
@@ -258,9 +277,13 @@ export function StorageClient() {
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           {[
             { label: 'تعداد فایل‌ها', value: stats.data.totalFiles, icon: '📁' },
-            { label: 'حجم کل',        value: stats.data.totalSizeHuman, icon: '💾' },
-            { label: 'آخرین آپلود',   value: files[0] ? new Date(files[0].createdAt).toLocaleDateString('fa-IR') : '—', icon: '🕒' },
-          ].map(item => (
+            { label: 'حجم کل', value: stats.data.totalSizeHuman, icon: '💾' },
+            {
+              label: 'آخرین آپلود',
+              value: files[0] ? new Date(files[0].createdAt).toLocaleDateString('fa-IR') : '—',
+              icon: '🕒',
+            },
+          ].map((item) => (
             <Card key={item.label}>
               <CardContent className="p-4 flex items-center gap-3">
                 <span className="text-2xl">{item.icon}</span>
@@ -326,7 +349,9 @@ export function StorageClient() {
           <CardContent className="p-0">
             {isLoading ? (
               <div className="p-4 space-y-3">
-                {[1,2,3,4].map(i => <Skeleton key={i} className="h-14" />)}
+                {[1, 2, 3, 4].map((i) => (
+                  <Skeleton key={i} className="h-14" />
+                ))}
               </div>
             ) : files.length > 0 ? (
               <div className="divide-y divide-[hsl(var(--border))]">
@@ -334,7 +359,7 @@ export function StorageClient() {
                   <FileRow
                     key={file.id}
                     file={file}
-                    onDelete={id => deleteMutation.mutate(id)}
+                    onDelete={(id) => deleteMutation.mutate(id)}
                     onDownload={handleDownload}
                   />
                 ))}
@@ -342,9 +367,7 @@ export function StorageClient() {
             ) : (
               <div className="flex flex-col items-center justify-center py-16 text-center">
                 <HardDrive className="h-10 w-10 text-[hsl(var(--muted-foreground))] opacity-30 mb-3" />
-                <p className="text-sm text-[hsl(var(--muted-foreground))]">
-                  هنوز فایلی آپلود نشده
-                </p>
+                <p className="text-sm text-[hsl(var(--muted-foreground))]">هنوز فایلی آپلود نشده</p>
               </div>
             )}
           </CardContent>

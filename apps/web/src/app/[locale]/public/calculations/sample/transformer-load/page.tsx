@@ -37,7 +37,9 @@ export default function TransformerLoadSamplePage() {
             نمونه رایگان
           </div>
           <h1 className="text-2xl font-black text-white">محاسبه بار ترانسفورماتور</h1>
-          <p className="text-sm text-white/50">محاسبه توان ظاهری و سایز ترانسفورماتور بر اساس بار اکتیو — استاندارد IEC 60076</p>
+          <p className="text-sm text-white/50">
+            محاسبه توان ظاهری و سایز ترانسفورماتور بر اساس بار اکتیو — استاندارد IEC 60076
+          </p>
         </div>
 
         <div className="rounded-xl border border-white/10 bg-white/5 p-6 space-y-4">
@@ -47,7 +49,7 @@ export default function TransformerLoadSamplePage() {
               <input
                 type="number"
                 value={power ?? ''}
-                onChange={e => setPower(Number(e.target.value))}
+                onChange={(e) => setPower(Number(e.target.value))}
                 className="w-full h-9 rounded-lg border border-white/10 bg-white/5 px-3 text-sm text-white outline-none focus:border-[#3b82f6]"
                 dir="ltr"
               />
@@ -60,7 +62,7 @@ export default function TransformerLoadSamplePage() {
                 min="0"
                 max="1"
                 value={pf ?? ''}
-                onChange={e => setPf(Number(e.target.value))}
+                onChange={(e) => setPf(Number(e.target.value))}
                 className="w-full h-9 rounded-lg border border-white/10 bg-white/5 px-3 text-sm text-white outline-none focus:border-[#3b82f6]"
                 dir="ltr"
               />
@@ -79,7 +81,9 @@ export default function TransformerLoadSamplePage() {
           {result && (
             <div className="rounded-lg bg-[#3b82f6]/10 border border-[#3b82f6]/20 p-4 text-center">
               <p className="text-sm text-white font-semibold">{result}</p>
-              <p className="text-[10px] text-white/40 mt-1">تخمین ساده — محاسبه دقیق نیاز به عضویت دارد</p>
+              <p className="text-[10px] text-white/40 mt-1">
+                تخمین ساده — محاسبه دقیق نیاز به عضویت دارد
+              </p>
             </div>
           )}
         </div>

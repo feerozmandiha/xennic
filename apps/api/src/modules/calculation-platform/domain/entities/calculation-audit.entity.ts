@@ -1,7 +1,21 @@
 import { randomUUID } from 'crypto';
 
-export type AuditAction = 'run' | 'validate' | 'create' | 'update' | 'delete' | 'publish' | 'rollback';
-export type AuditEntityType = 'definition' | 'version' | 'formula' | 'result' | 'certificate' | 'plugin' | 'category';
+export type AuditAction =
+  | 'run'
+  | 'validate'
+  | 'create'
+  | 'update'
+  | 'delete'
+  | 'publish'
+  | 'rollback';
+export type AuditEntityType =
+  | 'definition'
+  | 'version'
+  | 'formula'
+  | 'result'
+  | 'certificate'
+  | 'plugin'
+  | 'category';
 
 export class CalculationAuditEntity {
   private constructor(

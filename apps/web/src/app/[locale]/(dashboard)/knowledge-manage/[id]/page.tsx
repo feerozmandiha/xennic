@@ -7,11 +7,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t('title') };
 }
 
-export default async function KnowledgeDetailPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+export default async function KnowledgeDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   return <KnowledgeDetailClient articleId={id} />;
 }

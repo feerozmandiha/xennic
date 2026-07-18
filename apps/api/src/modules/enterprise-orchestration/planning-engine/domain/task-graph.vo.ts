@@ -74,7 +74,7 @@ export class TaskGraph {
     }
     for (const task of plan.tasks) {
       for (const depId of task.dependsOn) {
-        if (!edges.some(e => e.from === depId && e.to === task.id)) {
+        if (!edges.some((e) => e.from === depId && e.to === task.id)) {
           edges.push({ from: depId, to: task.id, type: 'hard' });
         }
       }
@@ -103,7 +103,7 @@ export class TaskGraph {
       }
     }
 
-    const unvisited = plan.tasks.filter(t => !visited.has(t.id));
+    const unvisited = plan.tasks.filter((t) => !visited.has(t.id));
     for (const task of unvisited) {
       levels.set(task.id, levels.size);
       visited.add(task.id);
@@ -129,24 +129,28 @@ export class TaskGraph {
   getReadyTasks(completedIds: string[]): PlanTask[] {
     const completed = new Set(completedIds);
     return this.nodes
-      .filter(node => {
+      .filter((node) => {
         if (completed.has(node.taskId)) {
           return false;
         }
-        const deps = this.edges
-          .filter(e => e.to === node.taskId)
-          .map(e => e.from);
-        return deps.every(d => completed.has(d));
+        const deps = this.edges.filter((e) => e.to === node.taskId).map((e) => e.from);
+        return deps.every((d) => completed.has(d));
       })
-      .map(n => ({ id: n.taskId, description: '', type: '', status: 'pending' as const, dependsOn: [] }));
+      .map((n) => ({
+        id: n.taskId,
+        description: '',
+        type: '',
+        status: 'pending' as const,
+        dependsOn: [],
+      }));
   }
 
   getLevel(taskId: string): number {
-    return this.nodes.find(n => n.taskId === taskId)?.level ?? -1;
+    return this.nodes.find((n) => n.taskId === taskId)?.level ?? -1;
   }
 
   getCriticalPath(): string[] {
-    const hardEdges = this.edges.filter(e => e.type === 'hard');
+    const hardEdges = this.edges.filter((e) => e.type === 'hard');
     const fromMap = new Map<string, string[]>();
     const toMap = new Map<string, string[]>();
     const allNodes = new Set<string>();
@@ -175,7 +179,7 @@ export class TaskGraph {
       prev.set(node, null);
     }
 
-    const roots = [...allNodes].filter(n => !toMap.has(n));
+    const roots = [...allNodes].filter((n) => !toMap.has(n));
     for (const root of roots) {
       dist.set(root, 0);
     }

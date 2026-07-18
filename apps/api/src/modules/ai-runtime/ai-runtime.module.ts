@@ -14,18 +14,10 @@ import { StreamingResponseManagerService } from './application/services/streamin
 import { PrismaSessionStore } from './infrastructure/stores/prisma-session.store.js';
 import { PrismaMemoryStore } from './infrastructure/stores/prisma-memory.store.js';
 import { PrismaPromptTemplateStore } from './infrastructure/stores/prisma-prompt-template.store.js';
-import {
-  I_SESSION_STORE,
-} from './domain/interfaces/session-store.interface.js';
-import {
-  I_MEMORY_STORE,
-} from './domain/interfaces/memory-store.interface.js';
-import {
-  I_PROMPT_TEMPLATE_STORE,
-} from './domain/interfaces/prompt-template-store.interface.js';
-import {
-  I_TOOL_REGISTRY,
-} from './domain/interfaces/tool-registry.interface.js';
+import { I_SESSION_STORE } from './domain/interfaces/session-store.interface.js';
+import { I_MEMORY_STORE } from './domain/interfaces/memory-store.interface.js';
+import { I_PROMPT_TEMPLATE_STORE } from './domain/interfaces/prompt-template-store.interface.js';
+import { I_TOOL_REGISTRY } from './domain/interfaces/tool-registry.interface.js';
 
 @Module({
   imports: [WorkspaceModule],

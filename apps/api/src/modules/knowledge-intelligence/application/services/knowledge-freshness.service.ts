@@ -30,7 +30,10 @@ export class KnowledgeFreshnessService {
     return Math.max(0.1, freshness);
   }
 
-  async refreshStaleNodes(workspaceId: string, thresholdDays = 30): Promise<{ nodeId: string; stale: boolean; daysSinceUpdate: number }[]> {
+  async refreshStaleNodes(
+    workspaceId: string,
+    thresholdDays = 30,
+  ): Promise<{ nodeId: string; stale: boolean; daysSinceUpdate: number }[]> {
     const { nodes } = await this.nodeRepo.findAllByWorkspace(workspaceId);
     const results: { nodeId: string; stale: boolean; daysSinceUpdate: number }[] = [];
     for (const node of nodes) {

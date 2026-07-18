@@ -42,7 +42,7 @@ export class SearchRepository implements ISearchRepository {
 
     const results = await Promise.all(queries);
 
-    const all = results.flatMap(r => r.items);
+    const all = results.flatMap((r) => r.items);
     return { items: all.slice(0, 25), total: all.length };
   }
 
@@ -63,7 +63,7 @@ export class SearchRepository implements ISearchRepository {
     `;
     return {
       type: 'project',
-      items: rows.map(r =>
+      items: rows.map((r) =>
         SearchResultEntity.create({
           type: 'project',
           id: r.id,
@@ -90,7 +90,7 @@ export class SearchRepository implements ISearchRepository {
     `;
     return {
       type: 'standard',
-      items: rows.map(r =>
+      items: rows.map((r) =>
         SearchResultEntity.create({
           type: 'standard',
           id: r.id,
@@ -120,7 +120,7 @@ export class SearchRepository implements ISearchRepository {
     `;
     return {
       type: 'conversation',
-      items: rows.map(r =>
+      items: rows.map((r) =>
         SearchResultEntity.create({
           type: 'conversation',
           id: r.id,
@@ -151,7 +151,7 @@ export class SearchRepository implements ISearchRepository {
     `;
     return {
       type: 'article',
-      items: rows.map(r =>
+      items: rows.map((r) =>
         SearchResultEntity.create({
           type: 'article',
           id: r.id,
@@ -182,7 +182,7 @@ export class SearchRepository implements ISearchRepository {
     `;
     return {
       type: 'file',
-      items: rows.map(r =>
+      items: rows.map((r) =>
         SearchResultEntity.create({
           type: 'file',
           id: r.id,
@@ -213,7 +213,7 @@ export class SearchRepository implements ISearchRepository {
     `;
     return {
       type: 'notification',
-      items: rows.map(r =>
+      items: rows.map((r) =>
         SearchResultEntity.create({
           type: 'notification',
           id: r.id,

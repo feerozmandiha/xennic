@@ -44,8 +44,7 @@ export class AdminGuard implements CanActivate {
 
       if (!isAdmin) {
         this.logger.warn(
-          `AdminGuard: DENIED — userId=${user.userId}, ` +
-          `ip=${req.ip}, path=${req.url}`
+          `AdminGuard: DENIED — userId=${user.userId}, ` + `ip=${req.ip}, path=${req.url}`,
         );
         throw new ForbiddenException('دسترسی ادمین لازم است');
       }
@@ -54,10 +53,7 @@ export class AdminGuard implements CanActivate {
       this.logger.debug(`AdminGuard: GRANTED — userId=${user.userId}`);
       return true;
     } catch (err) {
-      if (
-        err instanceof ForbiddenException ||
-        err instanceof UnauthorizedException
-      ) {
+      if (err instanceof ForbiddenException || err instanceof UnauthorizedException) {
         throw err;
       }
       this.logger.error(`AdminGuard error: ${(err as Error).message}`);
@@ -83,9 +79,7 @@ export class AdminGuard implements CanActivate {
       `;
 
       if (rows.length > 0) {
-        this.logger.debug(
-          `Admin check via RBAC: role=${rows[0]?.role_slug}`
-        );
+        this.logger.debug(`Admin check via RBAC: role=${rows[0]?.role_slug}`);
         return true;
       }
     } catch (err) {

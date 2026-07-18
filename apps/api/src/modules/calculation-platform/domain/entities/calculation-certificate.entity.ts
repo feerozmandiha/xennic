@@ -80,5 +80,7 @@ export class CalculationCertificateEntity {
     );
   }
 
-  revoke(): void { this.status = 'revoked'; }
+  revoke(): void {
+    this.status = 'revoked';
+  }
 }

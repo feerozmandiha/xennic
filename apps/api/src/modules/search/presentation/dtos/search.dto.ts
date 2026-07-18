@@ -1,5 +1,8 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import type { SearchResultEntity, SearchResultType } from '../../domain/entities/search-result.entity.js';
+import type {
+  SearchResultEntity,
+  SearchResultType,
+} from '../../domain/entities/search-result.entity.js';
 
 export class SearchResultDto {
   @ApiProperty({ enum: ['project', 'standard', 'conversation', 'article', 'file', 'notification'] })

@@ -33,7 +33,9 @@ export class KnowledgeConfidenceService {
     return Math.min(1, confidence);
   }
 
-  async batchComputeConfidence(workspaceId: string): Promise<{ nodeId: string; confidence: number }[]> {
+  async batchComputeConfidence(
+    workspaceId: string,
+  ): Promise<{ nodeId: string; confidence: number }[]> {
     const { nodes } = await this.nodeRepo.findAllByWorkspace(workspaceId);
     const results: { nodeId: string; confidence: number }[] = [];
     for (const node of nodes) {

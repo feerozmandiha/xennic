@@ -10,7 +10,12 @@ export function getInvoice(id: string) {
   return apiClient.get<any>(`/billing/invoices/${id}`);
 }
 
-export function createInvoice(data: { subtotal: number; totalAmount: number; taxAmount?: number; currency?: string }) {
+export function createInvoice(data: {
+  subtotal: number;
+  totalAmount: number;
+  taxAmount?: number;
+  currency?: string;
+}) {
   return apiClient.post<any>('/billing/invoices', data);
 }
 

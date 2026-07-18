@@ -55,7 +55,9 @@ export class OntologyRelation {
     );
   }
 
-  get properties(): OntologyRelationProperties { return this._properties; }
+  get properties(): OntologyRelationProperties {
+    return this._properties;
+  }
 
   toJSON(): OntologyRelationData {
     return {

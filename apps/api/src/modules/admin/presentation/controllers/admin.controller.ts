@@ -1,11 +1,22 @@
 import {
-  Controller, Get, Post, Put, Patch, Delete,
-  Body, Param, Query, Req, UseGuards, HttpCode, HttpStatus,
+  Controller,
+  Get,
+  Post,
+  Put,
+  Patch,
+  Delete,
+  Body,
+  Param,
+  Query,
+  Req,
+  UseGuards,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation, ApiQuery } from '@nestjs/swagger';
-import { JwtAuthGuard }  from '../../../auth/infrastructure/guards/jwt-auth.guard.js';
-import { AdminGuard }    from '../../infrastructure/guards/admin.guard.js';
-import { AdminService }  from '../../application/services/admin.service.js';
+import { JwtAuthGuard } from '../../../auth/infrastructure/guards/jwt-auth.guard.js';
+import { AdminGuard } from '../../infrastructure/guards/admin.guard.js';
+import { AdminService } from '../../application/services/admin.service.js';
 
 @ApiTags('admin')
 @ApiBearerAuth('JWT-auth')
@@ -33,21 +44,21 @@ export class AdminController {
 
   @Get('users')
   @ApiOperation({ summary: 'لیست کاربران' })
-  @ApiQuery({ name: 'page',   required: false })
-  @ApiQuery({ name: 'limit',  required: false })
+  @ApiQuery({ name: 'page', required: false })
+  @ApiQuery({ name: 'limit', required: false })
   @ApiQuery({ name: 'search', required: false })
   @ApiQuery({ name: 'status', required: false })
   async getUsers(
-    @Query('page')   page?:   string,
-    @Query('limit')  limit?:  string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
     @Query('search') search?: string,
     @Query('status') status?: string,
   ) {
     const result = await this.svc.getUsers({
-      page:   Number(page  ?? 1),
-      limit:  Number(limit ?? 20),
-      search: search  || undefined,
-      status: status  || undefined,
+      page: Number(page ?? 1),
+      limit: Number(limit ?? 20),
+      search: search || undefined,
+      status: status || undefined,
     });
     return { success: true, data: result.data, meta: { total: result.total } };
   }
@@ -70,12 +81,14 @@ export class AdminController {
   @Get('workspaces')
   @ApiOperation({ summary: 'لیست workspace ها' })
   async getWorkspaces(
-    @Query('page')   page?:   string,
-    @Query('limit')  limit?:  string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
     @Query('search') search?: string,
   ) {
     const r = await this.svc.getWorkspaces({
-      page: Number(page ?? 1), limit: Number(limit ?? 20), search,
+      page: Number(page ?? 1),
+      limit: Number(limit ?? 20),
+      search,
     });
     return { success: true, data: r.data, meta: { total: r.total } };
   }
@@ -104,17 +117,18 @@ export class AdminController {
 
   @Get('consultations')
   @ApiOperation({ summary: 'لیست تیکت‌های مشاوره (همه workspace ها)' })
-  @ApiQuery({ name: 'status',   required: false })
+  @ApiQuery({ name: 'status', required: false })
   @ApiQuery({ name: 'priority', required: false })
   async getConsultations(
-    @Query('page')     page?:     string,
-    @Query('limit')    limit?:    string,
-    @Query('status')   status?:   string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+    @Query('status') status?: string,
     @Query('priority') priority?: string,
   ) {
     const r = await this.svc.getConsultations({
-      page: Number(page ?? 1), limit: Number(limit ?? 20),
-      status:   status   || undefined,
+      page: Number(page ?? 1),
+      limit: Number(limit ?? 20),
+      status: status || undefined,
       priority: priority || undefined,
     });
     return { success: true, data: r.data, meta: { total: r.total } };
@@ -123,21 +137,14 @@ export class AdminController {
   @Post('consultations/:id/reply')
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'پاسخ ادمین به مشاوره' })
-  async adminReply(
-    @Param('id') id: string,
-    @Body() body: { content: string },
-    @Req() req: any,
-  ) {
+  async adminReply(@Param('id') id: string, @Body() body: { content: string }, @Req() req: any) {
     const adminName = `${req.user?.firstName ?? ''} ${req.user?.lastName ?? 'ادمین'}`.trim();
     return this.svc.adminReply(id, req.user.userId, adminName || 'ادمین Xennic', body.content);
   }
 
   @Patch('consultations/:id/status')
   @ApiOperation({ summary: 'تغییر وضعیت مشاوره' })
-  async updateConsultationStatus(
-    @Param('id') id: string,
-    @Body() body: { status: string },
-  ) {
+  async updateConsultationStatus(@Param('id') id: string, @Body() body: { status: string }) {
     return this.svc.updateConsultationStatus(id, body.status);
   }
 
@@ -149,17 +156,15 @@ export class AdminController {
   async createArticle(@Body() body: any, @Req() req: any) {
     return this.svc.adminCreateArticle({
       ...body,
-      authorId:   req.user.userId,
-      authorName: `${req.user?.firstName ?? ''} ${req.user?.lastName ?? 'ادمین'}`.trim() || 'تیم Xennic',
+      authorId: req.user.userId,
+      authorName:
+        `${req.user?.firstName ?? ''} ${req.user?.lastName ?? 'ادمین'}`.trim() || 'تیم Xennic',
     });
   }
 
   @Patch('articles/:id/status')
   @ApiOperation({ summary: 'تغییر وضعیت مقاله (draft/published/archived)' })
-  async updateArticleStatus(
-    @Param('id') id: string,
-    @Body() body: { status: string },
-  ) {
+  async updateArticleStatus(@Param('id') id: string, @Body() body: { status: string }) {
     return this.svc.updateArticleStatus(id, body.status);
   }
 
@@ -177,12 +182,14 @@ export class AdminController {
   @Get('audit-log')
   @ApiOperation({ summary: 'تاریخچه تغییرات پلتفرم' })
   async auditLog(
-    @Query('page')   page?:   string,
-    @Query('limit')  limit?:  string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
     @Query('action') action?: string,
   ) {
     const r = await this.svc.getAuditLog({
-      page: Number(page ?? 1), limit: Number(limit ?? 50), action,
+      page: Number(page ?? 1),
+      limit: Number(limit ?? 50),
+      action,
     });
     return { success: true, data: r.data, meta: { total: r.total } };
   }

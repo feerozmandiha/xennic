@@ -10,9 +10,10 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t('loginTitle') };
 }
 
-export default async function LoginPage(
-  props: { params?: Promise<{ locale: string }>; searchParams?: Promise<{ redirectTo?: string; plan?: string }> },
-) {
+export default async function LoginPage(props: {
+  params?: Promise<{ locale: string }>;
+  searchParams?: Promise<{ redirectTo?: string; plan?: string }>;
+}) {
   const params = await props.params;
   const searchParams = await props.searchParams;
   const locale = params?.locale ?? 'fa';

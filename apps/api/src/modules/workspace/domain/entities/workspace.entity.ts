@@ -14,16 +14,7 @@ export class WorkspaceEntity {
     const now = new Date();
     const code = this.generateCode(name);
 
-    return new WorkspaceEntity(
-      crypto.randomUUID(),
-      code,
-      name,
-      createdBy,
-      null,
-      now,
-      now,
-      null,
-    );
+    return new WorkspaceEntity(crypto.randomUUID(), code, name, createdBy, null, now, now, null);
   }
 
   static reconstitute(data: {
@@ -83,7 +74,7 @@ export class WorkspaceEntity {
 
     // تلاش برای استخراج حروف ASCII
     const asciiPart = name
-      .normalize('NFD')             // decompose unicode
+      .normalize('NFD') // decompose unicode
       .replace(/[\u0300-\u036f]/g, '') // حذف diacritics
       .toUpperCase()
       .replace(/[^A-Z0-9\s]/g, '') // فقط ASCII حروف و اعداد
@@ -92,9 +83,7 @@ export class WorkspaceEntity {
       .slice(0, 20);
 
     // اگر هیچ حرف ASCII‌ای نماند، از WORKSPACE استفاده می‌کنیم
-    const baseCode = asciiPart.length >= 2
-      ? asciiPart
-      : 'WORKSPACE';
+    const baseCode = asciiPart.length >= 2 ? asciiPart : 'WORKSPACE';
 
     const uniqueSuffix = Math.random().toString(36).substring(2, 6).toUpperCase();
     return `${baseCode}_${uniqueSuffix}`;

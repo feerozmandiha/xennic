@@ -1,4 +1,7 @@
-import { ProviderCredentialEntity, CredentialType } from '../../domain/entities/provider-credential.entity.js';
+import {
+  ProviderCredentialEntity,
+  CredentialType,
+} from '../../domain/entities/provider-credential.entity.js';
 
 export interface ICredentialRepository {
   findById(id: string): Promise<ProviderCredentialEntity | null>;

@@ -1,4 +1,7 @@
-import { IDiscoveryStrategy, DiscoveryResult } from '../../application/ports/discovery-provider.interface.js';
+import {
+  IDiscoveryStrategy,
+  DiscoveryResult,
+} from '../../application/ports/discovery-provider.interface.js';
 
 export class DeepSeekDiscoveryStrategy implements IDiscoveryStrategy {
   readonly providerType = 'deepseek';
@@ -10,14 +13,44 @@ export class DeepSeekDiscoveryStrategy implements IDiscoveryStrategy {
       providerName: 'DeepSeek',
       baseUrl: url,
       models: [
-        { modelId: 'deepseek-chat', displayName: 'DeepSeek Chat (V3)', modelType: 'chat', contextWindow: 65536, maxOutputTokens: 8192, supportsTools: true, supportsJson: true, supportsStreaming: true, supportsFunctionCalling: true, supportsTemperature: true, supportsTopP: true, supportsSeed: true, pricingInput: 0.27, pricingOutput: 1.10 },
-        { modelId: 'deepseek-reasoner', displayName: 'DeepSeek Reasoner (R1)', modelType: 'reasoning', contextWindow: 65536, maxOutputTokens: 8192, supportsStreaming: true, supportsReasoning: true, supportsTemperature: true, supportsTopP: true, pricingInput: 0.55, pricingOutput: 2.19 },
+        {
+          modelId: 'deepseek-chat',
+          displayName: 'DeepSeek Chat (V3)',
+          modelType: 'chat',
+          contextWindow: 65536,
+          maxOutputTokens: 8192,
+          supportsTools: true,
+          supportsJson: true,
+          supportsStreaming: true,
+          supportsFunctionCalling: true,
+          supportsTemperature: true,
+          supportsTopP: true,
+          supportsSeed: true,
+          pricingInput: 0.27,
+          pricingOutput: 1.1,
+        },
+        {
+          modelId: 'deepseek-reasoner',
+          displayName: 'DeepSeek Reasoner (R1)',
+          modelType: 'reasoning',
+          contextWindow: 65536,
+          maxOutputTokens: 8192,
+          supportsStreaming: true,
+          supportsReasoning: true,
+          supportsTemperature: true,
+          supportsTopP: true,
+          pricingInput: 0.55,
+          pricingOutput: 2.19,
+        },
       ],
       metadata: { docs: 'https://api-docs.deepseek.com' },
     };
   }
 
-  async testConnection(apiKey: string, baseUrl?: string): Promise<{ success: boolean; latencyMs: number; error?: string }> {
+  async testConnection(
+    apiKey: string,
+    baseUrl?: string,
+  ): Promise<{ success: boolean; latencyMs: number; error?: string }> {
     const start = Date.now();
     try {
       const url = baseUrl || 'https://api.deepseek.com/v1';

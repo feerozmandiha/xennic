@@ -49,7 +49,10 @@ export class PrismaExplainabilityRepository implements IExplainabilityRepository
     this.logger.debug(`Saved decision ${log.id}`);
   }
 
-  async getDecisions(executionId: string, options?: FindDecisionOptions): Promise<PaginatedResult<DecisionLog>> {
+  async getDecisions(
+    executionId: string,
+    options?: FindDecisionOptions,
+  ): Promise<PaginatedResult<DecisionLog>> {
     const where: Record<string, unknown> = { execution_id: executionId };
     if (options?.stepId) {
       where.step_id = options.stepId;
@@ -69,7 +72,7 @@ export class PrismaExplainabilityRepository implements IExplainabilityRepository
     ]);
 
     return {
-      items: rows.map(row => this.rowToDecision(row)),
+      items: rows.map((row) => this.rowToDecision(row)),
       total,
       offset,
       limit,
@@ -81,7 +84,7 @@ export class PrismaExplainabilityRepository implements IExplainabilityRepository
       where: { execution_id: executionId, decision_type: type },
       orderBy: { created_at: 'desc' },
     });
-    return rows.map(row => this.rowToDecision(row));
+    return rows.map((row) => this.rowToDecision(row));
   }
 
   async saveRationale(rationale: SelectionRationale): Promise<void> {
@@ -118,7 +121,10 @@ export class PrismaExplainabilityRepository implements IExplainabilityRepository
     this.logger.debug(`Saved rationale ${rationale.id}`);
   }
 
-  async getRationale(executionId: string, selectionType?: SelectionType): Promise<SelectionRationale[]> {
+  async getRationale(
+    executionId: string,
+    selectionType?: SelectionType,
+  ): Promise<SelectionRationale[]> {
     const where: Record<string, unknown> = {
       execution_id: executionId,
       metadata: { path: '$.__type', equals: 'selection_rationale' },
@@ -130,8 +136,8 @@ export class PrismaExplainabilityRepository implements IExplainabilityRepository
     });
 
     return rows
-      .map(row => {
-        const input = row.input as Record<string, unknown> ?? {};
+      .map((row) => {
+        const input = (row.input as Record<string, unknown>) ?? {};
         if (selectionType && input.selectionType !== selectionType) return null;
 
         return SelectionRationale.reconstitute({
@@ -139,9 +145,9 @@ export class PrismaExplainabilityRepository implements IExplainabilityRepository
           executionId: row.execution_id,
           selectionType: input.selectionType as SelectionType,
           selectedId: input.selectedId as string,
-          candidates: input.candidates as any[] ?? [],
-          criteria: input.criteria as string[] ?? [],
-          scores: input.scores as Record<string, number> ?? {},
+          candidates: (input.candidates as any[]) ?? [],
+          criteria: (input.criteria as string[]) ?? [],
+          scores: (input.scores as Record<string, number>) ?? {},
           winnerReason: input.winnerReason as string,
           timestamp: row.created_at,
         });
@@ -172,7 +178,7 @@ export class PrismaExplainabilityRepository implements IExplainabilityRepository
       where: { execution_id: executionId },
       orderBy: { created_at: 'desc' },
     });
-    return rows.map(row => this.rowToConfidence(row));
+    return rows.map((row) => this.rowToConfidence(row));
   }
 
   async getConfidenceSummary(executionId: string): Promise<ConfidenceSummary> {
@@ -190,7 +196,7 @@ export class PrismaExplainabilityRepository implements IExplainabilityRepository
       byStep[s.stepId]!.push(s.score);
     }
 
-    const allScores = scores.map(s => s.score);
+    const allScores = scores.map((s) => s.score);
     const avg = allScores.reduce((a, b) => a + b, 0) / allScores.length;
 
     return {
@@ -221,7 +227,7 @@ export class PrismaExplainabilityRepository implements IExplainabilityRepository
     ]);
 
     return {
-      items: rows.map(row => this.rowToDecision(row)),
+      items: rows.map((row) => this.rowToDecision(row)),
       total,
       offset,
       limit,

@@ -1,11 +1,11 @@
 export type SessionStatus = 'idle' | 'processing' | 'responding' | 'error' | 'expired';
 
 export const VALID_TRANSITIONS: Record<SessionStatus, SessionStatus[]> = {
-  idle:       ['processing'],
+  idle: ['processing'],
   processing: ['responding', 'error'],
   responding: ['idle', 'error'],
-  error:      ['idle', 'expired'],
-  expired:    [],
+  error: ['idle', 'expired'],
+  expired: [],
 };
 
 export class AgentSession {
@@ -49,9 +49,7 @@ export class AgentSession {
 
   transition(target: SessionStatus): void {
     if (!this.canTransitionTo(target)) {
-      throw new Error(
-        `Invalid session transition: ${this.status} → ${target}`,
-      );
+      throw new Error(`Invalid session transition: ${this.status} → ${target}`);
     }
     this.status = target;
   }

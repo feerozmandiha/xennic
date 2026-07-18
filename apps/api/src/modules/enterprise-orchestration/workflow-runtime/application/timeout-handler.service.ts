@@ -20,11 +20,11 @@ export class TimeoutHandlerService {
       this.timeouts.set(step.stepId, timer);
 
       executor()
-        .then(result => {
+        .then((result) => {
           this.cancelTimeout(step.stepId);
           resolve(result);
         })
-        .catch(error => {
+        .catch((error) => {
           this.cancelTimeout(step.stepId);
           reject(error);
         });

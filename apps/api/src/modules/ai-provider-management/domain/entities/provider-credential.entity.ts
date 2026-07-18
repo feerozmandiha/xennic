@@ -24,22 +24,39 @@ export class ProviderCredentialEntity {
   ): ProviderCredentialEntity {
     const now = new Date();
     return new ProviderCredentialEntity(
-      randomUUID(), providerId, credentialType,
-      encryptedValue, maskedValue,
-      expiresAt ?? null, now, now, null,
+      randomUUID(),
+      providerId,
+      credentialType,
+      encryptedValue,
+      maskedValue,
+      expiresAt ?? null,
+      now,
+      now,
+      null,
     );
   }
 
   static reconstitute(data: {
-    id: string; provider_id: string; credential_type: string;
-    encrypted_value: string; masked_value: string;
+    id: string;
+    provider_id: string;
+    credential_type: string;
+    encrypted_value: string;
+    masked_value: string;
     expires_at: Date | null;
-    created_at: Date; updated_at: Date; deleted_at: Date | null;
+    created_at: Date;
+    updated_at: Date;
+    deleted_at: Date | null;
   }): ProviderCredentialEntity {
     return new ProviderCredentialEntity(
-      data.id, data.provider_id, data.credential_type as CredentialType,
-      data.encrypted_value, data.masked_value,
-      data.expires_at, data.created_at, data.updated_at, data.deleted_at,
+      data.id,
+      data.provider_id,
+      data.credential_type as CredentialType,
+      data.encrypted_value,
+      data.masked_value,
+      data.expires_at,
+      data.created_at,
+      data.updated_at,
+      data.deleted_at,
     );
   }
 

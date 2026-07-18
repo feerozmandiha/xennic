@@ -47,18 +47,17 @@ export class ProjectController {
 
   @Get()
   @RequirePermissions('projects.read')
-  @ApiOperation({ summary: 'List projects', description: 'Returns paginated list of projects in the workspace.' })
-  @ApiQuery({ name: 'page',  required: false, type: Number, example: 1 })
+  @ApiOperation({
+    summary: 'List projects',
+    description: 'Returns paginated list of projects in the workspace.',
+  })
+  @ApiQuery({ name: 'page', required: false, type: Number, example: 1 })
   @ApiQuery({ name: 'limit', required: false, type: Number, example: 20 })
   @ApiResponse({ status: 200, description: 'Projects retrieved successfully' })
-  async findAll(
-    @Req() req: any,
-    @Query('page')  page?: string,
-    @Query('limit') limit?: string,
-  ) {
+  async findAll(@Req() req: any, @Query('page') page?: string, @Query('limit') limit?: string) {
     const result = await this.projectService.findAll(
       req.workspaceId,
-      page  ? parseInt(page,  10) : 1,
+      page ? parseInt(page, 10) : 1,
       limit ? parseInt(limit, 10) : 20,
     );
     return {
@@ -73,7 +72,10 @@ export class ProjectController {
   @Post()
   @HttpCode(HttpStatus.CREATED)
   @RequirePermissions('projects.create')
-  @ApiOperation({ summary: 'Create project', description: 'Creates a new project in the workspace.' })
+  @ApiOperation({
+    summary: 'Create project',
+    description: 'Creates a new project in the workspace.',
+  })
   @ApiBody({ type: CreateProjectDto })
   @ApiResponse({ status: 201, description: 'Project created', type: ProjectResponseDto })
   @ApiResponse({ status: 400, description: 'Validation failed' })
@@ -81,10 +83,10 @@ export class ProjectController {
     const project = await this.projectService.create(
       {
         workspaceId: req.workspaceId,
-        name:        dto.name,
+        name: dto.name,
         description: dto.description,
-        startDate:   dto.startDate ? new Date(dto.startDate) : undefined,
-        endDate:     dto.endDate   ? new Date(dto.endDate)   : undefined,
+        startDate: dto.startDate ? new Date(dto.startDate) : undefined,
+        endDate: dto.endDate ? new Date(dto.endDate) : undefined,
       },
       req.user.userId,
     );
@@ -113,11 +115,7 @@ export class ProjectController {
   @ApiBody({ type: UpdateProjectDto })
   @ApiResponse({ status: 200, description: 'Project updated', type: ProjectResponseDto })
   @ApiResponse({ status: 404, description: 'Project not found' })
-  async update(
-    @Param('id') id: string,
-    @Body() dto: UpdateProjectDto,
-    @Req() req: any,
-  ) {
+  async update(@Param('id') id: string, @Body() dto: UpdateProjectDto, @Req() req: any) {
     // ERROR FIX TS2322:
     // dto.startDate / dto.endDate are `string | null | undefined` (from IsDateString).
     // UpdateProjectInput expects `Date | null | undefined`.
@@ -126,7 +124,7 @@ export class ProjectController {
     // When the value is undefined (field not sent) → pass undefined.
     const toDate = (v: string | null | undefined): Date | null | undefined => {
       if (v === undefined) return undefined;
-      if (v === null)      return null;
+      if (v === null) return null;
       return new Date(v);
     };
 
@@ -134,11 +132,11 @@ export class ProjectController {
       id,
       req.workspaceId,
       {
-        name:        dto.name,
+        name: dto.name,
         description: dto.description,
-        status:      dto.status,
-        startDate:   toDate(dto.startDate),
-        endDate:     toDate(dto.endDate),
+        status: dto.status,
+        startDate: toDate(dto.startDate),
+        endDate: toDate(dto.endDate),
       },
       req.user.userId,
     );
@@ -150,7 +148,10 @@ export class ProjectController {
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @RequirePermissions('projects.delete')
-  @ApiOperation({ summary: 'Soft delete project', description: 'Marks project as deleted (recoverable).' })
+  @ApiOperation({
+    summary: 'Soft delete project',
+    description: 'Marks project as deleted (recoverable).',
+  })
   @ApiParam({ name: 'id', description: 'Project UUID' })
   @ApiResponse({ status: 204, description: 'Project deleted' })
   async remove(@Param('id') id: string, @Req() req: any) {
@@ -198,11 +199,7 @@ export class ProjectController {
   @ApiBody({ type: AddProjectMemberDto })
   @ApiResponse({ status: 201, description: 'Member added' })
   @ApiResponse({ status: 409, description: 'User already a member' })
-  async addMember(
-    @Param('id') id: string,
-    @Body() dto: AddProjectMemberDto,
-    @Req() req: any,
-  ) {
+  async addMember(@Param('id') id: string, @Body() dto: AddProjectMemberDto, @Req() req: any) {
     const member = await this.projectService.addMember(
       id,
       req.workspaceId,
@@ -219,14 +216,10 @@ export class ProjectController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @RequirePermissions('projects.update')
   @ApiOperation({ summary: 'Remove member', description: 'Removes a user from the project.' })
-  @ApiParam({ name: 'id',     description: 'Project UUID' })
+  @ApiParam({ name: 'id', description: 'Project UUID' })
   @ApiParam({ name: 'userId', description: 'User UUID' })
   @ApiResponse({ status: 204, description: 'Member removed' })
-  async removeMember(
-    @Param('id') id: string,
-    @Param('userId') userId: string,
-    @Req() req: any,
-  ) {
+  async removeMember(@Param('id') id: string, @Param('userId') userId: string, @Req() req: any) {
     await this.projectService.removeMember(id, req.workspaceId, userId);
   }
 
@@ -258,11 +251,7 @@ export class ProjectController {
   @ApiParam({ name: 'id', description: 'Project UUID' })
   @ApiBody({ type: AddProjectNoteDto })
   @ApiResponse({ status: 201, description: 'Note added' })
-  async addNote(
-    @Param('id') id: string,
-    @Body() dto: AddProjectNoteDto,
-    @Req() req: any,
-  ) {
+  async addNote(@Param('id') id: string, @Body() dto: AddProjectNoteDto, @Req() req: any) {
     const note = await this.projectService.addNote(
       id,
       req.workspaceId,
@@ -278,14 +267,10 @@ export class ProjectController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @RequirePermissions('projects.update')
   @ApiOperation({ summary: 'Delete note', description: 'Permanently deletes a project note.' })
-  @ApiParam({ name: 'id',     description: 'Project UUID' })
+  @ApiParam({ name: 'id', description: 'Project UUID' })
   @ApiParam({ name: 'noteId', description: 'Note UUID' })
   @ApiResponse({ status: 204, description: 'Note deleted' })
-  async deleteNote(
-    @Param('id') id: string,
-    @Param('noteId') noteId: string,
-    @Req() req: any,
-  ) {
+  async deleteNote(@Param('id') id: string, @Param('noteId') noteId: string, @Req() req: any) {
     await this.projectService.deleteNote(id, req.workspaceId, noteId);
   }
 }

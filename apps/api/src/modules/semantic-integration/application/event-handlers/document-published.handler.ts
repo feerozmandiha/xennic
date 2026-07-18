@@ -55,7 +55,10 @@ export class DocumentPublishedHandler implements IEventHandler {
     try {
       this.logger.log(`Processing DocumentPublished for ${data.documentId}`);
 
-      const existingNode = await this.graphNodeRepository.findByEntity('knowledge_document', data.documentId);
+      const existingNode = await this.graphNodeRepository.findByEntity(
+        'knowledge_document',
+        data.documentId,
+      );
       let nodeId: string;
 
       if (existingNode) {
@@ -93,7 +96,9 @@ export class DocumentPublishedHandler implements IEventHandler {
         completeness,
       });
 
-      this.logger.log(`Saved metrics for node ${nodeId}: confidence=${confidence}, freshness=${freshness}, authority=${authority}, completeness=${completeness}`);
+      this.logger.log(
+        `Saved metrics for node ${nodeId}: confidence=${confidence}, freshness=${freshness}, authority=${authority}, completeness=${completeness}`,
+      );
 
       const compositeScore = (confidence + freshness + authority + completeness) / 4;
 

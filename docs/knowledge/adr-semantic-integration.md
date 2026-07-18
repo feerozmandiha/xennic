@@ -24,20 +24,20 @@ Implement a **Semantic Integration Layer** using the following patterns:
 
 Define 12 domain events as frozen TypeScript objects with typed payloads, event versioning, and correlation/tracing IDs:
 
-| Event | Source | Description |
-|-------|--------|-------------|
-| DocumentUploaded | KF | Raw file ingested |
-| DocumentClassified | KF | Document type classified |
-| DocumentParsed | KF | Text extracted |
-| DocumentNormalized | KF | Content normalized |
-| DocumentChunked | KF | Document split into chunks |
-| EmbeddingsGenerated | KF | Vector embeddings created |
-| DocumentPublished | KF | Document published with knowledgeId |
-| GraphNodeCreated | SI | Graph node created in KI |
-| GraphEdgesCreated | SI | Graph edges connected |
-| OntologyUpdated | KI | Ontology changed |
-| MetricsCalculated | SI | Metrics computed for a node |
-| SearchIndexUpdated | SI | Search index refreshed |
+| Event               | Source | Description                         |
+| ------------------- | ------ | ----------------------------------- |
+| DocumentUploaded    | KF     | Raw file ingested                   |
+| DocumentClassified  | KF     | Document type classified            |
+| DocumentParsed      | KF     | Text extracted                      |
+| DocumentNormalized  | KF     | Content normalized                  |
+| DocumentChunked     | KF     | Document split into chunks          |
+| EmbeddingsGenerated | KF     | Vector embeddings created           |
+| DocumentPublished   | KF     | Document published with knowledgeId |
+| GraphNodeCreated    | SI     | Graph node created in KI            |
+| GraphEdgesCreated   | SI     | Graph edges connected               |
+| OntologyUpdated     | KI     | Ontology changed                    |
+| MetricsCalculated   | SI     | Metrics computed for a node         |
+| SearchIndexUpdated  | SI     | Search index refreshed              |
 
 ### 2. Outbox Pattern
 

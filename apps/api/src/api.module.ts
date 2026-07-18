@@ -1,30 +1,30 @@
 import { ThrottlerModule } from '@nestjs/throttler';
 import { Module } from '@nestjs/common';
-import { ApiController }       from './api.controller.js';
-import { ApiService }          from './api.service.js';
-import { HealthModule }        from './modules/health/health.module.js';
-import { WorkspaceModule }     from './modules/workspace/workspace.module.js';
-import { UserModule }          from './modules/user/user.module.js';
-import { AuthModule }          from './modules/auth/auth.module.js';
-import { RbacModule }          from './modules/rbac/rbac.module.js';
-import { ProjectModule }       from './modules/project/project.module.js';
-import { EngineeringModule }   from './modules/engineering/engineering.module.js';
-import { SubscriptionModule }  from './modules/subscription/subscription.module.js';
-import { StorageModule }       from './modules/storage/storage.module.js';
-import { NotificationModule }  from './modules/notification/notification.module.js';
-import { AiModule }            from './modules/ai/ai.module.js';
+import { ApiController } from './api.controller.js';
+import { ApiService } from './api.service.js';
+import { HealthModule } from './modules/health/health.module.js';
+import { WorkspaceModule } from './modules/workspace/workspace.module.js';
+import { UserModule } from './modules/user/user.module.js';
+import { AuthModule } from './modules/auth/auth.module.js';
+import { RbacModule } from './modules/rbac/rbac.module.js';
+import { ProjectModule } from './modules/project/project.module.js';
+import { EngineeringModule } from './modules/engineering/engineering.module.js';
+import { SubscriptionModule } from './modules/subscription/subscription.module.js';
+import { StorageModule } from './modules/storage/storage.module.js';
+import { NotificationModule } from './modules/notification/notification.module.js';
+import { AiModule } from './modules/ai/ai.module.js';
 import { ConsultationsModule } from './modules/consultations/consultations.module.js';
-import { BillingModule }       from './modules/billing/billing.module.js';   // ✅ صورتحساب
-import { AdminModule }         from './modules/admin/admin.module.js';         // ✅ ادمین
-import { SearchModule }        from './modules/search/search.module.js';       // ✅ جستجوی سراسری
-import { KnowledgeModule }     from './modules/knowledge/knowledge.module.js';  // ✅ سیستم دانش
-import { StandardsModule }     from './modules/standards/standards.module.js';   // ✅ استانداردها
-import { MarketplaceModule }   from './modules/marketplace/marketplace.module.js'; // ✅ بازارگاه
-import { ApiKeysModule }       from './modules/api-keys/api-keys.module.js';         // ✅ کلید API
-import { WebhooksModule }      from './modules/webhooks/webhooks.module.js';         // ✅ وب‌هوک
-import { EmailModule }         from './modules/email/email.module.js';               // ✅ ایمیل
-import { FeatureFlagsModule }  from './modules/feature-flags/feature-flags.module.js'; // ✅ Feature Flags
-import { VisionModule }        from './modules/vision/vision.module.js';                // ✅ بینایی ماشین
+import { BillingModule } from './modules/billing/billing.module.js'; // ✅ صورتحساب
+import { AdminModule } from './modules/admin/admin.module.js'; // ✅ ادمین
+import { SearchModule } from './modules/search/search.module.js'; // ✅ جستجوی سراسری
+import { KnowledgeModule } from './modules/knowledge/knowledge.module.js'; // ✅ سیستم دانش
+import { StandardsModule } from './modules/standards/standards.module.js'; // ✅ استانداردها
+import { MarketplaceModule } from './modules/marketplace/marketplace.module.js'; // ✅ بازارگاه
+import { ApiKeysModule } from './modules/api-keys/api-keys.module.js'; // ✅ کلید API
+import { WebhooksModule } from './modules/webhooks/webhooks.module.js'; // ✅ وب‌هوک
+import { EmailModule } from './modules/email/email.module.js'; // ✅ ایمیل
+import { FeatureFlagsModule } from './modules/feature-flags/feature-flags.module.js'; // ✅ Feature Flags
+import { VisionModule } from './modules/vision/vision.module.js'; // ✅ بینایی ماشین
 import { AiProviderManagementModule } from './modules/ai-provider-management/ai-provider-management.module.js'; // ✅ مدیریت ارائه‌دهندگان AI
 import { MonitoringModule } from './modules/monitoring/monitoring.module.js'; // ✅ مانیتورینگ
 import { CalculationPlatformModule } from './modules/calculation-platform/calculation-platform.module.js'; // ✅ Sprint C1
@@ -39,24 +39,24 @@ import { CalculationPlatformModule } from './modules/calculation-platform/calcul
     ProjectModule,
     EngineeringModule,
     SubscriptionModule,
-    BillingModule,       // ✅ ماژول صورتحساب
+    BillingModule, // ✅ ماژول صورتحساب
     StorageModule,
     NotificationModule,
     AiModule,
     ConsultationsModule,
-    AdminModule,         // ✅ مدیریت پلتفرم
-    SearchModule,        // ✅ جستجوی سراسری
-    KnowledgeModule,     // ✅ سیستم دانش
-    StandardsModule,     // ✅ استانداردهای مهندسی
-    MarketplaceModule,   // ✅ بازارگاه
-    ApiKeysModule,       // ✅ کلید API
-    WebhooksModule,      // ✅ وب‌هوک
-    EmailModule,         // ✅ ایمیل
-    FeatureFlagsModule,  // ✅ Feature Flags
-    VisionModule,        // ✅ Vision
+    AdminModule, // ✅ مدیریت پلتفرم
+    SearchModule, // ✅ جستجوی سراسری
+    KnowledgeModule, // ✅ سیستم دانش
+    StandardsModule, // ✅ استانداردهای مهندسی
+    MarketplaceModule, // ✅ بازارگاه
+    ApiKeysModule, // ✅ کلید API
+    WebhooksModule, // ✅ وب‌هوک
+    EmailModule, // ✅ ایمیل
+    FeatureFlagsModule, // ✅ Feature Flags
+    VisionModule, // ✅ Vision
     AiProviderManagementModule, // ✅ مدیریت ارائه‌دهندگان AI
-    MonitoringModule,           // ✅ مانیتورینگ (OpenTelemetry + Prometheus + logging)
-    CalculationPlatformModule,  // ✅ Sprint C1 — Enterprise Calculation Platform
+    MonitoringModule, // ✅ مانیتورینگ (OpenTelemetry + Prometheus + logging)
+    CalculationPlatformModule, // ✅ Sprint C1 — Enterprise Calculation Platform
     // ✅ SEC-001C: Rate Limiting
     ThrottlerModule.forRoot([
       {
@@ -77,6 +77,6 @@ import { CalculationPlatformModule } from './modules/calculation-platform/calcul
     ]),
   ],
   controllers: [ApiController],
-  providers:   [ApiService],
+  providers: [ApiService],
 })
 export class ApiModule {}

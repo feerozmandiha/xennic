@@ -39,8 +39,8 @@ export class ExplainabilityService {
       this.repository.getConfidenceSummary(executionId),
     ]);
 
-    const policyDecisions = decisionsResult.items.filter(d => d.decisionType === 'policy');
-    const contextEntries = decisionsResult.items.filter(d => d.decisionType === 'tool_selection');
+    const policyDecisions = decisionsResult.items.filter((d) => d.decisionType === 'policy');
+    const contextEntries = decisionsResult.items.filter((d) => d.decisionType === 'tool_selection');
 
     return {
       executionId,
@@ -49,7 +49,7 @@ export class ExplainabilityService {
       confidence,
       contextUsage: {
         totalContexts: contextEntries.length,
-        contexts: contextEntries.map(d => d.decision),
+        contexts: contextEntries.map((d) => d.decision),
       },
       policyDecisions: {
         totalPolicyDecisions: policyDecisions.length,
@@ -60,11 +60,11 @@ export class ExplainabilityService {
 
   async getContextUsage(executionId: string): Promise<ContextUsageReport> {
     const result = await this.repository.getDecisions(executionId);
-    const contextEntries = result.items.filter(d => d.decisionType === 'tool_selection');
+    const contextEntries = result.items.filter((d) => d.decisionType === 'tool_selection');
 
     return {
       totalContexts: contextEntries.length,
-      contexts: contextEntries.map(d => d.decision),
+      contexts: contextEntries.map((d) => d.decision),
     };
   }
 

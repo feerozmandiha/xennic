@@ -11,18 +11,12 @@ import { WorkspaceModule } from '../workspace/workspace.module.js';
 import { RbacModule } from '../rbac/rbac.module.js';
 
 @Module({
-  imports: [
-    WorkspaceModule,
-    RbacModule,
-  ],
-  controllers: [
-    SubscriptionController,
-    WorkspaceSubscriptionController,
-  ],
+  imports: [WorkspaceModule, RbacModule],
+  controllers: [SubscriptionController, WorkspaceSubscriptionController],
   providers: [
     SubscriptionService,
     {
-      provide:  'ISubscriptionRepository',
+      provide: 'ISubscriptionRepository',
       useClass: SubscriptionRepository,
     },
   ],

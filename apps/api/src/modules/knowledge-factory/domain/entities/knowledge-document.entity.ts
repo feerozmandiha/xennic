@@ -1,4 +1,9 @@
-import { type DocumentStatus, DOCUMENT_STATUSES, VALID_STATUS_TRANSITIONS, DocumentStatusTransitionError } from '../value-objects/document-status.vo.js';
+import {
+  type DocumentStatus,
+  DOCUMENT_STATUSES,
+  VALID_STATUS_TRANSITIONS,
+  DocumentStatusTransitionError,
+} from '../value-objects/document-status.vo.js';
 
 export class KnowledgeDocument {
   constructor(
@@ -96,11 +101,21 @@ export class KnowledgeDocument {
 
   // ── Getters ──
 
-  get status(): DocumentStatus { return this._status; }
-  get classification(): unknown { return this._classification; }
-  get metadata(): unknown { return this._metadata; }
-  get errorMessage(): string | null { return this._errorMessage; }
-  get retryCount(): number { return this._retryCount; }
+  get status(): DocumentStatus {
+    return this._status;
+  }
+  get classification(): unknown {
+    return this._classification;
+  }
+  get metadata(): unknown {
+    return this._metadata;
+  }
+  get errorMessage(): string | null {
+    return this._errorMessage;
+  }
+  get retryCount(): number {
+    return this._retryCount;
+  }
 
   // ── Business Methods ──
 

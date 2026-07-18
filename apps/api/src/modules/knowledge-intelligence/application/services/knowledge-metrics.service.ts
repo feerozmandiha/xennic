@@ -10,7 +10,10 @@ export class KnowledgeMetricsService {
     private readonly metricsRepo: IGraphMetricsRepository,
   ) {}
 
-  async computeAndSaveMetrics(nodeId: string, scores: { confidence: number; freshness: number; authority: number; completeness: number }): Promise<any> {
+  async computeAndSaveMetrics(
+    nodeId: string,
+    scores: { confidence: number; freshness: number; authority: number; completeness: number },
+  ): Promise<any> {
     return this.metricsRepo.save({
       nodeId,
       confidence: scores.confidence,
@@ -41,7 +44,11 @@ export class KnowledgeMetricsService {
     await this.metricsRepo.incrementAccess(nodeId);
   }
 
-  async getTopNodes(workspaceId: string, metric: string, limit = 10): Promise<{ nodeId: string; score: number }[]> {
+  async getTopNodes(
+    workspaceId: string,
+    metric: string,
+    limit = 10,
+  ): Promise<{ nodeId: string; score: number }[]> {
     return this.metricsRepo.topNodesByMetric(workspaceId, metric as any, limit);
   }
 }

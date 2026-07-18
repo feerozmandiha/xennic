@@ -4,15 +4,8 @@ import { CompensationHandler } from './application/compensation/compensation-han
 import { SagaInstanceRepository } from './infrastructure/persistence/saga-instance.repository.js';
 
 @Module({
-  providers: [
-    SagaOrchestratorService,
-    CompensationHandler,
-    SagaInstanceRepository,
-  ],
-  exports: [
-    SagaOrchestratorService,
-    CompensationHandler,
-  ],
+  providers: [SagaOrchestratorService, CompensationHandler, SagaInstanceRepository],
+  exports: [SagaOrchestratorService, CompensationHandler],
 })
 export class EnterpriseSagaModule implements OnModuleInit {
   private readonly logger = new Logger(EnterpriseSagaModule.name);

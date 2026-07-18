@@ -1,7 +1,7 @@
 'use client';
 
 const TOKEN_KEY = 'xennic_token';
-const WS_KEY    = 'xennic_workspace_id';
+const WS_KEY = 'xennic_workspace_id';
 
 /**
  * بعد از login/register موفق:
@@ -24,8 +24,8 @@ export async function handlePostLogin(
   // ── بررسی ادمین بودن ──────────────────────────────────────────────────
   if (setIsAdmin) {
     try {
-      const res  = await fetch(`${apiBase}/admin/check`, {
-        headers: { 'Authorization': `Bearer ${token}` },
+      const res = await fetch(`${apiBase}/admin/check`, {
+        headers: { Authorization: `Bearer ${token}` },
       });
       const json = await res.json();
       setIsAdmin(json?.data?.isAdmin === true || json?.isAdmin === true);
@@ -38,10 +38,10 @@ export async function handlePostLogin(
   let workspaceId: string | null = null;
 
   try {
-    const res  = await fetch(`${apiBase}/workspaces?limit=1`, {
+    const res = await fetch(`${apiBase}/workspaces?limit=1`, {
       headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type':  'application/json',
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
       },
     });
     const json = await res.json();

@@ -80,16 +80,18 @@ export class CalculationDefinitionEntity {
     );
   }
 
-  update(data: Partial<{
-    name: string;
-    description: string | null;
-    standard: string | null;
-    standardRef: string | null;
-    enabled: boolean;
-    aiReview: boolean;
-    certificate: boolean;
-    metadata: Record<string, unknown>;
-  }>): void {
+  update(
+    data: Partial<{
+      name: string;
+      description: string | null;
+      standard: string | null;
+      standardRef: string | null;
+      enabled: boolean;
+      aiReview: boolean;
+      certificate: boolean;
+      metadata: Record<string, unknown>;
+    }>,
+  ): void {
     if (data.name !== undefined) this.name = data.name;
     if (data.description !== undefined) this.description = data.description;
     if (data.standard !== undefined) this.standard = data.standard;
@@ -101,6 +103,12 @@ export class CalculationDefinitionEntity {
     this.updatedAt = new Date();
   }
 
-  enable(): void { this.enabled = true; this.updatedAt = new Date(); }
-  disable(): void { this.enabled = false; this.updatedAt = new Date(); }
+  enable(): void {
+    this.enabled = true;
+    this.updatedAt = new Date();
+  }
+  disable(): void {
+    this.enabled = false;
+    this.updatedAt = new Date();
+  }
 }

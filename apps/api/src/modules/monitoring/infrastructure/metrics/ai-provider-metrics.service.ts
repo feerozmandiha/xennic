@@ -7,7 +7,13 @@ export class AiProviderMetricsService {
 
   constructor(private readonly metrics: MetricRecorderService) {}
 
-  recordCall(provider: string, model: string, durationMs: number, tokens: number, success: boolean): void {
+  recordCall(
+    provider: string,
+    model: string,
+    durationMs: number,
+    tokens: number,
+    success: boolean,
+  ): void {
     this.metrics.recordAiProviderCall(provider, model, durationMs, tokens, success);
   }
 

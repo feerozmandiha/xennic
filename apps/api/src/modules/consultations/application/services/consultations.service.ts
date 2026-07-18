@@ -1,13 +1,13 @@
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { ConsultationsRepository } from '../../infrastructure/repositories/consultations.repository.js';
-import { LlmProvider }             from '../../../ai/infrastructure/providers/llm.provider.js';
-import { SubscriptionService }     from '../../../subscription/application/services/subscription.service.js';
+import { LlmProvider } from '../../../ai/infrastructure/providers/llm.provider.js';
+import { SubscriptionService } from '../../../subscription/application/services/subscription.service.js';
 
 @Injectable()
 export class ConsultationsService {
   constructor(
     private readonly repo: ConsultationsRepository,
-    private readonly llm:  LlmProvider,
+    private readonly llm: LlmProvider,
     private readonly subscriptionService: SubscriptionService,
   ) {}
 
@@ -21,10 +21,18 @@ export class ConsultationsService {
     return c;
   }
 
-  async create(workspaceId: string, userId: string, userName: string, dto: {
-    title: string; description: string;
-    category: string; priority?: string; tags?: string[];
-  }) {
+  async create(
+    workspaceId: string,
+    userId: string,
+    userName: string,
+    dto: {
+      title: string;
+      description: string;
+      category: string;
+      priority?: string;
+      tags?: string[];
+    },
+  ) {
     // plan check — only Pro/Enterprise can create consultations
     const planSlug = await this.subscriptionService.getActivePlanSlug(workspaceId);
     if (planSlug === 'free') {
@@ -32,12 +40,14 @@ export class ConsultationsService {
     }
 
     return this.repo.create({
-      workspaceId, userId, userName,
-      title:       dto.title,
+      workspaceId,
+      userId,
+      userName,
+      title: dto.title,
       description: dto.description,
-      category:    dto.category,
-      priority:    dto.priority ?? 'normal',
-      tags:        dto.tags    ?? [],
+      category: dto.category,
+      priority: dto.priority ?? 'normal',
+      tags: dto.tags ?? [],
     });
   }
 
@@ -53,10 +63,10 @@ export class ConsultationsService {
 
     const resp = await this.llm.chat([{ role: 'user', content: prompt }]);
     await this.repo.addReply(id, {
-      authorId:   'ai-assistant',
+      authorId: 'ai-assistant',
       authorName: 'Xennic AI',
-      isExpert:   true,
-      content:    resp.content,
+      isExpert: true,
+      content: resp.content,
     });
     return resp.content;
   }

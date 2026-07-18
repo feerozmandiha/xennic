@@ -62,7 +62,7 @@ export class ExecutionGraph {
 
   static create(plan: ReasoningPlan): ExecutionGraph {
     const now = new Date();
-    const nodes: ExecutionNode[] = plan.steps.map(s => ({
+    const nodes: ExecutionNode[] = plan.steps.map((s) => ({
       stepId: s.id,
       status: NodeStatus.PENDING,
       result: null,
@@ -119,19 +119,25 @@ export class ExecutionGraph {
     return new ExecutionGraph(id, planId, nodes, edges, status, metadata, createdAt, updatedAt);
   }
 
-  withNodeStatus(stepId: string, status: NodeStatus, result?: Record<string, unknown>): ExecutionGraph {
+  withNodeStatus(
+    stepId: string,
+    status: NodeStatus,
+    result?: Record<string, unknown>,
+  ): ExecutionGraph {
     const now = new Date();
-    const nodes = this.nodes.map(n => {
+    const nodes = this.nodes.map((n) => {
       if (n.stepId !== stepId) return n;
       return {
         ...n,
         status,
         result: result ?? n.result,
         startedAt: status === NodeStatus.RUNNING ? now : n.startedAt,
-        completedAt: status === NodeStatus.COMPLETED || status === NodeStatus.FAILED ? now : n.completedAt,
-        duration: (status === NodeStatus.COMPLETED || status === NodeStatus.FAILED) && n.startedAt
-          ? now.getTime() - n.startedAt.getTime()
-          : n.duration,
+        completedAt:
+          status === NodeStatus.COMPLETED || status === NodeStatus.FAILED ? now : n.completedAt,
+        duration:
+          (status === NodeStatus.COMPLETED || status === NodeStatus.FAILED) && n.startedAt
+            ? now.getTime() - n.startedAt.getTime()
+            : n.duration,
       };
     });
 
@@ -150,17 +156,15 @@ export class ExecutionGraph {
   getReadyNodes(): ExecutionNode[] {
     const completedOrSkipped = new Set(
       this.nodes
-        .filter(n => n.status === NodeStatus.COMPLETED || n.status === NodeStatus.FAILED)
-        .map(n => n.stepId),
+        .filter((n) => n.status === NodeStatus.COMPLETED || n.status === NodeStatus.FAILED)
+        .map((n) => n.stepId),
     );
 
-    const pending = this.nodes.filter(
-      n => n.status === NodeStatus.PENDING,
-    );
+    const pending = this.nodes.filter((n) => n.status === NodeStatus.PENDING);
 
-    return pending.filter(n => {
-      const deps = this.edges.filter(e => e.to === n.stepId).map(e => e.from);
-      return deps.every(depId => completedOrSkipped.has(depId));
+    return pending.filter((n) => {
+      const deps = this.edges.filter((e) => e.to === n.stepId).map((e) => e.from);
+      return deps.every((depId) => completedOrSkipped.has(depId));
     });
   }
 

@@ -46,7 +46,11 @@ export class WorkspaceMemberController {
   @Get('members')
   @ApiOperation({ summary: 'List members', description: 'Returns all members of a workspace.' })
   @ApiParam({ name: 'workspaceId', description: 'Workspace UUID' })
-  @ApiResponse({ status: 200, description: 'Members retrieved', type: [WorkspaceMemberResponseDto] })
+  @ApiResponse({
+    status: 200,
+    description: 'Members retrieved',
+    type: [WorkspaceMemberResponseDto],
+  })
   async getMembers(@Param('workspaceId') workspaceId: string) {
     const members = await this.workspaceService.getMembers(workspaceId);
     return {
@@ -59,7 +63,10 @@ export class WorkspaceMemberController {
 
   @Post('members')
   @HttpCode(HttpStatus.CREATED)
-  @ApiOperation({ summary: 'Add member', description: 'Directly adds a user to the workspace (requires OWNER or ADMIN).' })
+  @ApiOperation({
+    summary: 'Add member',
+    description: 'Directly adds a user to the workspace (requires OWNER or ADMIN).',
+  })
   @ApiParam({ name: 'workspaceId', description: 'Workspace UUID' })
   @ApiBody({ type: AddMemberDto })
   @ApiResponse({ status: 201, description: 'Member added', type: WorkspaceMemberResponseDto })
@@ -82,9 +89,12 @@ export class WorkspaceMemberController {
   // ─── PATCH /workspaces/:workspaceId/members/:userId ───────────────────────
 
   @Patch('members/:userId')
-  @ApiOperation({ summary: 'Update member role', description: 'Changes the role of a workspace member.' })
+  @ApiOperation({
+    summary: 'Update member role',
+    description: 'Changes the role of a workspace member.',
+  })
   @ApiParam({ name: 'workspaceId', description: 'Workspace UUID' })
-  @ApiParam({ name: 'userId',      description: 'User UUID' })
+  @ApiParam({ name: 'userId', description: 'User UUID' })
   @ApiBody({ type: UpdateMemberRoleDto })
   @ApiResponse({ status: 200, description: 'Role updated', type: WorkspaceMemberResponseDto })
   @ApiResponse({ status: 403, description: 'Forbidden' })
@@ -109,7 +119,7 @@ export class WorkspaceMemberController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Remove member', description: 'Removes a user from the workspace.' })
   @ApiParam({ name: 'workspaceId', description: 'Workspace UUID' })
-  @ApiParam({ name: 'userId',      description: 'User UUID' })
+  @ApiParam({ name: 'userId', description: 'User UUID' })
   @ApiResponse({ status: 204, description: 'Member removed' })
   @ApiResponse({ status: 403, description: 'Cannot remove OWNER' })
   async removeMember(
@@ -127,9 +137,16 @@ export class WorkspaceMemberController {
   // ─── GET /workspaces/:workspaceId/invitations ─────────────────────────────
 
   @Get('invitations')
-  @ApiOperation({ summary: 'List invitations', description: 'Returns all invitations for the workspace.' })
+  @ApiOperation({
+    summary: 'List invitations',
+    description: 'Returns all invitations for the workspace.',
+  })
   @ApiParam({ name: 'workspaceId', description: 'Workspace UUID' })
-  @ApiResponse({ status: 200, description: 'Invitations retrieved', type: [WorkspaceInvitationResponseDto] })
+  @ApiResponse({
+    status: 200,
+    description: 'Invitations retrieved',
+    type: [WorkspaceInvitationResponseDto],
+  })
   async getInvitations(@Param('workspaceId') workspaceId: string) {
     const invitations = await this.workspaceService.getInvitations(workspaceId);
     return {
@@ -142,10 +159,17 @@ export class WorkspaceMemberController {
 
   @Post('invitations')
   @HttpCode(HttpStatus.CREATED)
-  @ApiOperation({ summary: 'Invite member', description: 'Sends an invitation to join the workspace by email.' })
+  @ApiOperation({
+    summary: 'Invite member',
+    description: 'Sends an invitation to join the workspace by email.',
+  })
   @ApiParam({ name: 'workspaceId', description: 'Workspace UUID' })
   @ApiBody({ type: InviteMemberDto })
-  @ApiResponse({ status: 201, description: 'Invitation created', type: WorkspaceInvitationResponseDto })
+  @ApiResponse({
+    status: 201,
+    description: 'Invitation created',
+    type: WorkspaceInvitationResponseDto,
+  })
   @ApiResponse({ status: 409, description: 'Pending invitation already exists' })
   async inviteMember(
     @Param('workspaceId') workspaceId: string,
@@ -168,9 +192,12 @@ export class WorkspaceMemberController {
 
   @Delete('invitations/:id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiOperation({ summary: 'Cancel invitation', description: 'Cancels a pending workspace invitation.' })
+  @ApiOperation({
+    summary: 'Cancel invitation',
+    description: 'Cancels a pending workspace invitation.',
+  })
   @ApiParam({ name: 'workspaceId', description: 'Workspace UUID' })
-  @ApiParam({ name: 'id',          description: 'Invitation UUID' })
+  @ApiParam({ name: 'id', description: 'Invitation UUID' })
   @ApiResponse({ status: 204, description: 'Invitation cancelled' })
   async cancelInvitation(
     @Param('workspaceId') workspaceId: string,
@@ -194,15 +221,19 @@ export class InvitationAcceptController {
 
   @Post('accept')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Accept invitation', description: 'Accepts a workspace invitation using a token.' })
+  @ApiOperation({
+    summary: 'Accept invitation',
+    description: 'Accepts a workspace invitation using a token.',
+  })
   @ApiBody({ type: AcceptInvitationDto })
-  @ApiResponse({ status: 200, description: 'Invitation accepted', type: WorkspaceMemberResponseDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Invitation accepted',
+    type: WorkspaceMemberResponseDto,
+  })
   @ApiResponse({ status: 400, description: 'Invalid or expired token' })
   async acceptInvitation(@Body() dto: AcceptInvitationDto, @Req() req: any) {
-    const member = await this.workspaceService.acceptInvitation(
-      dto.token,
-      req.user.userId,
-    );
+    const member = await this.workspaceService.acceptInvitation(dto.token, req.user.userId);
     return { success: true, data: WorkspaceMemberResponseDto.fromEntity(member) };
   }
 }

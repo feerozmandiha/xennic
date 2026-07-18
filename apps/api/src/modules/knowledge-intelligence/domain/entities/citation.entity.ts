@@ -59,9 +59,15 @@ export class KnowledgeCitation {
     );
   }
 
-  get context(): string | null { return this._context; }
-  get location(): string | null { return this._location; }
-  get confidence(): number { return this._confidence; }
+  get context(): string | null {
+    return this._context;
+  }
+  get location(): string | null {
+    return this._location;
+  }
+  get confidence(): number {
+    return this._confidence;
+  }
 
   toJSON(): CitationData {
     return {

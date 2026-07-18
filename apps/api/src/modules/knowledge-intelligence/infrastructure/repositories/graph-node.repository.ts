@@ -69,7 +69,14 @@ export class GraphNodeRepository implements IGraphNodeRepository {
     return this._toEntity(node);
   }
 
-  async update(id: string, data: { label?: string | null; properties?: Record<string, unknown>; embeddingId?: string | null }): Promise<KnowledgeGraphNode> {
+  async update(
+    id: string,
+    data: {
+      label?: string | null;
+      properties?: Record<string, unknown>;
+      embeddingId?: string | null;
+    },
+  ): Promise<KnowledgeGraphNode> {
     const node = await prisma.knowledge_graph_nodes.update({
       where: { id },
       data: {

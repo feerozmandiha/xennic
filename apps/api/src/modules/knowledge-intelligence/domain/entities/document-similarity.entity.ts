@@ -49,7 +49,9 @@ export class DocumentSimilarity {
     );
   }
 
-  get similarity(): number { return this._similarity; }
+  get similarity(): number {
+    return this._similarity;
+  }
 
   toJSON(): DocumentSimilarityData {
     return {

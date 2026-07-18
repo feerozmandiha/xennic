@@ -13,7 +13,9 @@ export class SagaInstanceEntity<TContext = unknown> implements SagaInstance<TCon
   updatedAt: string;
   completedAt?: string;
 
-  private constructor(params: Partial<SagaInstance<TContext>> & { sagaName: string; context: TContext }) {
+  private constructor(
+    params: Partial<SagaInstance<TContext>> & { sagaName: string; context: TContext },
+  ) {
     this.id = params.id ?? randomUUID();
     this.sagaName = params.sagaName;
     this.status = params.status ?? 'PENDING';

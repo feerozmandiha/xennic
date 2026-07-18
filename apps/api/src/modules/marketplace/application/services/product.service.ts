@@ -42,12 +42,23 @@ export class ProductService {
   ) {}
 
   async findAll(
-    query?: string, vendorId?: string, type?: string,
-    category?: string, status?: string, page = 1, limit = 20,
+    query?: string,
+    vendorId?: string,
+    type?: string,
+    category?: string,
+    status?: string,
+    page = 1,
+    limit = 20,
   ) {
     const offset = (page - 1) * limit;
     const result = await this.repo.searchProducts({
-      query, vendorId, type, category, status, offset, limit,
+      query,
+      vendorId,
+      type,
+      category,
+      status,
+      offset,
+      limit,
     });
     return {
       data: result.data,
@@ -88,11 +99,7 @@ export class ProductService {
     await this.repo.saveProduct(entity);
   }
 
-  async suggest(
-    calculationType: string,
-    resultParams: Record<string, any>,
-    page = 1, limit = 10,
-  ) {
+  async suggest(calculationType: string, resultParams: Record<string, any>, page = 1, limit = 10) {
     const category = CALC_TO_CATEGORY[calculationType];
     if (!category) {
       return { data: [], meta: { page, limit, total: 0, totalPages: 0 } };
@@ -100,7 +107,10 @@ export class ProductService {
 
     const offset = (page - 1) * limit;
     const result = await this.repo.suggestProducts({
-      category, specs: resultParams, offset, limit,
+      category,
+      specs: resultParams,
+      offset,
+      limit,
     });
     return {
       data: result.data,

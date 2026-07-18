@@ -25,7 +25,10 @@ if (existsSync(envPath)) {
     const idx = trimmed.indexOf('=');
     if (idx > 0) {
       const k = trimmed.slice(0, idx).trim();
-      const v = trimmed.slice(idx + 1).trim().replace(/^['"]|['"]$/g, '');
+      const v = trimmed
+        .slice(idx + 1)
+        .trim()
+        .replace(/^['"]|['"]$/g, '');
       if (!process.env[k]) process.env[k] = v;
     }
   }
@@ -42,9 +45,12 @@ async function generateOpenAPI() {
   const logger = new Logger('OpenAPI');
 
   const { ApiModule } = require('./dist/api.module.js');
-  const WorkspaceGuard = require('./dist/modules/rbac/infrastructure/guards/workspace.guard.js').WorkspaceGuard;
-  const PermissionsGuard = require('./dist/modules/rbac/infrastructure/guards/permissions.guard.js').PermissionsGuard;
-  const JwtAuthGuard = require('./dist/modules/auth/infrastructure/guards/jwt-auth.guard.js').JwtAuthGuard;
+  const WorkspaceGuard =
+    require('./dist/modules/rbac/infrastructure/guards/workspace.guard.js').WorkspaceGuard;
+  const PermissionsGuard =
+    require('./dist/modules/rbac/infrastructure/guards/permissions.guard.js').PermissionsGuard;
+  const JwtAuthGuard =
+    require('./dist/modules/auth/infrastructure/guards/jwt-auth.guard.js').JwtAuthGuard;
 
   // Global wrapper module that provides mock guards to all child modules
   class GenModule {}
@@ -61,42 +67,74 @@ async function generateOpenAPI() {
   logger.log('Building module graph...');
 
   const builder = Test.createTestingModule({ imports: [GenModule] })
-    .overrideProvider('IApiKeyRepository').useValue(MOCK)
-    .overrideProvider('IAiRepository').useValue(MOCK)
-    .overrideProvider('IAuditLogRepository').useValue(MOCK)
-    .overrideProvider('IBillingRepository').useValue(MOCK)
-    .overrideProvider('ICalculationRepository').useValue(MOCK)
-    .overrideProvider('IEmailProvider').useValue(MOCK)
-    .overrideProvider('IEmailRepository').useValue(MOCK)
-    .overrideProvider('IFeatureFlagRepository').useValue(MOCK)
-    .overrideProvider('IKnowledgeRepository').useValue(MOCK)
-    .overrideProvider('IMarketplaceRepository').useValue(MOCK)
-    .overrideProvider('INotificationRepository').useValue(MOCK)
-    .overrideProvider('IPermissionRepository').useValue(MOCK)
-    .overrideProvider('IProjectRepository').useValue(MOCK)
-    .overrideProvider('IRefreshTokenRepository').useValue(MOCK)
-    .overrideProvider('IRoleRepository').useValue(MOCK)
-    .overrideProvider('ISessionRepository').useValue(MOCK)
-    .overrideProvider('IStandardRepository').useValue(MOCK)
-    .overrideProvider('IStorageRepository').useValue(MOCK)
-    .overrideProvider('ISubscriptionRepository').useValue(MOCK)
-    .overrideProvider('IUserRepository').useValue(MOCK)
-    .overrideProvider('IWebhookRepository').useValue(MOCK)
-    .overrideProvider('IWorkspaceMemberRepository').useValue(MOCK)
-    .overrideProvider('IWorkspaceRepository').useValue(MOCK)
-    .overrideProvider('IWorkspaceSettingsRepository').useValue(MOCK)
-    .overrideProvider('ISearchRepository').useValue(MOCK)
-    .overrideProvider('ZARINPAL_GATEWAY').useValue(MOCK)
-    .overrideProvider(WorkspaceGuard).useValue(MOCK_GUARD)
-    .overrideProvider(PermissionsGuard).useValue(MOCK_GUARD)
-    .overrideProvider(JwtAuthGuard).useValue(MOCK_GUARD);
+    .overrideProvider('IApiKeyRepository')
+    .useValue(MOCK)
+    .overrideProvider('IAiRepository')
+    .useValue(MOCK)
+    .overrideProvider('IAuditLogRepository')
+    .useValue(MOCK)
+    .overrideProvider('IBillingRepository')
+    .useValue(MOCK)
+    .overrideProvider('ICalculationRepository')
+    .useValue(MOCK)
+    .overrideProvider('IEmailProvider')
+    .useValue(MOCK)
+    .overrideProvider('IEmailRepository')
+    .useValue(MOCK)
+    .overrideProvider('IFeatureFlagRepository')
+    .useValue(MOCK)
+    .overrideProvider('IKnowledgeRepository')
+    .useValue(MOCK)
+    .overrideProvider('IMarketplaceRepository')
+    .useValue(MOCK)
+    .overrideProvider('INotificationRepository')
+    .useValue(MOCK)
+    .overrideProvider('IPermissionRepository')
+    .useValue(MOCK)
+    .overrideProvider('IProjectRepository')
+    .useValue(MOCK)
+    .overrideProvider('IRefreshTokenRepository')
+    .useValue(MOCK)
+    .overrideProvider('IRoleRepository')
+    .useValue(MOCK)
+    .overrideProvider('ISessionRepository')
+    .useValue(MOCK)
+    .overrideProvider('IStandardRepository')
+    .useValue(MOCK)
+    .overrideProvider('IStorageRepository')
+    .useValue(MOCK)
+    .overrideProvider('ISubscriptionRepository')
+    .useValue(MOCK)
+    .overrideProvider('IUserRepository')
+    .useValue(MOCK)
+    .overrideProvider('IWebhookRepository')
+    .useValue(MOCK)
+    .overrideProvider('IWorkspaceMemberRepository')
+    .useValue(MOCK)
+    .overrideProvider('IWorkspaceRepository')
+    .useValue(MOCK)
+    .overrideProvider('IWorkspaceSettingsRepository')
+    .useValue(MOCK)
+    .overrideProvider('ISearchRepository')
+    .useValue(MOCK)
+    .overrideProvider('ZARINPAL_GATEWAY')
+    .useValue(MOCK)
+    .overrideProvider(WorkspaceGuard)
+    .useValue(MOCK_GUARD)
+    .overrideProvider(PermissionsGuard)
+    .useValue(MOCK_GUARD)
+    .overrideProvider(JwtAuthGuard)
+    .useValue(MOCK_GUARD);
 
   // Patch compile() to skip instantiation
   builder.compile = async function () {
     const { DependenciesScanner } = require('@nestjs/core/scanner');
     const { NoopGraphInspector } = require('@nestjs/core/inspector/noop-graph-inspector');
     const scanner = new DependenciesScanner(
-      this.container, this.metadataScanner, NoopGraphInspector, this.applicationConfig,
+      this.container,
+      this.metadataScanner,
+      NoopGraphInspector,
+      this.applicationConfig,
     );
     await scanner.scan(this.module, { overrides: this.getModuleOverloads() });
     this.applyOverloadsMap();

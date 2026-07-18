@@ -1,6 +1,9 @@
 import { Injectable, Inject, Logger, NotFoundException } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
-import type { IEvaluationRepository, ListOptions } from '../domain/evaluation-repository.interface.js';
+import type {
+  IEvaluationRepository,
+  ListOptions,
+} from '../domain/evaluation-repository.interface.js';
 import { GoldenDataset } from '../domain/golden-dataset.entity.js';
 import type { GoldenItem, GoldenDatasetData } from '../domain/golden-dataset.entity.js';
 import type { PaginatedResult } from '../../shared/types/index.js';
@@ -9,14 +12,14 @@ import type { PaginatedResult } from '../../shared/types/index.js';
 export class GoldenDatasetService {
   private readonly logger = new Logger(GoldenDatasetService.name);
 
-  constructor(
-    @Inject('IEvaluationRepository') private readonly repo: IEvaluationRepository,
-  ) {}
+  constructor(@Inject('IEvaluationRepository') private readonly repo: IEvaluationRepository) {}
 
   async create(data: GoldenDatasetData): Promise<GoldenDataset> {
     const dataset = GoldenDataset.create(data);
     await this.repo.saveDataset(dataset);
-    this.logger.log(`Created golden dataset "${data.name}" (${dataset.id}) with ${dataset.items.length} items`);
+    this.logger.log(
+      `Created golden dataset "${data.name}" (${dataset.id}) with ${dataset.items.length} items`,
+    );
     return dataset;
   }
 
@@ -52,7 +55,7 @@ export class GoldenDatasetService {
     const dataset = await this.repo.getDataset(datasetId);
     if (!dataset) throw new NotFoundException(`Dataset ${datasetId} not found`);
 
-    const filtered = dataset.items.filter(i => i.id !== itemId);
+    const filtered = dataset.items.filter((i) => i.id !== itemId);
     const updated = GoldenDataset.reconstitute(
       dataset.id,
       dataset.name,
@@ -68,7 +71,10 @@ export class GoldenDatasetService {
     return updated;
   }
 
-  async getItems(datasetId: string, options?: { offset?: number; limit?: number }): Promise<PaginatedResult<GoldenItem>> {
+  async getItems(
+    datasetId: string,
+    options?: { offset?: number; limit?: number },
+  ): Promise<PaginatedResult<GoldenItem>> {
     const dataset = await this.repo.getDataset(datasetId);
     if (!dataset) throw new NotFoundException(`Dataset ${datasetId} not found`);
 

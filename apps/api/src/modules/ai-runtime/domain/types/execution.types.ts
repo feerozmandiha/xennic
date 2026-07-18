@@ -41,8 +41,5 @@ export class ExecutionResult<T = unknown> {
 
 export interface PipelineMiddleware {
   before?(context: ExecutionContext): Promise<ExecutionContext>;
-  after?(
-    context: ExecutionContext,
-    result: ExecutionResult,
-  ): Promise<ExecutionResult>;
+  after?(context: ExecutionContext, result: ExecutionResult): Promise<ExecutionResult>;
 }

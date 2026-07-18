@@ -21,7 +21,12 @@ export interface KnowledgeSearchResult {
 export interface IKnowledgeRepository {
   findById(id: string): Promise<KnowledgeEntity | null>;
   findBySlug(workspaceId: string, slug: string): Promise<KnowledgeEntity | null>;
-  findAll(workspaceId: string, offset: number, limit: number, status?: string): Promise<KnowledgeEntity[]>;
+  findAll(
+    workspaceId: string,
+    offset: number,
+    limit: number,
+    status?: string,
+  ): Promise<KnowledgeEntity[]>;
   count(workspaceId: string, status?: string): Promise<number>;
   search(workspaceId: string, params: KnowledgeSearchParams): Promise<KnowledgeSearchResult>;
   save(entity: KnowledgeEntity): Promise<void>;

@@ -1,5 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
-import type { IQuery, IQueryHandler, IQueryBus } from '../../domain/interfaces/query-bus.interface.js';
+import type {
+  IQuery,
+  IQueryHandler,
+  IQueryBus,
+} from '../../domain/interfaces/query-bus.interface.js';
 
 @Injectable()
 export class InProcessQueryBus implements IQueryBus {

@@ -25,9 +25,7 @@ import { EnterpriseIntelligenceSdkModule } from './sdk/sdk.module.js';
     EvaluationPlatformModule,
     EnterpriseIntelligenceSdkModule,
   ],
-  exports: [
-    EnterpriseIntelligenceSdkModule,
-  ],
+  exports: [EnterpriseIntelligenceSdkModule],
 })
 export class EnterpriseIntelligenceModule implements OnModuleInit {
   private readonly logger = new Logger(EnterpriseIntelligenceModule.name);

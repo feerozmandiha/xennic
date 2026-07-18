@@ -19,7 +19,9 @@ export class RetryHandlerService {
         return await executor();
       } catch (error) {
         lastError = error instanceof Error ? error : new Error(String(error));
-        this.logger.warn(`Step ${step.stepId} attempt ${step.retryCount} failed: ${lastError.message}`);
+        this.logger.warn(
+          `Step ${step.stepId} attempt ${step.retryCount} failed: ${lastError.message}`,
+        );
 
         if (!this.shouldRetry(step, lastError)) {
           throw lastError;
@@ -27,7 +29,7 @@ export class RetryHandlerService {
 
         const backoff = this.getBackoff(step.retryCount);
         this.logger.debug(`Waiting ${backoff}ms before retry ${step.retryCount}`);
-        await new Promise(resolve => setTimeout(resolve, backoff));
+        await new Promise((resolve) => setTimeout(resolve, backoff));
       }
     }
 

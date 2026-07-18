@@ -4,11 +4,13 @@ import type { ToolDefinition } from '../../domain/types/tool.types.js';
 
 export class RegisterToolDto {
   @ApiProperty({ example: 'calculate_cable_size' })
-  @IsString() @IsNotEmpty()
+  @IsString()
+  @IsNotEmpty()
   name!: string;
 
   @ApiProperty({ example: 'محاسبه سایز کابل بر اساس جریان و طول' })
-  @IsString() @IsNotEmpty()
+  @IsString()
+  @IsNotEmpty()
   description!: string;
 
   @ApiPropertyOptional()
@@ -29,15 +31,15 @@ export class ToolResponseDto {
 
   static fromDefinition(def: ToolDefinition): ToolResponseDto {
     return {
-      name:        def.name,
+      name: def.name,
       description: def.description,
-      status:      def.status,
-      parameters:  def.parameters,
-      tags:        def.tags,
+      status: def.status,
+      parameters: def.parameters,
+      tags: def.tags,
     };
   }
 
   static fromList(defs: ToolDefinition[]): ToolResponseDto[] {
-    return defs.map(d => ToolResponseDto.fromDefinition(d));
+    return defs.map((d) => ToolResponseDto.fromDefinition(d));
   }
 }

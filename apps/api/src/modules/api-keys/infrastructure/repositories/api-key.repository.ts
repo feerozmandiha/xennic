@@ -65,7 +65,7 @@ export class ApiKeyRepository implements IApiKeyRepository {
         ORDER BY created_at DESC
         LIMIT ${limit} OFFSET ${offset}
       `;
-      return rows.map(r => this._map(r));
+      return rows.map((r) => this._map(r));
     } catch {
       return [];
     }

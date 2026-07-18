@@ -1,10 +1,7 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import {
-  Building2, Sparkles, Zap, Users, Settings,
-  CheckCircle2, Loader2,
-} from 'lucide-react';
+import { Building2, Sparkles, Zap, Users, Settings, CheckCircle2, Loader2 } from 'lucide-react';
 import { useAuthStore } from '@/stores/auth.store';
 import { apiClient } from '@/lib/api/client';
 import { cn } from '@/lib/utils';
@@ -15,7 +12,6 @@ function WelcomeContent({ locale }: { locale: string }) {
   return (
     <div className="flex h-dvh items-center justify-center bg-[hsl(var(--background))]">
       <div className="w-full max-w-2xl mx-auto px-6 text-center">
-
         <div className="w-20 h-20 rounded-2xl bg-[hsl(var(--primary)/0.1)] flex items-center justify-center mx-auto mb-6">
           <Building2 className="h-10 w-10 text-[hsl(var(--primary))]" />
         </div>
@@ -43,16 +39,33 @@ function WelcomeContent({ locale }: { locale: string }) {
 
         <div className="mt-12 grid grid-cols-1 sm:grid-cols-3 gap-6 text-right">
           {[
-            { icon: Users, title: 'همکاری تیمی', desc: 'اعضای تیم را دعوت کنید و نقش‌های دسترسی تعریف کنید' },
-            { icon: Zap, title: 'محاسبات مهندسی', desc: 'محاسبات تخصصی برق شامل اتصال کوتاه، حفاظت، بار و...' },
-            { icon: Settings, title: 'شخصی‌سازی', desc: 'برند، محلی‌سازی و پیش‌فرض‌های محاسباتی را تنظیم کنید' },
+            {
+              icon: Users,
+              title: 'همکاری تیمی',
+              desc: 'اعضای تیم را دعوت کنید و نقش‌های دسترسی تعریف کنید',
+            },
+            {
+              icon: Zap,
+              title: 'محاسبات مهندسی',
+              desc: 'محاسبات تخصصی برق شامل اتصال کوتاه، حفاظت، بار و...',
+            },
+            {
+              icon: Settings,
+              title: 'شخصی‌سازی',
+              desc: 'برند، محلی‌سازی و پیش‌فرض‌های محاسباتی را تنظیم کنید',
+            },
           ].map((f, i) => (
-            <div key={i} className="p-4 rounded-[var(--radius-lg)] border border-[hsl(var(--border))] bg-[hsl(var(--card))]">
+            <div
+              key={i}
+              className="p-4 rounded-[var(--radius-lg)] border border-[hsl(var(--border))] bg-[hsl(var(--card))]"
+            >
               <div className="w-10 h-10 rounded-[var(--radius)] bg-[hsl(var(--primary)/0.08)] flex items-center justify-center mb-3">
                 <f.icon className="h-5 w-5 text-[hsl(var(--primary))]" />
               </div>
               <h3 className="text-sm font-semibold mb-1">{f.title}</h3>
-              <p className="text-xs text-[hsl(var(--muted-foreground))] leading-relaxed">{f.desc}</p>
+              <p className="text-xs text-[hsl(var(--muted-foreground))] leading-relaxed">
+                {f.desc}
+              </p>
             </div>
           ))}
         </div>
@@ -63,27 +76,29 @@ function WelcomeContent({ locale }: { locale: string }) {
             'همکاران را دعوت کنید و نقش‌ها را تعیین کنید',
             'محاسبات مهندسی خود را شروع کنید',
           ].map((step, i) => (
-            <div key={i} className="flex items-start gap-2.5 text-sm text-[hsl(var(--muted-foreground))]">
+            <div
+              key={i}
+              className="flex items-start gap-2.5 text-sm text-[hsl(var(--muted-foreground))]"
+            >
               <CheckCircle2 className="h-4 w-4 text-[hsl(var(--primary)/0.6)] shrink-0 mt-0.5" />
               <span>{step}</span>
             </div>
           ))}
         </div>
-
       </div>
     </div>
   );
 }
 
 export function WorkspaceGate({ children }: { children: React.ReactNode }) {
-  const wsId     = useAuthStore(s => s.workspaceId);
-  const params   = useParams();
-  const locale   = (params?.locale as string) ?? 'fa';
+  const wsId = useAuthStore((s) => s.workspaceId);
+  const params = useParams();
+  const locale = (params?.locale as string) ?? 'fa';
   const pathname = usePathname();
 
   const { data, isLoading } = useQuery({
     queryKey: ['workspaces-list'],
-    queryFn:  () => apiClient.get<any>('/workspaces?limit=20'),
+    queryFn: () => apiClient.get<any>('/workspaces?limit=20'),
     retry: false,
   });
 

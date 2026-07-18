@@ -37,8 +37,12 @@ export class ContentNormalizerService {
     const normalizedChunks = this.normalizeChunks(document);
 
     const totalTokens = normalizedChunks.reduce((sum, c) => sum + c.tokenCount, 0);
-    const averageChunkSize = normalizedChunks.length > 0 ? Math.round(totalTokens / normalizedChunks.length) : 0;
-    const compressionRatio = document.sizeBytes > 0 ? parseFloat((totalTokens / (document.sizeBytes / 1024)).toFixed(2)) : 0;
+    const averageChunkSize =
+      normalizedChunks.length > 0 ? Math.round(totalTokens / normalizedChunks.length) : 0;
+    const compressionRatio =
+      document.sizeBytes > 0
+        ? parseFloat((totalTokens / (document.sizeBytes / 1024)).toFixed(2))
+        : 0;
 
     return {
       totalPages: 0,

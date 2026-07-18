@@ -9,24 +9,30 @@ import {
 // ── Notification Templates ────────────────────────────────────────────────────
 
 const TEMPLATES: Record<NotificationType, { title: string; content: string }> = {
-  workspace_invite:         { title: 'دعوت به Workspace',          content: 'شما به workspace دعوت شده‌اید.' },
-  workspace_member_added:   { title: 'عضو جدید',                    content: 'یک عضو جدید به workspace اضافه شد.' },
-  workspace_member_removed: { title: 'حذف عضو',                    content: 'یک عضو از workspace حذف شد.' },
-  project_added:            { title: 'پروژه جدید',                  content: 'شما به یک پروژه اضافه شدید.' },
-  project_updated:          { title: 'بروزرسانی پروژه',              content: 'پروژه بروزرسانی شد.' },
-  calculation_complete:     { title: 'محاسبه کامل شد',              content: 'محاسبه مهندسی شما به پایان رسید.' },
-  subscription_changed:     { title: 'تغییر اشتراک',                content: 'اشتراک workspace شما تغییر کرد.' },
-  subscription_expiring:    { title: 'انقضای اشتراک',               content: 'اشتراک workspace شما به زودی منقضی می‌شود.' },
-  file_shared:              { title: 'فایل به اشتراک گذاشته شد',   content: 'یک فایل با شما به اشتراک گذاشته شد.' },
-  system:                   { title: 'اطلاعیه سیستم',               content: 'یک پیام سیستمی دارید.' },
-  security_alert:           { title: '⚠️ هشدار امنیتی',             content: 'یک رویداد امنیتی شناسایی شد.' },
+  workspace_invite: { title: 'دعوت به Workspace', content: 'شما به workspace دعوت شده‌اید.' },
+  workspace_member_added: { title: 'عضو جدید', content: 'یک عضو جدید به workspace اضافه شد.' },
+  workspace_member_removed: { title: 'حذف عضو', content: 'یک عضو از workspace حذف شد.' },
+  project_added: { title: 'پروژه جدید', content: 'شما به یک پروژه اضافه شدید.' },
+  project_updated: { title: 'بروزرسانی پروژه', content: 'پروژه بروزرسانی شد.' },
+  calculation_complete: { title: 'محاسبه کامل شد', content: 'محاسبه مهندسی شما به پایان رسید.' },
+  subscription_changed: { title: 'تغییر اشتراک', content: 'اشتراک workspace شما تغییر کرد.' },
+  subscription_expiring: {
+    title: 'انقضای اشتراک',
+    content: 'اشتراک workspace شما به زودی منقضی می‌شود.',
+  },
+  file_shared: {
+    title: 'فایل به اشتراک گذاشته شد',
+    content: 'یک فایل با شما به اشتراک گذاشته شد.',
+  },
+  system: { title: 'اطلاعیه سیستم', content: 'یک پیام سیستمی دارید.' },
+  security_alert: { title: '⚠️ هشدار امنیتی', content: 'یک رویداد امنیتی شناسایی شد.' },
 };
 
 export interface SendNotificationInput {
-  userId:   string;
-  type:     NotificationType;
+  userId: string;
+  type: NotificationType;
   channel?: NotificationChannel;
-  title?:   string;
+  title?: string;
   content?: string;
   metadata?: Record<string, unknown>;
 }
@@ -45,14 +51,14 @@ export class NotificationService {
    */
   async send(input: SendNotificationInput): Promise<NotificationEntity> {
     const template = TEMPLATES[input.type];
-    const channel  = input.channel ?? 'in_app';
+    const channel = input.channel ?? 'in_app';
 
     const notification = NotificationEntity.create({
-      userId:   input.userId,
-      type:     input.type,
+      userId: input.userId,
+      type: input.type,
       channel,
-      title:    input.title   ?? template.title,
-      content:  input.content ?? template.content,
+      title: input.title ?? template.title,
+      content: input.content ?? template.content,
       metadata: input.metadata,
     });
 
@@ -74,16 +80,21 @@ export class NotificationService {
    * ارسال به چند کاربر همزمان
    */
   async sendToMany(
-    userIds:  string[],
-    type:     NotificationType,
-    options?: { title?: string; content?: string; channel?: NotificationChannel; metadata?: Record<string, unknown> },
+    userIds: string[],
+    type: NotificationType,
+    options?: {
+      title?: string;
+      content?: string;
+      channel?: NotificationChannel;
+      metadata?: Record<string, unknown>;
+    },
   ): Promise<void> {
     await Promise.all(
-      userIds.map(userId =>
-        this.send({ userId, type, ...options }).catch(err =>
-          console.error(`Failed to notify user ${userId}:`, err)
-        )
-      )
+      userIds.map((userId) =>
+        this.send({ userId, type, ...options }).catch((err) =>
+          console.error(`Failed to notify user ${userId}:`, err),
+        ),
+      ),
     );
   }
 
@@ -91,8 +102,8 @@ export class NotificationService {
 
   async getMyNotifications(
     userId: string,
-    page   = 1,
-    limit  = 20,
+    page = 1,
+    limit = 20,
     status?: string,
   ): Promise<{
     data: NotificationEntity[];
@@ -147,7 +158,7 @@ export class NotificationService {
   async notifyWorkspaceInvite(userId: string, workspaceName: string): Promise<void> {
     await this.send({
       userId,
-      type:    'workspace_invite',
+      type: 'workspace_invite',
       content: `شما به workspace "${workspaceName}" دعوت شده‌اید.`,
     });
   }
@@ -155,7 +166,7 @@ export class NotificationService {
   async notifySubscriptionChanged(userId: string, planName: string): Promise<void> {
     await this.send({
       userId,
-      type:    'subscription_changed',
+      type: 'subscription_changed',
       content: `اشتراک workspace شما به پلن "${planName}" تغییر یافت.`,
     });
   }
@@ -163,7 +174,7 @@ export class NotificationService {
   async notifyCalculationComplete(userId: string, calculationType: string): Promise<void> {
     await this.send({
       userId,
-      type:    'calculation_complete',
+      type: 'calculation_complete',
       content: `محاسبه "${calculationType}" با موفقیت انجام شد.`,
     });
   }
@@ -171,7 +182,7 @@ export class NotificationService {
   async notifySecurityAlert(userId: string, message: string): Promise<void> {
     await this.send({
       userId,
-      type:    'security_alert',
+      type: 'security_alert',
       content: message,
     });
   }

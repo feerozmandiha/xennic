@@ -21,12 +21,7 @@ export class SharedMemory {
   public readonly entries: MemoryEntry[];
   public readonly metadata: Metadata;
 
-  private constructor(
-    id: string,
-    executionId: string,
-    entries: MemoryEntry[],
-    metadata: Metadata,
-  ) {
+  private constructor(id: string, executionId: string, entries: MemoryEntry[], metadata: Metadata) {
     this.id = id;
     this.executionId = executionId;
     this.entries = entries;
@@ -34,12 +29,7 @@ export class SharedMemory {
   }
 
   static create(opts: SharedMemoryOptions): SharedMemory {
-    return new SharedMemory(
-      randomUUID(),
-      opts.executionId,
-      opts.entries ?? [],
-      opts.metadata,
-    );
+    return new SharedMemory(randomUUID(), opts.executionId, opts.entries ?? [], opts.metadata);
   }
 
   static reconstitute(

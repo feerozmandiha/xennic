@@ -11,14 +11,14 @@ export type AgentPhase =
   | 'error';
 
 const VALID_PHASE_TRANSITIONS: Record<AgentPhase, AgentPhase[]> = {
-  initialized:     ['context_ready', 'error'],
-  context_ready:   ['tools_resolved', 'error'],
-  tools_resolved:  ['prompt_rendered', 'error'],
+  initialized: ['context_ready', 'error'],
+  context_ready: ['tools_resolved', 'error'],
+  tools_resolved: ['prompt_rendered', 'error'],
   prompt_rendered: ['llm_completed', 'error'],
-  llm_completed:   ['response_ready', 'error'],
-  response_ready:  ['completed', 'error'],
-  completed:       [],
-  error:           ['initialized'],
+  llm_completed: ['response_ready', 'error'],
+  response_ready: ['completed', 'error'],
+  completed: [],
+  error: ['initialized'],
 };
 
 interface AgentState {
@@ -53,9 +53,7 @@ export class AgentStateManagerService {
 
     const allowed = VALID_PHASE_TRANSITIONS[state.phase];
     if (!allowed?.includes(target)) {
-      throw new Error(
-        `Invalid agent phase transition: ${state.phase} → ${target}`,
-      );
+      throw new Error(`Invalid agent phase transition: ${state.phase} → ${target}`);
     }
 
     state.phase = target;

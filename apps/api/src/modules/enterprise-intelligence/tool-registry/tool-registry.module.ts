@@ -12,11 +12,7 @@ import { PrismaToolRegistry } from './infrastructure/persistence/prisma-tool-reg
     ToolCapabilityService,
     { provide: 'IToolRegistry', useClass: PrismaToolRegistry },
   ],
-  exports: [
-    ToolRegistryService,
-    ToolExecutorService,
-    ToolCapabilityService,
-  ],
+  exports: [ToolRegistryService, ToolExecutorService, ToolCapabilityService],
 })
 export class ToolRegistryModule implements OnModuleInit {
   private readonly logger = new Logger(ToolRegistryModule.name);

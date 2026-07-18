@@ -10,120 +10,120 @@
 
 ### Level 0 — No Dependencies (Can start Sprint 1)
 
-| ID | Title | Depends On | Blocks | Blocked By | Parallel With | Critical Path |
-|----|-------|-----------|--------|------------|---------------|:---:|
-| XEN-GAP-0010 | `.gitignore` missing `venv/`, `__pycache__`, `*.pyc` | — | — | — | All Level 0 | No |
-| XEN-GAP-0008 | `@nestjs/throttler` misclassified as devDependency | — | — | — | All Level 0 | No |
-| XEN-GAP-0018 | `@xennic/shared` has no build step | — | — | — | All Level 0 | No |
-| XEN-GAP-0019 | `README.md` is security doc, not project overview | — | — | — | All Level 0 | No |
-| XEN-GAP-0076 | `@nestjs/platform-express` in deps (Fastify adapter) | — | — | — | All Level 0 | No |
-| XEN-GAP-0077 | Stale `.eslintrc.cjs` coexists with flat config | — | — | — | All Level 0 | No |
-| XEN-GAP-0005 | Lint broken for 4/6 packages | — | XEN-GAP-0004 | — | All Level 0 | **Yes** |
-| XEN-GAP-0007 | ai-service tests fail — missing `openai` in venv | — | XEN-GAP-0003 | — | All Level 0 | No |
-| XEN-GAP-0020 | No pre-commit hooks | — | — | — | All Level 0 | No |
-| XEN-GAP-0032 | UserController has NO guards (anyone can CRUD users) | — | — | — | All Level 0 | **Yes** |
-| XEN-GAP-0034 | Hard delete endpoints public (user + workspace) | — | — | — | All Level 0 | **Yes** |
-| XEN-GAP-0033 | SSRF via webhooks — no IP validation | — | — | — | All Level 0 | **Yes** |
-| XEN-GAP-0014 | No Helmet/CSP security headers (Fastify) | — | — | — | All Level 0 | No |
-| XEN-GAP-0040 | No CSRF protection middleware | — | — | — | All Level 0 | No |
-| XEN-GAP-0069 | CORS wildcard `["*"]` in Python services | — | — | — | All Level 0 | No |
-| XEN-GAP-0035 | Encryption master key hardcoded in `.env` | — | — | — | All Level 0 | **Yes** |
-| XEN-GAP-0037 | Missing workspace isolation in ConsultationsController | — | — | — | All Level 0 | **Yes** |
-| XEN-GAP-0038 | PermissionsGuard fail-open (returns true on error) | — | — | — | All Level 0 | No |
-| XEN-GAP-0036 | Prompt injection vulnerability (user input in LLM prompt) | — | — | — | All Level 0 | No |
-| XEN-GAP-0040 | No CSRF protection | — | — | — | All Level 0 | No |
+| ID           | Title                                                     | Depends On | Blocks       | Blocked By | Parallel With | Critical Path |
+| ------------ | --------------------------------------------------------- | ---------- | ------------ | ---------- | ------------- | :-----------: |
+| XEN-GAP-0010 | `.gitignore` missing `venv/`, `__pycache__`, `*.pyc`      | —          | —            | —          | All Level 0   |      No       |
+| XEN-GAP-0008 | `@nestjs/throttler` misclassified as devDependency        | —          | —            | —          | All Level 0   |      No       |
+| XEN-GAP-0018 | `@xennic/shared` has no build step                        | —          | —            | —          | All Level 0   |      No       |
+| XEN-GAP-0019 | `README.md` is security doc, not project overview         | —          | —            | —          | All Level 0   |      No       |
+| XEN-GAP-0076 | `@nestjs/platform-express` in deps (Fastify adapter)      | —          | —            | —          | All Level 0   |      No       |
+| XEN-GAP-0077 | Stale `.eslintrc.cjs` coexists with flat config           | —          | —            | —          | All Level 0   |      No       |
+| XEN-GAP-0005 | Lint broken for 4/6 packages                              | —          | XEN-GAP-0004 | —          | All Level 0   |    **Yes**    |
+| XEN-GAP-0007 | ai-service tests fail — missing `openai` in venv          | —          | XEN-GAP-0003 | —          | All Level 0   |      No       |
+| XEN-GAP-0020 | No pre-commit hooks                                       | —          | —            | —          | All Level 0   |      No       |
+| XEN-GAP-0032 | UserController has NO guards (anyone can CRUD users)      | —          | —            | —          | All Level 0   |    **Yes**    |
+| XEN-GAP-0034 | Hard delete endpoints public (user + workspace)           | —          | —            | —          | All Level 0   |    **Yes**    |
+| XEN-GAP-0033 | SSRF via webhooks — no IP validation                      | —          | —            | —          | All Level 0   |    **Yes**    |
+| XEN-GAP-0014 | No Helmet/CSP security headers (Fastify)                  | —          | —            | —          | All Level 0   |      No       |
+| XEN-GAP-0040 | No CSRF protection middleware                             | —          | —            | —          | All Level 0   |      No       |
+| XEN-GAP-0069 | CORS wildcard `["*"]` in Python services                  | —          | —            | —          | All Level 0   |      No       |
+| XEN-GAP-0035 | Encryption master key hardcoded in `.env`                 | —          | —            | —          | All Level 0   |    **Yes**    |
+| XEN-GAP-0037 | Missing workspace isolation in ConsultationsController    | —          | —            | —          | All Level 0   |    **Yes**    |
+| XEN-GAP-0038 | PermissionsGuard fail-open (returns true on error)        | —          | —            | —          | All Level 0   |      No       |
+| XEN-GAP-0036 | Prompt injection vulnerability (user input in LLM prompt) | —          | —            | —          | All Level 0   |      No       |
+| XEN-GAP-0040 | No CSRF protection                                        | —          | —            | —          | All Level 0   |      No       |
 
 ### Level 1 — Depends on Level 0
 
-| ID | Title | Depends On | Blocks | Blocked By | Parallel With | Critical Path |
-|----|-------|-----------|--------|------------|---------------|:---:|
-| XEN-GAP-0041 | No graceful shutdown (SIGTERM/SIGINT) | XEN-GAP-0010 | XEN-GAP-0049 | — | All L1 | **Yes** |
-| XEN-GAP-0042 | No env validation (process.env everywhere) | XEN-GAP-0010 | XEN-GAP-0044, XEN-GAP-0045 | — | All L1 | **Yes** |
-| XEN-GAP-0006 | 15 Python tests failing (engineering-service) | XEN-GAP-0010 | XEN-GAP-0003 | — | All L1 | No |
-| XEN-GAP-0009 | Web build hangs (Next.js timeout) | XEN-GAP-0010 | — | — | All L1 | No |
-| XEN-GAP-0062 | Fake streaming — real SSE not implemented | XEN-GAP-0010 | XEN-GAP-0054 | — | All L1 | No |
-| XEN-GAP-0065 | 95 bare catch blocks (silent error swallowing) | XEN-GAP-0010 | XEN-GAP-0039 | — | All L1 | No |
-| XEN-GAP-0066 | 54 `console.log`/`console.error` instead of Logger | XEN-GAP-0010 | — | — | All L1 | No |
-| XEN-GAP-0014 | No Helmet/CSP headers | XEN-GAP-0010 | — | — | All L1 | No |
-| XEN-GAP-0051 | Timer leaks in engineering-client/vision-client | XEN-GAP-0010 | — | — | All L1 | No |
-| XEN-GAP-0057 | `req.workspaceId` typo in ai-runtime controller | XEN-GAP-0010 | XEN-GAP-0055 | — | All L1 | **Yes** |
-| XEN-GAP-0058 | Duplicate `analyze_document()` method | XEN-GAP-0010 | XEN-GAP-0054 | — | All L1 | No |
-| XEN-GAP-0059 | Python tools dead code (not registered in agents) | XEN-GAP-0010 | XEN-GAP-0013 | — | All L1 | No |
-| XEN-GAP-0056 | Dummy embeddings all identical (seed bug) | XEN-GAP-0010 | XEN-GAP-0012 | — | All L1 | **Yes** |
-| XEN-GAP-0054 | Electrical Engineer Agent never calls LLM | XEN-GAP-0010 | XEN-GAP-0013, XEN-GAP-0062 | — | All L1 | **Yes** |
-| XEN-GAP-0055 | Execution pipeline echoes input (mock LLM) | XEN-GAP-0010 | XEN-GAP-0013 | — | All L1 | **Yes** |
-| XEN-GAP-0043 | Unbounded in-memory stores (OOM risk) | XEN-GAP-0010 | XEN-GAP-0061 | — | All L1 | No |
-| XEN-GAP-0044 | No Prisma `$transaction` usage | XEN-GAP-0042 | — | — | XEN-GAP-0045 | **Yes** |
-| XEN-GAP-0045 | No idempotency on POST endpoints | XEN-GAP-0042 | — | — | XEN-GAP-0044 | No |
-| XEN-GAP-0067 | 6 classes >300 lines (SRP violations) | XEN-GAP-0010 | — | — | All L1 | No |
-| XEN-GAP-0068 | Pagination boilerplate duplicated ~25x | XEN-GAP-0010 | — | — | All L1 | No |
-| XEN-GAP-0017 | 85 files use `any` type | XEN-GAP-0010 | — | — | All L1 | No |
-| XEN-GAP-0070 | Missing cascade deletes on 20+ relations | XEN-GAP-0010 | XEN-GAP-0072 | — | All L1 | **Yes** |
-| XEN-GAP-0071 | `password_reset_tokens` has no relation to `users` | XEN-GAP-0010 | — | — | All L1 | No |
-| XEN-GAP-0046 | LlmProvider falls back to mock in production | XEN-GAP-0010 | XEN-GAP-0063 | — | All L1 | **Yes** |
-| XEN-GAP-0047 | DB errors silently swallowed in `ai.repository.ts` | XEN-GAP-0010 | — | — | All L1 | No |
-| XEN-GAP-0049 | No readiness/liveness probes | XEN-GAP-0041 | — | — | All L1 | No |
-| XEN-GAP-0052 | No `OnModuleDestroy` lifecycle hooks | XEN-GAP-0041 | — | — | All L1 | No |
-| XEN-GAP-0050 | No retry policy on external HTTP calls | XEN-GAP-0010 | — | — | All L1 | No |
-| XEN-GAP-0004 | No CI/CD pipeline | XEN-GAP-0005 | — | — | All L1 | **Yes** |
-| XEN-GAP-0053 | Rate limits not configurable via env | XEN-GAP-0042 | — | — | All L1 | No |
-| XEN-GAP-0063 | Mock mode gives plausible but incorrect engineering advice | XEN-GAP-0046 | — | — | All L1 | No |
-| XEN-GAP-0080 | No Redis caching layer (hot path perf) | XEN-GAP-0042 | — | — | All L1 | No |
-| XEN-GAP-0081 | N+1 query patterns (5 instances) | XEN-GAP-0010 | — | — | All L1 | No |
-| XEN-GAP-0082 | `SELECT *` in 30+ raw SQL queries | XEN-GAP-0010 | — | — | All L1 | No |
-| XEN-GAP-0083 | Manual UPSERT (2 round-trips instead of 1) | XEN-GAP-0010 | — | — | All L1 | No |
-| XEN-GAP-0084 | Synchronous file I/O in async context (ai-service) | XEN-GAP-0010 | — | — | All L1 | No |
-| XEN-GAP-0085 | Sequential multi-collection RAG retrieval | XEN-GAP-0010 | — | — | All L1 | No |
-| XEN-GAP-0064 | Prisma client imported in application layer | XEN-GAP-0010 | — | — | All L1 | No |
+| ID           | Title                                                      | Depends On   | Blocks                     | Blocked By | Parallel With | Critical Path |
+| ------------ | ---------------------------------------------------------- | ------------ | -------------------------- | ---------- | ------------- | :-----------: |
+| XEN-GAP-0041 | No graceful shutdown (SIGTERM/SIGINT)                      | XEN-GAP-0010 | XEN-GAP-0049               | —          | All L1        |    **Yes**    |
+| XEN-GAP-0042 | No env validation (process.env everywhere)                 | XEN-GAP-0010 | XEN-GAP-0044, XEN-GAP-0045 | —          | All L1        |    **Yes**    |
+| XEN-GAP-0006 | 15 Python tests failing (engineering-service)              | XEN-GAP-0010 | XEN-GAP-0003               | —          | All L1        |      No       |
+| XEN-GAP-0009 | Web build hangs (Next.js timeout)                          | XEN-GAP-0010 | —                          | —          | All L1        |      No       |
+| XEN-GAP-0062 | Fake streaming — real SSE not implemented                  | XEN-GAP-0010 | XEN-GAP-0054               | —          | All L1        |      No       |
+| XEN-GAP-0065 | 95 bare catch blocks (silent error swallowing)             | XEN-GAP-0010 | XEN-GAP-0039               | —          | All L1        |      No       |
+| XEN-GAP-0066 | 54 `console.log`/`console.error` instead of Logger         | XEN-GAP-0010 | —                          | —          | All L1        |      No       |
+| XEN-GAP-0014 | No Helmet/CSP headers                                      | XEN-GAP-0010 | —                          | —          | All L1        |      No       |
+| XEN-GAP-0051 | Timer leaks in engineering-client/vision-client            | XEN-GAP-0010 | —                          | —          | All L1        |      No       |
+| XEN-GAP-0057 | `req.workspaceId` typo in ai-runtime controller            | XEN-GAP-0010 | XEN-GAP-0055               | —          | All L1        |    **Yes**    |
+| XEN-GAP-0058 | Duplicate `analyze_document()` method                      | XEN-GAP-0010 | XEN-GAP-0054               | —          | All L1        |      No       |
+| XEN-GAP-0059 | Python tools dead code (not registered in agents)          | XEN-GAP-0010 | XEN-GAP-0013               | —          | All L1        |      No       |
+| XEN-GAP-0056 | Dummy embeddings all identical (seed bug)                  | XEN-GAP-0010 | XEN-GAP-0012               | —          | All L1        |    **Yes**    |
+| XEN-GAP-0054 | Electrical Engineer Agent never calls LLM                  | XEN-GAP-0010 | XEN-GAP-0013, XEN-GAP-0062 | —          | All L1        |    **Yes**    |
+| XEN-GAP-0055 | Execution pipeline echoes input (mock LLM)                 | XEN-GAP-0010 | XEN-GAP-0013               | —          | All L1        |    **Yes**    |
+| XEN-GAP-0043 | Unbounded in-memory stores (OOM risk)                      | XEN-GAP-0010 | XEN-GAP-0061               | —          | All L1        |      No       |
+| XEN-GAP-0044 | No Prisma `$transaction` usage                             | XEN-GAP-0042 | —                          | —          | XEN-GAP-0045  |    **Yes**    |
+| XEN-GAP-0045 | No idempotency on POST endpoints                           | XEN-GAP-0042 | —                          | —          | XEN-GAP-0044  |      No       |
+| XEN-GAP-0067 | 6 classes >300 lines (SRP violations)                      | XEN-GAP-0010 | —                          | —          | All L1        |      No       |
+| XEN-GAP-0068 | Pagination boilerplate duplicated ~25x                     | XEN-GAP-0010 | —                          | —          | All L1        |      No       |
+| XEN-GAP-0017 | 85 files use `any` type                                    | XEN-GAP-0010 | —                          | —          | All L1        |      No       |
+| XEN-GAP-0070 | Missing cascade deletes on 20+ relations                   | XEN-GAP-0010 | XEN-GAP-0072               | —          | All L1        |    **Yes**    |
+| XEN-GAP-0071 | `password_reset_tokens` has no relation to `users`         | XEN-GAP-0010 | —                          | —          | All L1        |      No       |
+| XEN-GAP-0046 | LlmProvider falls back to mock in production               | XEN-GAP-0010 | XEN-GAP-0063               | —          | All L1        |    **Yes**    |
+| XEN-GAP-0047 | DB errors silently swallowed in `ai.repository.ts`         | XEN-GAP-0010 | —                          | —          | All L1        |      No       |
+| XEN-GAP-0049 | No readiness/liveness probes                               | XEN-GAP-0041 | —                          | —          | All L1        |      No       |
+| XEN-GAP-0052 | No `OnModuleDestroy` lifecycle hooks                       | XEN-GAP-0041 | —                          | —          | All L1        |      No       |
+| XEN-GAP-0050 | No retry policy on external HTTP calls                     | XEN-GAP-0010 | —                          | —          | All L1        |      No       |
+| XEN-GAP-0004 | No CI/CD pipeline                                          | XEN-GAP-0005 | —                          | —          | All L1        |    **Yes**    |
+| XEN-GAP-0053 | Rate limits not configurable via env                       | XEN-GAP-0042 | —                          | —          | All L1        |      No       |
+| XEN-GAP-0063 | Mock mode gives plausible but incorrect engineering advice | XEN-GAP-0046 | —                          | —          | All L1        |      No       |
+| XEN-GAP-0080 | No Redis caching layer (hot path perf)                     | XEN-GAP-0042 | —                          | —          | All L1        |      No       |
+| XEN-GAP-0081 | N+1 query patterns (5 instances)                           | XEN-GAP-0010 | —                          | —          | All L1        |      No       |
+| XEN-GAP-0082 | `SELECT *` in 30+ raw SQL queries                          | XEN-GAP-0010 | —                          | —          | All L1        |      No       |
+| XEN-GAP-0083 | Manual UPSERT (2 round-trips instead of 1)                 | XEN-GAP-0010 | —                          | —          | All L1        |      No       |
+| XEN-GAP-0084 | Synchronous file I/O in async context (ai-service)         | XEN-GAP-0010 | —                          | —          | All L1        |      No       |
+| XEN-GAP-0085 | Sequential multi-collection RAG retrieval                  | XEN-GAP-0010 | —                          | —          | All L1        |      No       |
+| XEN-GAP-0064 | Prisma client imported in application layer                | XEN-GAP-0010 | —                          | —          | All L1        |      No       |
 
 ### Level 2 — Depends on Level 0–1
 
-| ID | Title | Depends On | Blocks | Blocked By | Parallel With | Critical Path |
-|----|-------|-----------|--------|------------|---------------|:---:|
-| XEN-GAP-0001 | Knowledge Factory module (empty — 0% implemented) | XEN-GAP-0012, XEN-GAP-0056, XEN-GAP-0054 | — | XEN-GAP-0012 | XEN-GAP-0011, XEN-GAP-0015, XEN-GAP-0016 | No |
-| XEN-GAP-0012 | No RAG pipeline integration (knowledge → ai-service bridge) | XEN-GAP-0056, XEN-GAP-0054 | XEN-GAP-0001 | XEN-GAP-0056 | XEN-GAP-0015, XEN-GAP-0016 | No |
-| XEN-GAP-0013 | No multi-agent orchestration | XEN-GAP-0054, XEN-GAP-0055 | — | XEN-GAP-0054 | XEN-GAP-0015 | No |
-| XEN-GAP-0015 | No agent memory/safety/guardrails | XEN-GAP-0043, XEN-GAP-0054 | — | XEN-GAP-0054 | XEN-GAP-0013, XEN-GAP-0016 | No |
-| XEN-GAP-0016 | No provenance/citation tracking | XEN-GAP-0054 | — | XEN-GAP-0054 | XEN-GAP-0013, XEN-GAP-0015 | No |
-| XEN-GAP-0039 | No MFA/account lockout | XEN-GAP-0042 | — | — | XEN-GAP-0040 | No |
-| XEN-GAP-0029 | 215 Pydantic deprecation warnings (engineering-service) | XEN-GAP-0006 | — | — | All L2 | No |
-| XEN-GAP-0060 | No source grounding in chat responses (RAG context) | XEN-GAP-0056 | — | — | XEN-GAP-0061 | No |
-| XEN-GAP-0061 | All memory in-memory (ephemeral state) | XEN-GAP-0043 | — | — | XEN-GAP-0060 | No |
-| XEN-GAP-0073 | Missing indexes on 10+ foreign-key columns | XEN-GAP-0070 | — | — | XEN-GAP-0074, XEN-GAP-0075 | No |
-| XEN-GAP-0074 | 49+ String status fields should be Prisma enums | XEN-GAP-0070 | — | — | XEN-GAP-0073, XEN-GAP-0075 | No |
-| XEN-GAP-0075 | Missing `@updatedAt` on 15+ mutable models | XEN-GAP-0070 | — | — | XEN-GAP-0073, XEN-GAP-0074 | No |
-| XEN-GAP-0079 | `is_admin` duplicates RBAC role system | XEN-GAP-0074 | — | — | All L2 | No |
-| XEN-GAP-0080 | No Redis caching (subscription plan, permissions) | XEN-GAP-0042 | — | — | All L2 | No |
-| XEN-GAP-0003 | 20+ modules have zero tests (8.72% coverage) | XEN-GAP-0006, XEN-GAP-0007, XEN-GAP-0065, XEN-GAP-0066 | — | — | All L2 | **Yes** |
-| XEN-GAP-0021 | No feature branches (git workflow) | XEN-GAP-0004 | — | — | All L2 | No |
-| XEN-GAP-0022 | No semantic versioning | XEN-GAP-0004 | — | — | All L2 | No |
-| XEN-GAP-0023 | No CHANGELOG.md | XEN-GAP-0004 | — | — | All L2 | No |
-| XEN-GAP-0024 | No CONTRIBUTING.md | XEN-GAP-0019 | — | — | All L2 | No |
-| XEN-GAP-0025 | No LICENSE.md | XEN-GAP-0019 | — | — | All L2 | No |
-| XEN-GAP-0026 | STATUS_REPORT.md stale | XEN-GAP-0019 | — | — | All L2 | No |
-| XEN-GAP-0027 | 9 knowledge/ subdirs empty | XEN-GAP-0001 | — | — | All L2 | No |
-| XEN-GAP-0028 | diagrams/ directory empty | XEN-GAP-0019 | — | — | All L2 | No |
-| XEN-GAP-0030 | Mixed test tooling (ts-jest vs tsx) | XEN-GAP-0005 | — | — | All L2 | No |
+| ID           | Title                                                       | Depends On                                             | Blocks       | Blocked By   | Parallel With                            | Critical Path |
+| ------------ | ----------------------------------------------------------- | ------------------------------------------------------ | ------------ | ------------ | ---------------------------------------- | :-----------: |
+| XEN-GAP-0001 | Knowledge Factory module (empty — 0% implemented)           | XEN-GAP-0012, XEN-GAP-0056, XEN-GAP-0054               | —            | XEN-GAP-0012 | XEN-GAP-0011, XEN-GAP-0015, XEN-GAP-0016 |      No       |
+| XEN-GAP-0012 | No RAG pipeline integration (knowledge → ai-service bridge) | XEN-GAP-0056, XEN-GAP-0054                             | XEN-GAP-0001 | XEN-GAP-0056 | XEN-GAP-0015, XEN-GAP-0016               |      No       |
+| XEN-GAP-0013 | No multi-agent orchestration                                | XEN-GAP-0054, XEN-GAP-0055                             | —            | XEN-GAP-0054 | XEN-GAP-0015                             |      No       |
+| XEN-GAP-0015 | No agent memory/safety/guardrails                           | XEN-GAP-0043, XEN-GAP-0054                             | —            | XEN-GAP-0054 | XEN-GAP-0013, XEN-GAP-0016               |      No       |
+| XEN-GAP-0016 | No provenance/citation tracking                             | XEN-GAP-0054                                           | —            | XEN-GAP-0054 | XEN-GAP-0013, XEN-GAP-0015               |      No       |
+| XEN-GAP-0039 | No MFA/account lockout                                      | XEN-GAP-0042                                           | —            | —            | XEN-GAP-0040                             |      No       |
+| XEN-GAP-0029 | 215 Pydantic deprecation warnings (engineering-service)     | XEN-GAP-0006                                           | —            | —            | All L2                                   |      No       |
+| XEN-GAP-0060 | No source grounding in chat responses (RAG context)         | XEN-GAP-0056                                           | —            | —            | XEN-GAP-0061                             |      No       |
+| XEN-GAP-0061 | All memory in-memory (ephemeral state)                      | XEN-GAP-0043                                           | —            | —            | XEN-GAP-0060                             |      No       |
+| XEN-GAP-0073 | Missing indexes on 10+ foreign-key columns                  | XEN-GAP-0070                                           | —            | —            | XEN-GAP-0074, XEN-GAP-0075               |      No       |
+| XEN-GAP-0074 | 49+ String status fields should be Prisma enums             | XEN-GAP-0070                                           | —            | —            | XEN-GAP-0073, XEN-GAP-0075               |      No       |
+| XEN-GAP-0075 | Missing `@updatedAt` on 15+ mutable models                  | XEN-GAP-0070                                           | —            | —            | XEN-GAP-0073, XEN-GAP-0074               |      No       |
+| XEN-GAP-0079 | `is_admin` duplicates RBAC role system                      | XEN-GAP-0074                                           | —            | —            | All L2                                   |      No       |
+| XEN-GAP-0080 | No Redis caching (subscription plan, permissions)           | XEN-GAP-0042                                           | —            | —            | All L2                                   |      No       |
+| XEN-GAP-0003 | 20+ modules have zero tests (8.72% coverage)                | XEN-GAP-0006, XEN-GAP-0007, XEN-GAP-0065, XEN-GAP-0066 | —            | —            | All L2                                   |    **Yes**    |
+| XEN-GAP-0021 | No feature branches (git workflow)                          | XEN-GAP-0004                                           | —            | —            | All L2                                   |      No       |
+| XEN-GAP-0022 | No semantic versioning                                      | XEN-GAP-0004                                           | —            | —            | All L2                                   |      No       |
+| XEN-GAP-0023 | No CHANGELOG.md                                             | XEN-GAP-0004                                           | —            | —            | All L2                                   |      No       |
+| XEN-GAP-0024 | No CONTRIBUTING.md                                          | XEN-GAP-0019                                           | —            | —            | All L2                                   |      No       |
+| XEN-GAP-0025 | No LICENSE.md                                               | XEN-GAP-0019                                           | —            | —            | All L2                                   |      No       |
+| XEN-GAP-0026 | STATUS_REPORT.md stale                                      | XEN-GAP-0019                                           | —            | —            | All L2                                   |      No       |
+| XEN-GAP-0027 | 9 knowledge/ subdirs empty                                  | XEN-GAP-0001                                           | —            | —            | All L2                                   |      No       |
+| XEN-GAP-0028 | diagrams/ directory empty                                   | XEN-GAP-0019                                           | —            | —            | All L2                                   |      No       |
+| XEN-GAP-0030 | Mixed test tooling (ts-jest vs tsx)                         | XEN-GAP-0005                                           | —            | —            | All L2                                   |      No       |
 
 ### Level 3 — Depends on Level 0–2
 
-| ID | Title | Depends On | Blocks | Blocked By | Parallel With | Critical Path |
-|----|-------|-----------|--------|------------|---------------|:---:|
-| XEN-GAP-0011 | 5 enterprise modules empty (background, backup, config, performance) | XEN-GAP-0044, XEN-GAP-0070 | — | — | XEN-GAP-0001 | No |
-| XEN-GAP-0072 | UUIDs stored as TEXT → native `@db.Uuid` (~40 tables) | XEN-GAP-0070 | — | — | All L3 | No |
-| XEN-GAP-0031 | JWT private key committed to git (rotate + remove) | XEN-GAP-0042 | — | — | All L3 | **Yes** |
+| ID           | Title                                                                | Depends On                 | Blocks | Blocked By | Parallel With | Critical Path |
+| ------------ | -------------------------------------------------------------------- | -------------------------- | ------ | ---------- | ------------- | :-----------: |
+| XEN-GAP-0011 | 5 enterprise modules empty (background, backup, config, performance) | XEN-GAP-0044, XEN-GAP-0070 | —      | —          | XEN-GAP-0001  |      No       |
+| XEN-GAP-0072 | UUIDs stored as TEXT → native `@db.Uuid` (~40 tables)                | XEN-GAP-0070               | —      | —          | All L3        |      No       |
+| XEN-GAP-0031 | JWT private key committed to git (rotate + remove)                   | XEN-GAP-0042               | —      | —          | All L3        |    **Yes**    |
 
 ### Level 4 — Depends on Level 0–3
 
-| ID | Title | Depends On | Blocks | Blocked By | Parallel With | Critical Path |
-|----|-------|-----------|--------|------------|---------------|:---:|
-| XEN-GAP-0078 | No ADR (Architecture Decision Records) | XEN-GAP-0019 | — | — | All L4 | No |
+| ID           | Title                                  | Depends On   | Blocks | Blocked By | Parallel With | Critical Path |
+| ------------ | -------------------------------------- | ------------ | ------ | ---------- | ------------- | :-----------: |
+| XEN-GAP-0078 | No ADR (Architecture Decision Records) | XEN-GAP-0019 | —      | —          | All L4        |      No       |
 
 ### Level 5 — Depends on Level 0–4
 
-| ID | Title | Depends On | Blocks | Blocked By | Parallel With | Critical Path |
-|----|-------|-----------|--------|------------|---------------|:---:|
-| XEN-GAP-0002 | 98 `throw new Error` → NestJS HTTP exceptions | Through XEN-GAP-0064, XEN-GAP-0065 | — | — | All L5 | No |
+| ID           | Title                                         | Depends On                         | Blocks | Blocked By | Parallel With | Critical Path |
+| ------------ | --------------------------------------------- | ---------------------------------- | ------ | ---------- | ------------- | :-----------: |
+| XEN-GAP-0002 | 98 `throw new Error` → NestJS HTTP exceptions | Through XEN-GAP-0064, XEN-GAP-0065 | —      | —          | All L5        |      No       |
 
 ---
 
@@ -302,14 +302,14 @@ graph TD
 
 ## Dependency Level Summary
 
-| Level | Count | Description | Earliest Sprint |
-|-------|-------|-------------|-----------------|
-| 0 | 20 | No dependencies — can start immediately | Sprint 1 |
-| 1 | 36 | Depends on Level 0 items (gitignore, lint, etc.) | Sprint 1–2 |
-| 2 | 16 | Depends on Level 0–1 items | Sprint 3–4 |
-| 3 | 3 | Depends on Level 0–2 items | Sprint 5 |
-| 4 | 1 | Depends on Level 0–3 items | Sprint 6 |
-| 5 | 1 | Depends on Level 0–4 items | Sprint 7 |
+| Level | Count | Description                                      | Earliest Sprint |
+| ----- | ----- | ------------------------------------------------ | --------------- |
+| 0     | 20    | No dependencies — can start immediately          | Sprint 1        |
+| 1     | 36    | Depends on Level 0 items (gitignore, lint, etc.) | Sprint 1–2      |
+| 2     | 16    | Depends on Level 0–1 items                       | Sprint 3–4      |
+| 3     | 3     | Depends on Level 0–2 items                       | Sprint 5        |
+| 4     | 1     | Depends on Level 0–3 items                       | Sprint 6        |
+| 5     | 1     | Depends on Level 0–4 items                       | Sprint 7        |
 
 ---
 

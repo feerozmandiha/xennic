@@ -5,62 +5,79 @@ import { useTranslations } from 'next-intl';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useParams } from 'next/navigation';
 import {
-  BookOpen, Plus, Search, ArrowUpRight, Trash2, Filter,
-  Globe, Lock, Eye,
+  BookOpen,
+  Plus,
+  Search,
+  ArrowUpRight,
+  Trash2,
+  Filter,
+  Globe,
+  Lock,
+  Eye,
 } from 'lucide-react';
-import { Input }      from '@/components/ui/input';
-import { Badge }      from '@/components/ui/badge';
-import { Skeleton }   from '@/components/ui/skeleton';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 import { PageHeader } from '@/components/ui/page-header';
 import { Card, CardContent } from '@/components/ui/card';
 import { useAuthStore } from '@/stores/auth.store';
-import { useToast }     from '@/stores/toast.store';
-import { apiClient }    from '@/lib/api/client';
-import { cn }           from '@/lib/utils';
+import { useToast } from '@/stores/toast.store';
+import { apiClient } from '@/lib/api/client';
+import { cn } from '@/lib/utils';
 import { NewKnowledgeDialog } from './knowledge-form';
 
 const STATUS_VARIANT: Record<string, 'success' | 'secondary' | 'warning' | 'destructive'> = {
   published: 'success',
-  draft:     'secondary',
-  review:    'warning',
-  archived:  'destructive',
+  draft: 'secondary',
+  review: 'warning',
+  archived: 'destructive',
 };
 
 const STATUS_FA: Record<string, string> = {
   published: 'منتشرشده',
-  draft:     'پیش‌نویس',
-  review:    'در انتظار بررسی',
-  archived:  'آرشیو',
+  draft: 'پیش‌نویس',
+  review: 'در انتظار بررسی',
+  archived: 'آرشیو',
 };
 
 const DIFFICULTY_FA: Record<string, string> = {
-  beginner:     'مبتدی',
+  beginner: 'مبتدی',
   intermediate: 'متوسط',
-  advanced:     'پیشرفته',
-  expert:       'متخصص',
+  advanced: 'پیشرفته',
+  expert: 'متخصص',
 };
 
 const DIFFICULTIES = [
-  { value: '',            label: 'همه سطوح' },
-  { value: 'beginner',    label: 'مبتدی' },
+  { value: '', label: 'همه سطوح' },
+  { value: 'beginner', label: 'مبتدی' },
   { value: 'intermediate', label: 'متوسط' },
-  { value: 'advanced',    label: 'پیشرفته' },
-  { value: 'expert',      label: 'متخصص' },
+  { value: 'advanced', label: 'پیشرفته' },
+  { value: 'expert', label: 'متخصص' },
 ];
 
-function ConfirmDialog({ name, onConfirm, onCancel }: {
-  name: string; onConfirm: () => void; onCancel: () => void;
+function ConfirmDialog({
+  name,
+  onConfirm,
+  onCancel,
+}: {
+  name: string;
+  onConfirm: () => void;
+  onCancel: () => void;
 }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm animate-fade-in-fast" onClick={onCancel} />
+      <div
+        className="absolute inset-0 bg-black/50 backdrop-blur-sm animate-fade-in-fast"
+        onClick={onCancel}
+      />
       <div className="relative z-10 w-full max-w-sm bg-[hsl(var(--card))] rounded-[var(--radius-xl)] border border-[hsl(var(--border))] shadow-[var(--shadow-lg)] p-6 animate-scale-in">
         <div className="w-12 h-12 rounded-full bg-[hsl(var(--destructive)/0.1)] flex items-center justify-center mx-auto mb-4">
           <Trash2 className="h-5 w-5 text-[hsl(var(--destructive))]" />
         </div>
         <h3 className="text-base font-semibold text-center mb-2">حذف مقاله</h3>
         <p className="text-sm text-[hsl(var(--muted-foreground))] text-center mb-6">
-          آیا از حذف <span className="font-medium text-[hsl(var(--foreground))]">«{name}»</span> مطمئن هستید؟
+          آیا از حذف <span className="font-medium text-[hsl(var(--foreground))]">«{name}»</span>{' '}
+          مطمئن هستید؟
         </p>
         <div className="flex gap-3">
           <button
@@ -81,32 +98,48 @@ function ConfirmDialog({ name, onConfirm, onCancel }: {
   );
 }
 
-function ArticleCard({ article, locale, onDelete, views = 0 }: {
-  article: any; locale: string; onDelete: (id: string, name: string) => void; views?: number;
+function ArticleCard({
+  article,
+  locale,
+  onDelete,
+  views = 0,
+}: {
+  article: any;
+  locale: string;
+  onDelete: (id: string, name: string) => void;
+  views?: number;
 }) {
   return (
     <Card className="card-hover group overflow-hidden">
-      <div className={cn(
-        'h-0.5 w-full',
-        article.status === 'published' && 'bg-[hsl(var(--success))]',
-        article.status === 'draft'     && 'bg-[hsl(var(--muted-foreground))]',
-        article.status === 'review'    && 'bg-[hsl(var(--warning))]',
-        article.status === 'archived'  && 'bg-[hsl(var(--destructive))]',
-      )} />
+      <div
+        className={cn(
+          'h-0.5 w-full',
+          article.status === 'published' && 'bg-[hsl(var(--success))]',
+          article.status === 'draft' && 'bg-[hsl(var(--muted-foreground))]',
+          article.status === 'review' && 'bg-[hsl(var(--warning))]',
+          article.status === 'archived' && 'bg-[hsl(var(--destructive))]',
+        )}
+      />
       <CardContent className="p-5">
         <div className="flex items-start gap-3 mb-3">
           <div className="w-10 h-10 rounded-[var(--radius-lg)] bg-[hsl(var(--primary)/0.08)] flex items-center justify-center shrink-0 mt-0.5">
             <BookOpen className="h-5 w-5 text-[hsl(var(--primary))]" />
           </div>
           <div className="min-w-0 flex-1">
-            <h3 className="font-semibold text-sm leading-tight truncate">{article.content?.title || article.slug}</h3>
+            <h3 className="font-semibold text-sm leading-tight truncate">
+              {article.content?.title || article.slug}
+            </h3>
             <p className="text-xs text-[hsl(var(--muted-foreground))] mt-0.5">
               {article.language === 'fa' ? 'نسخه فارسی' : 'English version'} · v{article.version}
-              {article.difficulty && ` · ${DIFFICULTY_FA[article.difficulty] ?? article.difficulty}`}
+              {article.difficulty &&
+                ` · ${DIFFICULTY_FA[article.difficulty] ?? article.difficulty}`}
             </p>
           </div>
           <button
-            onClick={(e) => { e.preventDefault(); onDelete(article.id, article.content?.title || article.slug); }}
+            onClick={(e) => {
+              e.preventDefault();
+              onDelete(article.id, article.content?.title || article.slug);
+            }}
             className="p-1.5 rounded-[var(--radius)] hover:bg-[hsl(var(--destructive)/0.08)] text-[hsl(var(--muted-foreground)/0.4)] hover:text-[hsl(var(--destructive))] opacity-0 group-hover:opacity-100 transition-all shrink-0"
             title="حذف مقاله"
           >
@@ -151,28 +184,28 @@ function ArticleCard({ article, locale, onDelete, views = 0 }: {
 }
 
 const STATUS_FILTERS = [
-  { key: 'all',       label: 'همه' },
+  { key: 'all', label: 'همه' },
   { key: 'published', label: 'منتشرشده' },
-  { key: 'draft',     label: 'پیش‌نویس' },
-  { key: 'review',    label: 'در انتظار بررسی' },
-  { key: 'archived',  label: 'آرشیو' },
+  { key: 'draft', label: 'پیش‌نویس' },
+  { key: 'review', label: 'در انتظار بررسی' },
+  { key: 'archived', label: 'آرشیو' },
 ];
 
 export function KnowledgeClient() {
-  const t           = useTranslations('knowledge');
-  const tCommon     = useTranslations('common');
-  const params      = useParams();
-  const locale      = (params?.locale as string) ?? 'fa';
-  const wsId        = useAuthStore(s => s.workspaceId);
-  const toast       = useToast();
+  const t = useTranslations('knowledge');
+  const tCommon = useTranslations('common');
+  const params = useParams();
+  const locale = (params?.locale as string) ?? 'fa';
+  const wsId = useAuthStore((s) => s.workspaceId);
+  const toast = useToast();
   const queryClient = useQueryClient();
 
-  const [search,          setSearch]      = useState('');
-  const [statusFilter,    setStatus]      = useState('all');
+  const [search, setSearch] = useState('');
+  const [statusFilter, setStatus] = useState('all');
   const [difficultyFilter, setDifficulty] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
-  const [showNew,         setShowNew]     = useState(false);
-  const [deleteTarget,    setDelete]      = useState<{ id: string; name: string } | null>(null);
+  const [showNew, setShowNew] = useState(false);
+  const [deleteTarget, setDelete] = useState<{ id: string; name: string } | null>(null);
 
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedSearch(search), 300);
@@ -187,15 +220,15 @@ export function KnowledgeClient() {
 
   const { data, isLoading } = useQuery({
     queryKey: ['knowledge', wsId, debouncedSearch, statusFilter, difficultyFilter],
-    queryFn:  () => apiClient.get<any>(`/knowledge/search?${searchParams.toString()}`),
-    enabled:  !!wsId,
+    queryFn: () => apiClient.get<any>(`/knowledge/search?${searchParams.toString()}`),
+    enabled: !!wsId,
     retry: false,
   });
 
   const { data: viewsData } = useQuery({
     queryKey: ['knowledge', 'analytics', 'dashboard', wsId],
-    queryFn:  () => apiClient.get<{ data: any }>('/knowledge/analytics/dashboard'),
-    enabled:  !!wsId,
+    queryFn: () => apiClient.get<{ data: any }>('/knowledge/analytics/dashboard'),
+    enabled: !!wsId,
   });
 
   const viewsMap: Record<string, number> = {};
@@ -238,24 +271,26 @@ export function KnowledgeClient() {
         <Input
           placeholder={tCommon('search')}
           value={search}
-          onChange={e => setSearch(e.target.value)}
+          onChange={(e) => setSearch(e.target.value)}
           startIcon={<Search className="h-4 w-4" />}
           className="max-w-xs"
         />
         <select
           value={difficultyFilter}
-          onChange={e => setDifficulty(e.target.value)}
+          onChange={(e) => setDifficulty(e.target.value)}
           className="h-10 rounded-[var(--radius)] border border-[hsl(var(--input))] bg-transparent px-3 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))]"
         >
-          {DIFFICULTIES.map(d => (
-            <option key={d.value} value={d.value}>{d.label}</option>
+          {DIFFICULTIES.map((d) => (
+            <option key={d.value} value={d.value}>
+              {d.label}
+            </option>
           ))}
         </select>
       </div>
 
       <div className="flex items-center gap-1.5 flex-wrap mb-5">
         <Filter className="h-3.5 w-3.5 text-[hsl(var(--muted-foreground))]" />
-        {STATUS_FILTERS.map(f => (
+        {STATUS_FILTERS.map((f) => (
           <button
             key={f.key}
             onClick={() => setStatus(f.key)}

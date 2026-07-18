@@ -47,6 +47,6 @@ export class ModelResponseDto {
   }
 
   static fromEntities(entities: AIModelEntity[]): ModelResponseDto[] {
-    return entities.map(e => ModelResponseDto.fromEntity(e));
+    return entities.map((e) => ModelResponseDto.fromEntity(e));
   }
 }

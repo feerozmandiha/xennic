@@ -204,7 +204,13 @@ async function sendLogToLoki(entry: LogEntry): Promise<void> {
 
 // ─── Metrics generation ───────────────────────────────────────────
 function generateHttpTraffic(tracer: ReturnType<typeof trace.getTracer>) {
-  const routes = ['/api/v1/workspaces', '/api/v1/projects', '/api/v1/knowledge', '/api/v1/users', '/api/v1/search'];
+  const routes = [
+    '/api/v1/workspaces',
+    '/api/v1/projects',
+    '/api/v1/knowledge',
+    '/api/v1/users',
+    '/api/v1/search',
+  ];
   const methods = ['GET', 'POST', 'PUT', 'DELETE'];
   const statuses = [200, 200, 200, 201, 204, 400, 401, 404, 500];
 
@@ -252,7 +258,13 @@ function generateHttpTraffic(tracer: ReturnType<typeof trace.getTracer>) {
 }
 
 function generateDbTraffic() {
-  const operations = ['findWorkspace', 'createProject', 'updateDocument', 'deleteUser', 'findKnowledge'];
+  const operations = [
+    'findWorkspace',
+    'createProject',
+    'updateDocument',
+    'deleteUser',
+    'findKnowledge',
+  ];
   for (const op of operations) {
     const count = Math.floor(Math.random() * 20) + 5;
     for (let i = 0; i < count; i++) {
@@ -298,13 +310,31 @@ function generateAiTraffic() {
     }
 
     // Cycle circuit states
-    const states = ['closed', 'closed', 'closed', 'closed', 'half_open', 'closed', 'open', 'closed'];
-    circuitState.set({ provider }, states[Math.floor(Math.random() * states.length)] === 'open' ? -1 : 1);
+    const states = [
+      'closed',
+      'closed',
+      'closed',
+      'closed',
+      'half_open',
+      'closed',
+      'open',
+      'closed',
+    ];
+    circuitState.set(
+      { provider },
+      states[Math.floor(Math.random() * states.length)] === 'open' ? -1 : 1,
+    );
   }
 }
 
 function generateWorkflowTraffic() {
-  const workflows = ['knowledge-ingestion', 'project-analysis', 'search-indexing', 'report-generation', 'code-review'];
+  const workflows = [
+    'knowledge-ingestion',
+    'project-analysis',
+    'search-indexing',
+    'report-generation',
+    'code-review',
+  ];
   for (const wf of workflows) {
     const count = Math.floor(Math.random() * 8) + 2;
     for (let i = 0; i < count; i++) {
@@ -317,7 +347,13 @@ function generateWorkflowTraffic() {
 }
 
 function generateQueueTraffic() {
-  const queues = ['knowledge-ingestion', 'email-notification', 'search-reindex', 'ai-job-processing', 'audit-log'];
+  const queues = [
+    'knowledge-ingestion',
+    'email-notification',
+    'search-reindex',
+    'ai-job-processing',
+    'audit-log',
+  ];
   for (const q of queues) {
     const depth = Math.floor(Math.random() * 1000);
     queueDepth.set({ queue: q }, depth);
@@ -375,9 +411,7 @@ async function startMetricsServer(port: number): Promise<void> {
 // ─── Prometheus Query Validator ───────────────────────────────────
 async function queryPrometheus(metric: string): Promise<number> {
   try {
-    const res = await fetch(
-      `${PROMETHEUS_URL}/api/v1/query?query=${encodeURIComponent(metric)}`,
-    );
+    const res = await fetch(`${PROMETHEUS_URL}/api/v1/query?query=${encodeURIComponent(metric)}`);
     const json: any = await res.json();
     if (json.status === 'success' && json.data.result.length > 0) {
       return parseInt(json.data.result[0].value[1], 10);
@@ -449,8 +483,14 @@ async function main() {
     // Every 3 iterations, validate Prometheus has our metrics
     if (iteration % 3 === 0) {
       console.log(`\n─── Prometheus Validation ───`);
-      const metrics = ['xennic_http_request_total', 'xennic_db_query_total', 'xennic_ai_provider_request_total',
-        'xennic_workflow_execution_total', 'xennic_queue_job_total', 'xennic_slo_availability'];
+      const metrics = [
+        'xennic_http_request_total',
+        'xennic_db_query_total',
+        'xennic_ai_provider_request_total',
+        'xennic_workflow_execution_total',
+        'xennic_queue_job_total',
+        'xennic_slo_availability',
+      ];
       for (const m of metrics) {
         const val = await queryPrometheus(m);
         if (val > 0) {
@@ -470,8 +510,14 @@ async function main() {
   console.log(`\n══════════════════════════════════════════════════════`);
   console.log(`  Final Prometheus Metric Validation`);
   console.log(`══════════════════════════════════════════════════════`);
-  for (const m of ['xennic_http_request_total', 'xennic_db_query_total', 'xennic_ai_provider_request_total',
-    'xennic_workflow_execution_total', 'xennic_queue_job_total', 'xennic_slo_availability']) {
+  for (const m of [
+    'xennic_http_request_total',
+    'xennic_db_query_total',
+    'xennic_ai_provider_request_total',
+    'xennic_workflow_execution_total',
+    'xennic_queue_job_total',
+    'xennic_slo_availability',
+  ]) {
     const val = await queryPrometheus(m);
     console.log(`  ${val >= 0 ? '✓' : '✗'} ${m} = ${val}`);
   }

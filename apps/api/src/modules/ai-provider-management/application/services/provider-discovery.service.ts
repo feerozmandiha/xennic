@@ -20,8 +20,14 @@ export class ProviderDiscoveryService {
     private readonly credentials: CredentialService,
   ) {}
 
-  async testConnection(apiKey: string, providerType: string, baseUrl?: string): Promise<{
-    success: boolean; latencyMs: number; error?: string;
+  async testConnection(
+    apiKey: string,
+    providerType: string,
+    baseUrl?: string,
+  ): Promise<{
+    success: boolean;
+    latencyMs: number;
+    error?: string;
     detectedProvider?: string;
   }> {
     const strategy = this.strategyFactory.getStrategy(providerType);
@@ -32,25 +38,41 @@ export class ProviderDiscoveryService {
     };
   }
 
-  async discover(apiKey: string, providerType: string, baseUrl?: string): Promise<{
-    providerType: string; providerName: string; baseUrl: string;
-    models: AIModelEntity[]; metadata: Record<string, unknown>;
+  async discover(
+    apiKey: string,
+    providerType: string,
+    baseUrl?: string,
+  ): Promise<{
+    providerType: string;
+    providerName: string;
+    baseUrl: string;
+    models: AIModelEntity[];
+    metadata: Record<string, unknown>;
   }> {
     const strategy = this.strategyFactory.getStrategy(providerType);
     const result = await strategy.discover(apiKey, baseUrl);
-    const models = result.models.map(m =>
+    const models = result.models.map((m) =>
       AIModelEntity.create('pending', m.modelId, m.displayName, m.modelType as ModelType, {
-        contextWindow: m.contextWindow, maxOutputTokens: m.maxOutputTokens,
-        supportsTools: m.supportsTools, supportsJson: m.supportsJson,
-        supportsStreaming: m.supportsStreaming, supportsReasoning: m.supportsReasoning,
-        supportsVision: m.supportsVision, supportsEmbedding: m.supportsEmbedding,
+        contextWindow: m.contextWindow,
+        maxOutputTokens: m.maxOutputTokens,
+        supportsTools: m.supportsTools,
+        supportsJson: m.supportsJson,
+        supportsStreaming: m.supportsStreaming,
+        supportsReasoning: m.supportsReasoning,
+        supportsVision: m.supportsVision,
+        supportsEmbedding: m.supportsEmbedding,
         supportsFunctionCalling: m.supportsFunctionCalling,
-        supportsImageInput: m.supportsImageInput, supportsAudioInput: m.supportsAudioInput,
-        supportsTranscription: m.supportsTranscription, supportsTranslation: m.supportsTranslation,
+        supportsImageInput: m.supportsImageInput,
+        supportsAudioInput: m.supportsAudioInput,
+        supportsTranscription: m.supportsTranscription,
+        supportsTranslation: m.supportsTranslation,
         supportsReranking: m.supportsReranking,
-        supportsTemperature: m.supportsTemperature, supportsTopP: m.supportsTopP,
-        supportsSeed: m.supportsSeed, supportsStructuredOutputs: m.supportsStructuredOutputs,
-        pricingInput: m.pricingInput, pricingOutput: m.pricingOutput,
+        supportsTemperature: m.supportsTemperature,
+        supportsTopP: m.supportsTopP,
+        supportsSeed: m.supportsSeed,
+        supportsStructuredOutputs: m.supportsStructuredOutputs,
+        pricingInput: m.pricingInput,
+        pricingOutput: m.pricingOutput,
       }),
     );
 
@@ -58,24 +80,39 @@ export class ProviderDiscoveryService {
     return { ...result, models };
   }
 
-  async saveDiscoveredModels(providerId: string, models: AIModelEntity[]): Promise<AIModelEntity[]> {
+  async saveDiscoveredModels(
+    providerId: string,
+    models: AIModelEntity[],
+  ): Promise<AIModelEntity[]> {
     const saved: AIModelEntity[] = [];
     for (const model of models) {
       try {
         const m = AIModelEntity.create(
-          providerId, model.modelId, model.displayName, model.modelType,
+          providerId,
+          model.modelId,
+          model.displayName,
+          model.modelType,
           {
-            contextWindow: model.contextWindow ?? undefined, maxOutputTokens: model.maxOutputTokens ?? undefined,
-            supportsTools: model.supportsTools, supportsJson: model.supportsJson,
-            supportsStreaming: model.supportsStreaming, supportsReasoning: model.supportsReasoning,
-            supportsVision: model.supportsVision, supportsEmbedding: model.supportsEmbedding,
+            contextWindow: model.contextWindow ?? undefined,
+            maxOutputTokens: model.maxOutputTokens ?? undefined,
+            supportsTools: model.supportsTools,
+            supportsJson: model.supportsJson,
+            supportsStreaming: model.supportsStreaming,
+            supportsReasoning: model.supportsReasoning,
+            supportsVision: model.supportsVision,
+            supportsEmbedding: model.supportsEmbedding,
             supportsFunctionCalling: model.supportsFunctionCalling,
-            supportsImageInput: model.supportsImageInput, supportsAudioInput: model.supportsAudioInput,
-            supportsTranscription: model.supportsTranscription, supportsTranslation: model.supportsTranslation,
+            supportsImageInput: model.supportsImageInput,
+            supportsAudioInput: model.supportsAudioInput,
+            supportsTranscription: model.supportsTranscription,
+            supportsTranslation: model.supportsTranslation,
             supportsReranking: model.supportsReranking,
-            supportsTemperature: model.supportsTemperature, supportsTopP: model.supportsTopP,
-            supportsSeed: model.supportsSeed, supportsStructuredOutputs: model.supportsStructuredOutputs,
-            pricingInput: model.pricingInput ?? undefined, pricingOutput: model.pricingOutput ?? undefined,
+            supportsTemperature: model.supportsTemperature,
+            supportsTopP: model.supportsTopP,
+            supportsSeed: model.supportsSeed,
+            supportsStructuredOutputs: model.supportsStructuredOutputs,
+            pricingInput: model.pricingInput ?? undefined,
+            pricingOutput: model.pricingOutput ?? undefined,
           },
         );
         await this.modelRepo.save(m);
@@ -96,15 +133,21 @@ export class ProviderDiscoveryService {
     if (!apiKey) throw new Error(`No API key available for provider ${provider.name}`);
     const result = await strategy.discover(apiKey, provider.baseUrl ?? undefined);
 
-    const models = result.models.map(m =>
+    const models = result.models.map((m) =>
       AIModelEntity.create(providerId, m.modelId, m.displayName, m.modelType as ModelType, {
-        contextWindow: m.contextWindow, maxOutputTokens: m.maxOutputTokens,
-        supportsTools: m.supportsTools, supportsJson: m.supportsJson,
-        supportsStreaming: m.supportsStreaming, supportsReasoning: m.supportsReasoning,
-        supportsVision: m.supportsVision, supportsEmbedding: m.supportsEmbedding,
+        contextWindow: m.contextWindow,
+        maxOutputTokens: m.maxOutputTokens,
+        supportsTools: m.supportsTools,
+        supportsJson: m.supportsJson,
+        supportsStreaming: m.supportsStreaming,
+        supportsReasoning: m.supportsReasoning,
+        supportsVision: m.supportsVision,
+        supportsEmbedding: m.supportsEmbedding,
         supportsFunctionCalling: m.supportsFunctionCalling,
-        supportsTemperature: m.supportsTemperature, supportsTopP: m.supportsTopP,
-        pricingInput: m.pricingInput, pricingOutput: m.pricingOutput,
+        supportsTemperature: m.supportsTemperature,
+        supportsTopP: m.supportsTopP,
+        pricingInput: m.pricingInput,
+        pricingOutput: m.pricingOutput,
       }),
     );
 

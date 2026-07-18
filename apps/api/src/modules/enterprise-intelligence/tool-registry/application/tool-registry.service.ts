@@ -7,9 +7,7 @@ import type { PaginatedResult } from '../../shared/types/index.js';
 export class ToolRegistryService {
   private readonly logger = new Logger(ToolRegistryService.name);
 
-  constructor(
-    @Inject('IToolRegistry') private readonly registry: IToolRegistry,
-  ) {}
+  constructor(@Inject('IToolRegistry') private readonly registry: IToolRegistry) {}
 
   async register(
     name: string,
@@ -41,10 +39,7 @@ export class ToolRegistryService {
     return this.registry.findByCapability(capability);
   }
 
-  async updateSchema(
-    id: string,
-    schema: Record<string, unknown>,
-  ): Promise<ToolEntity | null> {
+  async updateSchema(id: string, schema: Record<string, unknown>): Promise<ToolEntity | null> {
     const entity = await this.registry.get(id);
     if (!entity) return null;
     return this.registry.update(id, {
@@ -75,12 +70,12 @@ export class ToolRegistryService {
     const items = all.items;
     return {
       total: items.length,
-      active: items.filter(e => e.status === ToolStatus.ACTIVE).length,
-      inactive: items.filter(e => e.status === ToolStatus.INACTIVE).length,
-      deprecated: items.filter(e => e.status === ToolStatus.DEPRECATED).length,
-      healthy: items.filter(e => e.health === ToolHealth.HEALTHY).length,
-      degraded: items.filter(e => e.health === ToolHealth.DEGRADED).length,
-      unhealthy: items.filter(e => e.health === ToolHealth.UNHEALTHY).length,
+      active: items.filter((e) => e.status === ToolStatus.ACTIVE).length,
+      inactive: items.filter((e) => e.status === ToolStatus.INACTIVE).length,
+      deprecated: items.filter((e) => e.status === ToolStatus.DEPRECATED).length,
+      healthy: items.filter((e) => e.health === ToolHealth.HEALTHY).length,
+      degraded: items.filter((e) => e.health === ToolHealth.DEGRADED).length,
+      unhealthy: items.filter((e) => e.health === ToolHealth.UNHEALTHY).length,
     };
   }
 }

@@ -17,12 +17,12 @@ Governance is not bureaucracy — it is leverage. Every process artifact earns i
 
 ### Principles
 
-| Principle | Definition |
-|-----------|------------|
-| **Traceability** | Every decision, requirement, and gap can be traced from origin to completion |
-| **Quality** | Quality is built in, not inspected in — gates catch escapes, not replace good practices |
-| **Consistency** | All modules follow the same patterns, conventions, and delivery process |
-| **Transparency** | Program health is visible to all stakeholders at all times |
+| Principle        | Definition                                                                              |
+| ---------------- | --------------------------------------------------------------------------------------- |
+| **Traceability** | Every decision, requirement, and gap can be traced from origin to completion            |
+| **Quality**      | Quality is built in, not inspected in — gates catch escapes, not replace good practices |
+| **Consistency**  | All modules follow the same patterns, conventions, and delivery process                 |
+| **Transparency** | Program health is visible to all stakeholders at all times                              |
 
 ---
 
@@ -79,16 +79,16 @@ Governance is not bureaucracy — it is leverage. Every process artifact earns i
 
 ## 3. Artifact Map
 
-| Artifact | Purpose | Owner | Update Frequency | Depends On |
-|----------|---------|-------|------------------|------------|
-| **Master Registry** | All gaps tracked with status, priority, assignee | Tech Lead | Daily | Gap registry |
-| **ADR (Architecture Decision Record)** | Record architecture decisions and their rationale | Tech Lead | Per decision | RFC approval |
-| **RFC (Request for Comments)** | Technical proposals for architectural or significant changes | Author | Per proposal | ADR context |
-| **DoR (Definition of Ready)** | Checklist ensuring sprint items are well-defined and actionable | Tech Lead | Per sprint item | Registry |
-| **DoD (Definition of Done)** | Checklist ensuring completion meets quality bar | Developer | Per completion | DoR pass |
-| **Quality Gates** | Phase-level checks for architecture, security, performance, test coverage | Review Board | Per phase | DoD completion |
-| **Sprint Backlog** | Sprint scope with estimates and assignments | Team | Per sprint | DoR pass |
-| **Executive Dashboard** | Program health metrics at a glance | PM | Weekly | All artifacts |
+| Artifact                               | Purpose                                                                   | Owner        | Update Frequency | Depends On     |
+| -------------------------------------- | ------------------------------------------------------------------------- | ------------ | ---------------- | -------------- |
+| **Master Registry**                    | All gaps tracked with status, priority, assignee                          | Tech Lead    | Daily            | Gap registry   |
+| **ADR (Architecture Decision Record)** | Record architecture decisions and their rationale                         | Tech Lead    | Per decision     | RFC approval   |
+| **RFC (Request for Comments)**         | Technical proposals for architectural or significant changes              | Author       | Per proposal     | ADR context    |
+| **DoR (Definition of Ready)**          | Checklist ensuring sprint items are well-defined and actionable           | Tech Lead    | Per sprint item  | Registry       |
+| **DoD (Definition of Done)**           | Checklist ensuring completion meets quality bar                           | Developer    | Per completion   | DoR pass       |
+| **Quality Gates**                      | Phase-level checks for architecture, security, performance, test coverage | Review Board | Per phase        | DoD completion |
+| **Sprint Backlog**                     | Sprint scope with estimates and assignments                               | Team         | Per sprint       | DoR pass       |
+| **Executive Dashboard**                | Program health metrics at a glance                                        | PM           | Weekly           | All artifacts  |
 
 ---
 
@@ -144,58 +144,58 @@ Governance is not bureaucracy — it is leverage. Every process artifact earns i
 
 ### Architecture Review Board (ARB)
 
-| Aspect | Detail |
-|--------|--------|
-| **Composition** | CTO (Chair), 2 Senior Engineers (rotating), Tech Lead (standing invitee) |
-| **Authority** | Ratifies or rejects ADRs; sets architecture standards; approves technology choices |
-| **Meeting Cadence** | Bi-weekly (tactical) + monthly (strategic) |
-| **Quorum** | Chair + 2 members |
-| **Escalation** | Tie-breaker goes to CTO |
+| Aspect              | Detail                                                                             |
+| ------------------- | ---------------------------------------------------------------------------------- |
+| **Composition**     | CTO (Chair), 2 Senior Engineers (rotating), Tech Lead (standing invitee)           |
+| **Authority**       | Ratifies or rejects ADRs; sets architecture standards; approves technology choices |
+| **Meeting Cadence** | Bi-weekly (tactical) + monthly (strategic)                                         |
+| **Quorum**          | Chair + 2 members                                                                  |
+| **Escalation**      | Tie-breaker goes to CTO                                                            |
 
 ### Tech Lead
 
-| Aspect | Detail |
-|--------|--------|
-| **Decision Scope** | Day-to-day architecture, implementation patterns, code review standards |
-| **Approval Authority** | PR approval, DoR sign-off, sprint commitment, registry management |
-| **Boundaries** | Must escalate to ARB for: new technology adoption, cross-module changes, public API changes |
-| **Accountable For** | Registry accuracy, team velocity, technical debt awareness |
+| Aspect                 | Detail                                                                                      |
+| ---------------------- | ------------------------------------------------------------------------------------------- |
+| **Decision Scope**     | Day-to-day architecture, implementation patterns, code review standards                     |
+| **Approval Authority** | PR approval, DoR sign-off, sprint commitment, registry management                           |
+| **Boundaries**         | Must escalate to ARB for: new technology adoption, cross-module changes, public API changes |
+| **Accountable For**    | Registry accuracy, team velocity, technical debt awareness                                  |
 
 ### Developer
 
-| Aspect | Detail |
-|--------|--------|
-| **Responsibility** | Implement per ADR/RFC, follow DoR/DoD, update status promptly |
-| **Decision Scope** | Implementation details within approved architecture |
-| **Must Escalate** | Ambiguous requirements, architecture violations, blocking dependencies |
+| Aspect             | Detail                                                                 |
+| ------------------ | ---------------------------------------------------------------------- |
+| **Responsibility** | Implement per ADR/RFC, follow DoR/DoD, update status promptly          |
+| **Decision Scope** | Implementation details within approved architecture                    |
+| **Must Escalate**  | Ambiguous requirements, architecture violations, blocking dependencies |
 
 ### Product Manager
 
-| Aspect | Detail |
-|--------|--------|
-| **Authority** | Priority and sequencing of all items in the registry |
+| Aspect             | Detail                                                                       |
+| ------------------ | ---------------------------------------------------------------------------- |
+| **Authority**      | Priority and sequencing of all items in the registry                         |
 | **Responsibility** | Maintain business context, stakeholder communication, sprint goal definition |
-| **Boundaries** | Cannot override technical decisions without ARB involvement |
+| **Boundaries**     | Cannot override technical decisions without ARB involvement                  |
 
 ### Quality Assurance
 
-| Aspect | Detail |
-|--------|--------|
-| **Authority** | Gate pass/fail decision; can block release if gate criteria not met |
-| **Responsibility** | Maintain test strategy, gate criteria, quality metrics |
-| **Boundaries** | Can be overridden only by CTO (with written exception) |
+| Aspect             | Detail                                                              |
+| ------------------ | ------------------------------------------------------------------- |
+| **Authority**      | Gate pass/fail decision; can block release if gate criteria not met |
+| **Responsibility** | Maintain test strategy, gate criteria, quality metrics              |
+| **Boundaries**     | Can be overridden only by CTO (with written exception)              |
 
 ---
 
 ## 6. Governance Maturity Model
 
-| Level | Name | Characteristics |
-|-------|------|-----------------|
-| **1** | **Ad-hoc** | No formal governance. Decisions are口头, quality varies wildly, no traceability. |
-| **2** | **Defined** | Processes documented. Artifacts exist. Team trained. Governance is followed inconsistently. |
-| **3** | **Managed** | Processes followed and measured. Metrics tracked. Governance enforced via CI/CD. Artifacts always up to date. |
-| **4** | **Integrated** | Automated governance in CI/CD. Most gates are automatic. Manual interventions are exceptions. |
-| **5** | **Optimized** | Continuous improvement. Governance metrics fed back into process refinement. Predictive analytics. |
+| Level | Name           | Characteristics                                                                                               |
+| ----- | -------------- | ------------------------------------------------------------------------------------------------------------- |
+| **1** | **Ad-hoc**     | No formal governance. Decisions are口头, quality varies wildly, no traceability.                              |
+| **2** | **Defined**    | Processes documented. Artifacts exist. Team trained. Governance is followed inconsistently.                   |
+| **3** | **Managed**    | Processes followed and measured. Metrics tracked. Governance enforced via CI/CD. Artifacts always up to date. |
+| **4** | **Integrated** | Automated governance in CI/CD. Most gates are automatic. Manual interventions are exceptions.                 |
+| **5** | **Optimized**  | Continuous improvement. Governance metrics fed back into process refinement. Predictive analytics.            |
 
 **Current Level:** 2 (Defined)  
 **Target for RC1:** Level 3 (Managed)  
@@ -203,10 +203,10 @@ Governance is not bureaucracy — it is leverage. Every process artifact earns i
 
 ### Level Transition Requirements
 
-| Transition | Requirements |
-|------------|--------------|
-| 2 → 3 | CI enforcement of DoD, automated dashboard, gate pass rate ≥80%, registry accuracy ≥90% |
-| 3 → 4 | Automated quality gates (security scan, coverage threshold, performance regression), exception tracking, auto-generated ADR compliance reports |
+| Transition | Requirements                                                                                                                                   |
+| ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2 → 3      | CI enforcement of DoD, automated dashboard, gate pass rate ≥80%, registry accuracy ≥90%                                                        |
+| 3 → 4      | Automated quality gates (security scan, coverage threshold, performance regression), exception tracking, auto-generated ADR compliance reports |
 
 ---
 
@@ -252,28 +252,28 @@ TIMELINE ESCALATION
 
 ### Escalation Response SLAs
 
-| Level | Response Time | Resolution Target |
-|-------|---------------|-------------------|
-| Developer → Tech Lead | Same business day | Within 2 days |
-| Tech Lead → ARB | Within 1 week | Next ARB meeting |
-| PM → VP Eng | Within 2 days | Within 1 week |
-| Security Officer → CTO | Within 4 hours (critical) / 24 hours (high) | Immediate triage |
+| Level                  | Response Time                               | Resolution Target |
+| ---------------------- | ------------------------------------------- | ----------------- |
+| Developer → Tech Lead  | Same business day                           | Within 2 days     |
+| Tech Lead → ARB        | Within 1 week                               | Next ARB meeting  |
+| PM → VP Eng            | Within 2 days                               | Within 1 week     |
+| Security Officer → CTO | Within 4 hours (critical) / 24 hours (high) | Immediate triage  |
 
 ---
 
 ## 8. Governance Tooling
 
-| Function | Recommended Tool | Rationale |
-|----------|------------------|-----------|
-| **Master Registry** | GitHub Issues + Labels | Native issue tracking, automatable via Actions, built-in API |
-| **ADRs** | GitHub repo (`docs/adr/`) | Version-controlled, reviewable via PRs, discoverable |
-| **RFCs** | GitHub Discussions or PRs | Collaborative review, threaded comments, decision log |
-| **DoR / DoD** | PR templates + CI checks | Enforced at the right moment (merge time), automated |
-| **Quality Gates** | CI pipeline stages | Blocking gates prevent bad merges; configurable thresholds |
-| **Executive Dashboard** | Grafana + GitHub API | Real-time, customizable, alerting, single pane of glass |
-| **Sprint Tracking** | GitHub Projects or Linear | Linked to Issues, automatable, supports sprints natively |
-| **Risk Log** | GitHub Issues (label:risk) + Dashboard | Single source of truth, visible alongside other metrics |
-| **Documentation** | GitHub Wiki or `docs/` in repo | Version-controlled, co-located with code |
+| Function                | Recommended Tool                       | Rationale                                                    |
+| ----------------------- | -------------------------------------- | ------------------------------------------------------------ |
+| **Master Registry**     | GitHub Issues + Labels                 | Native issue tracking, automatable via Actions, built-in API |
+| **ADRs**                | GitHub repo (`docs/adr/`)              | Version-controlled, reviewable via PRs, discoverable         |
+| **RFCs**                | GitHub Discussions or PRs              | Collaborative review, threaded comments, decision log        |
+| **DoR / DoD**           | PR templates + CI checks               | Enforced at the right moment (merge time), automated         |
+| **Quality Gates**       | CI pipeline stages                     | Blocking gates prevent bad merges; configurable thresholds   |
+| **Executive Dashboard** | Grafana + GitHub API                   | Real-time, customizable, alerting, single pane of glass      |
+| **Sprint Tracking**     | GitHub Projects or Linear              | Linked to Issues, automatable, supports sprints natively     |
+| **Risk Log**            | GitHub Issues (label:risk) + Dashboard | Single source of truth, visible alongside other metrics      |
+| **Documentation**       | GitHub Wiki or `docs/` in repo         | Version-controlled, co-located with code                     |
 
 ### Tooling Principles
 
@@ -286,12 +286,12 @@ TIMELINE ESCALATION
 
 ## 9. Implementation Plan for Governance Itself
 
-| Phase | Week | Activities | Deliverables |
-|-------|------|------------|--------------|
-| **Foundation** | Week 1 | Create artifact templates (ADR, RFC, DoR, DoD, Registry), train team on process, set up labels, create `docs/governance/` | Templates, team training completed, GitHub labels configured |
-| **Lightweight Start** | Week 2 | Begin using registry for all new gaps, start ADR for any architecture decision, adopt DoR for sprint items | First gaps registered, first ADRs created |
-| **Quality Gates** | Week 3 | Define gate criteria for each phase, add CI gate checks (coverage threshold, lint, security scan), implement DoD enforcement in PRs | CI gates active, DoD checklist in PR template |
-| **Full Operations** | Week 4 | Dashboard operational, daily registry updates enforced, weekly governance cadences running, all artifacts in use for entire sprint | Full governance operational, first dashboard review completed |
+| Phase                 | Week   | Activities                                                                                                                          | Deliverables                                                  |
+| --------------------- | ------ | ----------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- |
+| **Foundation**        | Week 1 | Create artifact templates (ADR, RFC, DoR, DoD, Registry), train team on process, set up labels, create `docs/governance/`           | Templates, team training completed, GitHub labels configured  |
+| **Lightweight Start** | Week 2 | Begin using registry for all new gaps, start ADR for any architecture decision, adopt DoR for sprint items                          | First gaps registered, first ADRs created                     |
+| **Quality Gates**     | Week 3 | Define gate criteria for each phase, add CI gate checks (coverage threshold, lint, security scan), implement DoD enforcement in PRs | CI gates active, DoD checklist in PR template                 |
+| **Full Operations**   | Week 4 | Dashboard operational, daily registry updates enforced, weekly governance cadences running, all artifacts in use for entire sprint  | Full governance operational, first dashboard review completed |
 
 ### Rollback Plan
 
@@ -301,15 +301,15 @@ If any governance step causes >20% velocity reduction, it is suspended and redes
 
 ## 10. Success Metrics for Governance
 
-| Metric | Definition | Target (Level 3) |
-|--------|------------|-------------------|
-| **Traceability** | % of completed items with complete artifact trail (Registry → ADR → DoR → DoD → Gate) | ≥80% |
-| **DoR/DoD Compliance** | % of sprint items with completed DoR before sprint start and DoD before close | ≥90% |
-| **Gate Pass Rate** | % of quality gates passed on first review | ≥80% |
-| **Cycle Time** | Average days from gap identification to completion | ≤14 days |
-| **Team Satisfaction** | Score from anonymous survey: "Governance helps me deliver quality work" | ≥4.0 / 5.0 |
-| **Registry Accuracy** | % of registry items with correct status, priority, and assignee | ≥90% |
-| **Dashboard Freshness** | % of metrics updated within required frequency | ≥95% |
+| Metric                  | Definition                                                                            | Target (Level 3) |
+| ----------------------- | ------------------------------------------------------------------------------------- | ---------------- |
+| **Traceability**        | % of completed items with complete artifact trail (Registry → ADR → DoR → DoD → Gate) | ≥80%             |
+| **DoR/DoD Compliance**  | % of sprint items with completed DoR before sprint start and DoD before close         | ≥90%             |
+| **Gate Pass Rate**      | % of quality gates passed on first review                                             | ≥80%             |
+| **Cycle Time**          | Average days from gap identification to completion                                    | ≤14 days         |
+| **Team Satisfaction**   | Score from anonymous survey: "Governance helps me deliver quality work"               | ≥4.0 / 5.0       |
+| **Registry Accuracy**   | % of registry items with correct status, priority, and assignee                       | ≥90%             |
+| **Dashboard Freshness** | % of metrics updated within required frequency                                        | ≥95%             |
 
 ### Measurement Frequency
 
@@ -322,28 +322,28 @@ If any governance step causes >20% velocity reduction, it is suspended and redes
 
 ## Appendix A: Document Integration Map
 
-| Governance Document | Integration Point |
-|---------------------|-------------------|
-| Architecture Governance | ADR lifecycle, ARB, architecture score in dashboard |
-| Coding Standards | DoD checklist, PR template, CI lint checks |
-| Security Governance | Security gate, MTTR tracking, escalation path |
-| Performance Governance | Performance score, N+1 tracking, streaming audit |
-| AI Governance | AI readiness metrics, AI gate, LLM integration tracking |
-| Testing Governance | Coverage metrics, test gap analysis, failing test tracking |
-| Risk Management | Risk log, risk trend, risk review cadence |
-| Sprint / Delivery Governance | Sprint burn, velocity, DoR/DoD, sprint cadences |
-| Change Management | RFC process, ADR approval, change review board |
+| Governance Document          | Integration Point                                          |
+| ---------------------------- | ---------------------------------------------------------- |
+| Architecture Governance      | ADR lifecycle, ARB, architecture score in dashboard        |
+| Coding Standards             | DoD checklist, PR template, CI lint checks                 |
+| Security Governance          | Security gate, MTTR tracking, escalation path              |
+| Performance Governance       | Performance score, N+1 tracking, streaming audit           |
+| AI Governance                | AI readiness metrics, AI gate, LLM integration tracking    |
+| Testing Governance           | Coverage metrics, test gap analysis, failing test tracking |
+| Risk Management              | Risk log, risk trend, risk review cadence                  |
+| Sprint / Delivery Governance | Sprint burn, velocity, DoR/DoD, sprint cadences            |
+| Change Management            | RFC process, ADR approval, change review board             |
 
 ## Appendix B: Glossary
 
-| Term | Definition |
-|------|------------|
-| **ADR** | Architecture Decision Record — a document capturing an architecture decision and its rationale |
-| **ARB** | Architecture Review Board — governing body for architecture decisions |
-| **DoD** | Definition of Done — checklist that must pass before an item is considered complete |
-| **DoR** | Definition of Ready — checklist that must pass before an item enters a sprint |
-| **Gate** | Quality checkpoint that must pass before moving to the next phase |
-| **MTTR** | Mean Time to Remediate — average time to fix a security issue |
-| **RC1** | Release Candidate 1 — first candidate for production release |
-| **Registry** | Master Engineering Registry — single source of truth for all gaps and work items |
-| **RFC** | Request for Comments — technical proposal for review |
+| Term         | Definition                                                                                     |
+| ------------ | ---------------------------------------------------------------------------------------------- |
+| **ADR**      | Architecture Decision Record — a document capturing an architecture decision and its rationale |
+| **ARB**      | Architecture Review Board — governing body for architecture decisions                          |
+| **DoD**      | Definition of Done — checklist that must pass before an item is considered complete            |
+| **DoR**      | Definition of Ready — checklist that must pass before an item enters a sprint                  |
+| **Gate**     | Quality checkpoint that must pass before moving to the next phase                              |
+| **MTTR**     | Mean Time to Remediate — average time to fix a security issue                                  |
+| **RC1**      | Release Candidate 1 — first candidate for production release                                   |
+| **Registry** | Master Engineering Registry — single source of truth for all gaps and work items               |
+| **RFC**      | Request for Comments — technical proposal for review                                           |

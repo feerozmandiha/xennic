@@ -51,7 +51,7 @@ export class GoldenDataset implements Named {
 
   static create(data: GoldenDatasetData): GoldenDataset {
     const now = new Date();
-    const items: GoldenItem[] = data.items.map(item => ({
+    const items: GoldenItem[] = data.items.map((item) => ({
       ...item,
       id: randomUUID(),
     }));

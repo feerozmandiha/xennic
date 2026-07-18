@@ -24,9 +24,7 @@ export class TextNormalizationService {
   }
 
   private normalizeWhitespace(text: string): string {
-    return text
-      .replace(/[ \t]+/g, ' ')
-      .replace(/\n{3,}/g, '\n\n');
+    return text.replace(/[ \t]+/g, ' ').replace(/\n{3,}/g, '\n\n');
   }
 
   private removePageHeaders(text: string): string {
@@ -37,13 +35,20 @@ export class TextNormalizationService {
   }
 
   private normalizeLineBreaks(text: string): string {
-    return text
-      .replace(/[ \t]*\r\n?/g, '\n')
-      .replace(/[ \t]*\n[ \t]*/g, '\n');
+    return text.replace(/[ \t]*\r\n?/g, '\n').replace(/[ \t]*\n[ \t]*/g, '\n');
   }
 
   private normalizePersian(text: string): string {
-    const arabicChars = ['\u064B', '\u064C', '\u064D', '\u064E', '\u064F', '\u0650', '\u0651', '\u0652'];
+    const arabicChars = [
+      '\u064B',
+      '\u064C',
+      '\u064D',
+      '\u064E',
+      '\u064F',
+      '\u0650',
+      '\u0651',
+      '\u0652',
+    ];
     let result = text;
 
     arabicChars.forEach((char) => {

@@ -7,11 +7,19 @@ const FORBIDDEN_KEYS = ['__proto__', 'constructor', 'prototype', 'undefined', 'n
 
 @Injectable()
 export class InputSanitizer {
-  sanitize(inputs: Record<string, unknown>): { safe: boolean; error?: string; sanitized: Record<string, unknown> } {
+  sanitize(inputs: Record<string, unknown>): {
+    safe: boolean;
+    error?: string;
+    sanitized: Record<string, unknown>;
+  } {
     const keys = Object.keys(inputs);
 
     if (keys.length > MAX_INPUT_KEYS) {
-      return { safe: false, error: `Input has ${keys.length} keys, maximum is ${MAX_INPUT_KEYS}`, sanitized: inputs };
+      return {
+        safe: false,
+        error: `Input has ${keys.length} keys, maximum is ${MAX_INPUT_KEYS}`,
+        sanitized: inputs,
+      };
     }
 
     for (const key of keys) {
@@ -22,11 +30,19 @@ export class InputSanitizer {
       const value = inputs[key];
       const depth = this.calculateDepth(value);
       if (depth > MAX_INPUT_DEPTH) {
-        return { safe: false, error: `Input key '${key}' has nesting depth ${depth}, maximum is ${MAX_INPUT_DEPTH}`, sanitized: inputs };
+        return {
+          safe: false,
+          error: `Input key '${key}' has nesting depth ${depth}, maximum is ${MAX_INPUT_DEPTH}`,
+          sanitized: inputs,
+        };
       }
 
       if (typeof value === 'string' && value.length > MAX_INPUT_VALUE_LENGTH) {
-        return { safe: false, error: `Input key '${key}' value exceeds maximum length of ${MAX_INPUT_VALUE_LENGTH}`, sanitized: inputs };
+        return {
+          safe: false,
+          error: `Input key '${key}' value exceeds maximum length of ${MAX_INPUT_VALUE_LENGTH}`,
+          sanitized: inputs,
+        };
       }
     }
 
@@ -38,11 +54,14 @@ export class InputSanitizer {
     if (depth > 100) return depth;
     if (value === null || value === undefined) return depth;
     if (Array.isArray(value)) {
-      return Math.max(depth + 1, ...value.map(v => this.calculateDepth(v, depth + 1)));
+      return Math.max(depth + 1, ...value.map((v) => this.calculateDepth(v, depth + 1)));
     }
     if (typeof value === 'object') {
       const obj = value as Record<string, unknown>;
-      return Math.max(depth + 1, ...Object.values(obj).map(v => this.calculateDepth(v, depth + 1)));
+      return Math.max(
+        depth + 1,
+        ...Object.values(obj).map((v) => this.calculateDepth(v, depth + 1)),
+      );
     }
     return depth;
   }

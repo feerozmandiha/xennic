@@ -1,6 +1,13 @@
 import { randomUUID } from 'node:crypto';
 
-export type OrderStatus = 'pending' | 'confirmed' | 'processing' | 'shipped' | 'delivered' | 'cancelled' | 'refunded';
+export type OrderStatus =
+  | 'pending'
+  | 'confirmed'
+  | 'processing'
+  | 'shipped'
+  | 'delivered'
+  | 'cancelled'
+  | 'refunded';
 
 export interface OrderItemData {
   productId: string;
@@ -23,8 +30,10 @@ export class OrderEntity {
   ) {}
 
   static create(data: {
-    workspaceId: string; userId: string;
-    currency?: string; items: OrderItemData[];
+    workspaceId: string;
+    userId: string;
+    currency?: string;
+    items: OrderItemData[];
   }): OrderEntity {
     const totalAmount = data.items.reduce((sum, i) => sum + i.totalPrice, 0);
     return new OrderEntity(
@@ -41,26 +50,53 @@ export class OrderEntity {
   }
 
   static reconstitute(data: {
-    id: string; workspaceId: string; userId: string;
-    status: string; currency: string; totalAmount: number;
-    items: OrderItemData[]; createdAt: Date; updatedAt: Date;
+    id: string;
+    workspaceId: string;
+    userId: string;
+    status: string;
+    currency: string;
+    totalAmount: number;
+    items: OrderItemData[];
+    createdAt: Date;
+    updatedAt: Date;
   }): OrderEntity {
     return new OrderEntity(
-      data.id, data.workspaceId, data.userId,
-      data.status as OrderStatus, data.currency,
-      data.totalAmount, data.items,
-      data.createdAt, data.updatedAt,
+      data.id,
+      data.workspaceId,
+      data.userId,
+      data.status as OrderStatus,
+      data.currency,
+      data.totalAmount,
+      data.items,
+      data.createdAt,
+      data.updatedAt,
     );
   }
 
-  get workspaceId(): string { return this._workspaceId; }
-  get userId(): string { return this._userId; }
-  get status(): OrderStatus { return this._status; }
-  get currency(): string { return this._currency; }
-  get totalAmount(): number { return this._totalAmount; }
-  get items(): OrderItemData[] { return this._items; }
-  get createdAt(): Date { return this._createdAt; }
-  get updatedAt(): Date { return this._updatedAt; }
+  get workspaceId(): string {
+    return this._workspaceId;
+  }
+  get userId(): string {
+    return this._userId;
+  }
+  get status(): OrderStatus {
+    return this._status;
+  }
+  get currency(): string {
+    return this._currency;
+  }
+  get totalAmount(): number {
+    return this._totalAmount;
+  }
+  get items(): OrderItemData[] {
+    return this._items;
+  }
+  get createdAt(): Date {
+    return this._createdAt;
+  }
+  get updatedAt(): Date {
+    return this._updatedAt;
+  }
 
   updateStatus(status: OrderStatus): void {
     this._status = status;

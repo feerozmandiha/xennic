@@ -1,10 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { prisma } from '@xennic/database';
 import { ToolEntity, ToolStatus, ToolHealth } from '../../domain/tool.entity.js';
-import type {
-  IToolRegistry,
-  ListOptions,
-} from '../../domain/tool-registry.interface.js';
+import type { IToolRegistry, ListOptions } from '../../domain/tool-registry.interface.js';
 import type { PaginatedResult } from '../../../shared/types/index.js';
 
 @Injectable()
@@ -78,7 +75,7 @@ export class PrismaToolRegistry implements IToolRegistry {
       prisma.tool_registry.count({ where }),
     ]);
     return {
-      items: items.map(r => this.toEntity(r)),
+      items: items.map((r) => this.toEntity(r)),
       total,
       offset,
       limit,
@@ -89,23 +86,20 @@ export class PrismaToolRegistry implements IToolRegistry {
     const lower = capability.toLowerCase();
     const rows = await prisma.tool_registry.findMany({
       where: {
-        OR: [
-          { description: { contains: lower } },
-        ],
+        OR: [{ description: { contains: lower } }],
       },
     });
-    return rows.filter(r => {
-      const schemaStr = JSON.stringify(r.schema ?? {}).toLowerCase();
-      const metaStr = JSON.stringify(r.metadata ?? {}).toLowerCase();
-      const desc = (r.description ?? '').toLowerCase();
-      return desc.includes(lower) || schemaStr.includes(lower) || metaStr.includes(lower);
-    }).map(r => this.toEntity(r));
+    return rows
+      .filter((r) => {
+        const schemaStr = JSON.stringify(r.schema ?? {}).toLowerCase();
+        const metaStr = JSON.stringify(r.metadata ?? {}).toLowerCase();
+        const desc = (r.description ?? '').toLowerCase();
+        return desc.includes(lower) || schemaStr.includes(lower) || metaStr.includes(lower);
+      })
+      .map((r) => this.toEntity(r));
   }
 
-  async update(
-    id: string,
-    partial: Partial<ToolEntity>,
-  ): Promise<ToolEntity | null> {
+  async update(id: string, partial: Partial<ToolEntity>): Promise<ToolEntity | null> {
     const existing = await prisma.tool_registry.findUnique({ where: { id } });
     if (!existing) return null;
 

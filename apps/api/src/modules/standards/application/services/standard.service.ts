@@ -16,7 +16,13 @@ export class StandardService {
     private readonly repository: IStandardRepository,
   ) {}
 
-  async findAll(page = 1, limit = 20, query?: string, organization?: string, status?: string): Promise<PaginatedStandards> {
+  async findAll(
+    page = 1,
+    limit = 20,
+    query?: string,
+    organization?: string,
+    status?: string,
+  ): Promise<PaginatedStandards> {
     const offset = (page - 1) * limit;
     const result = await this.repository.findAll({
       query,

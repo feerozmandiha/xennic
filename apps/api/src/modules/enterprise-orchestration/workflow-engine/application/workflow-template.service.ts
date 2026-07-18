@@ -4,7 +4,10 @@ import { WorkflowTemplate } from '../domain/workflow-template.entity.js';
 import type { VariableDef } from '../domain/workflow-template.entity.js';
 import type { WorkflowStep, WorkflowTrigger } from '../domain/workflow-definition.entity.js';
 import { WorkflowDefinition } from '../domain/workflow-definition.entity.js';
-import type { IWorkflowRepository, ListTemplateOptions } from '../domain/workflow-repository.interface.js';
+import type {
+  IWorkflowRepository,
+  ListTemplateOptions,
+} from '../domain/workflow-repository.interface.js';
 import type { IWorkflowValidator } from '../domain/workflow-validator.interface.js';
 import type { PaginatedResult } from '../../shared/types/index.js';
 
@@ -52,7 +55,7 @@ export class WorkflowTemplateService {
 
   async getTemplate(id: string): Promise<WorkflowTemplate> {
     const templates = await this.repository.findTemplates();
-    const template = templates.items.find(t => t.id === id);
+    const template = templates.items.find((t) => t.id === id);
     if (!template) {
       throw new NotFoundException(`Workflow template ${id} not found`);
     }
@@ -80,7 +83,7 @@ export class WorkflowTemplateService {
           if (variableValues[key] !== undefined) {
             return String(variableValues[key]);
           }
-          const def = template.variables.find(v => v.name === key);
+          const def = template.variables.find((v) => v.name === key);
           if (def?.default !== undefined) {
             return String(def.default);
           }
@@ -124,7 +127,7 @@ export class WorkflowTemplateService {
     const validation = this.validator.validate(definition);
     if (!validation.valid) {
       throw new Error(
-        `Instantiated workflow validation failed: ${validation.errors.map(e => `${e.path}: ${e.message}`).join('; ')}`,
+        `Instantiated workflow validation failed: ${validation.errors.map((e) => `${e.path}: ${e.message}`).join('; ')}`,
       );
     }
 

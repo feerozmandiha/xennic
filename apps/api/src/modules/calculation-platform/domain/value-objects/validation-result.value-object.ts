@@ -13,19 +13,34 @@ export class ValidationResult {
     public readonly info: readonly ValidationError[],
   ) {}
 
-  static create(errors: ValidationError[], warnings?: ValidationError[], info?: ValidationError[]): ValidationResult {
-    const errs = errors.filter(e => e.severity === 'error');
-    const warns = [...(warnings ?? []), ...errors.filter(e => e.severity === 'warning')];
-    const infos = [...(info ?? []), ...errors.filter(e => e.severity === 'info')];
-    return new ValidationResult(errs.length === 0, Object.freeze(errs), Object.freeze(warns), Object.freeze(infos));
+  static create(
+    errors: ValidationError[],
+    warnings?: ValidationError[],
+    info?: ValidationError[],
+  ): ValidationResult {
+    const errs = errors.filter((e) => e.severity === 'error');
+    const warns = [...(warnings ?? []), ...errors.filter((e) => e.severity === 'warning')];
+    const infos = [...(info ?? []), ...errors.filter((e) => e.severity === 'info')];
+    return new ValidationResult(
+      errs.length === 0,
+      Object.freeze(errs),
+      Object.freeze(warns),
+      Object.freeze(infos),
+    );
   }
 
   static success(): ValidationResult {
     return new ValidationResult(true, Object.freeze([]), Object.freeze([]), Object.freeze([]));
   }
 
-  hasErrors(): boolean { return !this.valid; }
-  hasWarnings(): boolean { return this.warnings.length > 0; }
+  hasErrors(): boolean {
+    return !this.valid;
+  }
+  hasWarnings(): boolean {
+    return this.warnings.length > 0;
+  }
 
-  getAll(): ValidationError[] { return [...this.errors, ...this.warnings, ...this.info]; }
+  getAll(): ValidationError[] {
+    return [...this.errors, ...this.warnings, ...this.info];
+  }
 }

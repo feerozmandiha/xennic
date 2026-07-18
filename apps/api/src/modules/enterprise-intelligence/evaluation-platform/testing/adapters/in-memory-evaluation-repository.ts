@@ -2,7 +2,10 @@ import { Logger } from '@nestjs/common';
 import type { BenchmarkEntity } from '../../domain/benchmark.entity.js';
 import type { GoldenDataset } from '../../domain/golden-dataset.entity.js';
 import type { EvaluationRun } from '../../domain/evaluation-run.entity.js';
-import type { IEvaluationRepository, ListOptions } from '../../domain/evaluation-repository.interface.js';
+import type {
+  IEvaluationRepository,
+  ListOptions,
+} from '../../domain/evaluation-repository.interface.js';
 import type { PaginatedResult } from '../../../shared/types/index.js';
 
 export class InMemoryEvaluationRepository implements IEvaluationRepository {
@@ -22,8 +25,8 @@ export class InMemoryEvaluationRepository implements IEvaluationRepository {
 
   async listBenchmarks(options?: ListOptions): Promise<PaginatedResult<BenchmarkEntity>> {
     let items = Array.from(this.benchmarks.values());
-    if (options?.status) items = items.filter(e => e.status === options.status);
-    if (options?.tag) items = items.filter(e => e.tags.includes(options.tag!));
+    if (options?.status) items = items.filter((e) => e.status === options.status);
+    if (options?.tag) items = items.filter((e) => e.tags.includes(options.tag!));
     items.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
     const offset = options?.offset ?? 0;
     const limit = options?.limit ?? items.length;
@@ -45,7 +48,7 @@ export class InMemoryEvaluationRepository implements IEvaluationRepository {
 
   async listDatasets(options?: ListOptions): Promise<PaginatedResult<GoldenDataset>> {
     let items = Array.from(this.datasets.values());
-    if (options?.tag) items = items.filter(e => e.tags.includes(options.tag!));
+    if (options?.tag) items = items.filter((e) => e.tags.includes(options.tag!));
     items.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
     const offset = options?.offset ?? 0;
     const limit = options?.limit ?? items.length;
@@ -67,7 +70,7 @@ export class InMemoryEvaluationRepository implements IEvaluationRepository {
 
   async listRuns(options?: ListOptions): Promise<PaginatedResult<EvaluationRun>> {
     let items = Array.from(this.runs.values());
-    if (options?.targetType) items = items.filter(e => e.targetType === options.targetType);
+    if (options?.targetType) items = items.filter((e) => e.targetType === options.targetType);
     items.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
     const offset = options?.offset ?? 0;
     const limit = options?.limit ?? items.length;

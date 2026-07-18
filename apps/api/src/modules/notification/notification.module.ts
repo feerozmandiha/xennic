@@ -9,7 +9,7 @@ import { NotificationRepository } from './infrastructure/repositories/notificati
   providers: [
     NotificationService,
     {
-      provide:  'INotificationRepository',
+      provide: 'INotificationRepository',
       useClass: NotificationRepository,
     },
   ],

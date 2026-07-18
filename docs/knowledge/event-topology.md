@@ -114,15 +114,15 @@ sequenceDiagram
 
 ```typescript
 interface DomainEvent<T> {
-  eventId: string;           // UUID v4
-  eventType: EventType;      // Enum: DocumentUploaded..SearchIndexUpdated
-  eventVersion: number;      // Schema version (starts at 1)
-  correlationId: string;     // Links all events from same document
-  causationId: string;       // Links to the causing event
-  tracingId: string;         // End-to-end trace
-  timestamp: string;         // ISO 8601
-  source: string;            // Module name
-  data: T;                   // Typed payload
+  eventId: string; // UUID v4
+  eventType: EventType; // Enum: DocumentUploaded..SearchIndexUpdated
+  eventVersion: number; // Schema version (starts at 1)
+  correlationId: string; // Links all events from same document
+  causationId: string; // Links to the causing event
+  tracingId: string; // End-to-end trace
+  timestamp: string; // ISO 8601
+  source: string; // Module name
+  data: T; // Typed payload
   metadata: {
     userId?: string;
     workspaceId: string;
@@ -167,13 +167,13 @@ When a document is processed through the pipeline, events form a chain:
 DocumentUploaded (correlationId: A)
   └─ causationId: A
   └─ tracingId: T
-  
+
 DocumentPublished (correlationId: A, causationId: prev-event-id)
   └─ tracingId: T
-  
+
 GraphNodeCreated (correlationId: A, causationId: doc-published-event-id)
   └─ tracingId: T
-  
+
 MetricsCalculated (correlationId: A, causationId: doc-published-event-id)
   └─ tracingId: T
 ```

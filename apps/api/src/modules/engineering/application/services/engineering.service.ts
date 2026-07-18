@@ -1,13 +1,11 @@
-import {
-  Injectable,
-  Inject,
-  NotFoundException,
-  ForbiddenException,
-} from '@nestjs/common';
+import { Injectable, Inject, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { EngineeringClientService } from '../../infrastructure/http/engineering-client.service.js';
 import type { ICalculationRepository } from '../../domain/interfaces/calculation.repository.interface.js';
 import { CalculationEntity } from '../../domain/entities/calculation.entity.js';
-import { SubscriptionService, FEATURE } from '../../../subscription/application/services/subscription.service.js';
+import {
+  SubscriptionService,
+  FEATURE,
+} from '../../../subscription/application/services/subscription.service.js';
 
 // ─── نگاشت calculation type به path در Python service ─────────────────────────
 
@@ -34,26 +32,26 @@ const CALCULATION_ROUTES: Record<string, string> = {
   'TRF-005': '/api/v1/engineering/transformer/efficiency',
 
   // Protection Engineering
-  'PROT-001':  '/api/v1/engineering/protection/mccb-selection',
-  'SC-001':    '/api/v1/engineering/protection/short-circuit',
-  'PROT-002':  '/api/v1/engineering/protection/arc-flash',
-  'GND-001':   '/api/v1/engineering/protection/grounding',
-  'PROT-004':  '/api/v1/engineering/protection/fuse-selection',
-  'SWT-001':   '/api/v1/engineering/switchgear/main-switch',
+  'PROT-001': '/api/v1/engineering/protection/mccb-selection',
+  'SC-001': '/api/v1/engineering/protection/short-circuit',
+  'PROT-002': '/api/v1/engineering/protection/arc-flash',
+  'GND-001': '/api/v1/engineering/protection/grounding',
+  'PROT-004': '/api/v1/engineering/protection/fuse-selection',
+  'SWT-001': '/api/v1/engineering/switchgear/main-switch',
   'LIGHT-001': '/api/v1/engineering/lighting/lumen-method',
   'LIGHT-002': '/api/v1/engineering/lighting/road-lighting',
-  'GND-002':   '/api/v1/engineering/grounding/grid-design',
-  'HARM-001':  '/api/v1/engineering/power-quality/advanced-harmonic',
+  'GND-002': '/api/v1/engineering/grounding/grid-design',
+  'HARM-001': '/api/v1/engineering/power-quality/advanced-harmonic',
   'BATTERY-002': '/api/v1/engineering/renewable/battery-charger',
-  'PROT-005':  '/api/v1/engineering/protection/coordination',
-  'ARC-001':   '/api/v1/engineering/protection/arc-incident',
+  'PROT-005': '/api/v1/engineering/protection/coordination',
+  'ARC-001': '/api/v1/engineering/protection/arc-incident',
   'SOLAR-002': '/api/v1/engineering/renewable/inverter-sizing',
   'SOLAR-003': '/api/v1/engineering/renewable/solar-battery',
-  'PFC-001':   '/api/v1/engineering/power-quality/capacitor-bank',
-  'BAT-BU-001':'/api/v1/engineering/renewable/backup-time',
-  'ECO-001':   '/api/v1/engineering/economics/roi',
-  'ECO-002':   '/api/v1/engineering/economics/npv',
-  'ECO-003':   '/api/v1/engineering/economics/irr',
+  'PFC-001': '/api/v1/engineering/power-quality/capacitor-bank',
+  'BAT-BU-001': '/api/v1/engineering/renewable/backup-time',
+  'ECO-001': '/api/v1/engineering/economics/roi',
+  'ECO-002': '/api/v1/engineering/economics/npv',
+  'ECO-003': '/api/v1/engineering/economics/irr',
 
   // Power Quality ✅
   'PQ-001': '/api/v1/engineering/power-quality/thd',
@@ -65,7 +63,7 @@ const CALCULATION_ROUTES: Record<string, string> = {
   'CAP-001': '/api/v1/engineering/power-quality/power-factor',
 
   // Renewable Energy & Motors
-  'PV-001':  '/api/v1/engineering/renewable/solar-pv',
+  'PV-001': '/api/v1/engineering/renewable/solar-pv',
   'MOT-001': '/api/v1/engineering/renewable/motor-starting',
   'MOT-002': '/api/v1/engineering/renewable/motor-efficiency',
   'BAT-001': '/api/v1/engineering/renewable/battery-storage',
@@ -77,7 +75,7 @@ const CALCULATION_ROUTES: Record<string, string> = {
   'PS-004': '/api/v1/engineering/power-system/busbar-sizing',
 
   // Energy Analyzer
-  'EA-001':  '/api/v1/engineering/energy/analyze',
+  'EA-001': '/api/v1/engineering/energy/analyze',
 };
 
 // ─── Plan limits ──────────────────────────────────────────────────────────────
@@ -85,32 +83,60 @@ const CALCULATION_ROUTES: Record<string, string> = {
 // تمام محاسباتی که نیاز به پلن Pro+ دارند
 const PRO_ONLY_CALCULATIONS = new Set([
   // Cable
-  'CABLE-003', 'CABLE-004', 'CABLE-005',
+  'CABLE-003',
+  'CABLE-004',
+  'CABLE-005',
   // Transformer
-  'TRF-002', 'TRF-003', 'TRF-004', 'TRF-005',
+  'TRF-002',
+  'TRF-003',
+  'TRF-004',
+  'TRF-005',
   // Protection
-  'PROT-001', 'SC-001', 'PROT-002', 'ARC-001',
-  'PROT-003', 'PROT-005', 'SWT-001', 'GND-001', 'GND-002',
+  'PROT-001',
+  'SC-001',
+  'PROT-002',
+  'ARC-001',
+  'PROT-003',
+  'PROT-005',
+  'SWT-001',
+  'GND-001',
+  'GND-002',
   // Power Quality
-  'PQ-001', 'PQ-002', 'PQ-003', 'PQ-004', 'PQ-005', 'PQ-006',
-  'HARM-001', 'PFC-001',
+  'PQ-001',
+  'PQ-002',
+  'PQ-003',
+  'PQ-004',
+  'PQ-005',
+  'PQ-006',
+  'HARM-001',
+  'PFC-001',
   // Power System Studies
-  'PS-001', 'PS-002', 'PS-003', 'PS-004',
+  'PS-001',
+  'PS-002',
+  'PS-003',
+  'PS-004',
   // Renewable Energy
-  'BAT-001', 'BAT-BU-001', 'BATTERY-002', 'SOLAR-002', 'SOLAR-003', 'MOT-002',
+  'BAT-001',
+  'BAT-BU-001',
+  'BATTERY-002',
+  'SOLAR-002',
+  'SOLAR-003',
+  'MOT-002',
   // Lighting
   'LIGHT-002',
   // Economics
-  'ECO-001', 'ECO-002', 'ECO-003',
+  'ECO-001',
+  'ECO-002',
+  'ECO-003',
 ]);
 
 export interface RunCalculationInput {
   workspaceId: string;
   projectId?: string;
   userId: string;
-  type: string;                          // e.g. "BASIC-001"
+  type: string; // e.g. "BASIC-001"
   inputs: Record<string, unknown>;
-  planSlug?: string;                     // 'free' | 'pro' | 'enterprise'
+  planSlug?: string; // 'free' | 'pro' | 'enterprise'
 }
 
 export interface PaginatedCalculations {
@@ -147,9 +173,7 @@ export class EngineeringService {
     // 4. یافتن مسیر Python service
     const path = CALCULATION_ROUTES[input.type];
     if (!path) {
-      throw new NotFoundException(
-        `Calculation type "${input.type}" is not supported`,
-      );
+      throw new NotFoundException(`Calculation type "${input.type}" is not supported`);
     }
 
     // 5. اجرا در Python service + اندازه‌گیری زمان
@@ -161,14 +185,14 @@ export class EngineeringService {
 
     // 6. ذخیره در دیتابیس
     const calculation = CalculationEntity.create({
-      workspaceId:     input.workspaceId,
-      projectId:       input.projectId ?? null,
-      userId:          input.userId,
-      type:            input.type,
-      version:         (data['formula_version'] as string) ?? '1.0',
-      inputs:          (data['inputs']   as Record<string, unknown>) ?? input.inputs,
-      results:         (data['results']  as Record<string, unknown>) ?? {},
-      engineVersion:   (data['engine_version']   as string) ?? 'unknown',
+      workspaceId: input.workspaceId,
+      projectId: input.projectId ?? null,
+      userId: input.userId,
+      type: input.type,
+      version: (data['formula_version'] as string) ?? '1.0',
+      inputs: (data['inputs'] as Record<string, unknown>) ?? input.inputs,
+      results: (data['results'] as Record<string, unknown>) ?? {},
+      engineVersion: (data['engine_version'] as string) ?? 'unknown',
       standardVersion: (data['standard_version'] as string) ?? 'unknown',
       durationMs,
     });

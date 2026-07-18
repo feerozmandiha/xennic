@@ -7,41 +7,40 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import * as Dialog from '@radix-ui/react-dialog';
 import { X, BookOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input }  from '@/components/ui/input';
+import { Input } from '@/components/ui/input';
 import { useAuthStore } from '@/stores/auth.store';
-import { useToast }     from '@/stores/toast.store';
-import { apiClient }    from '@/lib/api/client';
+import { useToast } from '@/stores/toast.store';
+import { apiClient } from '@/lib/api/client';
 
 interface Props {
-  open:    boolean;
+  open: boolean;
   onClose: () => void;
 }
 
 const DIFFICULTIES = [
-  { value: 'beginner',     label: 'مبتدی' },
+  { value: 'beginner', label: 'مبتدی' },
   { value: 'intermediate', label: 'متوسط' },
-  { value: 'advanced',     label: 'پیشرفته' },
-  { value: 'expert',       label: 'متخصص' },
+  { value: 'advanced', label: 'پیشرفته' },
+  { value: 'expert', label: 'متخصص' },
 ];
 
 export function NewKnowledgeDialog({ open, onClose }: Props) {
-  const t           = useTranslations('knowledge');
-  const tCommon     = useTranslations('common');
-  const params      = useParams();
-  const locale      = (params?.locale as string) ?? 'fa';
-  const router      = useRouter();
-  const wsId        = useAuthStore(s => s.workspaceId);
+  const t = useTranslations('knowledge');
+  const tCommon = useTranslations('common');
+  const params = useParams();
+  const locale = (params?.locale as string) ?? 'fa';
+  const router = useRouter();
+  const wsId = useAuthStore((s) => s.workspaceId);
   const queryClient = useQueryClient();
-  const toast       = useToast();
+  const toast = useToast();
 
-  const [title, setTitle]     = useState('');
-  const [slug, setSlug]       = useState('');
+  const [title, setTitle] = useState('');
+  const [slug, setSlug] = useState('');
   const [difficulty, setDifficulty] = useState('');
-  const [error, setError]           = useState('');
+  const [error, setError] = useState('');
 
   const mutation = useMutation({
-    mutationFn: (body: any) =>
-      apiClient.post<any>('/knowledge', body),
+    mutationFn: (body: any) => apiClient.post<any>('/knowledge', body),
     onSuccess: (res) => {
       queryClient.invalidateQueries({ queryKey: ['knowledge'] });
       queryClient.invalidateQueries({ queryKey: ['knowledge', wsId] });
@@ -55,14 +54,23 @@ export function NewKnowledgeDialog({ open, onClose }: Props) {
   });
 
   function handleClose() {
-    setTitle(''); setSlug(''); setDifficulty(''); setError('');
+    setTitle('');
+    setSlug('');
+    setDifficulty('');
+    setError('');
     onClose();
   }
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!title.trim()) { setError('عنوان مقاله الزامی است'); return; }
-    if (!slug.trim()) { setError('slug مقاله الزامی است'); return; }
+    if (!title.trim()) {
+      setError('عنوان مقاله الزامی است');
+      return;
+    }
+    if (!slug.trim()) {
+      setError('slug مقاله الزامی است');
+      return;
+    }
     setError('');
     mutation.mutate({
       slug: slug.trim(),
@@ -72,7 +80,7 @@ export function NewKnowledgeDialog({ open, onClose }: Props) {
   }
 
   return (
-    <Dialog.Root open={open} onOpenChange={v => !v && handleClose()}>
+    <Dialog.Root open={open} onOpenChange={(v) => !v && handleClose()}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm animate-fade-in" />
         <Dialog.Content
@@ -86,9 +94,7 @@ export function NewKnowledgeDialog({ open, onClose }: Props) {
               <div className="w-9 h-9 rounded-[var(--radius-lg)] bg-[hsl(var(--primary)/0.1)] flex items-center justify-center">
                 <BookOpen className="h-4 w-4 text-[hsl(var(--primary))]" />
               </div>
-              <Dialog.Title className="font-semibold text-base">
-                {t('newArticle')}
-              </Dialog.Title>
+              <Dialog.Title className="font-semibold text-base">{t('newArticle')}</Dialog.Title>
             </div>
             <Dialog.Close asChild>
               <button
@@ -110,7 +116,7 @@ export function NewKnowledgeDialog({ open, onClose }: Props) {
             <Input
               label="عنوان"
               value={title}
-              onChange={e => setTitle(e.target.value)}
+              onChange={(e) => setTitle(e.target.value)}
               placeholder="عنوان مقاله"
               required
               autoFocus
@@ -120,7 +126,7 @@ export function NewKnowledgeDialog({ open, onClose }: Props) {
             <Input
               label={t('slug')}
               value={slug}
-              onChange={e => setSlug(e.target.value)}
+              onChange={(e) => setSlug(e.target.value)}
               placeholder="مثال: understanding-arc-flash"
               required
               disabled={mutation.isPending}
@@ -130,13 +136,15 @@ export function NewKnowledgeDialog({ open, onClose }: Props) {
               <label className="block text-sm font-medium">سطح دشواری</label>
               <select
                 value={difficulty}
-                onChange={e => setDifficulty(e.target.value)}
+                onChange={(e) => setDifficulty(e.target.value)}
                 disabled={mutation.isPending}
                 className="flex w-full rounded-[var(--radius)] border border-[hsl(var(--input))] bg-transparent px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] disabled:opacity-50"
               >
                 <option value="">بدون سطح</option>
-                {DIFFICULTIES.map(d => (
-                  <option key={d.value} value={d.value}>{d.label}</option>
+                {DIFFICULTIES.map((d) => (
+                  <option key={d.value} value={d.value}>
+                    {d.label}
+                  </option>
                 ))}
               </select>
             </div>
@@ -151,11 +159,7 @@ export function NewKnowledgeDialog({ open, onClose }: Props) {
               >
                 {tCommon('cancel')}
               </Button>
-              <Button
-                type="submit"
-                className="flex-1"
-                loading={mutation.isPending}
-              >
+              <Button type="submit" className="flex-1" loading={mutation.isPending}>
                 {tCommon('save')}
               </Button>
             </div>

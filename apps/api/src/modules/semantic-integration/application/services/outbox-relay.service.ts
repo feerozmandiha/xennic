@@ -3,7 +3,10 @@ import { EventOutboxRepository } from '../../infrastructure/persistence/event-ou
 import { EventProcessLogRepository } from '../../infrastructure/persistence/event-process-log.repository.js';
 import { SemanticEventBus } from './semantic-event-bus.service.js';
 import { EventType, type DomainEvent } from '../../domain/events/domain-event.types.js';
-import { OUTBOX_POLL_INTERVAL_MS, OUTBOX_BATCH_SIZE } from '../../semantic-integration.constants.js';
+import {
+  OUTBOX_POLL_INTERVAL_MS,
+  OUTBOX_BATCH_SIZE,
+} from '../../semantic-integration.constants.js';
 
 @Injectable()
 export class OutboxRelayService implements OnModuleDestroy {

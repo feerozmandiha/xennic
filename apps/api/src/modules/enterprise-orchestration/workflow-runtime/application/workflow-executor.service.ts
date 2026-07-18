@@ -1,6 +1,9 @@
 import { Injectable, Logger, Inject } from '@nestjs/common';
 import type { Metadata } from '../../shared/types/index.js';
-import type { WorkflowDefinition, WorkflowStep } from '../../workflow-engine/domain/workflow-definition.entity.js';
+import type {
+  WorkflowDefinition,
+  WorkflowStep,
+} from '../../workflow-engine/domain/workflow-definition.entity.js';
 import type { IExecutionRepository } from '../domain/execution-repository.interface.js';
 import { WorkflowExecution, type ExecutionStep } from '../domain/workflow-execution.entity.js';
 import { RetryHandlerService } from './retry-handler.service.js';
@@ -81,7 +84,11 @@ export class WorkflowExecutorService {
       step.completedAt = new Date();
       this.logger.log(`Step ${step.stepId} completed`);
 
-      await this.compensation.registerCompensation(executionId, step.stepId, `compensate:${step.stepId}`);
+      await this.compensation.registerCompensation(
+        executionId,
+        step.stepId,
+        `compensate:${step.stepId}`,
+      );
     } catch (error) {
       step.status = 'failed';
       step.error = error instanceof Error ? error.message : String(error);
@@ -99,7 +106,7 @@ export class WorkflowExecutorService {
 
     const execution = await this.repository.get(executionId);
     if (execution) {
-      const idx = execution.steps.findIndex(s => s.stepId === step.stepId);
+      const idx = execution.steps.findIndex((s) => s.stepId === step.stepId);
       if (idx >= 0) {
         execution.steps[idx] = step;
       }
@@ -124,10 +131,10 @@ export class WorkflowExecutorService {
       return;
     }
 
-    const allAreParallel = nextSteps.every(s => s.type === 'parallel' || s.type === 'task');
+    const allAreParallel = nextSteps.every((s) => s.type === 'parallel' || s.type === 'task');
 
     if (nextSteps.length > 1 && allAreParallel) {
-      await Promise.all(nextSteps.map(s => this.executeStep(executionId, s)));
+      await Promise.all(nextSteps.map((s) => this.executeStep(executionId, s)));
     } else {
       for (const step of nextSteps) {
         const defStep = await this.findDefinitionStep(executionId, step.stepId);
@@ -148,14 +155,14 @@ export class WorkflowExecutorService {
     const execution = await this.repository.get(executionId);
     if (!execution) return [];
 
-    const pending = execution.steps.filter(s => s.status === 'pending');
+    const pending = execution.steps.filter((s) => s.status === 'pending');
 
     if (pending.length === execution.steps.length) {
       return pending.length > 0 ? [pending[0] as ExecutionStep] : [];
     }
 
     const completedIds = new Set(
-      execution.steps.filter(s => s.status === 'completed').map(s => s.stepId),
+      execution.steps.filter((s) => s.status === 'completed').map((s) => s.stepId),
     );
 
     if (completedIds.size === 0) {
@@ -178,18 +185,24 @@ export class WorkflowExecutorService {
     return result;
   }
 
-  private async findExecutionStep(executionId: string, stepId: string): Promise<ExecutionStep | null> {
+  private async findExecutionStep(
+    executionId: string,
+    stepId: string,
+  ): Promise<ExecutionStep | null> {
     const execution = await this.repository.get(executionId);
     if (!execution) return null;
-    return execution.steps.find(s => s.stepId === stepId) ?? null;
+    return execution.steps.find((s) => s.stepId === stepId) ?? null;
   }
 
-  private async findDefinitionStep(executionId: string, stepId: string): Promise<WorkflowStep | null> {
+  private async findDefinitionStep(
+    executionId: string,
+    stepId: string,
+  ): Promise<WorkflowStep | null> {
     const execution = await this.repository.get(executionId);
     if (!execution) return null;
     const steps = execution.context.__definition_steps__ as WorkflowStep[] | undefined;
     if (!steps) return null;
-    return steps.find(s => s.id === stepId) ?? null;
+    return steps.find((s) => s.id === stepId) ?? null;
   }
 
   private async evaluateConditional(
@@ -207,8 +220,8 @@ export class WorkflowExecutorService {
   }
 
   private async finalizeExecution(execution: WorkflowExecution): Promise<void> {
-    const allCompleted = execution.steps.every(s => s.status === 'completed');
-    const anyFailed = execution.steps.some(s => s.status === 'failed');
+    const allCompleted = execution.steps.every((s) => s.status === 'completed');
+    const anyFailed = execution.steps.some((s) => s.status === 'failed');
 
     if (allCompleted) {
       execution.status = 'completed';

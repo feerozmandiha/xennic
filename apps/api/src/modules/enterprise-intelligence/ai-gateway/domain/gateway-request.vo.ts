@@ -54,6 +54,9 @@ export class GatewayRequest {
   }
 
   withOptions(options: GatewayOptions): GatewayRequest {
-    return new GatewayRequest(this.model, this.messages, this.prompt, { ...this.options, ...options });
+    return new GatewayRequest(this.model, this.messages, this.prompt, {
+      ...this.options,
+      ...options,
+    });
   }
 }

@@ -1,4 +1,3 @@
-
 export interface OntologyClassProperties {
   [key: string]: unknown;
 }
@@ -73,14 +72,32 @@ export class OntologyClass {
     );
   }
 
-  get parentId(): string | null { return this._parentId; }
-  get label(): string { return this._label; }
-  get description(): string | null { return this._description; }
-  get properties(): OntologyClassProperties { return this._properties; }
-  get sortOrder(): number { return this._sortOrder; }
-  get isAbstract(): boolean { return this._isAbstract; }
+  get parentId(): string | null {
+    return this._parentId;
+  }
+  get label(): string {
+    return this._label;
+  }
+  get description(): string | null {
+    return this._description;
+  }
+  get properties(): OntologyClassProperties {
+    return this._properties;
+  }
+  get sortOrder(): number {
+    return this._sortOrder;
+  }
+  get isAbstract(): boolean {
+    return this._isAbstract;
+  }
 
-  update(data: { label?: string; description?: string | null; properties?: OntologyClassProperties; sortOrder?: number; isAbstract?: boolean }): void {
+  update(data: {
+    label?: string;
+    description?: string | null;
+    properties?: OntologyClassProperties;
+    sortOrder?: number;
+    isAbstract?: boolean;
+  }): void {
     if (data.label !== undefined) this._label = data.label;
     if (data.description !== undefined) this._description = data.description;
     if (data.properties !== undefined) this._properties = data.properties;

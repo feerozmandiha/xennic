@@ -7,11 +7,7 @@ import { WorkspaceModule } from '../workspace/workspace.module.js';
 import { RbacModule } from '../rbac/rbac.module.js';
 
 @Module({
-  imports: [
-    EngineeringModule,
-    WorkspaceModule,
-    RbacModule,
-  ],
+  imports: [EngineeringModule, WorkspaceModule, RbacModule],
   controllers: [VisionUploadController],
   providers: [VisionClientService, VisionService],
   exports: [VisionService, VisionClientService],

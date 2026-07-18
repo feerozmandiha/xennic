@@ -14,19 +14,13 @@ import { PrismaMemoryIndex } from './infrastructure/persistence/prisma-memory-in
     { provide: 'IMemoryStore', useClass: PrismaMemoryStore },
     { provide: 'IMemoryIndex', useClass: PrismaMemoryIndex },
   ],
-  exports: [
-    MemoryService,
-    MemoryIndexerService,
-    MemoryExpirationService,
-  ],
+  exports: [MemoryService, MemoryIndexerService, MemoryExpirationService],
 })
 export class MemoryPlatformModule implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(MemoryPlatformModule.name);
   private readonly EXPIRATION_INTERVAL_MS = 60000;
 
-  constructor(
-    private readonly expirationService: MemoryExpirationService,
-  ) {}
+  constructor(private readonly expirationService: MemoryExpirationService) {}
 
   onModuleInit(): void {
     this.expirationService.scheduleInterval(this.EXPIRATION_INTERVAL_MS);

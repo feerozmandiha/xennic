@@ -1,25 +1,24 @@
 import { Injectable, Inject, Logger, NotFoundException, BadRequestException } from '@nestjs/common';
 import type { PaginatedResult } from '../../shared/types/index.js';
 import { PromptTemplateEntity, type VariableDef } from '../domain/prompt-template.entity.js';
-import type { ITemplateRegistry, TemplateFindOptions } from '../domain/prompt-template-registry.interface.js';
+import type {
+  ITemplateRegistry,
+  TemplateFindOptions,
+} from '../domain/prompt-template-registry.interface.js';
 
 @Injectable()
 export class PromptTemplateService {
   private readonly logger = new Logger(PromptTemplateService.name);
 
-  constructor(
-    @Inject('ITemplateRegistry') private readonly registry: ITemplateRegistry,
-  ) {}
+  constructor(@Inject('ITemplateRegistry') private readonly registry: ITemplateRegistry) {}
 
-  async register(
-    data: {
-      name: string;
-      description: string;
-      content: string;
-      variables: VariableDef[];
-      createdBy: string;
-    },
-  ): Promise<PromptTemplateEntity> {
+  async register(data: {
+    name: string;
+    description: string;
+    content: string;
+    variables: VariableDef[];
+    createdBy: string;
+  }): Promise<PromptTemplateEntity> {
     const entity = PromptTemplateEntity.create(
       data.name,
       data.description,
@@ -40,10 +39,7 @@ export class PromptTemplateService {
     return entity;
   }
 
-  async render(
-    templateId: string,
-    variables: Record<string, string>,
-  ): Promise<string> {
+  async render(templateId: string, variables: Record<string, string>): Promise<string> {
     const template = await this.get(templateId);
 
     for (const def of template.variables) {

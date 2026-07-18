@@ -5,42 +5,47 @@ import { useRouter, useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { Eye, EyeOff, UserPlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input }  from '@/components/ui/input';
+import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useAuthStore } from '@/stores/auth.store';
 import { handlePostLogin } from '@/features/auth/hooks/use-post-login';
 
-const API_BASE = typeof window !== 'undefined'
-  ? `${process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000'}/api/v1`
-  : `${process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000'}/api/v1`;
+const API_BASE =
+  typeof window !== 'undefined'
+    ? `${process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000'}/api/v1`
+    : `${process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000'}/api/v1`;
 
 export function RegisterForm({ plan: initialPlan }: { plan?: string | null }) {
-  const t      = useTranslations('auth');
-  const tErr   = useTranslations('errors');
+  const t = useTranslations('auth');
+  const tErr = useTranslations('errors');
   const router = useRouter();
   const params = useParams();
   const locale = (params?.locale as string) ?? 'fa';
-  const setAuth = useAuthStore(s => s.setAuth);
+  const setAuth = useAuthStore((s) => s.setAuth);
 
   const [form, setForm] = useState({
-    firstName: '', lastName: '', email: '', password: '',
+    firstName: '',
+    lastName: '',
+    email: '',
+    password: '',
   });
   const [showPass, setShowPass] = useState(false);
-  const [loading,  setLoading]  = useState(false);
-  const [errors,   setErrors]   = useState<Record<string, string>>({});
+  const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   function validate(): boolean {
     const e: Record<string, string> = {};
     if (!form.firstName.trim()) e.firstName = tErr('required');
-    if (!form.lastName.trim())  e.lastName  = tErr('required');
-    if (!form.email.trim())     e.email     = tErr('required');
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email))
-      e.email = tErr('invalidEmail');
+    if (!form.lastName.trim()) e.lastName = tErr('required');
+    if (!form.email.trim()) e.email = tErr('required');
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = tErr('invalidEmail');
     if (!form.password) {
       e.password = tErr('required');
     } else if (form.password.length < 8) {
       e.password = tErr('minLength').replace('{min}', '8');
-    } else if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/.test(form.password)) {
+    } else if (
+      !/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/.test(form.password)
+    ) {
       e.password = t('passwordHint');
     }
     setErrors(e);
@@ -54,18 +59,22 @@ export function RegisterForm({ plan: initialPlan }: { plan?: string | null }) {
 
     try {
       const response = await fetch(`${API_BASE}/auth/register`, {
-        method:  'POST',
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'user-agent':   'xennic-web/1.0',
+          'user-agent': 'xennic-web/1.0',
         },
         body: JSON.stringify(form),
       });
 
       const text = await response.text();
       let json: any;
-      try { json = JSON.parse(text); }
-      catch { setErrors({ submit: 'خطا در پردازش پاسخ سرور' }); return; }
+      try {
+        json = JSON.parse(text);
+      } catch {
+        setErrors({ submit: 'خطا در پردازش پاسخ سرور' });
+        return;
+      }
 
       if (json.success && json.data) {
         setAuth(json.data.accessToken, json.data.refreshToken, json.data.user);
@@ -94,7 +103,10 @@ export function RegisterForm({ plan: initialPlan }: { plan?: string | null }) {
         // اگر خطای validation است، پیام فارسی نشان دهیم
         if (msg.toLowerCase().includes('validation') || msg.toLowerCase().includes('password')) {
           setErrors({ submit: t('passwordHint') });
-        } else if (msg.toLowerCase().includes('email') || msg.toLowerCase().includes('already exists')) {
+        } else if (
+          msg.toLowerCase().includes('email') ||
+          msg.toLowerCase().includes('already exists')
+        ) {
           setErrors({ submit: 'این ایمیل قبلاً ثبت شده است' });
         } else {
           setErrors({ submit: msg });
@@ -107,9 +119,8 @@ export function RegisterForm({ plan: initialPlan }: { plan?: string | null }) {
     }
   }
 
-  const set = (k: keyof typeof form) =>
-    (e: React.ChangeEvent<HTMLInputElement>) =>
-      setForm(f => ({ ...f, [k]: e.target.value }));
+  const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) =>
+    setForm((f) => ({ ...f, [k]: e.target.value }));
 
   return (
     <Card>
@@ -125,7 +136,6 @@ export function RegisterForm({ plan: initialPlan }: { plan?: string | null }) {
 
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4" noValidate>
-
           {errors.submit && (
             <div className="rounded-[var(--radius)] bg-[hsl(var(--destructive)/0.08)] border border-[hsl(var(--destructive)/0.2)] px-3 py-2 text-sm text-[hsl(var(--destructive))] text-center animate-fade-in">
               {errors.submit}
@@ -182,13 +192,11 @@ export function RegisterForm({ plan: initialPlan }: { plan?: string | null }) {
             endIcon={
               <button
                 type="button"
-                onClick={() => setShowPass(p => !p)}
+                onClick={() => setShowPass((p) => !p)}
                 tabIndex={-1}
                 className="hover:text-[hsl(var(--foreground))] transition-colors"
               >
-                {showPass
-                  ? <EyeOff className="h-4 w-4" />
-                  : <Eye    className="h-4 w-4" />}
+                {showPass ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
             }
           />

@@ -1,5 +1,9 @@
 import { Injectable, Logger, Inject } from '@nestjs/common';
-import { SelectionRationale, type SelectionType, type Candidate } from '../domain/selection-rationale.vo.js';
+import {
+  SelectionRationale,
+  type SelectionType,
+  type Candidate,
+} from '../domain/selection-rationale.vo.js';
 import type { IExplainabilityRepository } from '../domain/explainability-repository.interface.js';
 
 export interface SelectionComparison {
@@ -37,21 +41,17 @@ export class RationaleService {
     });
 
     await this.repository.saveRationale(entity);
-    this.logger.log(`Selection rationale recorded: ${type} → ${selected} for execution ${executionId}`);
+    this.logger.log(
+      `Selection rationale recorded: ${type} → ${selected} for execution ${executionId}`,
+    );
     return entity;
   }
 
-  async getRationale(
-    executionId: string,
-    type?: SelectionType,
-  ): Promise<SelectionRationale[]> {
+  async getRationale(executionId: string, type?: SelectionType): Promise<SelectionRationale[]> {
     return this.repository.getRationale(executionId, type);
   }
 
-  async compareRationales(
-    executionId: string,
-    type: SelectionType,
-  ): Promise<SelectionComparison> {
+  async compareRationales(executionId: string, type: SelectionType): Promise<SelectionComparison> {
     const selections = await this.repository.getRationale(executionId, type);
 
     const differences: string[] = [];

@@ -28,9 +28,7 @@ const SIGNIFICANCE_THRESHOLD = 0.05;
 export class RegressionTestingService {
   private readonly logger = new Logger(RegressionTestingService.name);
 
-  constructor(
-    @Inject('IEvaluationRepository') private readonly repo: IEvaluationRepository,
-  ) {}
+  constructor(@Inject('IEvaluationRepository') private readonly repo: IEvaluationRepository) {}
 
   async detectRegression(previousRunId: string, currentRunId: string): Promise<RegressionReport> {
     const previous = await this.repo.getRun(previousRunId);
@@ -51,15 +49,17 @@ export class RegressionTestingService {
 
     const metrics: MetricDelta[] = [];
     for (const metric of metricNames) {
-      const prevResults = previous.results.filter(r => r.metric === metric);
-      const currResults = current.results.filter(r => r.metric === metric);
+      const prevResults = previous.results.filter((r) => r.metric === metric);
+      const currResults = current.results.filter((r) => r.metric === metric);
 
-      const prevAvg = prevResults.length > 0
-        ? prevResults.reduce((s, r) => s + r.value, 0) / prevResults.length
-        : 0;
-      const currAvg = currResults.length > 0
-        ? currResults.reduce((s, r) => s + r.value, 0) / currResults.length
-        : 0;
+      const prevAvg =
+        prevResults.length > 0
+          ? prevResults.reduce((s, r) => s + r.value, 0) / prevResults.length
+          : 0;
+      const currAvg =
+        currResults.length > 0
+          ? currResults.reduce((s, r) => s + r.value, 0) / currResults.length
+          : 0;
 
       const delta = currAvg - prevAvg;
       const percentChange = prevAvg !== 0 ? (delta / prevAvg) * 100 : 0;
@@ -68,9 +68,8 @@ export class RegressionTestingService {
     }
 
     const overallDelta = (current.score ?? 0) - (previous.score ?? 0);
-    const overallPercentChange = previous.score !== null && previous.score !== 0
-      ? (overallDelta / previous.score) * 100
-      : 0;
+    const overallPercentChange =
+      previous.score !== null && previous.score !== 0 ? (overallDelta / previous.score) * 100 : 0;
 
     return {
       targetType: current.targetType,
@@ -85,10 +84,16 @@ export class RegressionTestingService {
     };
   }
 
-  async getRegressionReport(targetType: EvaluationTargetType, targetId: string): Promise<RegressionReport | null> {
+  async getRegressionReport(
+    targetType: EvaluationTargetType,
+    targetId: string,
+  ): Promise<RegressionReport | null> {
     const result = await this.repo.listRuns({ targetType });
     const completed = result.items.filter(
-      r => r.targetType === targetType && r.targetId === targetId && r.status === EvaluationRunStatus.COMPLETED,
+      (r) =>
+        r.targetType === targetType &&
+        r.targetId === targetId &&
+        r.status === EvaluationRunStatus.COMPLETED,
     );
     const runs = completed.sort(
       (a, b) => (b.completedAt?.getTime() ?? 0) - (a.completedAt?.getTime() ?? 0),

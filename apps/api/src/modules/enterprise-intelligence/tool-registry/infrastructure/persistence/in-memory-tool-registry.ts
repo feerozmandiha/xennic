@@ -1,9 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ToolEntity } from '../../domain/tool.entity.js';
-import type {
-  IToolRegistry,
-  ListOptions,
-} from '../../domain/tool-registry.interface.js';
+import type { IToolRegistry, ListOptions } from '../../domain/tool-registry.interface.js';
 import type { PaginatedResult } from '../../../shared/types/index.js';
 
 @Injectable()
@@ -22,28 +19,24 @@ export class InMemoryToolRegistry implements IToolRegistry {
   }
 
   async getByName(name: string, version?: number): Promise<ToolEntity | null> {
-    const candidates = Array.from(this.store.values()).filter(
-      e => e.name === name,
-    );
+    const candidates = Array.from(this.store.values()).filter((e) => e.name === name);
     if (version !== undefined) {
-      const match = candidates.find(e => e.version === version);
+      const match = candidates.find((e) => e.version === version);
       if (match) return match;
       const archived = this.versions.get(name);
       if (archived) {
-        return archived.find(e => e.name === name && e.version === version) ?? null;
+        return archived.find((e) => e.name === name && e.version === version) ?? null;
       }
       return null;
     }
     if (candidates.length === 0) return null;
-    return candidates.reduce((latest, e) =>
-      e.version > latest.version ? e : latest,
-    );
+    return candidates.reduce((latest, e) => (e.version > latest.version ? e : latest));
   }
 
   async list(options?: ListOptions): Promise<PaginatedResult<ToolEntity>> {
     let items = Array.from(this.store.values());
     if (options?.status) {
-      items = items.filter(e => e.status === options.status);
+      items = items.filter((e) => e.status === options.status);
     }
     items.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
     const offset = options?.offset ?? 0;
@@ -58,7 +51,7 @@ export class InMemoryToolRegistry implements IToolRegistry {
 
   async findByCapability(capability: string): Promise<ToolEntity[]> {
     const lower = capability.toLowerCase();
-    return Array.from(this.store.values()).filter(e => {
+    return Array.from(this.store.values()).filter((e) => {
       const desc = (e.description ?? '').toLowerCase();
       const schemaStr = JSON.stringify(e.schema ?? {}).toLowerCase();
       const metaStr = JSON.stringify(e.metadata ?? {}).toLowerCase();
@@ -66,10 +59,7 @@ export class InMemoryToolRegistry implements IToolRegistry {
     });
   }
 
-  async update(
-    id: string,
-    partial: Partial<ToolEntity>,
-  ): Promise<ToolEntity | null> {
+  async update(id: string, partial: Partial<ToolEntity>): Promise<ToolEntity | null> {
     const existing = this.store.get(id);
     if (!existing) return null;
     const version = partial.version ?? existing.version;

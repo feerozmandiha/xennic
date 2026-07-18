@@ -53,7 +53,12 @@ export class ApprovalService {
     return entity;
   }
 
-  async reject(id: string, userId: string, reason: string, comment?: string): Promise<ApprovalRequest> {
+  async reject(
+    id: string,
+    userId: string,
+    reason: string,
+    comment?: string,
+  ): Promise<ApprovalRequest> {
     if (!reason) {
       throw new BadRequestException('Reason is required for rejection');
     }
@@ -91,16 +96,20 @@ export class ApprovalService {
     return this.getApprovalOrThrow(id);
   }
 
-  async getPendingApprovals(userId: string, options?: FindApprovalOptions): Promise<PaginatedResult<ApprovalRequest>> {
+  async getPendingApprovals(
+    userId: string,
+    options?: FindApprovalOptions,
+  ): Promise<PaginatedResult<ApprovalRequest>> {
     return this.repository.findPendingApprovals(userId, options);
   }
 
-  async checkAndRoute(executionId: string, stepId: string): Promise<'approved' | 'rejected' | 'pending' | 'escalated'> {
+  async checkAndRoute(
+    executionId: string,
+    stepId: string,
+  ): Promise<'approved' | 'rejected' | 'pending' | 'escalated'> {
     const result = await this.repository.findApprovals(executionId, { status: undefined });
 
-    const matching = result.items.find(
-      a => a.stepId === stepId && a.executionId === executionId,
-    );
+    const matching = result.items.find((a) => a.stepId === stepId && a.executionId === executionId);
 
     if (!matching) {
       return 'pending';

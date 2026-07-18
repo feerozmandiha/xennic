@@ -16,7 +16,10 @@ jest.mock('@xennic/database', () => ({
 }));
 
 import { Test, TestingModule } from '@nestjs/testing';
-import { EventType, createDomainEvent } from '../src/modules/semantic-integration/domain/events/domain-event.types.js';
+import {
+  EventType,
+  createDomainEvent,
+} from '../src/modules/semantic-integration/domain/events/domain-event.types.js';
 import { DomainEventPublisher } from '../src/modules/semantic-integration/application/services/domain-event-publisher.service.js';
 import { SemanticEventBus } from '../src/modules/semantic-integration/application/services/semantic-event-bus.service.js';
 import { OutboxRelayService } from '../src/modules/semantic-integration/application/services/outbox-relay.service.js';
@@ -27,11 +30,26 @@ import type { IEventHandler } from '../src/modules/semantic-integration/domain/i
 const outboxStore: Record<string, any> = {};
 
 const mockOutboxRepository = {
-  insert: jest.fn().mockImplementation(async (event: any) => { outboxStore[event.eventId] = { ...event, status: 'pending', retryCount: 0 }; }),
-  findPending: jest.fn().mockImplementation(async (limit: number) => Object.values(outboxStore).filter((e: any) => e.status === 'pending').slice(0, limit)),
-  markDelivered: jest.fn().mockImplementation(async (id: string) => { if (outboxStore[id]) outboxStore[id].status = 'delivered'; }),
-  markFailed: jest.fn().mockImplementation(async (id: string, error: string) => { if (outboxStore[id]) { outboxStore[id].status = 'failed'; outboxStore[id].error = error; } }),
-  incrementRetry: jest.fn().mockImplementation(async (id: string) => { if (outboxStore[id]) outboxStore[id].retryCount = (outboxStore[id].retryCount ?? 0) + 1; }),
+  insert: jest.fn().mockImplementation(async (event: any) => {
+    outboxStore[event.eventId] = { ...event, status: 'pending', retryCount: 0 };
+  }),
+  findPending: jest.fn().mockImplementation(async (limit: number) =>
+    Object.values(outboxStore)
+      .filter((e: any) => e.status === 'pending')
+      .slice(0, limit),
+  ),
+  markDelivered: jest.fn().mockImplementation(async (id: string) => {
+    if (outboxStore[id]) outboxStore[id].status = 'delivered';
+  }),
+  markFailed: jest.fn().mockImplementation(async (id: string, error: string) => {
+    if (outboxStore[id]) {
+      outboxStore[id].status = 'failed';
+      outboxStore[id].error = error;
+    }
+  }),
+  incrementRetry: jest.fn().mockImplementation(async (id: string) => {
+    if (outboxStore[id]) outboxStore[id].retryCount = (outboxStore[id].retryCount ?? 0) + 1;
+  }),
 };
 
 const mockProcessLogRepository = {
@@ -85,7 +103,15 @@ describe('Semantic Event Bus (integration)', () => {
   it('should publish a domain event to the outbox', async () => {
     const event = createDomainEvent(
       EventType.DocumentPublished,
-      { documentId: 'doc-1', knowledgeId: 'k-1', filename: 'test.pdf', originalName: 'test.pdf', mimeType: 'application/pdf', documentType: 'pdf', classification: {} },
+      {
+        documentId: 'doc-1',
+        knowledgeId: 'k-1',
+        filename: 'test.pdf',
+        originalName: 'test.pdf',
+        mimeType: 'application/pdf',
+        documentType: 'pdf',
+        classification: {},
+      },
       { workspaceId: 'ws-1', retryCount: 0 },
     );
 
@@ -99,7 +125,15 @@ describe('Semantic Event Bus (integration)', () => {
   it('should dispatch events to registered handlers via the event bus', async () => {
     const event = createDomainEvent(
       EventType.DocumentPublished,
-      { documentId: 'doc-1', knowledgeId: 'k-1', filename: 'test.pdf', originalName: 'test.pdf', mimeType: 'application/pdf', documentType: 'pdf', classification: {} },
+      {
+        documentId: 'doc-1',
+        knowledgeId: 'k-1',
+        filename: 'test.pdf',
+        originalName: 'test.pdf',
+        mimeType: 'application/pdf',
+        documentType: 'pdf',
+        classification: {},
+      },
       { workspaceId: 'ws-1', retryCount: 0 },
     );
 
@@ -116,7 +150,14 @@ describe('Semantic Event Bus (integration)', () => {
   it('should handle GraphNodeCreated event type', async () => {
     const event = createDomainEvent(
       EventType.GraphNodeCreated,
-      { nodeId: 'node-1', workspaceId: 'ws-1', entityId: 'doc-1', entityType: 'knowledge_document', type: 'document', label: 'test' },
+      {
+        nodeId: 'node-1',
+        workspaceId: 'ws-1',
+        entityId: 'doc-1',
+        entityType: 'knowledge_document',
+        type: 'document',
+        label: 'test',
+      },
       { workspaceId: 'ws-1', retryCount: 0 },
     );
 
@@ -130,7 +171,15 @@ describe('Semantic Event Bus (integration)', () => {
   it('should handle MetricsCalculated event type', async () => {
     const event = createDomainEvent(
       EventType.MetricsCalculated,
-      { nodeId: 'node-1', workspaceId: 'ws-1', confidence: 0.85, freshness: 0.9, authority: 0.7, completeness: 0.8, compositeScore: 0.81 },
+      {
+        nodeId: 'node-1',
+        workspaceId: 'ws-1',
+        confidence: 0.85,
+        freshness: 0.9,
+        authority: 0.7,
+        completeness: 0.8,
+        compositeScore: 0.81,
+      },
       { workspaceId: 'ws-1', retryCount: 0 },
     );
 
@@ -150,7 +199,15 @@ describe('Semantic Event Bus (integration)', () => {
     const events = Array.from({ length: 10 }, (_, i) =>
       createDomainEvent(
         EventType.DocumentPublished,
-        { documentId: `doc-${i}`, knowledgeId: `k-${i}`, filename: `test-${i}.pdf`, originalName: `test-${i}.pdf`, mimeType: 'application/pdf', documentType: 'pdf', classification: {} },
+        {
+          documentId: `doc-${i}`,
+          knowledgeId: `k-${i}`,
+          filename: `test-${i}.pdf`,
+          originalName: `test-${i}.pdf`,
+          mimeType: 'application/pdf',
+          documentType: 'pdf',
+          classification: {},
+        },
         { workspaceId: 'ws-1', retryCount: 0 },
       ),
     );

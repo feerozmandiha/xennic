@@ -20,7 +20,10 @@ export class DomainTaxonomyService {
     const node = await this.nodeRepo.findById(nodeId);
     if (!node) return null;
 
-    const ontologyClass = await this.ontologyRepo.findClassByUri(node.workspaceId, ontologyClassUri);
+    const ontologyClass = await this.ontologyRepo.findClassByUri(
+      node.workspaceId,
+      ontologyClassUri,
+    );
 
     if (!ontologyClass) {
       this.logger.warn(`Ontology class ${ontologyClassUri} not found`);

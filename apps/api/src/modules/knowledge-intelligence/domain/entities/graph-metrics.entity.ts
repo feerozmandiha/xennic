@@ -62,18 +62,36 @@ export class KnowledgeGraphMetrics {
     );
   }
 
-  get confidence(): number { return this._confidence; }
-  get freshness(): number { return this._freshness; }
-  get authority(): number { return this._authority; }
-  get completeness(): number { return this._completeness; }
-  get accessCount(): number { return this._accessCount; }
-  get lastAccessedAt(): Date | null { return this._lastAccessedAt; }
+  get confidence(): number {
+    return this._confidence;
+  }
+  get freshness(): number {
+    return this._freshness;
+  }
+  get authority(): number {
+    return this._authority;
+  }
+  get completeness(): number {
+    return this._completeness;
+  }
+  get accessCount(): number {
+    return this._accessCount;
+  }
+  get lastAccessedAt(): Date | null {
+    return this._lastAccessedAt;
+  }
 
-  updateScores(data: { confidence?: number; freshness?: number; authority?: number; completeness?: number }): void {
+  updateScores(data: {
+    confidence?: number;
+    freshness?: number;
+    authority?: number;
+    completeness?: number;
+  }): void {
     if (data.confidence !== undefined) this._confidence = Math.max(0, Math.min(1, data.confidence));
     if (data.freshness !== undefined) this._freshness = Math.max(0, Math.min(1, data.freshness));
     if (data.authority !== undefined) this._authority = Math.max(0, Math.min(1, data.authority));
-    if (data.completeness !== undefined) this._completeness = Math.max(0, Math.min(1, data.completeness));
+    if (data.completeness !== undefined)
+      this._completeness = Math.max(0, Math.min(1, data.completeness));
     this.updatedAt = new Date();
   }
 

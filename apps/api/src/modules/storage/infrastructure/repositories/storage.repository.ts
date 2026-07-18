@@ -5,7 +5,6 @@ import { FileEntity } from '../../domain/entities/file.entity.js';
 
 @Injectable()
 export class StorageRepository implements IStorageRepository {
-
   async save(file: FileEntity): Promise<void> {
     try {
       await prisma.$executeRaw`
@@ -33,7 +32,9 @@ export class StorageRepository implements IStorageRepository {
       `;
       if (!rows || rows.length === 0) return null;
       return this._map(rows[0]);
-    } catch { return null; }
+    } catch {
+      return null;
+    }
   }
 
   async findAll(
@@ -41,7 +42,7 @@ export class StorageRepository implements IStorageRepository {
     options?: { mimeType?: string; bucket?: string; offset?: number; limit?: number },
   ): Promise<FileEntity[]> {
     const offset = options?.offset ?? 0;
-    const limit  = options?.limit  ?? 20;
+    const limit = options?.limit ?? 20;
 
     try {
       let rows: any[];
@@ -69,8 +70,10 @@ export class StorageRepository implements IStorageRepository {
           ORDER BY created_at DESC LIMIT ${limit} OFFSET ${offset}
         `;
       }
-      return rows.map(r => this._map(r));
-    } catch { return []; }
+      return rows.map((r) => this._map(r));
+    } catch {
+      return [];
+    }
   }
 
   async count(workspaceId: string): Promise<number> {
@@ -80,7 +83,9 @@ export class StorageRepository implements IStorageRepository {
         WHERE workspace_id = ${workspaceId} AND deleted_at IS NULL
       `;
       return Number(result[0]?.count ?? 0);
-    } catch { return 0; }
+    } catch {
+      return 0;
+    }
   }
 
   async softDelete(id: string): Promise<void> {
@@ -100,24 +105,26 @@ export class StorageRepository implements IStorageRepository {
         WHERE workspace_id = ${workspaceId} AND deleted_at IS NULL
       `;
       return Number(result[0]?.total ?? 0);
-    } catch { return 0; }
+    } catch {
+      return 0;
+    }
   }
 
   private _map(row: any): FileEntity {
     return FileEntity.reconstitute({
-      id:           row.id,
-      workspaceId:  row.workspace_id,
-      bucket:       row.bucket,
-      path:         row.path,
-      filename:     row.filename,
+      id: row.id,
+      workspaceId: row.workspace_id,
+      bucket: row.bucket,
+      path: row.path,
+      filename: row.filename,
       originalName: row.original_name,
-      extension:    row.extension,
-      mimeType:     row.mime_type,
-      size:         Number(row.size),
-      checksum:     row.checksum ?? null,
-      uploadedBy:   row.uploaded_by,
-      createdAt:    row.created_at,
-      deletedAt:    row.deleted_at ?? null,
+      extension: row.extension,
+      mimeType: row.mime_type,
+      size: Number(row.size),
+      checksum: row.checksum ?? null,
+      uploadedBy: row.uploaded_by,
+      createdAt: row.created_at,
+      deletedAt: row.deleted_at ?? null,
     });
   }
 }

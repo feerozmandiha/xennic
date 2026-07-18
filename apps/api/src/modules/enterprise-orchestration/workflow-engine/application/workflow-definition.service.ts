@@ -1,8 +1,15 @@
 import { Injectable, Logger, Inject, NotFoundException, ConflictException } from '@nestjs/common';
 import type { Metadata } from '../../shared/types/index.js';
 import { WorkflowDefinition } from '../domain/workflow-definition.entity.js';
-import type { WorkflowStep, WorkflowTrigger, WorkflowDefinitionOptions } from '../domain/workflow-definition.entity.js';
-import type { IWorkflowRepository, ListWorkflowOptions } from '../domain/workflow-repository.interface.js';
+import type {
+  WorkflowStep,
+  WorkflowTrigger,
+  WorkflowDefinitionOptions,
+} from '../domain/workflow-definition.entity.js';
+import type {
+  IWorkflowRepository,
+  ListWorkflowOptions,
+} from '../domain/workflow-repository.interface.js';
 import type { IWorkflowValidator } from '../domain/workflow-validator.interface.js';
 import type { PaginatedResult } from '../../shared/types/index.js';
 
@@ -61,7 +68,7 @@ export class WorkflowDefinitionService {
     const validation = this.validator.validate(entity);
     if (!validation.valid) {
       throw new Error(
-        `Workflow validation failed: ${validation.errors.map(e => `${e.path}: ${e.message}`).join('; ')}`,
+        `Workflow validation failed: ${validation.errors.map((e) => `${e.path}: ${e.message}`).join('; ')}`,
       );
     }
 
@@ -81,7 +88,9 @@ export class WorkflowDefinitionService {
   async getByName(name: string, version?: number): Promise<WorkflowDefinition> {
     const entity = await this.repository.getByName(name, version);
     if (!entity) {
-      throw new NotFoundException(`Workflow "${name}"${version !== undefined ? ` v${version}` : ''} not found`);
+      throw new NotFoundException(
+        `Workflow "${name}"${version !== undefined ? ` v${version}` : ''} not found`,
+      );
     }
     return entity;
   }
@@ -117,7 +126,7 @@ export class WorkflowDefinitionService {
     const validation = this.validator.validate(entity);
     if (!validation.valid) {
       throw new Error(
-        `Workflow validation failed: ${validation.errors.map(e => `${e.path}: ${e.message}`).join('; ')}`,
+        `Workflow validation failed: ${validation.errors.map((e) => `${e.path}: ${e.message}`).join('; ')}`,
       );
     }
 

@@ -88,8 +88,17 @@ export class ReviewTask {
     createdAt: Date,
   ): ReviewTask {
     return new ReviewTask(
-      id, executionId, stepId, status, assignedTo, instructions,
-      input, output, feedback, metadata, createdAt,
+      id,
+      executionId,
+      stepId,
+      status,
+      assignedTo,
+      instructions,
+      input,
+      output,
+      feedback,
+      metadata,
+      createdAt,
     );
   }
 }

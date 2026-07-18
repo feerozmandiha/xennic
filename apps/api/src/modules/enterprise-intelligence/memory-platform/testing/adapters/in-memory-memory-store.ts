@@ -23,7 +23,7 @@ export class InMemoryMemoryStore implements IMemoryStore {
     options?: FindOptions,
   ): Promise<PaginatedResult<MemoryEntity>> {
     const items = Array.from(this.store.values()).filter(
-      e => e.type === type && e.scope === scope && e.scopeId === scopeId,
+      (e) => e.type === type && e.scope === scope && e.scopeId === scopeId,
     );
     return this.paginate(items, options);
   }
@@ -34,7 +34,7 @@ export class InMemoryMemoryStore implements IMemoryStore {
     options?: FindOptions,
   ): Promise<PaginatedResult<MemoryEntity>> {
     const items = Array.from(this.store.values()).filter(
-      e => e.scope === scope && e.scopeId === scopeId,
+      (e) => e.scope === scope && e.scopeId === scopeId,
     );
     return this.paginate(items, options);
   }
@@ -42,9 +42,9 @@ export class InMemoryMemoryStore implements IMemoryStore {
   async search(query: string, options?: FindOptions): Promise<PaginatedResult<MemoryEntity>> {
     const lower = query.toLowerCase();
     const items = Array.from(this.store.values()).filter(
-      e =>
+      (e) =>
         e.key.toLowerCase().includes(lower) ||
-        e.tags.some(t => t.toLowerCase().includes(lower)) ||
+        e.tags.some((t) => t.toLowerCase().includes(lower)) ||
         JSON.stringify(e.value).toLowerCase().includes(lower),
     );
     return this.paginate(items, options);
@@ -54,13 +54,13 @@ export class InMemoryMemoryStore implements IMemoryStore {
     tags: string[],
     options?: FindOptions & { scope?: ContextScope; scopeId?: string },
   ): Promise<PaginatedResult<MemoryEntity>> {
-    const tagSet = new Set(tags.map(t => t.toLowerCase()));
-    let items = Array.from(this.store.values()).filter(e =>
-      e.tags.some(t => tagSet.has(t.toLowerCase())),
+    const tagSet = new Set(tags.map((t) => t.toLowerCase()));
+    let items = Array.from(this.store.values()).filter((e) =>
+      e.tags.some((t) => tagSet.has(t.toLowerCase())),
     );
     if (options?.scope) {
       items = items.filter(
-        e => e.scope === options.scope && e.scopeId === (options.scopeId ?? e.scopeId),
+        (e) => e.scope === options.scope && e.scopeId === (options.scopeId ?? e.scopeId),
       );
     }
     return this.paginate(items, options);
@@ -87,9 +87,9 @@ export class InMemoryMemoryStore implements IMemoryStore {
 
   async count(type?: MemoryType, scope?: ContextScope, scopeId?: string): Promise<number> {
     let items = Array.from(this.store.values());
-    if (type) items = items.filter(e => e.type === type);
-    if (scope) items = items.filter(e => e.scope === scope);
-    if (scopeId) items = items.filter(e => e.scopeId === scopeId);
+    if (type) items = items.filter((e) => e.type === type);
+    if (scope) items = items.filter((e) => e.scope === scope);
+    if (scopeId) items = items.filter((e) => e.scopeId === scopeId);
     return items.length;
   }
 

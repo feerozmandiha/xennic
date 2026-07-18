@@ -50,7 +50,10 @@ export class WorkerService {
     status: ExecutionStatus,
     result?: Record<string, unknown>,
   ): Promise<void> {
-    const updates: Partial<Record<string, unknown>> & { status?: ExecutionStatus; output?: Record<string, unknown> } = {
+    const updates: Partial<Record<string, unknown>> & {
+      status?: ExecutionStatus;
+      output?: Record<string, unknown>;
+    } = {
       status,
     };
     if (result) {

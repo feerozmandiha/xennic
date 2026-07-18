@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
-import { AiController }   from './presentation/controllers/ai.controller.js';
-import { AiService }      from './application/services/ai.service.js';
-import { AiRepository }   from './infrastructure/repositories/ai.repository.js';
-import { LlmProvider }    from './infrastructure/providers/llm.provider.js';
+import { AiController } from './presentation/controllers/ai.controller.js';
+import { AiService } from './application/services/ai.service.js';
+import { AiRepository } from './infrastructure/repositories/ai.repository.js';
+import { LlmProvider } from './infrastructure/providers/llm.provider.js';
 import { WorkspaceModule } from '../workspace/workspace.module.js';
 
 @Module({
@@ -12,7 +12,7 @@ import { WorkspaceModule } from '../workspace/workspace.module.js';
     AiService,
     LlmProvider,
     {
-      provide:  'IAiRepository',
+      provide: 'IAiRepository',
       useClass: AiRepository,
     },
   ],

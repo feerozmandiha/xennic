@@ -47,7 +47,7 @@ export class PromptAuditService {
     promptId: string,
     options?: AuditFindOptions,
   ): Promise<PaginatedResult<AuditEntry>> {
-    const filtered = this.entries.filter(e => e.promptId === promptId);
+    const filtered = this.entries.filter((e) => e.promptId === promptId);
     const offset = options?.offset ?? 0;
     const limit = options?.limit ?? filtered.length;
     return {

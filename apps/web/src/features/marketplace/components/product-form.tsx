@@ -32,7 +32,7 @@ interface ProductFormProps {
 export function ProductForm({ open, onClose, product }: ProductFormProps) {
   const t = useTranslations('marketplace');
   const toast = useToast();
-  const wsId = useAuthStore(s => s.workspaceId);
+  const wsId = useAuthStore((s) => s.workspaceId);
 
   const [vendorId, setVendorId] = useState(product?.vendorId ?? '');
   const [type, setType] = useState(product?.type ?? 'physical');
@@ -65,7 +65,10 @@ export function ProductForm({ open, onClose, product }: ProductFormProps) {
   if (!open) return null;
 
   const handleSubmit = () => {
-    if (!vendorId) { toast.error(t('selectVendorFirst')); return; }
+    if (!vendorId) {
+      toast.error(t('selectVendorFirst'));
+      return;
+    }
 
     let specifications: Record<string, any> | undefined;
     if (specsJson.trim()) {
@@ -78,8 +81,12 @@ export function ProductForm({ open, onClose, product }: ProductFormProps) {
     }
 
     createMutation.mutate({
-      vendorId, type, category: category || undefined,
-      sku, price: Number(price), currency,
+      vendorId,
+      type,
+      category: category || undefined,
+      sku,
+      price: Number(price),
+      currency,
       specifications,
     });
   };
@@ -88,19 +95,23 @@ export function ProductForm({ open, onClose, product }: ProductFormProps) {
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
       <div className="relative z-10 w-full max-w-lg bg-[hsl(var(--card))] rounded-[var(--radius-xl)] border border-[hsl(var(--border))] shadow-lg p-6 max-h-[90vh] overflow-y-auto">
-        <h2 className="text-lg font-semibold mb-6">{product ? t('editProduct') : t('newProduct')}</h2>
+        <h2 className="text-lg font-semibold mb-6">
+          {product ? t('editProduct') : t('newProduct')}
+        </h2>
 
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium mb-1">{t('vendor')}</label>
             <select
               value={vendorId}
-              onChange={e => setVendorId(e.target.value)}
+              onChange={(e) => setVendorId(e.target.value)}
               className="w-full h-10 rounded-[var(--radius)] border border-[hsl(var(--input))] bg-transparent px-3 text-sm"
             >
               <option value="">{t('selectVendor')}</option>
               {(vendorsData?.data ?? []).map((v: any) => (
-                <option key={v.id} value={v.id}>{v.name}</option>
+                <option key={v.id} value={v.id}>
+                  {v.name}
+                </option>
               ))}
             </select>
           </div>
@@ -110,7 +121,7 @@ export function ProductForm({ open, onClose, product }: ProductFormProps) {
               <label className="block text-sm font-medium mb-1">{t('type')}</label>
               <select
                 value={type}
-                onChange={e => setType(e.target.value)}
+                onChange={(e) => setType(e.target.value)}
                 className="w-full h-10 rounded-[var(--radius)] border border-[hsl(var(--input))] bg-transparent px-3 text-sm"
               >
                 <option value="digital">Digital</option>
@@ -123,11 +134,13 @@ export function ProductForm({ open, onClose, product }: ProductFormProps) {
               <label className="block text-sm font-medium mb-1">دسته‌بندی مهندسی</label>
               <select
                 value={category}
-                onChange={e => setCategory(e.target.value)}
+                onChange={(e) => setCategory(e.target.value)}
                 className="w-full h-10 rounded-[var(--radius)] border border-[hsl(var(--input))] bg-transparent px-3 text-sm"
               >
-                {ENGINEERING_CATEGORIES.map(c => (
-                  <option key={c.value} value={c.value}>{c.label}</option>
+                {ENGINEERING_CATEGORIES.map((c) => (
+                  <option key={c.value} value={c.value}>
+                    {c.label}
+                  </option>
                 ))}
               </select>
             </div>
@@ -137,7 +150,7 @@ export function ProductForm({ open, onClose, product }: ProductFormProps) {
             <label className="block text-sm font-medium mb-1">SKU</label>
             <input
               value={sku}
-              onChange={e => setSku(e.target.value)}
+              onChange={(e) => setSku(e.target.value)}
               className="w-full h-10 rounded-[var(--radius)] border border-[hsl(var(--input))] bg-transparent px-3 text-sm"
               placeholder="e.g. CABLE-35MM2-1KV"
             />
@@ -149,7 +162,7 @@ export function ProductForm({ open, onClose, product }: ProductFormProps) {
               <input
                 type="number"
                 value={price}
-                onChange={e => setPrice(e.target.value)}
+                onChange={(e) => setPrice(e.target.value)}
                 className="w-full h-10 rounded-[var(--radius)] border border-[hsl(var(--input))] bg-transparent px-3 text-sm"
               />
             </div>
@@ -157,7 +170,7 @@ export function ProductForm({ open, onClose, product }: ProductFormProps) {
               <label className="block text-sm font-medium mb-1">{t('currency')}</label>
               <select
                 value={currency}
-                onChange={e => setCurrency(e.target.value)}
+                onChange={(e) => setCurrency(e.target.value)}
                 className="w-full h-10 rounded-[var(--radius)] border border-[hsl(var(--input))] bg-transparent px-3 text-sm"
               >
                 <option value="USD">USD</option>
@@ -173,13 +186,14 @@ export function ProductForm({ open, onClose, product }: ProductFormProps) {
             </label>
             <textarea
               value={specsJson}
-              onChange={e => setSpecsJson(e.target.value)}
+              onChange={(e) => setSpecsJson(e.target.value)}
               className="w-full h-24 rounded-[var(--radius)] border border-[hsl(var(--input))] bg-transparent px-3 py-2 text-sm font-mono"
               placeholder='{"cable_size_mm2": 35, "current_rating_a": 150, "voltage_rating_v": 1000}'
               dir="ltr"
             />
             <p className="text-xs text-[hsl(var(--muted-foreground))] mt-1">
-              مشخصات فنی محصول را به صورت JSON وارد کنید. مثال: voltage_rating_v, current_rating_a, cable_size_mm2, rated_power_kva
+              مشخصات فنی محصول را به صورت JSON وارد کنید. مثال: voltage_rating_v, current_rating_a,
+              cable_size_mm2, rated_power_kva
             </p>
           </div>
         </div>

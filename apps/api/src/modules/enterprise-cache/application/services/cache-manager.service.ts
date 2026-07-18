@@ -1,5 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
-import type { CacheNamespace, CacheOptions, ICacheManager, ICacheInvalidation } from '../../domain/interfaces/cache-manager.interface.js';
+import type {
+  CacheNamespace,
+  CacheOptions,
+  ICacheManager,
+  ICacheInvalidation,
+} from '../../domain/interfaces/cache-manager.interface.js';
 
 interface StoreEntry<T = unknown> {
   value: T;
@@ -39,7 +44,12 @@ export class CacheManagerService implements ICacheManager, ICacheInvalidation {
     return entry.value as T;
   }
 
-  async set<T>(namespace: CacheNamespace, key: string, value: T, options?: CacheOptions): Promise<void> {
+  async set<T>(
+    namespace: CacheNamespace,
+    key: string,
+    value: T,
+    options?: CacheOptions,
+  ): Promise<void> {
     const ttlMs = options?.ttlMs ?? 300_000;
     const tags = options?.tags ?? [];
     const expiresAt = ttlMs > 0 ? Date.now() + ttlMs : 0;

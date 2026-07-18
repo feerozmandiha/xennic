@@ -29,7 +29,9 @@
 ## Module Details
 
 ### Phase 1 — Global Context Engine
+
 Assembles contextual information across 11 domain sources:
+
 - Workspace, User, Roles/Permissions, Projects, Knowledge, Standards
 - Engineering, Marketplace, Billing, Storage, Notifications
 
@@ -53,21 +55,23 @@ ContextAssemblerService.assemble(scope, scopeId, sources?)
 ```
 
 ### Phase 2 — Enterprise Memory Platform
+
 7 memory layers with independent persistence:
 
-| Type | Layer | TTL | Use Case |
-|------|-------|-----|----------|
-| Working | In-process | Session | Active task state |
-| Session | In-process | 24h | User session data |
-| Short-Term | In-memory | 1h | Recent interactions |
-| Long-Term | Persistent | ∞ | Learned knowledge |
-| Semantic | Persistent | ∞ | Concepts & facts |
-| Episodic | Persistent | 30d | Past interactions |
-| Procedural | Persistent | ∞ | Step-by-step procedures |
+| Type       | Layer      | TTL     | Use Case                |
+| ---------- | ---------- | ------- | ----------------------- |
+| Working    | In-process | Session | Active task state       |
+| Session    | In-process | 24h     | User session data       |
+| Short-Term | In-memory  | 1h      | Recent interactions     |
+| Long-Term  | Persistent | ∞       | Learned knowledge       |
+| Semantic   | Persistent | ∞       | Concepts & facts        |
+| Episodic   | Persistent | 30d     | Past interactions       |
+| Procedural | Persistent | ∞       | Step-by-step procedures |
 
 **Key classes:** `MemoryService`, `MemoryIndexerService`, `MemoryExpirationService`
 
 ### Phase 3 — Prompt Governance
+
 Complete prompt lifecycle management:
 
 ```
@@ -86,6 +90,7 @@ PromptEvaluationService — score tracking
 ```
 
 ### Phase 4 — Tool Registry
+
 Centralized tool management with JSON Schema validation:
 
 ```
@@ -101,6 +106,7 @@ ToolExecutorService
 ```
 
 ### Phase 5 — Skill Registry
+
 Reusable enterprise skills with composition:
 
 ```
@@ -117,6 +123,7 @@ SkillComposerService
 ```
 
 ### Phase 6 — Reasoning Engine
+
 Pure reasoning infrastructure (no LLM):
 
 ```
@@ -136,6 +143,7 @@ TelemetryService — timing, step count, success rate
 ```
 
 ### Phase 7 — Policy Engine
+
 Multi-domain policy enforcement:
 
 ```
@@ -152,6 +160,7 @@ PolicyManagementService
 Policy precedence: deny overrides allow; higher priority wins within same effect.
 
 ### Phase 8 — AI Gateway
+
 Provider-neutral gateway supporting 8 providers:
 
 ```
@@ -168,6 +177,7 @@ GatewayTelemetryService — latency, tokens, success tracking
 Providers: OpenAI, Anthropic, Gemini, Groq, OpenRouter, Ollama, VoyageAI, Azure OpenAI
 
 ### Phase 9 — Evaluation Platform
+
 Comprehensive evaluation infrastructure:
 
 ```
@@ -178,6 +188,7 @@ RegressionTestingService — detect regressions across versions
 ```
 
 ### Phase 10 — Enterprise Intelligence SDK
+
 Unified API for all future AI capabilities:
 
 ```
@@ -198,6 +209,7 @@ Cross-cutting methods:
 ```
 
 ## Technology Stack
+
 - **Runtime:** NestJS (Fastify adapter)
 - **Language:** TypeScript (strict mode)
 - **Persistence:** In-memory (interfaces defined for Prisma/Redis swap)
@@ -206,18 +218,18 @@ Cross-cutting methods:
 
 ## Count of Tests
 
-| Layer | Tests | Status |
-|-------|-------|--------|
-| Phase 1 — Context Engine | 29 unit | ✅ |
-| Phase 2 — Memory Platform | 28 unit | ✅ |
-| Phase 3 — Prompt Governance | 37 unit | ✅ |
-| Phase 4 — Tool Registry | 35 unit | ✅ |
-| Phase 5 — Skill Registry | 24 unit | ✅ |
-| Phase 6 — Reasoning Engine | 26 unit | ✅ |
-| Phase 7 — Policy Engine | 22 unit | ✅ |
-| Phase 8 — AI Gateway | 15 unit | ✅ |
-| Phase 9 — Evaluation Platform | 21 unit | ✅ |
-| **Total unit tests** | **~237** | ✅ |
-| **Integration (E2E)** | **39** | ✅ |
+| Layer                         | Tests    | Status |
+| ----------------------------- | -------- | ------ |
+| Phase 1 — Context Engine      | 29 unit  | ✅     |
+| Phase 2 — Memory Platform     | 28 unit  | ✅     |
+| Phase 3 — Prompt Governance   | 37 unit  | ✅     |
+| Phase 4 — Tool Registry       | 35 unit  | ✅     |
+| Phase 5 — Skill Registry      | 24 unit  | ✅     |
+| Phase 6 — Reasoning Engine    | 26 unit  | ✅     |
+| Phase 7 — Policy Engine       | 22 unit  | ✅     |
+| Phase 8 — AI Gateway          | 15 unit  | ✅     |
+| Phase 9 — Evaluation Platform | 21 unit  | ✅     |
+| **Total unit tests**          | **~237** | ✅     |
+| **Integration (E2E)**         | **39**   | ✅     |
 
 All tests pass. `pnpm typecheck` — 6/6 packages, zero errors.

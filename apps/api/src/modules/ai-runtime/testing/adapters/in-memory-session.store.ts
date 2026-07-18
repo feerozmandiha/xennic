@@ -14,7 +14,7 @@ export class InMemorySessionStore implements ISessionStore {
 
   async findByUser(workspaceId: string, userId: string): Promise<AgentSession[]> {
     return Array.from(this._sessions.values()).filter(
-      s => s.workspaceId === workspaceId && s.userId === userId,
+      (s) => s.workspaceId === workspaceId && s.userId === userId,
     );
   }
 

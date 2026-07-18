@@ -2,7 +2,10 @@ import { Injectable, Logger } from '@nestjs/common';
 import { prisma } from '@xennic/database';
 import type { PaginatedResult, Metadata, ContextScope } from '../../../shared/types/index.js';
 import { PolicyEntity, type PolicyEffect } from '../../domain/policy.entity.js';
-import type { IPolicyRepository, PolicyFindOptions } from '../../domain/policy-repository.interface.js';
+import type {
+  IPolicyRepository,
+  PolicyFindOptions,
+} from '../../domain/policy-repository.interface.js';
 
 @Injectable()
 export class PrismaPolicyRepository implements IPolicyRepository {
@@ -66,7 +69,7 @@ export class PrismaPolicyRepository implements IPolicyRepository {
       prisma.policies.count({ where }),
     ]);
     return {
-      items: items.map(r => this.toEntity(r)),
+      items: items.map((r) => this.toEntity(r)),
       total,
       offset,
       limit,
@@ -76,7 +79,7 @@ export class PrismaPolicyRepository implements IPolicyRepository {
   async findByResource(resource: string, scope?: string): Promise<PolicyEntity[]> {
     const rows = await prisma.policies.findMany();
     return rows
-      .filter(r => {
+      .filter((r) => {
         const resourceMatch = this.matchPattern(r.resource, resource);
         if (!resourceMatch) return false;
         if (scope !== undefined) {
@@ -84,24 +87,22 @@ export class PrismaPolicyRepository implements IPolicyRepository {
         }
         return true;
       })
-      .map(r => this.toEntity(r));
+      .map((r) => this.toEntity(r));
   }
 
   async findByAction(action: string): Promise<PolicyEntity[]> {
     const rows = await prisma.policies.findMany();
-    return rows
-      .filter(r => this.matchPattern(r.action, action))
-      .map(r => this.toEntity(r));
+    return rows.filter((r) => this.matchPattern(r.action, action)).map((r) => this.toEntity(r));
   }
 
   async findByEffect(effect: PolicyEffect): Promise<PolicyEntity[]> {
     const rows = await prisma.policies.findMany({ where: { effect } });
-    return rows.map(r => this.toEntity(r));
+    return rows.map((r) => this.toEntity(r));
   }
 
   async findByScope(scope: string): Promise<PolicyEntity[]> {
     const rows = await prisma.policies.findMany({ where: { scope } });
-    return rows.map(r => this.toEntity(r));
+    return rows.map((r) => this.toEntity(r));
   }
 
   async delete(id: string): Promise<void> {

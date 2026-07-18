@@ -73,7 +73,7 @@ export class PrismaContextStore implements IContextRepository {
       prisma.context_cache.count({ where }),
     ]);
     return {
-      items: items.map(r =>
+      items: items.map((r) =>
         ContextEntity.reconstitute(
           r.id,
           r.scope as ContextScope,
@@ -100,7 +100,7 @@ export class PrismaContextStore implements IContextRepository {
     const rows = await prisma.context_cache.findMany({
       where: { scope, scope_id: scopeId, source },
     });
-    return rows.map(r =>
+    return rows.map((r) =>
       ContextEntity.reconstitute(
         r.id,
         r.scope as ContextScope,
@@ -115,15 +115,11 @@ export class PrismaContextStore implements IContextRepository {
     );
   }
 
-  async findKeys(
-    scope: ContextScope,
-    scopeId: string,
-    keys: string[],
-  ): Promise<ContextEntity[]> {
+  async findKeys(scope: ContextScope, scopeId: string, keys: string[]): Promise<ContextEntity[]> {
     const rows = await prisma.context_cache.findMany({
       where: { scope, scope_id: scopeId, key: { in: keys } },
     });
-    return rows.map(r =>
+    return rows.map((r) =>
       ContextEntity.reconstitute(
         r.id,
         r.scope as ContextScope,

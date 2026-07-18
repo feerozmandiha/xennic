@@ -32,12 +32,7 @@ export class ExecutionHistory {
   }
 
   static create(opts: CreateExecutionHistoryOptions): ExecutionHistory {
-    return new ExecutionHistory(
-      randomUUID(),
-      opts.workflowExecutionId,
-      [],
-      opts.metadata ?? {},
-    );
+    return new ExecutionHistory(randomUUID(), opts.workflowExecutionId, [], opts.metadata ?? {});
   }
 
   static reconstitute(
@@ -62,12 +57,10 @@ export class ExecutionHistory {
   }
 
   findByType(type: string): HistoryEvent[] {
-    return this.events.filter(e => e.type === type);
+    return this.events.filter((e) => e.type === type);
   }
 
   getTimeline(): HistoryEvent[] {
-    return [...this.events].sort(
-      (a, b) => a.timestamp.getTime() - b.timestamp.getTime(),
-    );
+    return [...this.events].sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
   }
 }

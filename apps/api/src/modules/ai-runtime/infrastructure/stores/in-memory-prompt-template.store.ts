@@ -17,11 +17,9 @@ export class InMemoryPromptTemplateStore implements IPromptTemplateStore {
   async findAll(tags?: string[]): Promise<PromptTemplate[]> {
     let results = Array.from(this._templates.values());
     if (tags && tags.length > 0) {
-      results = results.filter(t => tags.some(tag => t.tags.includes(tag)));
+      results = results.filter((t) => tags.some((tag) => t.tags.includes(tag)));
     }
-    return results.sort(
-      (a, b) => b.updatedAt.getTime() - a.updatedAt.getTime(),
-    );
+    return results.sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime());
   }
 
   async delete(id: string): Promise<void> {

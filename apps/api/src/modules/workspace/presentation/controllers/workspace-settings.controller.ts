@@ -1,9 +1,5 @@
-import {
-  Controller, Get, Patch, Param, Body, UseGuards,
-} from '@nestjs/common';
-import {
-  ApiTags, ApiOperation, ApiBearerAuth, ApiParam,
-} from '@nestjs/swagger';
+import { Controller, Get, Patch, Param, Body, UseGuards } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiBearerAuth, ApiParam } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../../auth/infrastructure/guards/jwt-auth.guard.js';
 import { WorkspaceGuard } from '../../../rbac/infrastructure/guards/workspace.guard.js';
 import { RequirePermissions } from '../../../rbac/infrastructure/decorators/permissions.decorator.js';

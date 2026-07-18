@@ -28,7 +28,9 @@ export class SemanticEventBus {
         await handler.handle(event);
       } catch (error) {
         const message = error instanceof Error ? error.message : 'Unknown error';
-        this.logger.error(`Handler ${handler.constructor.name} failed for event ${event.eventId}: ${message}`);
+        this.logger.error(
+          `Handler ${handler.constructor.name} failed for event ${event.eventId}: ${message}`,
+        );
       }
     }
   }

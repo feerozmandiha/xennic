@@ -1,8 +1,20 @@
 export const ISAGA_ORCHESTRATOR = 'ISagaOrchestrator' as const;
 
-export type SagaStatus = 'PENDING' | 'EXECUTING' | 'COMPLETED' | 'FAILED' | 'COMPENSATING' | 'COMPENSATED';
+export type SagaStatus =
+  | 'PENDING'
+  | 'EXECUTING'
+  | 'COMPLETED'
+  | 'FAILED'
+  | 'COMPENSATING'
+  | 'COMPENSATED';
 
-export type SagaStepStatus = 'PENDING' | 'EXECUTING' | 'COMPLETED' | 'FAILED' | 'COMPENSATING' | 'COMPENSATED';
+export type SagaStepStatus =
+  | 'PENDING'
+  | 'EXECUTING'
+  | 'COMPLETED'
+  | 'FAILED'
+  | 'COMPENSATING'
+  | 'COMPENSATED';
 
 export interface SagaStep<TContext = unknown> {
   readonly name: string;

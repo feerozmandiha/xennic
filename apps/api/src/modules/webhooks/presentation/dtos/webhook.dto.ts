@@ -1,5 +1,13 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsString, IsArray, IsOptional, IsBoolean, IsUrl, ArrayMinSize, MaxLength } from 'class-validator';
+import {
+  IsString,
+  IsArray,
+  IsOptional,
+  IsBoolean,
+  IsUrl,
+  ArrayMinSize,
+  MaxLength,
+} from 'class-validator';
 import type { WebhookEntity, WebhookEvent } from '../../domain/entities/webhook.entity.js';
 
 export class CreateWebhookDto {

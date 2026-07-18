@@ -15,10 +15,7 @@ import { PermissionRepository } from './infrastructure/repositories/permission.r
 import { AuditLogRepository } from './infrastructure/repositories/audit-log.repository.js';
 
 @Module({
-  controllers: [
-    RoleController,
-    PermissionController,
-  ],
+  controllers: [RoleController, PermissionController],
   providers: [
     // ── Application Services ──────────────────────────────────────────────────
     RoleService,
@@ -27,22 +24,18 @@ import { AuditLogRepository } from './infrastructure/repositories/audit-log.repo
 
     // ── Repository Bindings ───────────────────────────────────────────────────
     {
-      provide:  'IRoleRepository',
+      provide: 'IRoleRepository',
       useClass: RoleRepository,
     },
     {
-      provide:  'IPermissionRepository',
+      provide: 'IPermissionRepository',
       useClass: PermissionRepository,
     },
     {
-      provide:  'IAuditLogRepository',
+      provide: 'IAuditLogRepository',
       useClass: AuditLogRepository,
     },
   ],
-  exports: [
-    AuthorizationService,
-    RoleService,
-    PermissionService,
-  ],
+  exports: [AuthorizationService, RoleService, PermissionService],
 })
 export class RbacModule {}

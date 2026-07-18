@@ -1,6 +1,12 @@
 import { Injectable, Logger } from '@nestjs/common';
-import type { EvaluationRun, EvaluationTargetType } from '../../evaluation-platform/domain/evaluation-run.entity.js';
-import type { BenchmarkEntity, BenchmarkData } from '../../evaluation-platform/domain/benchmark.entity.js';
+import type {
+  EvaluationRun,
+  EvaluationTargetType,
+} from '../../evaluation-platform/domain/evaluation-run.entity.js';
+import type {
+  BenchmarkEntity,
+  BenchmarkData,
+} from '../../evaluation-platform/domain/benchmark.entity.js';
 import type { RegressionReport } from '../../evaluation-platform/application/regression-testing.service.js';
 import { BenchmarkRegistryService } from '../../evaluation-platform/application/benchmark-registry.service.js';
 import { EvaluationRunnerService } from '../../evaluation-platform/application/evaluation-runner.service.js';
@@ -30,10 +36,7 @@ export class EvaluationApi {
     return this.benchmarkRegistry.register(data);
   }
 
-  async detectRegression(
-    previous: string,
-    current: string,
-  ): Promise<RegressionReport> {
+  async detectRegression(previous: string, current: string): Promise<RegressionReport> {
     this.logger.debug(`detectRegression(previous=${previous}, current=${current})`);
     return this.regression.detectRegression(previous, current);
   }

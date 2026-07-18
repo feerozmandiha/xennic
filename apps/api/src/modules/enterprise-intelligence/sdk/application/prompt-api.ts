@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import type { PromptEntity } from '../../prompt-governance/domain/prompt.entity.js';
-import type { } from '../../prompt-governance/domain/prompt-policy.entity.js';
+import type {} from '../../prompt-governance/domain/prompt-policy.entity.js';
 import { PromptRegistryService } from '../../prompt-governance/application/prompt-registry.service.js';
 import { PromptTemplateService } from '../../prompt-governance/application/prompt-template.service.js';
 import { PromptPolicyService } from '../../prompt-governance/application/prompt-policy.service.js';
@@ -51,10 +51,7 @@ export class PromptApi {
     return this.registry.getByName(name, version);
   }
 
-  async render(
-    templateId: string,
-    variables: Record<string, string>,
-  ): Promise<string> {
+  async render(templateId: string, variables: Record<string, string>): Promise<string> {
     return this.template.render(templateId, variables);
   }
 
@@ -66,11 +63,16 @@ export class PromptApi {
     promptId: string,
     action: string,
     context?: Record<string, unknown>,
-  ): Promise<{ allowed: boolean; matchedRules: import('../../prompt-governance/domain/prompt-policy.entity.js').PolicyRule[] }> {
+  ): Promise<{
+    allowed: boolean;
+    matchedRules: import('../../prompt-governance/domain/prompt-policy.entity.js').PolicyRule[];
+  }> {
     return this.policy.evaluate(promptId, action, context);
   }
 
-  async getAuditTrail(promptId: string): Promise<import('../../prompt-governance/application/prompt-audit.service.js').AuditEntry[]> {
+  async getAuditTrail(
+    promptId: string,
+  ): Promise<import('../../prompt-governance/application/prompt-audit.service.js').AuditEntry[]> {
     const result = await this.audit.getAuditTrail(promptId);
     return result.items;
   }

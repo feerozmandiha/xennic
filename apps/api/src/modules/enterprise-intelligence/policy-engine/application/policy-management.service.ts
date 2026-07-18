@@ -129,7 +129,7 @@ export class PolicyManagementService {
 
   async getEffectivePolicies(scope: ContextScope, scopeId: string): Promise<PolicyEntity[]> {
     const allPolicies = await this.policyRepository.list();
-    return allPolicies.items.filter(p => {
+    return allPolicies.items.filter((p) => {
       if (!p.enabled) return false;
       if (p.scope === 'global') return true;
       if (p.scope === scope) {

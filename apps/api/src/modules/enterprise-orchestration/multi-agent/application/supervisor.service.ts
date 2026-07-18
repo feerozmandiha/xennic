@@ -37,7 +37,9 @@ export class SupervisorService {
     }
 
     const results: SupervisionDecisionResult[] = [];
-    const completedTasks = plan.tasks.filter(t => t.status === 'completed' || t.status === 'failed');
+    const completedTasks = plan.tasks.filter(
+      (t) => t.status === 'completed' || t.status === 'failed',
+    );
 
     for (const task of completedTasks) {
       const decision = await this.makeDecision(task.id, {
@@ -74,7 +76,11 @@ export class SupervisorService {
       feedback = `Task failed with status: ${result.status}`;
       confidence = 0.9;
       await this.repository.updateTask(taskId, { status: 'failed' });
-    } else if (result.output && typeof result.output === 'object' && Object.keys(result.output as Record<string, unknown>).length > 0) {
+    } else if (
+      result.output &&
+      typeof result.output === 'object' &&
+      Object.keys(result.output as Record<string, unknown>).length > 0
+    ) {
       decision = 'approved';
       confidence = 0.85;
       await this.repository.updateTask(taskId, { status: 'completed' });
@@ -99,9 +105,9 @@ export class SupervisorService {
     const planDecisions = this.decisions.get(planId) ?? [];
     const totalTasks = plan.tasks.length;
     const supervised = planDecisions.length;
-    const approved = planDecisions.filter(d => d.decision === 'approved').length;
-    const rejected = planDecisions.filter(d => d.decision === 'rejected').length;
-    const rerequested = planDecisions.filter(d => d.decision === 'rerequest').length;
+    const approved = planDecisions.filter((d) => d.decision === 'approved').length;
+    const rejected = planDecisions.filter((d) => d.decision === 'rejected').length;
+    const rerequested = planDecisions.filter((d) => d.decision === 'rerequest').length;
     const pending = totalTasks - supervised;
 
     return {

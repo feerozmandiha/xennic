@@ -11,7 +11,12 @@ export class DocumentSimilarityRepository implements IDocumentSimilarityReposito
     return this._toEntity(row);
   }
 
-  async findByPair(workspaceId: string, sourceId: string, targetId: string, method: string): Promise<DocumentSimilarity | null> {
+  async findByPair(
+    workspaceId: string,
+    sourceId: string,
+    targetId: string,
+    method: string,
+  ): Promise<DocumentSimilarity | null> {
     const row = await prisma.document_similarities.findFirst({
       where: { workspace_id: workspaceId, source_id: sourceId, target_id: targetId, method },
     });
@@ -19,7 +24,12 @@ export class DocumentSimilarityRepository implements IDocumentSimilarityReposito
     return this._toEntity(row);
   }
 
-  async findByWorkspace(workspaceId: string, method?: string, minSimilarity = 0, limit = 50): Promise<DocumentSimilarity[]> {
+  async findByWorkspace(
+    workspaceId: string,
+    method?: string,
+    minSimilarity = 0,
+    limit = 50,
+  ): Promise<DocumentSimilarity[]> {
     const where: any = { workspace_id: workspaceId, similarity: { gte: minSimilarity } };
     if (method) where.method = method;
     const rows = await prisma.document_similarities.findMany({
@@ -30,7 +40,13 @@ export class DocumentSimilarityRepository implements IDocumentSimilarityReposito
     return rows.map((r) => this._toEntity(r));
   }
 
-  async similarTo(entityId: string, workspaceId: string, method: string, minSimilarity: number, limit: number): Promise<{ entityId: string; similarity: number }[]> {
+  async similarTo(
+    entityId: string,
+    workspaceId: string,
+    method: string,
+    minSimilarity: number,
+    limit: number,
+  ): Promise<{ entityId: string; similarity: number }[]> {
     const rows = await prisma.$queryRaw<any[]>`
       SELECT source_id as "sourceId", target_id as "targetId", similarity
       FROM document_similarities
@@ -66,13 +82,15 @@ export class DocumentSimilarityRepository implements IDocumentSimilarityReposito
     return this._toEntity(row);
   }
 
-  async batchCreate(data: {
-    workspaceId: string;
-    sourceId: string;
-    targetId: string;
-    similarity: number;
-    method: string;
-  }[]): Promise<DocumentSimilarity[]> {
+  async batchCreate(
+    data: {
+      workspaceId: string;
+      sourceId: string;
+      targetId: string;
+      similarity: number;
+      method: string;
+    }[],
+  ): Promise<DocumentSimilarity[]> {
     await prisma.document_similarities.createMany({
       data: data.map((d) => ({
         workspace_id: d.workspaceId,

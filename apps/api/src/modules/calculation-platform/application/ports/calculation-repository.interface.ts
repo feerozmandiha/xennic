@@ -15,7 +15,10 @@ export interface ICalculationRepository {
   // Definitions
   findDefinitionById(id: string): Promise<CalculationDefinitionEntity | null>;
   findDefinitionBySlug(slug: string): Promise<CalculationDefinitionEntity | null>;
-  findAllDefinitions(options?: { categoryId?: string; enabled?: boolean }): Promise<CalculationDefinitionEntity[]>;
+  findAllDefinitions(options?: {
+    categoryId?: string;
+    enabled?: boolean;
+  }): Promise<CalculationDefinitionEntity[]>;
   saveDefinition(definition: CalculationDefinitionEntity): Promise<void>;
   deleteDefinition(id: string): Promise<void>;
   existsBySlug(slug: string): Promise<boolean>;

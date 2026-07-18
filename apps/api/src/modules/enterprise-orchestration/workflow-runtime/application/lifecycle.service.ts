@@ -58,7 +58,9 @@ export class LifecycleService {
     this.logger.log(`Execution ${executionId} cancelled`);
 
     if (oldStatus === 'running') {
-      const failedStep = execution.steps.find(s => s.status === 'running' || s.status === 'failed');
+      const failedStep = execution.steps.find(
+        (s) => s.status === 'running' || s.status === 'failed',
+      );
       await this.compensation.compensate(executionId, failedStep?.stepId ?? '');
     }
   }

@@ -27,7 +27,7 @@ export class InMemoryContextStore implements IContextRepository {
     options?: FindByScopeOptions,
   ): Promise<PaginatedResult<ContextEntity>> {
     const items = Array.from(this.store.values()).filter(
-      e => e.scope === scope && e.scopeId === scopeId,
+      (e) => e.scope === scope && e.scopeId === scopeId,
     );
     const offset = options?.offset ?? 0;
     const limit = options?.limit ?? items.length;
@@ -45,18 +45,14 @@ export class InMemoryContextStore implements IContextRepository {
     source: string,
   ): Promise<ContextEntity[]> {
     return Array.from(this.store.values()).filter(
-      e => e.scope === scope && e.scopeId === scopeId && e.source === source,
+      (e) => e.scope === scope && e.scopeId === scopeId && e.source === source,
     );
   }
 
-  async findKeys(
-    scope: ContextScope,
-    scopeId: string,
-    keys: string[],
-  ): Promise<ContextEntity[]> {
+  async findKeys(scope: ContextScope, scopeId: string, keys: string[]): Promise<ContextEntity[]> {
     const keySet = new Set(keys);
     return Array.from(this.store.values()).filter(
-      e => e.scope === scope && e.scopeId === scopeId && keySet.has(e.key),
+      (e) => e.scope === scope && e.scopeId === scopeId && keySet.has(e.key),
     );
   }
 

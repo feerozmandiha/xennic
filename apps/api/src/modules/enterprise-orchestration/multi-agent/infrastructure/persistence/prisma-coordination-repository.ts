@@ -111,7 +111,10 @@ export class PrismaCoordinationRepository implements ICoordinationRepository {
     this.logger.debug(`Task ${task.id} saved`);
   }
 
-  async updateTask(taskId: string, updates: Partial<CoordinationTask>): Promise<CoordinationTask | null> {
+  async updateTask(
+    taskId: string,
+    updates: Partial<CoordinationTask>,
+  ): Promise<CoordinationTask | null> {
     const data: Record<string, unknown> = {};
     if (updates.description !== undefined) data.task_type = updates.description;
     if (updates.role !== undefined) data.agent_role = updates.role;
@@ -146,7 +149,7 @@ export class PrismaCoordinationRepository implements ICoordinationRepository {
       orderBy: { created_at: 'asc' },
     });
 
-    return rows.map(row => this.rowToTask(row));
+    return rows.map((row) => this.rowToTask(row));
   }
 
   async listPlans(options?: ListPlanOptions): Promise<PaginatedResult<CoordinationPlan>> {
@@ -168,19 +171,19 @@ export class PrismaCoordinationRepository implements ICoordinationRepository {
       prisma.coordination_plans.count({ where: where as any }),
     ]);
 
-    const items = await Promise.all(rows.map(row => this.rowToPlan(row)));
+    const items = await Promise.all(rows.map((row) => this.rowToPlan(row)));
 
     return { items, total, offset, limit };
   }
 
   private async rowToPlan(row: any): Promise<CoordinationPlan> {
-    const planData = row.plan as Record<string, unknown> ?? {};
+    const planData = (row.plan as Record<string, unknown>) ?? {};
     const taskRows = await prisma.coordination_tasks.findMany({
       where: { plan_id: row.id },
       orderBy: { created_at: 'asc' },
     });
 
-    const tasks: CoordinationTask[] = taskRows.map(t => this.rowToTask(t));
+    const tasks: CoordinationTask[] = taskRows.map((t) => this.rowToTask(t));
 
     const { CoordinationPlan: Plan } = await import('../../domain/coordination-plan.entity.js');
     return Plan.reconstitute(

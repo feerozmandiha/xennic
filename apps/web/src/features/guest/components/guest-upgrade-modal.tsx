@@ -28,7 +28,9 @@ export function GuestUpgradeModal({ open, onOpenChange }: Props) {
             </div>
 
             <Dialog.Title className="text-xl font-bold text-white">
-              {locale === 'fa' ? 'به محدودیت محاسبات رایگان رسیدید!' : 'Free calculation limit reached!'}
+              {locale === 'fa'
+                ? 'به محدودیت محاسبات رایگان رسیدید!'
+                : 'Free calculation limit reached!'}
             </Dialog.Title>
 
             <Dialog.Description className="text-sm text-white/50 leading-relaxed">

@@ -85,7 +85,11 @@ export class PluginSandbox {
     try {
       for (const formula of formulas) {
         if (Date.now() > maxTime) {
-          return { outputs, durationMs: Date.now() - startTime, error: 'Execution timeout exceeded' };
+          return {
+            outputs,
+            durationMs: Date.now() - startTime,
+            error: 'Execution timeout exceeded',
+          };
         }
 
         const result = this.evaluateInSandbox(formula.expression, context);
@@ -95,19 +99,24 @@ export class PluginSandbox {
 
       const outputSize = Buffer.byteLength(JSON.stringify(outputs), 'utf-8');
       if (outputSize > this.MAX_OUTPUT_SIZE) {
-        return { outputs: {}, durationMs: Date.now() - startTime, error: `Output size ${outputSize} exceeds maximum ${this.MAX_OUTPUT_SIZE}` };
+        return {
+          outputs: {},
+          durationMs: Date.now() - startTime,
+          error: `Output size ${outputSize} exceeds maximum ${this.MAX_OUTPUT_SIZE}`,
+        };
       }
 
       return { outputs, durationMs: Date.now() - startTime };
     } catch (error) {
-      return { outputs, durationMs: Date.now() - startTime, error: error instanceof Error ? error.message : 'Sandbox execution error' };
+      return {
+        outputs,
+        durationMs: Date.now() - startTime,
+        error: error instanceof Error ? error.message : 'Sandbox execution error',
+      };
     }
   }
 
-  private evaluateInSandbox(
-    expression: string,
-    context: SandboxContext,
-  ): { value: number } {
+  private evaluateInSandbox(expression: string, context: SandboxContext): { value: number } {
     const vars: Record<string, unknown> = {
       ...context.constants,
       ...context.functions,

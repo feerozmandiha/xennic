@@ -104,7 +104,11 @@ export async function downloadPdfReport(data: ReportData): Promise<void> {
     await ensureFont(doc);
 
     function usePersianFont(style: 'normal' | 'bold' = 'normal') {
-      try { doc.setFont('NotoSansArabic', style); } catch { doc.setFont('helvetica', style); }
+      try {
+        doc.setFont('NotoSansArabic', style);
+      } catch {
+        doc.setFont('helvetica', style);
+      }
     }
 
     function useLatinFont(style: 'normal' | 'bold' = 'normal') {
@@ -132,8 +136,8 @@ export async function downloadPdfReport(data: ReportData): Promise<void> {
 
       autoTable(doc, {
         startY: y,
-        head: [headers.map(h => fa(h))],
-        body: rows.map(r => r.map(c => fa(c))),
+        head: [headers.map((h) => fa(h))],
+        body: rows.map((r) => r.map((c) => fa(c))),
         headStyles: {
           fillColor: colors.primary,
           textColor: '#ffffff',
@@ -182,10 +186,12 @@ export async function downloadPdfReport(data: ReportData): Promise<void> {
     y += 5;
 
     doc.text(
-      fa(`شماره: ${data.calculationCode || 'N/A'}  |  تاریخ: ${new Date().toLocaleDateString('fa-IR')}`),
+      fa(
+        `شماره: ${data.calculationCode || 'N/A'}  |  تاریخ: ${new Date().toLocaleDateString('fa-IR')}`,
+      ),
       pageWidth - margin,
       y,
-      { align: 'right' }
+      { align: 'right' },
     );
     y += 10;
 
@@ -220,7 +226,7 @@ export async function downloadPdfReport(data: ReportData): Promise<void> {
 
     // ── Inputs ──────────────────────────────────────────────────────────────
     const inputEntries = Object.entries(data.inputs || {}).filter(
-      ([, v]) => v !== null && v !== undefined && typeof v !== 'object'
+      ([, v]) => v !== null && v !== undefined && typeof v !== 'object',
     );
 
     if (inputEntries.length > 0) {
@@ -234,7 +240,7 @@ export async function downloadPdfReport(data: ReportData): Promise<void> {
 
     // ── Results ─────────────────────────────────────────────────────────────
     const resultEntries = Object.entries(data.results || {}).filter(
-      ([k, v]) => v !== null && v !== undefined && typeof v !== 'object' && !k.startsWith('_')
+      ([k, v]) => v !== null && v !== undefined && typeof v !== 'object' && !k.startsWith('_'),
     );
 
     if (resultEntries.length > 0) {
@@ -339,7 +345,6 @@ export async function downloadPdfReport(data: ReportData): Promise<void> {
 
     // ── Save ────────────────────────────────────────────────────────────────
     doc.save(`xennic-report-${data.calculationCode || 'calc'}-${Date.now()}.pdf`);
-
   } catch (error) {
     console.error('PDF Download Error:', error);
     alert('خطا در تولید PDF. لطفاً دوباره تلاش کنید.');

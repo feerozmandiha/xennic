@@ -67,7 +67,11 @@ export class EmailService {
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3001';
     const acceptLink = `${frontendUrl}/${language}/workspaces/invitations/accept?token=${acceptToken}`;
     const { subject, html } = renderWorkspaceInviteEmail(
-      recipientName, inviterName, workspaceName, acceptLink, language,
+      recipientName,
+      inviterName,
+      workspaceName,
+      acceptLink,
+      language,
     );
 
     await this.send({
@@ -102,7 +106,9 @@ export class EmailService {
     try {
       const recent = await this.emailRepository.findRecentByRecipient(data.to, data.template, 2);
       if (recent.length > 3) {
-        this.logger.warn(`Rate limit: skipping email to ${data.to} (${data.template}) — too many requests`);
+        this.logger.warn(
+          `Rate limit: skipping email to ${data.to} (${data.template}) — too many requests`,
+        );
         email.markAsFailed('Rate limited');
         await this.emailRepository.update(email);
         return;

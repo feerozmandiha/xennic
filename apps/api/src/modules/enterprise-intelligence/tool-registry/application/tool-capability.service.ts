@@ -12,9 +12,7 @@ export interface CapabilityIndex {
 export class ToolCapabilityService {
   private readonly logger = new Logger(ToolCapabilityService.name);
 
-  constructor(
-    @Inject('IToolRegistry') private readonly registry: IToolRegistry,
-  ) {}
+  constructor(@Inject('IToolRegistry') private readonly registry: IToolRegistry) {}
 
   async discover(): Promise<CapabilityIndex[]> {
     const result = await this.registry.list();

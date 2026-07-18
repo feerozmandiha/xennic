@@ -1,6 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common';
-import type { ConfigScope, ConfigEntry, IConfigStore } from '../../domain/interfaces/config-store.interface.js';
-import type { FeatureFlagDefinition, IFeatureFlag } from '../../domain/interfaces/feature-flag.interface.js';
+import type {
+  ConfigScope,
+  ConfigEntry,
+  IConfigStore,
+} from '../../domain/interfaces/config-store.interface.js';
+import type {
+  FeatureFlagDefinition,
+  IFeatureFlag,
+} from '../../domain/interfaces/feature-flag.interface.js';
 
 @Injectable()
 export class ConfigManagerService implements IConfigStore, IFeatureFlag {
@@ -80,7 +87,9 @@ export class ConfigManagerService implements IConfigStore, IFeatureFlag {
     } else {
       flag.enabled = true;
     }
-    this.logger.log(`Feature flag ${key} enabled${workspaceId ? ` for workspace ${workspaceId}` : ''}`);
+    this.logger.log(
+      `Feature flag ${key} enabled${workspaceId ? ` for workspace ${workspaceId}` : ''}`,
+    );
   }
 
   async disable(key: string, workspaceId?: string): Promise<void> {
@@ -92,7 +101,9 @@ export class ConfigManagerService implements IConfigStore, IFeatureFlag {
     } else {
       flag.enabled = false;
     }
-    this.logger.log(`Feature flag ${key} disabled${workspaceId ? ` for workspace ${workspaceId}` : ''}`);
+    this.logger.log(
+      `Feature flag ${key} disabled${workspaceId ? ` for workspace ${workspaceId}` : ''}`,
+    );
   }
 
   async define(flag: FeatureFlagDefinition): Promise<void> {

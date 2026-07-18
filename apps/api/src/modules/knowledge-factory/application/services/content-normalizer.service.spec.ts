@@ -87,11 +87,19 @@ describe('ContentNormalizerService', () => {
     }).compile();
 
     service = module.get<ContentNormalizerService>(ContentNormalizerService);
-    documentRepository = module.get('IKnowledgeDocumentRepository') as jest.Mocked<IKnowledgeDocumentRepository>;
-    chunkRepository = module.get('IKnowledgeChunkRepository') as jest.Mocked<IKnowledgeChunkRepository>;
+    documentRepository = module.get(
+      'IKnowledgeDocumentRepository',
+    ) as jest.Mocked<IKnowledgeDocumentRepository>;
+    chunkRepository = module.get(
+      'IKnowledgeChunkRepository',
+    ) as jest.Mocked<IKnowledgeChunkRepository>;
 
-    cleanText = (service as unknown as { cleanText: (text: string) => string }).cleanText.bind(service);
-    estimateTokens = (service as unknown as { estimateTokens: (text: string) => number }).estimateTokens.bind(service);
+    cleanText = (service as unknown as { cleanText: (text: string) => string }).cleanText.bind(
+      service,
+    );
+    estimateTokens = (
+      service as unknown as { estimateTokens: (text: string) => number }
+    ).estimateTokens.bind(service);
   });
 
   afterEach(() => {

@@ -24,14 +24,18 @@ export class NormalizeWorker extends BasePipelineWorker {
     super(documentRepository, pipelineRunRepository, eventBus, QUEUE_NAMES.NORMALIZE);
   }
 
-  protected async execute(context: WorkerContext): Promise<{ normalized: boolean; chunksPreview: string[] }> {
+  protected async execute(
+    context: WorkerContext,
+  ): Promise<{ normalized: boolean; chunksPreview: string[] }> {
     const { documentId } = context;
     const job = context.job as any;
     const payload = job.data as NormalizeJobData;
 
     const sourceText = payload.sourceText || '';
     const normalized = this.normalizeText(sourceText);
-    const chunksPreview = this.splitIntoChunks(normalized).slice(0, 3).map((c) => c.text.slice(0, 100));
+    const chunksPreview = this.splitIntoChunks(normalized)
+      .slice(0, 3)
+      .map((c) => c.text.slice(0, 100));
 
     await this.eventBus.enqueueChunk({
       documentId,

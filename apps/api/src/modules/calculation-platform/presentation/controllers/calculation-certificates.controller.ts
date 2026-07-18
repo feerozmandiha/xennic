@@ -9,9 +9,7 @@ import { CertificateResponseDto } from '../dtos/certificate-response.dto.js';
 @UseGuards(JwtAuthGuard)
 @Controller('calculations/certificates')
 export class CalculationCertificatesController {
-  constructor(
-    private readonly certificateService: CertificateService,
-  ) {}
+  constructor(private readonly certificateService: CertificateService) {}
 
   @Get(':id')
   @ApiOperation({ summary: 'Get certificate by ID' })

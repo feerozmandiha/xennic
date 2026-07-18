@@ -1,9 +1,21 @@
 import { randomUUID } from 'crypto';
 
 export type ProviderType =
-  | 'openai' | 'anthropic' | 'gemini' | 'mistral' | 'groq'
-  | 'openrouter' | 'together' | 'deepseek' | 'cohere' | 'voyageai'
-  | 'ollama' | 'lm_studio' | 'azure_openai' | 'openai_compatible' | 'custom';
+  | 'openai'
+  | 'anthropic'
+  | 'gemini'
+  | 'mistral'
+  | 'groq'
+  | 'openrouter'
+  | 'together'
+  | 'deepseek'
+  | 'cohere'
+  | 'voyageai'
+  | 'ollama'
+  | 'lm_studio'
+  | 'azure_openai'
+  | 'openai_compatible'
+  | 'custom';
 
 export type ProviderStatus = 'active' | 'inactive' | 'error';
 export type ProviderVisibility = 'global' | 'admin_only' | 'workspace';
@@ -69,32 +81,60 @@ export class AIProviderEntity {
   }
 
   static reconstitute(data: {
-    id: string; name: string; display_name: string; provider_type: string;
-    base_url: string | null; org_id: string | null; status: string;
-    enabled: boolean; priority: number; default_weight: number;
-    visibility: string; headers: Record<string, string>; metadata: Record<string, unknown>;
-    created_by: string; updated_by: string | null;
-    created_at: Date; updated_at: Date; deleted_at: Date | null;
+    id: string;
+    name: string;
+    display_name: string;
+    provider_type: string;
+    base_url: string | null;
+    org_id: string | null;
+    status: string;
+    enabled: boolean;
+    priority: number;
+    default_weight: number;
+    visibility: string;
+    headers: Record<string, string>;
+    metadata: Record<string, unknown>;
+    created_by: string;
+    updated_by: string | null;
+    created_at: Date;
+    updated_at: Date;
+    deleted_at: Date | null;
   }): AIProviderEntity {
     return new AIProviderEntity(
-      data.id, data.name, data.display_name,
+      data.id,
+      data.name,
+      data.display_name,
       data.provider_type as ProviderType,
-      data.base_url, data.org_id,
+      data.base_url,
+      data.org_id,
       data.status as ProviderStatus,
-      data.enabled, data.priority, data.default_weight,
+      data.enabled,
+      data.priority,
+      data.default_weight,
       data.visibility as ProviderVisibility,
-      data.headers, data.metadata,
-      data.created_by, data.updated_by,
-      data.created_at, data.updated_at, data.deleted_at,
+      data.headers,
+      data.metadata,
+      data.created_by,
+      data.updated_by,
+      data.created_at,
+      data.updated_at,
+      data.deleted_at,
     );
   }
 
-  update(updates: Partial<{
-    displayName: string; baseUrl: string | null; orgId: string | null;
-    priority: number; defaultWeight: number; visibility: ProviderVisibility;
-    headers: Record<string, string>; metadata: Record<string, unknown>;
-    updatedBy: string;
-  }>): void {
+  update(
+    updates: Partial<{
+      displayName: string;
+      baseUrl: string | null;
+      orgId: string | null;
+      priority: number;
+      defaultWeight: number;
+      visibility: ProviderVisibility;
+      headers: Record<string, string>;
+      metadata: Record<string, unknown>;
+      updatedBy: string;
+    }>,
+  ): void {
     if (updates.displayName !== undefined) this.displayName = updates.displayName;
     if (updates.baseUrl !== undefined) this.baseUrl = updates.baseUrl;
     if (updates.orgId !== undefined) this.orgId = updates.orgId;
@@ -131,5 +171,7 @@ export class AIProviderEntity {
     this.updatedAt = new Date();
   }
 
-  isDeleted(): boolean { return this.deletedAt !== null; }
+  isDeleted(): boolean {
+    return this.deletedAt !== null;
+  }
 }

@@ -21,37 +21,57 @@ export class ProviderUsageEntity {
     periodStart: Date,
     periodEnd: Date,
     options?: {
-      modelId?: string; requestCount?: number;
-      promptTokens?: bigint; completionTokens?: bigint;
-      estimatedCost?: number; workspaceId?: string;
+      modelId?: string;
+      requestCount?: number;
+      promptTokens?: bigint;
+      completionTokens?: bigint;
+      estimatedCost?: number;
+      workspaceId?: string;
     },
   ): ProviderUsageEntity {
     return new ProviderUsageEntity(
-      randomUUID(), providerId, options?.modelId ?? null,
+      randomUUID(),
+      providerId,
+      options?.modelId ?? null,
       options?.requestCount ?? 0,
       options?.promptTokens ?? BigInt(0),
       options?.completionTokens ?? BigInt(0),
       (options?.promptTokens ?? BigInt(0)) + (options?.completionTokens ?? BigInt(0)),
       options?.estimatedCost ?? null,
-      periodStart, periodEnd,
+      periodStart,
+      periodEnd,
       options?.workspaceId ?? null,
       new Date(),
     );
   }
 
   static reconstitute(data: {
-    id: string; provider_id: string; model_id: string | null;
-    request_count: number; prompt_tokens: bigint; completion_tokens: bigint;
-    total_tokens: bigint; estimated_cost: number | null;
-    period_start: Date; period_end: Date;
-    workspace_id: string | null; created_at: Date;
+    id: string;
+    provider_id: string;
+    model_id: string | null;
+    request_count: number;
+    prompt_tokens: bigint;
+    completion_tokens: bigint;
+    total_tokens: bigint;
+    estimated_cost: number | null;
+    period_start: Date;
+    period_end: Date;
+    workspace_id: string | null;
+    created_at: Date;
   }): ProviderUsageEntity {
     return new ProviderUsageEntity(
-      data.id, data.provider_id, data.model_id,
-      data.request_count, data.prompt_tokens, data.completion_tokens,
-      data.total_tokens, data.estimated_cost,
-      data.period_start, data.period_end,
-      data.workspace_id, data.created_at,
+      data.id,
+      data.provider_id,
+      data.model_id,
+      data.request_count,
+      data.prompt_tokens,
+      data.completion_tokens,
+      data.total_tokens,
+      data.estimated_cost,
+      data.period_start,
+      data.period_end,
+      data.workspace_id,
+      data.created_at,
     );
   }
 }

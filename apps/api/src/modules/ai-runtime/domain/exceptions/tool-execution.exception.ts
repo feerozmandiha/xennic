@@ -6,11 +6,7 @@ export class ToolExecutionException extends AiRuntimeException {
     message: string,
     details?: Record<string, unknown>,
   ) {
-    super(
-      `Tool "${toolName}" execution failed: ${message}`,
-      'TOOL_EXECUTION_ERROR',
-      details,
-    );
+    super(`Tool "${toolName}" execution failed: ${message}`, 'TOOL_EXECUTION_ERROR', details);
     this.name = 'ToolExecutionException';
   }
 }

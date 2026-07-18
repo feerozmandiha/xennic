@@ -5,43 +5,46 @@
 
 ## Summary
 
-| Metric | Value |
-|--------|-------|
-| **Total Steps** | 15 |
-| **Passed** | 11 |
-| **Failed** | 3 |
-| **Skipped** | 1 |
-| **Duration** | 220802ms |
-| **Overall** | ❌ FAIL |
+| Metric          | Value    |
+| --------------- | -------- |
+| **Total Steps** | 15       |
+| **Passed**      | 11       |
+| **Failed**      | 3        |
+| **Skipped**     | 1        |
+| **Duration**    | 220802ms |
+| **Overall**     | ❌ FAIL  |
 
 ## Step Results
 
-| # | Step | Status | Duration | Detail |
-|---|------|--------|----------|--------|
-| 1 | 1. Architecture Validation | ✅ | 5999ms | OK |
-| 2 | 2. Typecheck | ❌ | 67341ms |  ERROR  @xennic/api#typecheck: command (/home/ahmad/xennic/apps/api) /usr/local/node24/bin/pnpm run typecheck exited (2)
- ERROR  run failed: command  exited (2)
- |
+| #   | Step                       | Status | Duration | Detail                                                                                                                 |
+| --- | -------------------------- | ------ | -------- | ---------------------------------------------------------------------------------------------------------------------- |
+| 1   | 1. Architecture Validation | ✅     | 5999ms   | OK                                                                                                                     |
+| 2   | 2. Typecheck               | ❌     | 67341ms  | ERROR @xennic/api#typecheck: command (/home/ahmad/xennic/apps/api) /usr/local/node24/bin/pnpm run typecheck exited (2) |
+
+ERROR run failed: command exited (2)
+|
 | 3 | 3. Lint | ⏭️ | 120051ms | TIMEOUT after 120000ms: timeout |
-| 4 | 4. Unit Tests | ❌ | 19184ms | 
+| 4 | 4. Unit Tests | ❌ | 19184ms |
+
 > @xennic/api@0.1.0 test /home/ahmad/xennic/apps/api
 > jest -- --json --outputFile /tmp/unit-test-results.json
 
 No tests found, exiting with code 1
 Run with `--passWithNoTests` to exit with code 0
 In /home/ahmad/xennic/apps/api/src
-  943 files checked.
-  testMatch:  - 0 matches
-  testPathIgnorePatt |
-| 5 | 5. E2E Tests | ❌ | 8227ms | 
+943 files checked.
+testMatch: - 0 matches
+testPathIgnorePatt |
+| 5 | 5. E2E Tests | ❌ | 8227ms |
+
 > @xennic/api@0.1.0 test:e2e /home/ahmad/xennic/apps/api
 > jest -c test/jest-e2e.json -- --json --outputFile /tmp/e2e-test-results.json
 
 No tests found, exiting with code 1
 Run with `--passWithNoTests` to exit with code 0
 In /home/ahmad/xennic/apps/api/test
-  9 files checked.
-  testMatch:  - 0 matc |
+9 files checked.
+testMatch: - 0 matc |
 | 6 | 6. Prisma Schema Consistency | ✅ | 0ms | 132 models, 0 enums, 6 migrations |
 | 7 | 7. Migration History | ✅ | 0ms | Migrations found: 20260602080333_init, 20260617074611_knowledge_system_phase1, 20260617080956_add_knowledge_workspace_id, 20260618000000_add_search_text_fts, 20260705000000_add_event_outbox_and_process_log, 20260707094543_add_provider_management_tables |
 | 8 | 8. PROJECT_BOOTSTRAP Version | ✅ | 0ms | Bootstrap Version: 1.2.0 |
@@ -87,87 +90,80 @@ In /home/ahmad/xennic/apps/api/test
 
 ## Certification
 
-| Score | Value |
-|-------|-------|
-| Architecture | 100/100 |
+| Score         | Value   |
+| ------------- | ------- |
+| Architecture  | 100/100 |
 | Documentation | 100/100 |
-| Security | 100/100 |
-| Production | 100/100 |
-| Governance | 70/100 |
-| Readiness | 79/100 |
-| **Grade** | **C** |
+| Security      | 100/100 |
+| Production    | 100/100 |
+| Governance    | 70/100  |
+| Readiness     | 79/100  |
+| **Grade**     | **C**   |
 
 ## Checklist
 
-
 ### Database
 
-| Item | Required | Status | Detail |
-|------|----------|--------|--------|
-| Database migrated | ✅ | ✅ | Prisma schema consistency verified |
-| Migration history complete | ✅ | ✅ | All migrations present |
-
+| Item                       | Required | Status | Detail                             |
+| -------------------------- | -------- | ------ | ---------------------------------- |
+| Database migrated          | ✅       | ✅     | Prisma schema consistency verified |
+| Migration history complete | ✅       | ✅     | All migrations present             |
 
 ### Infrastructure
 
-| Item | Required | Status | Detail |
-|------|----------|--------|--------|
-| Redis healthy | ✅ | ⬜ | Verify via health endpoint |
-| RabbitMQ healthy | ✅ | ⬜ | Verify via health endpoint |
-| Vision service healthy | ✅ | ⬜ | Port 8003 health check |
-| AI service healthy | ✅ | ⬜ | Port 8002 health check |
-| Engineering service healthy | ✅ | ⬜ | Port 8001 health check |
-| Search service healthy | ✅ | ⬜ | Verify search endpoints |
-| Storage service healthy | ✅ | ⬜ | Verify storage endpoints |
-| Outbox relay healthy | ✅ | ⬜ | Event outbox polling active |
-
+| Item                        | Required | Status | Detail                      |
+| --------------------------- | -------- | ------ | --------------------------- |
+| Redis healthy               | ✅       | ⬜     | Verify via health endpoint  |
+| RabbitMQ healthy            | ✅       | ⬜     | Verify via health endpoint  |
+| Vision service healthy      | ✅       | ⬜     | Port 8003 health check      |
+| AI service healthy          | ✅       | ⬜     | Port 8002 health check      |
+| Engineering service healthy | ✅       | ⬜     | Port 8001 health check      |
+| Search service healthy      | ✅       | ⬜     | Verify search endpoints     |
+| Storage service healthy     | ✅       | ⬜     | Verify storage endpoints    |
+| Outbox relay healthy        | ✅       | ⬜     | Event outbox polling active |
 
 ### Observability
 
-| Item | Required | Status | Detail |
-|------|----------|--------|--------|
-| Health endpoints responding | ✅ | ⬜ | GET /api/v1/health |
-| Distributed tracing configured | ✅ | ⬜ | OpenTelemetry spans |
-| Metrics endpoint active | ✅ | ⬜ | Prometheus /metrics |
-| Correlation IDs propagated | ✅ | ⬜ | All services forward trace IDs |
-
+| Item                           | Required | Status | Detail                         |
+| ------------------------------ | -------- | ------ | ------------------------------ |
+| Health endpoints responding    | ✅       | ⬜     | GET /api/v1/health             |
+| Distributed tracing configured | ✅       | ⬜     | OpenTelemetry spans            |
+| Metrics endpoint active        | ✅       | ⬜     | Prometheus /metrics            |
+| Correlation IDs propagated     | ✅       | ⬜     | All services forward trace IDs |
 
 ### Deployment
 
-| Item | Required | Status | Detail |
-|------|----------|--------|--------|
-| Feature flags reviewed | ✅ | ⬜ | Toggle configuration verified |
-| Database backup taken | ✅ | ⬜ | pg_dump completed |
-| Secrets available in vault | ✅ | ⬜ | No secrets in env files |
-| TLS certificates valid | ✅ | ⬜ | Not expired |
-| Disaster recovery plan documented | ✅ | ⬜ | DR procedures current |
-| Rollback procedure tested | ✅ | ⬜ | Previous version deployable |
-| Kubernetes manifests validated | ✅ | ⬜ | kubectl apply --dry-run |
-| Monitoring dashboards updated | ✅ | ⬜ | Grafana dashboards current |
-| Alerting rules configured | ✅ | ⬜ | Alertmanager rules |
-
+| Item                              | Required | Status | Detail                        |
+| --------------------------------- | -------- | ------ | ----------------------------- |
+| Feature flags reviewed            | ✅       | ⬜     | Toggle configuration verified |
+| Database backup taken             | ✅       | ⬜     | pg_dump completed             |
+| Secrets available in vault        | ✅       | ⬜     | No secrets in env files       |
+| TLS certificates valid            | ✅       | ⬜     | Not expired                   |
+| Disaster recovery plan documented | ✅       | ⬜     | DR procedures current         |
+| Rollback procedure tested         | ✅       | ⬜     | Previous version deployable   |
+| Kubernetes manifests validated    | ✅       | ⬜     | kubectl apply --dry-run       |
+| Monitoring dashboards updated     | ✅       | ⬜     | Grafana dashboards current    |
+| Alerting rules configured         | ✅       | ⬜     | Alertmanager rules            |
 
 ### Code Quality
 
-| Item | Required | Status | Detail |
-|------|----------|--------|--------|
-| Architecture validation passed | ✅ | ✅ | Zero violations |
-| Typecheck passed | ✅ | ✅ | No type errors |
-| Lint passed | ✅ | ✅ | No lint errors |
-| Unit tests passing | ✅ | ✅ | All green |
-| E2E tests passing | ✅ | ✅ | All green |
-
+| Item                           | Required | Status | Detail          |
+| ------------------------------ | -------- | ------ | --------------- |
+| Architecture validation passed | ✅       | ✅     | Zero violations |
+| Typecheck passed               | ✅       | ✅     | No type errors  |
+| Lint passed                    | ✅       | ✅     | No lint errors  |
+| Unit tests passing             | ✅       | ✅     | All green       |
+| E2E tests passing              | ✅       | ✅     | All green       |
 
 ### Documentation
 
-| Item | Required | Status | Detail |
-|------|----------|--------|--------|
-| API docs generated | ✅ | ✅ | OpenAPI spec present |
-| ADR references valid | ✅ | ✅ | All ADRs present |
-| Mermaid diagrams valid | ✅ | ✅ | Syntax check |
-| Documentation links valid | ✅ | ✅ | No broken refs |
-
+| Item                      | Required | Status | Detail               |
+| ------------------------- | -------- | ------ | -------------------- |
+| API docs generated        | ✅       | ✅     | OpenAPI spec present |
+| ADR references valid      | ✅       | ✅     | All ADRs present     |
+| Mermaid diagrams valid    | ✅       | ✅     | Syntax check         |
+| Documentation links valid | ✅       | ✅     | No broken refs       |
 
 ---
 
-*Report generated by Xennic Release Validator v1.2.0*
+_Report generated by Xennic Release Validator v1.2.0_

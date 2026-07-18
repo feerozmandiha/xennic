@@ -21,7 +21,7 @@ export function VendorManager() {
   const t = useTranslations('marketplace');
   const toast = useToast();
   const queryClient = useQueryClient();
-  const wsId = useAuthStore(s => s.workspaceId);
+  const wsId = useAuthStore((s) => s.workspaceId);
 
   const [showForm, setShowForm] = useState(false);
   const [name, setName] = useState('');
@@ -49,7 +49,9 @@ export function VendorManager() {
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
-        <span className="text-sm text-[hsl(var(--muted-foreground))]">{vendors.length} {t('vendors')}</span>
+        <span className="text-sm text-[hsl(var(--muted-foreground))]">
+          {vendors.length} {t('vendors')}
+        </span>
         <button
           onClick={() => setShowForm(true)}
           className="inline-flex items-center gap-2 h-9 px-4 rounded-[var(--radius)] bg-[hsl(var(--primary))] text-white text-sm font-medium hover:opacity-90 transition-opacity"
@@ -63,16 +65,18 @@ export function VendorManager() {
         <div className="flex gap-2 mb-4">
           <input
             value={name}
-            onChange={e => setName(e.target.value)}
+            onChange={(e) => setName(e.target.value)}
             placeholder={t('vendorName')}
             className="flex-1 h-10 rounded-[var(--radius)] border border-[hsl(var(--input))] bg-transparent px-3 text-sm"
             autoFocus
-            onKeyDown={e => {
+            onKeyDown={(e) => {
               if (e.key === 'Enter' && name.trim()) createMutation.mutate({ name: name.trim() });
             }}
           />
           <button
-            onClick={() => { if (name.trim()) createMutation.mutate({ name: name.trim() }); }}
+            onClick={() => {
+              if (name.trim()) createMutation.mutate({ name: name.trim() });
+            }}
             className="h-10 px-4 rounded-[var(--radius)] bg-[hsl(var(--primary))] text-white text-sm font-medium"
           >
             {t('create')}

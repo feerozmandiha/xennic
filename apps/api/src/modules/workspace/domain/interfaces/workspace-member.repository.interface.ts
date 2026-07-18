@@ -1,4 +1,4 @@
-import type { WorkspaceMemberEntity} from '../entities/workspace-member.entity.js';
+import type { WorkspaceMemberEntity } from '../entities/workspace-member.entity.js';
 import type { WorkspaceInvitationEntity } from '../entities/workspace-invitation.entity.js';
 
 export interface IWorkspaceMemberRepository {
@@ -13,7 +13,10 @@ export interface IWorkspaceMemberRepository {
   // ── Invitations ──────────────────────────────────────────────────────────────
   saveInvitation(invitation: WorkspaceInvitationEntity): Promise<void>;
   findInvitationByToken(token: string): Promise<WorkspaceInvitationEntity | null>;
-  findInvitationByEmail(workspaceId: string, email: string): Promise<WorkspaceInvitationEntity | null>;
+  findInvitationByEmail(
+    workspaceId: string,
+    email: string,
+  ): Promise<WorkspaceInvitationEntity | null>;
   findInvitations(workspaceId: string): Promise<WorkspaceInvitationEntity[]>;
   updateInvitationStatus(id: string, status: string): Promise<void>;
 }

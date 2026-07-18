@@ -25,21 +25,39 @@ export class ProviderRegistryService {
   ) {}
 
   async register(dto: {
-    name: string; displayName: string; providerType: string;
-    apiKey?: string; baseUrl?: string; orgId?: string;
-    priority?: number; defaultWeight?: number; visibility?: string;
-    headers?: Record<string, string>; metadata?: Record<string, unknown>;
-    requestsPerMin?: number; tokensPerMin?: number; concurrentMax?: number;
+    name: string;
+    displayName: string;
+    providerType: string;
+    apiKey?: string;
+    baseUrl?: string;
+    orgId?: string;
+    priority?: number;
+    defaultWeight?: number;
+    visibility?: string;
+    headers?: Record<string, string>;
+    metadata?: Record<string, unknown>;
+    requestsPerMin?: number;
+    tokensPerMin?: number;
+    concurrentMax?: number;
     createdBy: string;
   }): Promise<AIProviderEntity> {
     const exists = await this.providerRepo.existsByName(dto.name);
     if (exists) throw new ConflictException(`Provider "${dto.name}" already exists`);
 
     const entity = AIProviderEntity.create(
-      dto.name, dto.displayName, dto.providerType as ProviderType, dto.createdBy,
-      { baseUrl: dto.baseUrl, orgId: dto.orgId, priority: dto.priority,
-        defaultWeight: dto.defaultWeight, visibility: dto.visibility as any,
-        headers: dto.headers, metadata: dto.metadata },
+      dto.name,
+      dto.displayName,
+      dto.providerType as ProviderType,
+      dto.createdBy,
+      {
+        baseUrl: dto.baseUrl,
+        orgId: dto.orgId,
+        priority: dto.priority,
+        defaultWeight: dto.defaultWeight,
+        visibility: dto.visibility as any,
+        headers: dto.headers,
+        metadata: dto.metadata,
+      },
     );
 
     await this.providerRepo.save(entity);
@@ -52,7 +70,10 @@ export class ProviderRegistryService {
     }
 
     const quota = ProviderQuotaEntity.create(
-      entity.id, dto.requestsPerMin, dto.tokensPerMin, dto.concurrentMax,
+      entity.id,
+      dto.requestsPerMin,
+      dto.tokensPerMin,
+      dto.concurrentMax,
     );
     await this.quotaRepo.save(quota);
 
@@ -60,22 +81,38 @@ export class ProviderRegistryService {
     return entity;
   }
 
-  async update(id: string, dto: {
-    displayName?: string; baseUrl?: string; orgId?: string;
-    apiKey?: string; priority?: number; defaultWeight?: number;
-    visibility?: string; enabled?: boolean;
-    headers?: Record<string, string>; metadata?: Record<string, unknown>;
-    requestsPerMin?: number; tokensPerMin?: number; concurrentMax?: number;
-    updatedBy: string;
-  }): Promise<AIProviderEntity> {
+  async update(
+    id: string,
+    dto: {
+      displayName?: string;
+      baseUrl?: string;
+      orgId?: string;
+      apiKey?: string;
+      priority?: number;
+      defaultWeight?: number;
+      visibility?: string;
+      enabled?: boolean;
+      headers?: Record<string, string>;
+      metadata?: Record<string, unknown>;
+      requestsPerMin?: number;
+      tokensPerMin?: number;
+      concurrentMax?: number;
+      updatedBy: string;
+    },
+  ): Promise<AIProviderEntity> {
     const entity = await this.providerRepo.findById(id);
     if (!entity) throw new NotFoundException(`Provider ${id} not found`);
 
     entity.update({
-      displayName: dto.displayName, baseUrl: dto.baseUrl, orgId: dto.orgId,
-      priority: dto.priority, defaultWeight: dto.defaultWeight,
-      visibility: dto.visibility as any, headers: dto.headers,
-      metadata: dto.metadata, updatedBy: dto.updatedBy,
+      displayName: dto.displayName,
+      baseUrl: dto.baseUrl,
+      orgId: dto.orgId,
+      priority: dto.priority,
+      defaultWeight: dto.defaultWeight,
+      visibility: dto.visibility as any,
+      headers: dto.headers,
+      metadata: dto.metadata,
+      updatedBy: dto.updatedBy,
     });
 
     if (dto.enabled !== undefined) {
@@ -93,7 +130,11 @@ export class ProviderRegistryService {
       await this.credentialRepo.save(credential);
     }
 
-    if (dto.requestsPerMin !== undefined || dto.tokensPerMin !== undefined || dto.concurrentMax !== undefined) {
+    if (
+      dto.requestsPerMin !== undefined ||
+      dto.tokensPerMin !== undefined ||
+      dto.concurrentMax !== undefined
+    ) {
       const quota = await this.quotaRepo.findByProviderId(id);
       if (quota) {
         quota.update(dto.requestsPerMin, dto.tokensPerMin, dto.concurrentMax);
@@ -126,7 +167,10 @@ export class ProviderRegistryService {
     return entity;
   }
 
-  async findAll(options?: { enabled?: boolean; includeDeleted?: boolean }): Promise<AIProviderEntity[]> {
+  async findAll(options?: {
+    enabled?: boolean;
+    includeDeleted?: boolean;
+  }): Promise<AIProviderEntity[]> {
     return this.providerRepo.findAll(options);
   }
 
@@ -142,7 +186,7 @@ export class ProviderRegistryService {
 
   async getCredentials(providerId: string): Promise<{ type: string; maskedValue: string }[]> {
     const credentials = await this.credentialRepo.findByProviderId(providerId);
-    return credentials.map(c => ({
+    return credentials.map((c) => ({
       type: c.credentialType,
       maskedValue: c.maskedValue,
     }));

@@ -16,7 +16,5 @@ export interface ICommandHandler<TCommand extends ICommand, TResult = void> {
 }
 
 export interface ICommandBus {
-  execute<TCommand extends ICommand, TResult = void>(
-    command: TCommand,
-  ): Promise<TResult>;
+  execute<TCommand extends ICommand, TResult = void>(command: TCommand): Promise<TResult>;
 }

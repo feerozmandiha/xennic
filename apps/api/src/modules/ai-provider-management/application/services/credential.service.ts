@@ -19,11 +19,15 @@ export class CredentialService {
     return this.encryptionService.decryptApiKey(credential.encryptedValue);
   }
 
-  async getDecryptedCredentials(providerId: string): Promise<Array<{
-    type: string; value: string; maskedValue: string;
-  }>> {
+  async getDecryptedCredentials(providerId: string): Promise<
+    Array<{
+      type: string;
+      value: string;
+      maskedValue: string;
+    }>
+  > {
     const credentials = await this.credentialRepo.findByProviderId(providerId);
-    return credentials.map(c => ({
+    return credentials.map((c) => ({
       type: c.credentialType,
       value: this.encryptionService.decryptApiKey(c.encryptedValue),
       maskedValue: c.maskedValue,

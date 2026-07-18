@@ -16,10 +16,14 @@ export class EmailRepository implements IEmailRepository {
     this.store.set(email.id, email);
   }
 
-  async findRecentByRecipient(to: string, template: string, minutes: number): Promise<EmailEntity[]> {
+  async findRecentByRecipient(
+    to: string,
+    template: string,
+    minutes: number,
+  ): Promise<EmailEntity[]> {
     const cutoff = new Date(Date.now() - minutes * 60 * 1000);
     return Array.from(this.store.values()).filter(
-      e => e.to === to && e.template === template && e.createdAt > cutoff,
+      (e) => e.to === to && e.template === template && e.createdAt > cutoff,
     );
   }
 }

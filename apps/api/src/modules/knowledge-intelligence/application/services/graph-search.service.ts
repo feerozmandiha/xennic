@@ -25,7 +25,11 @@ export class GraphSearchService {
     private readonly metricsRepo: IGraphMetricsRepository,
   ) {}
 
-  async semanticSearch(workspaceId: string, query: string, _userContext?: { userId?: string; permissions?: string[] }): Promise<any[]> {
+  async semanticSearch(
+    workspaceId: string,
+    query: string,
+    _userContext?: { userId?: string; permissions?: string[] },
+  ): Promise<any[]> {
     const { nodes } = await this.nodeRepo.findAllByWorkspace(workspaceId, undefined, 0, 100);
     const scoredNodes = await Promise.all(
       nodes.map(async (node) => {
@@ -34,7 +38,10 @@ export class GraphSearchService {
         const metrics = await this.metricsRepo.findByNodeId(node.id);
 
         let score = 0;
-        if (node.label && query.split(' ').some((term) => node.label!.toLowerCase().includes(term.toLowerCase()))) {
+        if (
+          node.label &&
+          query.split(' ').some((term) => node.label!.toLowerCase().includes(term.toLowerCase()))
+        ) {
           score += 0.5;
         }
         score += neighbors.length * 0.05;

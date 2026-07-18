@@ -1,9 +1,22 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEmail, IsEnum, IsNotEmpty, IsUUID } from 'class-validator';
-import { WorkspaceMemberEntity, type WorkspaceMemberRole } from '../../domain/entities/workspace-member.entity.js';
+import {
+  WorkspaceMemberEntity,
+  type WorkspaceMemberRole,
+} from '../../domain/entities/workspace-member.entity.js';
 import { WorkspaceInvitationEntity } from '../../domain/entities/workspace-invitation.entity.js';
 
-const ROLES = ['OWNER', 'ADMIN', 'EDITOR', 'KNOWLEDGE_WRITER', 'REVIEWER', 'ENGINEER', 'CONSULTANT', 'MEMBER', 'VIEWER'] as const;
+const ROLES = [
+  'OWNER',
+  'ADMIN',
+  'EDITOR',
+  'KNOWLEDGE_WRITER',
+  'REVIEWER',
+  'ENGINEER',
+  'CONSULTANT',
+  'MEMBER',
+  'VIEWER',
+] as const;
 
 // ─── Request DTOs ─────────────────────────────────────────────────────────────
 
@@ -29,7 +42,10 @@ export class InviteMemberDto {
   @IsNotEmpty()
   email!: string;
 
-  @ApiProperty({ enum: ['ADMIN', 'ENGINEER', 'CONSULTANT', 'MEMBER', 'VIEWER'], example: 'ENGINEER' })
+  @ApiProperty({
+    enum: ['ADMIN', 'ENGINEER', 'CONSULTANT', 'MEMBER', 'VIEWER'],
+    example: 'ENGINEER',
+  })
   @IsEnum(['ADMIN', 'ENGINEER', 'CONSULTANT', 'MEMBER', 'VIEWER'])
   role!: WorkspaceMemberRole;
 }
@@ -50,12 +66,12 @@ export class WorkspaceMemberResponseDto {
   @ApiProperty() joinedAt!: Date;
 
   static fromEntity(m: WorkspaceMemberEntity): WorkspaceMemberResponseDto {
-    const dto      = new WorkspaceMemberResponseDto();
-    dto.id         = m.id;
+    const dto = new WorkspaceMemberResponseDto();
+    dto.id = m.id;
     dto.workspaceId = m.workspaceId;
-    dto.userId     = m.userId;
-    dto.role       = m.role;
-    dto.joinedAt   = m.joinedAt;
+    dto.userId = m.userId;
+    dto.role = m.role;
+    dto.joinedAt = m.joinedAt;
     return dto;
   }
 }
@@ -71,15 +87,15 @@ export class WorkspaceInvitationResponseDto {
   @ApiProperty() createdAt!: Date;
 
   static fromEntity(inv: WorkspaceInvitationEntity): WorkspaceInvitationResponseDto {
-    const dto        = new WorkspaceInvitationResponseDto();
-    dto.id           = inv.id;
-    dto.workspaceId  = inv.workspaceId;
-    dto.email        = inv.email;
-    dto.role         = inv.role;
-    dto.invitedBy    = inv.invitedBy;
-    dto.status       = inv.status;
-    dto.expiresAt    = inv.expiresAt;
-    dto.createdAt    = inv.createdAt;
+    const dto = new WorkspaceInvitationResponseDto();
+    dto.id = inv.id;
+    dto.workspaceId = inv.workspaceId;
+    dto.email = inv.email;
+    dto.role = inv.role;
+    dto.invitedBy = inv.invitedBy;
+    dto.status = inv.status;
+    dto.expiresAt = inv.expiresAt;
+    dto.createdAt = inv.createdAt;
     return dto;
   }
 }

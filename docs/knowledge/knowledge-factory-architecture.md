@@ -3,7 +3,7 @@
 **Document ID:** XEN-ARCH-KF-001  
 **Date:** 2026-07-03  
 **Status:** Approved  
-**Phase:** PHASE A — Knowledge Factory  
+**Phase:** PHASE A — Knowledge Factory
 
 ---
 
@@ -32,11 +32,11 @@ The existing `knowledge` module is a **manual** knowledge management system (use
 
 ### Layers
 
-| Layer | Responsibility |
-|-------|---------------|
-| **Presentation** | REST controllers, DTOs, validation |
-| **Application** | Orchestration workflows, use-case services |
-| **Domain** | Entities, value objects, repository interfaces |
+| Layer              | Responsibility                                                  |
+| ------------------ | --------------------------------------------------------------- |
+| **Presentation**   | REST controllers, DTOs, validation                              |
+| **Application**    | Orchestration workflows, use-case services                      |
+| **Domain**         | Entities, value objects, repository interfaces                  |
 | **Infrastructure** | Prisma repositories, MinIO storage, HTTP gateways to ai-service |
 
 ---
@@ -49,26 +49,26 @@ The existing `knowledge` module is a **manual** knowledge management system (use
 
 Represents a raw uploaded document through its entire lifecycle.
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `id` | UUID | Unique identifier |
-| `workspaceId` | UUID | Tenant isolation |
-| `filename` | string | Stored filename (slugified) |
-| `originalName` | string | Original user-facing filename |
-| `mimeType` | string | `application/pdf`, `image/png`, etc. |
-| `sizeBytes` | int | File size in bytes |
-| `storagePath` | string | MinIO object path |
-| `documentType` | string | `pdf`, `docx`, `image`, `txt`, `dwg` |
-| `status` | DocumentStatus | Pipeline state |
-| `classification` | Json | Domain, standard, equipment type, confidence |
-| `metadata` | Json | Extra file metadata |
-| `errorMessage` | string | Failure details if status = failed |
-| `retryCount` | int | Retry counter for error recovery |
-| `publishedKnowledgeId` | UUID? | Link to `knowledge` when published |
-| `createdBy` | UUID | Uploading user |
-| `createdAt` | DateTime | Upload timestamp |
-| `updatedAt` | DateTime | Last status change |
-| `deletedAt` | DateTime? | Soft delete |
+| Field                  | Type           | Description                                  |
+| ---------------------- | -------------- | -------------------------------------------- |
+| `id`                   | UUID           | Unique identifier                            |
+| `workspaceId`          | UUID           | Tenant isolation                             |
+| `filename`             | string         | Stored filename (slugified)                  |
+| `originalName`         | string         | Original user-facing filename                |
+| `mimeType`             | string         | `application/pdf`, `image/png`, etc.         |
+| `sizeBytes`            | int            | File size in bytes                           |
+| `storagePath`          | string         | MinIO object path                            |
+| `documentType`         | string         | `pdf`, `docx`, `image`, `txt`, `dwg`         |
+| `status`               | DocumentStatus | Pipeline state                               |
+| `classification`       | Json           | Domain, standard, equipment type, confidence |
+| `metadata`             | Json           | Extra file metadata                          |
+| `errorMessage`         | string         | Failure details if status = failed           |
+| `retryCount`           | int            | Retry counter for error recovery             |
+| `publishedKnowledgeId` | UUID?          | Link to `knowledge` when published           |
+| `createdBy`            | UUID           | Uploading user                               |
+| `createdAt`            | DateTime       | Upload timestamp                             |
+| `updatedAt`            | DateTime       | Last status change                           |
+| `deletedAt`            | DateTime?      | Soft delete                                  |
 
 **Status Transitions:**
 
@@ -82,50 +82,50 @@ uploaded → classified → parsing → extracted → chunking → embedding →
 
 A normalized text chunk extracted from a document with full provenance metadata.
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `id` | UUID | Unique identifier |
-| `documentId` | UUID | Parent document |
-| `chunkIndex` | int | Sequential order |
-| `text` | string | Normalized text content |
-| `tokenCount` | int | Token count for chunking |
-| `pageNumber` | int? | Source page (if applicable) |
-| `section` | string? | Document section name |
-| `metadata` | Json | Extra chunk metadata |
-| `embeddingId` | string? | Qdrant point ID |
-| `createdAt` | DateTime | When chunk was created |
+| Field         | Type     | Description                 |
+| ------------- | -------- | --------------------------- |
+| `id`          | UUID     | Unique identifier           |
+| `documentId`  | UUID     | Parent document             |
+| `chunkIndex`  | int      | Sequential order            |
+| `text`        | string   | Normalized text content     |
+| `tokenCount`  | int      | Token count for chunking    |
+| `pageNumber`  | int?     | Source page (if applicable) |
+| `section`     | string?  | Document section name       |
+| `metadata`    | Json     | Extra chunk metadata        |
+| `embeddingId` | string?  | Qdrant point ID             |
+| `createdAt`   | DateTime | When chunk was created      |
 
 #### `KnowledgePipelineRun`
 
 Tracks a pipeline execution for a single document.
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `id` | UUID | Unique identifier |
-| `documentId` | UUID | Parent document |
-| `stage` | string | Current pipeline stage |
-| `status` | PipelineStageStatus | `running`, `success`, `failed` |
-| `input` | Json | Stage input |
-| `output` | Json? | Stage output |
-| `error` | string? | Error details |
-| `startedAt` | DateTime | Execution start |
-| `finishedAt` | DateTime? | Execution end |
-| `durationMs` | int? | Execution duration |
+| Field        | Type                | Description                    |
+| ------------ | ------------------- | ------------------------------ |
+| `id`         | UUID                | Unique identifier              |
+| `documentId` | UUID                | Parent document                |
+| `stage`      | string              | Current pipeline stage         |
+| `status`     | PipelineStageStatus | `running`, `success`, `failed` |
+| `input`      | Json                | Stage input                    |
+| `output`     | Json?               | Stage output                   |
+| `error`      | string?             | Error details                  |
+| `startedAt`  | DateTime            | Execution start                |
+| `finishedAt` | DateTime?           | Execution end                  |
+| `durationMs` | int?                | Execution duration             |
 
 #### `KnowledgeExtraction`
 
 Stores raw extraction results per pipeline stage.
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `id` | UUID | Unique identifier |
-| `documentId` | UUID | Parent document |
-| `method` | string | `tesseract`, `paddle`, `llm_vision`, `textract` |
-| `text` | string | Extracted raw text |
-| `confidence` | float? | OCR confidence 0-1 |
-| `language` | string? | Detected language |
-| `metadata` | Json | Engine-specific metadata |
-| `createdAt` | DateTime | Extraction timestamp |
+| Field        | Type     | Description                                     |
+| ------------ | -------- | ----------------------------------------------- |
+| `id`         | UUID     | Unique identifier                               |
+| `documentId` | UUID     | Parent document                                 |
+| `method`     | string   | `tesseract`, `paddle`, `llm_vision`, `textract` |
+| `text`       | string   | Extracted raw text                              |
+| `confidence` | float?   | OCR confidence 0-1                              |
+| `language`   | string?  | Detected language                               |
+| `metadata`   | Json     | Engine-specific metadata                        |
+| `createdAt`  | DateTime | Extraction timestamp                            |
 
 ---
 
@@ -193,16 +193,17 @@ Documents are processed through a **background worker queue** to avoid blocking 
 
 ### Queue Design
 
-| Queue | Purpose | Retry Policy |
-|-------|---------|--------------|
-| `knowledge-factory:classify` | Document classification | 3 retries, exponential backoff |
-| `knowledge-factory:parse` | Text extraction | 3 retries, exponential backoff |
-| `knowledge-factory:chunk` | Chunking + embedding | 3 retries, exponential backoff |
-| `knowledge-factory:publish` | Publish to knowledge module | 3 retries, exponential backoff |
+| Queue                        | Purpose                     | Retry Policy                   |
+| ---------------------------- | --------------------------- | ------------------------------ |
+| `knowledge-factory:classify` | Document classification     | 3 retries, exponential backoff |
+| `knowledge-factory:parse`    | Text extraction             | 3 retries, exponential backoff |
+| `knowledge-factory:chunk`    | Chunking + embedding        | 3 retries, exponential backoff |
+| `knowledge-factory:publish`  | Publish to knowledge module | 3 retries, exponential backoff |
 
 ### Worker Processing
 
 Each worker:
+
 1. Fetches the `KnowledgeDocument` from DB
 2. Updates `pipeline_run` to `running`
 3. Executes the stage logic
@@ -218,16 +219,16 @@ The Search API provides **hybrid search** over factory-processed content:
 
 ### Endpoints
 
-| Method | Path | Description |
-|--------|------|-------------|
-| `GET` | `/documents` | List documents (paginated, workspace-scoped) |
-| `POST` | `/documents/upload` | Upload a raw document for processing |
-| `GET` | `/documents/:id` | Get document details including pipeline status |
-| `GET` | `/documents/:id/chunks` | Get chunks for a document |
-| `POST` | `/pipeline/trigger/:documentId` | Manually trigger pipeline stage |
-| `GET` | `/pipeline/runs/:documentId` | Get all pipeline runs for a document |
-| `POST` | `/search` | Hybrid search (keyword + semantic) |
-| `GET` | `/classifications` | List classification configurations |
+| Method | Path                            | Description                                    |
+| ------ | ------------------------------- | ---------------------------------------------- |
+| `GET`  | `/documents`                    | List documents (paginated, workspace-scoped)   |
+| `POST` | `/documents/upload`             | Upload a raw document for processing           |
+| `GET`  | `/documents/:id`                | Get document details including pipeline status |
+| `GET`  | `/documents/:id/chunks`         | Get chunks for a document                      |
+| `POST` | `/pipeline/trigger/:documentId` | Manually trigger pipeline stage                |
+| `GET`  | `/pipeline/runs/:documentId`    | Get all pipeline runs for a document           |
+| `POST` | `/search`                       | Hybrid search (keyword + semantic)             |
+| `GET`  | `/classifications`              | List classification configurations             |
 
 ### Search Strategy
 
@@ -242,14 +243,14 @@ The Search API provides **hybrid search** over factory-processed content:
 
 All endpoints are **workspace-scoped** and require authentication.
 
-| Permission | Description |
-|------------|-------------|
-| `knowledge-factory:documents:create` | Upload new documents |
-| `knowledge-factory:documents:read` | View documents |
-| `knowledge-factory:documents:update` | Update metadata/classification |
-| `knowledge-factory:documents:delete` | Soft-delete documents |
+| Permission                           | Description                      |
+| ------------------------------------ | -------------------------------- |
+| `knowledge-factory:documents:create` | Upload new documents             |
+| `knowledge-factory:documents:read`   | View documents                   |
+| `knowledge-factory:documents:update` | Update metadata/classification   |
+| `knowledge-factory:documents:delete` | Soft-delete documents            |
 | `knowledge-factory:pipeline:trigger` | Manually trigger pipeline stages |
-| `knowledge-factory:search` | Search across processed content |
+| `knowledge-factory:search`           | Search across processed content  |
 
 Permissions are enforced via `PermissionsGuard` from the `rbac` module.
 
@@ -265,6 +266,7 @@ Every state change in the Knowledge Factory is logged:
 - Publishing events
 
 Audit entries are stored in the existing `audit_logs` table with:
+
 - `entity` = `knowledge_document`
 - `entity_id` = document UUID
 - `action` = `document.uploaded`, `document.classified`, `pipeline.chunked`, etc.
@@ -275,18 +277,19 @@ Audit entries are stored in the existing `audit_logs` table with:
 
 ### Retry Policy
 
-| Stage | Max Retries | Backoff |
-|-------|-------------|---------|
-| Classification | 3 | 1s, 2s, 4s |
-| Parsing | 3 | 2s, 4s, 8s |
-| OCR | 2 | 5s, 15s |
-| Chunking | 3 | 1s, 2s, 4s |
-| Embedding | 3 | 2s, 4s, 8s |
-| Publishing | 3 | 1s, 2s, 4s |
+| Stage          | Max Retries | Backoff    |
+| -------------- | ----------- | ---------- |
+| Classification | 3           | 1s, 2s, 4s |
+| Parsing        | 3           | 2s, 4s, 8s |
+| OCR            | 2           | 5s, 15s    |
+| Chunking       | 3           | 1s, 2s, 4s |
+| Embedding      | 3           | 2s, 4s, 8s |
+| Publishing     | 3           | 1s, 2s, 4s |
 
 ### Dead Letter Queue
 
 After max retries, the document is marked `failed` with `error_message` populated. Admin can:
+
 1. View failed documents
 2. Re-trigger pipeline from appropriate stage
 3. Manually override classification
@@ -298,15 +301,15 @@ After max retries, the document is marked `failed` with `error_message` populate
 
 ### Metrics
 
-| Metric | Type | Description |
-|--------|------|-------------|
-| `kf.documents.uploaded` | Counter | Documents uploaded per workspace |
-| `kf.documents.processed` | Counter | Documents successfully published |
-| `kf.documents.failed` | Counter | Documents that failed processing |
-| `kf.pipeline.duration_ms` | Histogram | Duration per pipeline stage |
-| `kf.ocr.confidence` | Histogram | OCR confidence scores |
-| `kf.chunks.created` | Counter | Chunks created per document |
-| `kf.embeddings.generated` | Counter | Embeddings generated via ai-service |
+| Metric                    | Type      | Description                         |
+| ------------------------- | --------- | ----------------------------------- |
+| `kf.documents.uploaded`   | Counter   | Documents uploaded per workspace    |
+| `kf.documents.processed`  | Counter   | Documents successfully published    |
+| `kf.documents.failed`     | Counter   | Documents that failed processing    |
+| `kf.pipeline.duration_ms` | Histogram | Duration per pipeline stage         |
+| `kf.ocr.confidence`       | Histogram | OCR confidence scores               |
+| `kf.chunks.created`       | Counter   | Chunks created per document         |
+| `kf.embeddings.generated` | Counter   | Embeddings generated via ai-service |
 
 ### Health Indicators
 
@@ -319,13 +322,13 @@ After max retries, the document is marked `failed` with `error_message` populate
 
 ## 11. Integration Points
 
-| System | Direction | Protocol | Purpose |
-|--------|-----------|----------|---------|
-| **MinIO** | Read/Write | S3-compatible | File storage |
-| **ai-service** | Read/Write | HTTP (FastAPI) | Embeddings, vector search, OCR |
-| **PostgreSQL** | Read/Write | Prisma | Metadata, chunks, pipeline tracking |
-| **Qdrant** | Write | HTTP/GRPC (via ai-service) | Vector embeddings |
-| **Redis** | Read/Write | BullMQ | Background job queue |
+| System         | Direction  | Protocol                   | Purpose                             |
+| -------------- | ---------- | -------------------------- | ----------------------------------- |
+| **MinIO**      | Read/Write | S3-compatible              | File storage                        |
+| **ai-service** | Read/Write | HTTP (FastAPI)             | Embeddings, vector search, OCR      |
+| **PostgreSQL** | Read/Write | Prisma                     | Metadata, chunks, pipeline tracking |
+| **Qdrant**     | Write      | HTTP/GRPC (via ai-service) | Vector embeddings                   |
+| **Redis**      | Read/Write | BullMQ                     | Background job queue                |
 
 ---
 
@@ -397,4 +400,4 @@ Per the directive, implementation follows:
 
 ---
 
-*End of Knowledge Factory Architecture v1.0*
+_End of Knowledge Factory Architecture v1.0_

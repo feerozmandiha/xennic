@@ -82,8 +82,12 @@ export class WebhookEntity {
     );
   }
 
-  get events(): WebhookEvent[] { return [...this._events]; }
-  get isActive(): boolean { return this._isActive; }
+  get events(): WebhookEvent[] {
+    return [...this._events];
+  }
+  get isActive(): boolean {
+    return this._isActive;
+  }
 
   activate(): void {
     this._isActive = true;

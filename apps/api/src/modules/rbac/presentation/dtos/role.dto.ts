@@ -1,5 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsNotEmpty, IsOptional, MinLength, Matches, IsArray, IsUUID } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  IsOptional,
+  MinLength,
+  Matches,
+  IsArray,
+  IsUUID,
+} from 'class-validator';
 import { RoleEntity } from '../../domain/entities/role.entity.js';
 
 // ─── Request DTOs ────────────────────────────────────────────────────────────
@@ -17,7 +25,11 @@ export class CreateRoleDto {
   @Matches(/^[A-Z_]+$/, { message: 'Slug must contain only uppercase letters and underscores' })
   slug!: string;
 
-  @ApiProperty({ example: 'Can perform engineering calculations', description: 'Role description', required: false })
+  @ApiProperty({
+    example: 'Can perform engineering calculations',
+    description: 'Role description',
+    required: false,
+  })
   @IsOptional()
   @IsString()
   description?: string;
@@ -30,7 +42,11 @@ export class UpdateRoleDto {
   @MinLength(2)
   name?: string;
 
-  @ApiProperty({ example: 'Advanced engineering access', description: 'Role description', required: false })
+  @ApiProperty({
+    example: 'Advanced engineering access',
+    description: 'Role description',
+    required: false,
+  })
   @IsOptional()
   @IsString()
   description?: string;
@@ -70,12 +86,12 @@ export class RoleResponseDto {
 
   static fromEntity(role: RoleEntity): RoleResponseDto {
     const dto = new RoleResponseDto();
-    dto.id          = role.id;
-    dto.name        = role.name;
-    dto.slug        = role.slug;
+    dto.id = role.id;
+    dto.name = role.name;
+    dto.slug = role.slug;
     dto.description = role.description;
-    dto.createdAt   = role.createdAt;
-    dto.updatedAt   = role.updatedAt;
+    dto.createdAt = role.createdAt;
+    dto.updatedAt = role.updatedAt;
     return dto;
   }
 }

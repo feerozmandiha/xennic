@@ -31,6 +31,7 @@ Draft ──→ Review ──→ Approved ──→ Implemented ──→ Deprec
 ### Stage Descriptions
 
 #### Draft
+
 - **Purpose:** Propose an idea and gather preliminary feedback
 - **Entry:** Any engineer creates a PR adding a new RFC document at `docs/rfc/RFC-NNN.md`
 - **Exit criteria:**
@@ -40,6 +41,7 @@ Draft ──→ Review ──→ Approved ──→ Implemented ──→ Deprec
 - **Owner:** RFC Author
 
 #### Review
+
 - **Purpose:** Formal review by designated reviewers; iterate on design
 - **Entry:** Author marks RFC as `Status: Draft → Review` and assigns reviewers
 - **Exit criteria:**
@@ -50,6 +52,7 @@ Draft ──→ Review ──→ Approved ──→ Implemented ──→ Deprec
 - **Owner:** RFC Author + Reviewers
 
 #### Approved
+
 - **Purpose:** RFC accepted; implementation may begin
 - **Entry:** Review criteria met; status set to `Approved`
 - **Exit criteria:**
@@ -60,6 +63,7 @@ Draft ──→ Review ──→ Approved ──→ Implemented ──→ Deprec
 - **Owner:** Engineering Lead
 
 #### Implemented
+
 - **Purpose:** RFC changes are shipped to production
 - **Entry:** PRs merged; deployment completed; implementation verification passed
 - **Exit criteria:**
@@ -70,12 +74,14 @@ Draft ──→ Review ──→ Approved ──→ Implemented ──→ Deprec
 - **Owner:** Engineering Lead
 
 #### Deprecated
+
 - **Purpose:** Mark RFC as superseded or no longer relevant
 - **Entry:** New RFC supersedes this one, or the feature is removed
 - **Criteria:** Reason for deprecation documented; superseding RFC linked
 - **Owner:** Engineering Lead
 
 #### Rejected
+
 - **Purpose:** RFC explicitly rejected during review
 - **Entry:** Reviewer consensus to reject; status set to `Rejected`
 - **Criteria:** Rationale for rejection documented
@@ -88,12 +94,12 @@ Draft ──→ Review ──→ Approved ──→ Implemented ──→ Deprec
 ```markdown
 ---
 rfc-id: RFC-NNN
-title: ""
+title: ''
 authors:
-  - ""
+  - ''
 date: YYYY-MM-DD
 status: Draft
-category: ""
+category: ''
 related-adrs: []
 related-gaps: []
 ---
@@ -111,7 +117,7 @@ related-gaps: []
 ## Alternatives Considered
 
 | Alternative | Pros | Cons | Why Not Chosen |
-|-------------|------|------|----------------|
+| ----------- | ---- | ---- | -------------- |
 | {Option A}  | ...  | ...  | ...            |
 | {Option B}  | ...  | ...  | ...            |
 
@@ -157,15 +163,15 @@ The canonical template is stored at `docs/governance/rfc-template.md`. Copy this
 
 ### Required Reviewers by Category
 
-| RFC Category      | Tech Lead | Domain Expert | Security Engineer | AI Lead | DB Lead | DevOps Lead |
-|-------------------|:---------:|:-------------:|:-----------------:|:-------:|:-------:|:-----------:|
-| Architecture      | ✅        | ✅            | ✅                | —       | —       | —           |
-| API               | ✅        | —             | ✅                | —       | —       | —           |
-| Security          | ✅        | —             | ✅                | —       | —       | ✅          |
-| Performance       | ✅        | —             | —                 | —       | ✅      | ✅          |
-| AI                | ✅        | —             | ✅                | ✅      | —       | —           |
-| Database          | ✅        | —             | —                 | —       | ✅      | —           |
-| Infrastructure    | ✅        | —             | ✅                | —       | —       | ✅          |
+| RFC Category   | Tech Lead | Domain Expert | Security Engineer | AI Lead | DB Lead | DevOps Lead |
+| -------------- | :-------: | :-----------: | :---------------: | :-----: | :-----: | :---------: |
+| Architecture   |    ✅     |      ✅       |        ✅         |    —    |    —    |      —      |
+| API            |    ✅     |       —       |        ✅         |    —    |    —    |      —      |
+| Security       |    ✅     |       —       |        ✅         |    —    |    —    |     ✅      |
+| Performance    |    ✅     |       —       |         —         |    —    |   ✅    |     ✅      |
+| AI             |    ✅     |       —       |        ✅         |   ✅    |    —    |      —      |
+| Database       |    ✅     |       —       |         —         |    —    |   ✅    |      —      |
+| Infrastructure |    ✅     |       —       |        ✅         |    —    |    —    |     ✅      |
 
 ### Timeline
 
@@ -204,36 +210,43 @@ If consensus cannot be reached within the 5-business-day window:
 ## 4. RFC Categories
 
 ### Architecture RFC
+
 - **Scope:** Module boundaries, dependency injection layout, package structure, framework choices
 - **Reviewers:** Tech Lead, Domain Expert, Security Engineer
 - **Examples:** Adding a new module, splitting a monolith, introducing event bus
 
 ### API RFC
+
 - **Scope:** Public API surface (REST endpoints, request/response shapes, WebSocket events, SSE contracts)
 - **Reviewers:** Tech Lead, Security Engineer
 - **Examples:** New endpoint addition, breaking schema change, API versioning strategy
 
 ### Security RFC
+
 - **Scope:** Authentication, authorization, secret management, encryption, audit logging, rate limiting
 - **Reviewers:** Tech Lead, Security Engineer, DevOps Lead
 - **Examples:** OAuth integration, RBAC model change, secrets rotation strategy
 
 ### Performance RFC
+
 - **Scope:** Caching strategy, query optimization, streaming, memory management, concurrency model
 - **Reviewers:** Tech Lead, DB Lead, DevOps Lead
 - **Examples:** Redis caching layer, pagination overhaul, backpressure handling
 
 ### AI RFC
+
 - **Scope:** LLM integration, agent architecture, RAG pipeline, prompt engineering, model selection
 - **Reviewers:** Tech Lead, AI Lead, Security Engineer
 - **Examples:** Real LLM integration, streaming implementation, tool-calling framework
 
 ### Database RFC
+
 - **Scope:** Schema changes, migration strategy, indexing, data consistency, transaction boundaries
 - **Reviewers:** Tech Lead, DB Lead
 - **Examples:** Adding new tables, Prisma transaction wrapping, audit trail schema
 
 ### Infrastructure RFC
+
 - **Scope:** Deployment pipeline, Docker, Kubernetes, CI/CD, monitoring, logging, secrets infrastructure
 - **Reviewers:** Tech Lead, Security Engineer, DevOps Lead
 - **Examples:** Docker-compose changes, K8s probe setup, secrets management infra
@@ -242,48 +255,56 @@ If consensus cannot be reached within the 5-business-day window:
 
 ## 5. RFC Index
 
-| RFC ID  | Title | Related Gap IDs | Category | Est. Effort | Priority |
-|---------|-------|----------------|----------|:-----------:|:--------:|
-| RFC-001 | Secrets Removal & Rotation | XEN-GAP-0001 | Security | 4h | P0 |
-| RFC-002 | NestJS Config & Environment Validation | XEN-GAP-0011, XEN-GAP-0080 | Infrastructure | 4h | P0 |
-| RFC-003 | Prisma Transaction Wrapping | XEN-GAP-0013 | Database | 12h | P0 |
-| RFC-004 | Idempotency Key Implementation | XEN-GAP-0014 | API | 8h | P0 |
-| RFC-005 | Graceful Shutdown Implementation | XEN-GAP-0010, XEN-GAP-0078 | Infrastructure | 2h | P0 |
-| RFC-006 | AI Pipeline Real LLM Integration | XEN-GAP-0007, XEN-GAP-0008, XEN-GAP-0015 | AI | 18h | P0 |
-| RFC-007 | Real SSE Streaming Implementation | XEN-GAP-0021 | AI | 12h | P0 |
-| RFC-008 | UserController Guard Addition | XEN-GAP-0002 | Security | 1h | P0 |
+| RFC ID  | Title                                  | Related Gap IDs                          | Category       | Est. Effort | Priority |
+| ------- | -------------------------------------- | ---------------------------------------- | -------------- | :---------: | :------: |
+| RFC-001 | Secrets Removal & Rotation             | XEN-GAP-0001                             | Security       |     4h      |    P0    |
+| RFC-002 | NestJS Config & Environment Validation | XEN-GAP-0011, XEN-GAP-0080               | Infrastructure |     4h      |    P0    |
+| RFC-003 | Prisma Transaction Wrapping            | XEN-GAP-0013                             | Database       |     12h     |    P0    |
+| RFC-004 | Idempotency Key Implementation         | XEN-GAP-0014                             | API            |     8h      |    P0    |
+| RFC-005 | Graceful Shutdown Implementation       | XEN-GAP-0010, XEN-GAP-0078               | Infrastructure |     2h      |    P0    |
+| RFC-006 | AI Pipeline Real LLM Integration       | XEN-GAP-0007, XEN-GAP-0008, XEN-GAP-0015 | AI             |     18h     |    P0    |
+| RFC-007 | Real SSE Streaming Implementation      | XEN-GAP-0021                             | AI             |     12h     |    P0    |
+| RFC-008 | UserController Guard Addition          | XEN-GAP-0002                             | Security       |     1h      |    P0    |
 
 ### RFC Descriptions
 
 #### RFC-001: Secrets Removal & Rotation
+
 - **Problem:** JWT keys, API keys, DB passwords, and other production secrets are committed to git across `.env` files and `infrastructure/docker/secrets/`. Secrets must be removed from history and rotated.
 - **Key decisions:** BFG Repo-Cleaner approach vs. repo rewrite; secrets injection strategy (Docker secrets vs. env vars vs. Vault); rotation cadence.
 
 #### RFC-002: NestJS Config & Environment Validation
+
 - **Problem:** `ConfigModule.forRoot()` is never called. All services read `process.env.*` directly with no validation. Missing env vars silently default to `undefined`.
 - **Key decisions:** Joi vs. class-validator for schema; global vs. per-module ConfigModule; env file loading order; runtime validation behavior on startup.
 
 #### RFC-003: Prisma Transaction Wrapping
+
 - **Problem:** Zero usage of `$transaction` across the codebase. Multi-step operations (workspace + member creation, payment + invoice + transaction, token generation + session) are not atomic.
 - **Key decisions:** Interactive vs. batch transactions; isolation level; compensation/rollback for cross-service ops (MinIO + DB); outbox pattern scope.
 
 #### RFC-004: Idempotency Key Implementation
+
 - **Problem:** No `Idempotency-Key` header checking on any POST endpoint. Duplicate registration, double billing, and duplicate calculations are possible.
 - **Key decisions:** Redis vs. DB storage for processed keys; TTL window; cached response return strategy; middleware vs. decorator approach; idempotency key generation guidance.
 
 #### RFC-005: Graceful Shutdown Implementation
+
 - **Problem:** No `app.enableShutdownHooks()`, no SIGTERM/SIGINT handlers. Pod termination drops active connections and leaks database connections.
 - **Key decisions:** Drain timeout duration; connection close ordering (HTTP → RabbitMQ → DB → Redis); `OnModuleDestroy` implementation scope; Kubernetes `preStop` hook integration.
 
 #### RFC-006: AI Pipeline Real LLM Integration
+
 - **Problem:** `ElectricalEngineerAgent` uses hardcoded if/else rules — no LLM ever called. `ExecutionPipelineService` echoes user messages. `LlmProvider` falls back to mock in production.
 - **Key decisions:** Provider selection (Groq vs. OpenAI vs. Claude); model routing strategy; tool-calling loop architecture; fallback behavior in production; Python ↔ NestJS integration boundary.
 
 #### RFC-007: Real SSE Streaming Implementation
+
 - **Problem:** `LlmProvider.chatStream()` waits for full LLM response, splits into words, and yields with artificial 15ms delays — not real streaming. TTFB is same as non-streaming.
 - **Key decisions:** SSE protocol compliance; backpressure handling; `StreamingResponseManager` integration; Python agent streaming alignment; cancellation propagation.
 
 #### RFC-008: UserController Guard Addition
+
 - **Problem:** All endpoints in `UserController` have zero guards. Any unauthenticated user can list, create, delete, or hard-delete any user account.
 - **Key decisions:** `JwtAuthGuard` + `AdminGuard` combination; role-based permission checks; hard-delete confirmation workflow; audit logging for admin actions.
 
@@ -306,7 +327,7 @@ When an RFC is approved, the resulting architectural decisions are captured in *
 ```markdown
 ---
 adr-id: ADR-NNN
-title: ""
+title: ''
 status: Accepted
 rfc-id: RFC-NNN
 date: YYYY-MM-DD
@@ -341,8 +362,8 @@ date: YYYY-MM-DD
 
 A running index of all ADRs is maintained at `docs/adr/README.md`. Each entry includes:
 
-| ADR ID | Title | RFC ID | Status | Date |
-|--------|-------|--------|--------|------|
+| ADR ID  | Title   | RFC ID  | Status   | Date       |
+| ------- | ------- | ------- | -------- | ---------- |
 | ADR-001 | {title} | RFC-001 | Accepted | 2026-07-02 |
 
 ### Change History

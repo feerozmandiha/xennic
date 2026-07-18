@@ -52,7 +52,10 @@ export class WebhookController {
 
   @Get()
   @RequirePermissions('webhooks.read')
-  @ApiOperation({ summary: 'List webhooks', description: 'Returns paginated webhooks for the workspace.' })
+  @ApiOperation({
+    summary: 'List webhooks',
+    description: 'Returns paginated webhooks for the workspace.',
+  })
   @ApiQuery({ name: 'page', required: false, type: Number, example: 1 })
   @ApiQuery({ name: 'limit', required: false, type: Number, example: 20 })
   @ApiResponse({ status: 200, description: 'Webhooks retrieved' })
@@ -64,7 +67,7 @@ export class WebhookController {
     );
     return {
       success: true,
-      data: result.data.map(w => WebhookResponseDto.fromEntity(w)),
+      data: result.data.map((w) => WebhookResponseDto.fromEntity(w)),
       meta: result.meta,
     };
   }

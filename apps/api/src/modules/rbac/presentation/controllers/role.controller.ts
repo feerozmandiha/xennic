@@ -45,7 +45,11 @@ export class RoleController {
     summary: 'Get all roles',
     description: 'Returns list of all roles.',
   })
-  @ApiResponse({ status: 200, description: 'Roles retrieved successfully', type: [RoleResponseDto] })
+  @ApiResponse({
+    status: 200,
+    description: 'Roles retrieved successfully',
+    type: [RoleResponseDto],
+  })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   async findAll() {
     const roles = await this.roleService.findAll();
@@ -68,11 +72,7 @@ export class RoleController {
   @ApiResponse({ status: 201, description: 'Role created successfully', type: RoleResponseDto })
   @ApiResponse({ status: 400, description: 'Validation failed' })
   @ApiResponse({ status: 409, description: 'Role with this slug already exists' })
-  async create(
-    @Body() dto: CreateRoleDto,
-    @Req() req: any,
-    @Ip() ip: string,
-  ) {
+  async create(@Body() dto: CreateRoleDto, @Req() req: any, @Ip() ip: string) {
     const role = await this.roleService.create(
       { name: dto.name, slug: dto.slug, description: dto.description },
       req.user.userId,
@@ -161,12 +161,10 @@ export class RoleController {
     @Req() req: any,
     @Ip() ip: string,
   ) {
-    await this.roleService.assignPermissions(
-      id,
-      dto.permissionIds,
-      req.user.userId,
-      { ipAddress: ip, workspaceId: req.workspaceId },
-    );
+    await this.roleService.assignPermissions(id, dto.permissionIds, req.user.userId, {
+      ipAddress: ip,
+      workspaceId: req.workspaceId,
+    });
     return {
       success: true,
       message: `${dto.permissionIds.length} permission(s) assigned to role`,

@@ -46,16 +46,12 @@ describe('AdminGuard', () => {
   describe('Authentication', () => {
     it('should throw UnauthorizedException if no user', async () => {
       const ctx = createMockContext(undefined);
-      await expect(guard.canActivate(ctx)).rejects.toThrow(
-        UnauthorizedException,
-      );
+      await expect(guard.canActivate(ctx)).rejects.toThrow(UnauthorizedException);
     });
 
     it('should throw UnauthorizedException if user has no userId', async () => {
       const ctx = createMockContext({} as any);
-      await expect(guard.canActivate(ctx)).rejects.toThrow(
-        UnauthorizedException,
-      );
+      await expect(guard.canActivate(ctx)).rejects.toThrow(UnauthorizedException);
     });
   });
 
@@ -63,9 +59,7 @@ describe('AdminGuard', () => {
 
   describe('Admin Access - RBAC', () => {
     it('should grant access for SUPER_ADMIN role', async () => {
-      (prisma.$queryRaw as jest.Mock).mockResolvedValueOnce([
-        { role_slug: 'SUPER_ADMIN' },
-      ]);
+      (prisma.$queryRaw as jest.Mock).mockResolvedValueOnce([{ role_slug: 'SUPER_ADMIN' }]);
 
       const ctx = createMockContext({ userId: 'user-123' });
       const result = await guard.canActivate(ctx);
@@ -73,9 +67,7 @@ describe('AdminGuard', () => {
     });
 
     it('should grant access for PLATFORM_ADMIN role', async () => {
-      (prisma.$queryRaw as jest.Mock).mockResolvedValueOnce([
-        { role_slug: 'PLATFORM_ADMIN' },
-      ]);
+      (prisma.$queryRaw as jest.Mock).mockResolvedValueOnce([{ role_slug: 'PLATFORM_ADMIN' }]);
 
       const ctx = createMockContext({ userId: 'user-123' });
       const result = await guard.canActivate(ctx);
@@ -86,9 +78,7 @@ describe('AdminGuard', () => {
       // RBAC returns no admin role
       (prisma.$queryRaw as jest.Mock).mockResolvedValueOnce([]);
       // is_admin column returns true
-      (prisma.$queryRaw as jest.Mock).mockResolvedValueOnce([
-        { is_admin: true },
-      ]);
+      (prisma.$queryRaw as jest.Mock).mockResolvedValueOnce([{ is_admin: true }]);
 
       const ctx = createMockContext({ userId: 'user-123' });
       const result = await guard.canActivate(ctx);
@@ -104,9 +94,7 @@ describe('AdminGuard', () => {
       (prisma.$queryRaw as jest.Mock).mockResolvedValueOnce([]);
 
       const ctx = createMockContext({ userId: 'user-123' });
-      await expect(guard.canActivate(ctx)).rejects.toThrow(
-        ForbiddenException,
-      );
+      await expect(guard.canActivate(ctx)).rejects.toThrow(ForbiddenException);
     });
 
     it('should deny access for ENGINEER role', async () => {
@@ -115,9 +103,7 @@ describe('AdminGuard', () => {
       (prisma.$queryRaw as jest.Mock).mockResolvedValueOnce([]);
 
       const ctx = createMockContext({ userId: 'user-123' });
-      await expect(guard.canActivate(ctx)).rejects.toThrow(
-        ForbiddenException,
-      );
+      await expect(guard.canActivate(ctx)).rejects.toThrow(ForbiddenException);
     });
 
     it('should deny access for MEMBER role', async () => {
@@ -126,9 +112,7 @@ describe('AdminGuard', () => {
       (prisma.$queryRaw as jest.Mock).mockResolvedValueOnce([]);
 
       const ctx = createMockContext({ userId: 'user-123' });
-      await expect(guard.canActivate(ctx)).rejects.toThrow(
-        ForbiddenException,
-      );
+      await expect(guard.canActivate(ctx)).rejects.toThrow(ForbiddenException);
     });
   });
 
@@ -154,9 +138,7 @@ describe('AdminGuard', () => {
 
       const ctx = createMockContext({ userId: 'admin-user' });
       // Should deny even if userId contains "admin"
-      await expect(guard.canActivate(ctx)).rejects.toThrow(
-        ForbiddenException,
-      );
+      await expect(guard.canActivate(ctx)).rejects.toThrow(ForbiddenException);
     });
 
     it('should NOT grant access for empty roles array', async () => {
@@ -164,9 +146,7 @@ describe('AdminGuard', () => {
       (prisma.$queryRaw as jest.Mock).mockResolvedValueOnce([]);
 
       const ctx = createMockContext({ userId: 'user-123' });
-      await expect(guard.canActivate(ctx)).rejects.toThrow(
-        ForbiddenException,
-      );
+      await expect(guard.canActivate(ctx)).rejects.toThrow(ForbiddenException);
     });
   });
 });

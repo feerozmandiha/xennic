@@ -10,13 +10,13 @@ export class CalculationEntity {
     public readonly workspaceId: string,
     public readonly projectId: string | null,
     public readonly userId: string,
-    public readonly type: string,          // e.g. "BASIC-001", "CABLE-002"
-    public readonly version: string,       // formula version از Python service
+    public readonly type: string, // e.g. "BASIC-001", "CABLE-002"
+    public readonly version: string, // formula version از Python service
     public readonly inputs: Record<string, unknown>,
     public readonly results: Record<string, unknown>,
     public readonly engineVersion: string,
     public readonly standardVersion: string,
-    public readonly durationMs: number,    // زمان اجرای محاسبه
+    public readonly durationMs: number, // زمان اجرای محاسبه
     public readonly createdAt: Date,
   ) {}
 

@@ -60,7 +60,9 @@ export class CriticService {
     }
 
     await this.repository.updateTask(taskId, { status: 'completed' });
-    this.logger.log(`Critique for task ${taskId}: score=${score}, observations=${observations.length}`);
+    this.logger.log(
+      `Critique for task ${taskId}: score=${score}, observations=${observations.length}`,
+    );
 
     return { taskId, observations, score, suggestions };
   }
@@ -72,14 +74,14 @@ export class CriticService {
     }
 
     const totalTasks = plan.tasks.length;
-    const completedTasks = plan.tasks.filter(t => t.status === 'completed').length;
-    const failedTasks = plan.tasks.filter(t => t.status === 'failed').length;
-    const pendingTasks = plan.tasks.filter(t => t.status === 'pending').length;
-    const runningTasks = plan.tasks.filter(t => t.status === 'running').length;
+    const completedTasks = plan.tasks.filter((t) => t.status === 'completed').length;
+    const failedTasks = plan.tasks.filter((t) => t.status === 'failed').length;
+    const pendingTasks = plan.tasks.filter((t) => t.status === 'pending').length;
+    const runningTasks = plan.tasks.filter((t) => t.status === 'running').length;
 
-    const failedIds = plan.tasks.filter(t => t.status === 'failed').map(t => t.id);
+    const failedIds = plan.tasks.filter((t) => t.status === 'failed').map((t) => t.id);
     const blockedTasks = plan.tasks.filter(
-      t => t.status === 'pending' && t.dependsOn.some(d => failedIds.includes(d)),
+      (t) => t.status === 'pending' && t.dependsOn.some((d) => failedIds.includes(d)),
     ).length;
 
     const efficiency = totalTasks > 0 ? completedTasks / totalTasks : 0;

@@ -53,16 +53,14 @@ export class DecompositionService {
     const completedSet = new Set(completed);
 
     return allTasks
-      .filter(t => !completedSet.has(t.id) && t.dependsOn.every(d => completedSet.has(d)))
-      .map(t => t.id);
+      .filter((t) => !completedSet.has(t.id) && t.dependsOn.every((d) => completedSet.has(d)))
+      .map((t) => t.id);
   }
 
   private splitGoal(goal: string): DecomposedTask[] {
     const words = goal.split(/\s+/);
     if (words.length <= 3) {
-      return [
-        { description: goal, type: 'task', dependsOn: [] },
-      ];
+      return [{ description: goal, type: 'task', dependsOn: [] }];
     }
 
     const midpoint = Math.ceil(words.length / 2);
@@ -89,7 +87,7 @@ export class DecompositionService {
     const lower = goal.toLowerCase();
 
     for (const [domain, keywords] of Object.entries(domainKeywords)) {
-      if (keywords.some(kw => lower.includes(kw))) {
+      if (keywords.some((kw) => lower.includes(kw))) {
         found.push(domain);
       }
     }

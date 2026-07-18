@@ -3,7 +3,7 @@
 **Status:** Accepted  
 **Date:** 2026-07-05  
 **Sprint:** I1  
-**Author:** Chief Enterprise Architect  
+**Author:** Chief Enterprise Architect
 
 ## Context
 
@@ -15,18 +15,18 @@ No end-user agents, chatbots, or business workflows are implemented in this spri
 
 We decompose the platform into 10 discrete, independently-versioned modules within `apps/api/src/modules/enterprise-intelligence/`:
 
-| Phase | Module | Responsibility |
-|-------|--------|----------------|
-| 1 | Context Engine | Unified context assembly across 11 domain sources |
-| 2 | Memory Platform | 7-layer memory with persistence, indexing, expiration |
-| 3 | Prompt Governance | Registry, versioning, templates, policies, auditing |
-| 4 | Tool Registry | Metadata, schemas, versioning, permissions, discovery |
-| 5 | Skill Registry | Reusable skills with dependencies, composition |
-| 6 | Reasoning Engine | Planning, execution graphs, reflection, verification |
-| 7 | Policy Engine | Enforcement across users, agents, tools, memory, context |
-| 8 | AI Gateway | Provider-neutral gateway (8 providers) with routing/failover |
-| 9 | Evaluation Platform | Benchmarks, golden datasets, regression testing |
-| 10 | Intelligence SDK | Unified API facades + cross-cutting workflows |
+| Phase | Module              | Responsibility                                               |
+| ----- | ------------------- | ------------------------------------------------------------ |
+| 1     | Context Engine      | Unified context assembly across 11 domain sources            |
+| 2     | Memory Platform     | 7-layer memory with persistence, indexing, expiration        |
+| 3     | Prompt Governance   | Registry, versioning, templates, policies, auditing          |
+| 4     | Tool Registry       | Metadata, schemas, versioning, permissions, discovery        |
+| 5     | Skill Registry      | Reusable skills with dependencies, composition               |
+| 6     | Reasoning Engine    | Planning, execution graphs, reflection, verification         |
+| 7     | Policy Engine       | Enforcement across users, agents, tools, memory, context     |
+| 8     | AI Gateway          | Provider-neutral gateway (8 providers) with routing/failover |
+| 9     | Evaluation Platform | Benchmarks, golden datasets, regression testing              |
+| 10    | Intelligence SDK    | Unified API facades + cross-cutting workflows                |
 
 ## Architecture Principles
 
@@ -63,22 +63,26 @@ graph TB
 ## Consequences
 
 **Positive:**
+
 - All 10 modules share consistent patterns (DDD, NestJS, in-memory stores, tests)
 - SDK provides a single entry point for all AI infrastructure capabilities
 - No vendor lock-in at the provider level — any AI provider can be swapped
 - Reasoning engine is LLM-agnostic; can be powered by any provider or even rule-based systems
 
 **Negative:**
+
 - In-memory stores must be replaced with persistent storage before production
 - 10 global modules increase startup complexity; need lazy-loading consideration
 - SDK re-exports many services — testing the SDK requires all sub-modules to be available
 
 **Mitigations:**
+
 - IMemoryStore, IContextRepository interfaces defined — swap implementations without code changes
 - All sub-modules clearly document their @Global() status
 - SDK tests mock sub-module services
 
 ## References
+
 - ADR-001: Workspace-Driven Multi-Tenancy
 - ADR-009: Layered Modular Monolith
 - docs/enterprise-intelligence-architecture.md

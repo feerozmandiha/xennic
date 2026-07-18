@@ -1,5 +1,17 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsString, IsNotEmpty, IsOptional, IsInt, IsNumber, IsObject, Min, Max, IsBoolean, MinLength, MaxLength } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  IsOptional,
+  IsInt,
+  IsNumber,
+  IsObject,
+  Min,
+  Max,
+  IsBoolean,
+  MinLength,
+  MaxLength,
+} from 'class-validator';
 
 export class CreateProviderDto {
   @ApiProperty({ description: 'Unique provider name', example: 'my-openai' })
@@ -16,11 +28,27 @@ export class CreateProviderDto {
   @MaxLength(200)
   displayName!: string;
 
-  @ApiProperty({ description: 'Provider type', example: 'openai', enum: [
-    'openai', 'anthropic', 'gemini', 'mistral', 'groq', 'openrouter',
-    'together', 'deepseek', 'cohere', 'voyageai', 'ollama', 'lm_studio',
-    'azure_openai', 'openai_compatible', 'custom',
-  ]})
+  @ApiProperty({
+    description: 'Provider type',
+    example: 'openai',
+    enum: [
+      'openai',
+      'anthropic',
+      'gemini',
+      'mistral',
+      'groq',
+      'openrouter',
+      'together',
+      'deepseek',
+      'cohere',
+      'voyageai',
+      'ollama',
+      'lm_studio',
+      'azure_openai',
+      'openai_compatible',
+      'custom',
+    ],
+  })
   @IsString()
   @IsNotEmpty()
   providerType!: string;
@@ -54,7 +82,11 @@ export class CreateProviderDto {
   @Max(100)
   defaultWeight?: number;
 
-  @ApiPropertyOptional({ description: 'Visibility', default: 'global', enum: ['global', 'admin_only', 'workspace'] })
+  @ApiPropertyOptional({
+    description: 'Visibility',
+    default: 'global',
+    enum: ['global', 'admin_only', 'workspace'],
+  })
   @IsOptional()
   @IsString()
   visibility?: string;

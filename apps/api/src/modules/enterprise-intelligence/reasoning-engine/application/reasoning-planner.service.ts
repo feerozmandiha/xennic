@@ -14,9 +14,7 @@ interface AvailableStep {
 export class ReasoningPlannerService {
   private readonly logger = new Logger(ReasoningPlannerService.name);
 
-  constructor(
-    @Inject('IReasoningRepository') private readonly repo: IReasoningRepository,
-  ) {}
+  constructor(@Inject('IReasoningRepository') private readonly repo: IReasoningRepository) {}
 
   async plan(goal: string, availableSteps: AvailableStep[] = []): Promise<ReasoningPlan> {
     const planSteps = availableSteps.map((s, i) => ({
@@ -35,8 +33,9 @@ export class ReasoningPlannerService {
 
     const updatedSteps = plan.steps.map((step, i) => {
       const availStep = availableSteps[i]!;
-      const depIds = (availStep.dependencies ?? [])
-        .map(depId => availIdToStepId.get(depId) ?? depId);
+      const depIds = (availStep.dependencies ?? []).map(
+        (depId) => availIdToStepId.get(depId) ?? depId,
+      );
       return { ...step, dependsOn: depIds };
     });
 
@@ -82,8 +81,8 @@ export class ReasoningPlannerService {
         continue;
       }
 
-      const remappedDeps = (depMap.get(step.id) ?? step.dependsOn).map(depId => {
-        const depStep = mergedSteps.find(s => s.description.includes(depId));
+      const remappedDeps = (depMap.get(step.id) ?? step.dependsOn).map((depId) => {
+        const depStep = mergedSteps.find((s) => s.description.includes(depId));
         return depStep ? depStep.id : depId;
       });
 
@@ -96,13 +95,15 @@ export class ReasoningPlannerService {
 
     const optimized = plan.withSteps(mergedSteps);
     await this.repo.savePlan(optimized);
-    this.logger.debug(`Optimized plan ${planId}: ${plan.steps.length} → ${optimized.steps.length} steps`);
+    this.logger.debug(
+      `Optimized plan ${planId}: ${plan.steps.length} → ${optimized.steps.length} steps`,
+    );
     return optimized;
   }
 
   decomposeGoal(goal: string): { subgoals: string[]; dependencies: string[][] } {
-    const sentences = goal.split(/[.?!\n]+/).filter(s => s.trim().length > 0);
-    const subgoals = sentences.map(s => s.trim());
+    const sentences = goal.split(/[.?!\n]+/).filter((s) => s.trim().length > 0);
+    const subgoals = sentences.map((s) => s.trim());
     const dependencies: string[][] = [];
 
     for (let i = 0; i < subgoals.length; i++) {
@@ -119,7 +120,9 @@ export class ReasoningPlannerService {
     return { subgoals, dependencies };
   }
 
-  async validatePlan(planId: string): Promise<{ valid: boolean; errors: string[]; warnings: string[] }> {
+  async validatePlan(
+    planId: string,
+  ): Promise<{ valid: boolean; errors: string[]; warnings: string[] }> {
     const plan = await this.repo.getPlan(planId);
     if (!plan) {
       throw new BadRequestException(`Plan ${planId} not found`);
@@ -137,7 +140,7 @@ export class ReasoningPlannerService {
       errors.push('Plan contains circular dependencies');
     }
 
-    const stepIds = new Set(plan.steps.map(s => s.id));
+    const stepIds = new Set(plan.steps.map((s) => s.id));
     for (const step of plan.steps) {
       for (const depId of step.dependsOn) {
         if (!stepIds.has(depId)) {
@@ -149,7 +152,9 @@ export class ReasoningPlannerService {
       }
     }
 
-    const missingDescriptions = plan.steps.filter(s => !s.description || s.description.trim().length === 0);
+    const missingDescriptions = plan.steps.filter(
+      (s) => !s.description || s.description.trim().length === 0,
+    );
     if (missingDescriptions.length > 0) {
       warnings.push(`${missingDescriptions.length} step(s) have empty descriptions`);
     }
@@ -189,9 +194,12 @@ export class ReasoningPlannerService {
   }
 
   private hasTermDependency(subgoal: string, potentialDep: string): boolean {
-    const terms = potentialDep.toLowerCase().split(/\s+/).filter(t => t.length > 3);
+    const terms = potentialDep
+      .toLowerCase()
+      .split(/\s+/)
+      .filter((t) => t.length > 3);
     const subgoalLower = subgoal.toLowerCase();
-    const matchCount = terms.filter(t => subgoalLower.includes(t)).length;
+    const matchCount = terms.filter((t) => subgoalLower.includes(t)).length;
     return terms.length > 0 && matchCount >= Math.ceil(terms.length / 2);
   }
 }

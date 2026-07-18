@@ -56,25 +56,21 @@ export class SuperAdminGuard implements CanActivate {
       if (rows.length === 0) {
         this.logger.warn(
           `SuperAdminGuard: DENIED — userId=${user.userId}, ` +
-          `ip=${req.ip}, path=${req.url}, ` +
-          `userAgent=${req.headers?.['user-agent']?.slice(0, 100)}`
+            `ip=${req.ip}, path=${req.url}, ` +
+            `userAgent=${req.headers?.['user-agent']?.slice(0, 100)}`,
         );
-        throw new ForbiddenException(
-          'فقط SUPER_ADMIN به این عملیات دسترسی دارد'
-        );
+        throw new ForbiddenException('فقط SUPER_ADMIN به این عملیات دسترسی دارد');
       }
 
       this.logger.debug(
-        `SuperAdminGuard: GRANTED — userId=${user.userId}, role=${rows[0]?.role_slug}`
+        `SuperAdminGuard: GRANTED — userId=${user.userId}, role=${rows[0]?.role_slug}`,
       );
       return true;
     } catch (err) {
       if (err instanceof ForbiddenException) {
         throw err;
       }
-      this.logger.error(
-        `SuperAdminGuard error: ${(err as Error).message}`
-      );
+      this.logger.error(`SuperAdminGuard error: ${(err as Error).message}`);
       throw new ForbiddenException('خطا در بررسی دسترسی');
     }
   }

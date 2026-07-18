@@ -48,13 +48,24 @@ async function httpGet(url: string, timeout = 5000): Promise<number> {
 
 async function benchmarkLatency(name: string, target: string, url: string, iterations = 20) {
   const b: Benchmark = {
-    name, target, type: 'latency', iterations, results: [],
-    p50: 0, p95: 0, p99: 0, pass: false,
+    name,
+    target,
+    type: 'latency',
+    iterations,
+    results: [],
+    p50: 0,
+    p95: 0,
+    p99: 0,
+    pass: false,
   };
 
   // Warmup
   for (let i = 0; i < 3; i++) {
-    try { await httpGet(url, 5000); } catch { /* skip */ }
+    try {
+      await httpGet(url, 5000);
+    } catch {
+      /* skip */
+    }
   }
 
   for (let i = 0; i < iterations; i++) {
@@ -85,7 +96,9 @@ async function benchmarkLatency(name: string, target: string, url: string, itera
   }
 
   const icon = b.pass ? GREEN + '✅' : RED + '❌';
-  console.log(`  ${icon}${RESET} ${name} → p50: ${b.p50}ms, p95: ${b.p95}ms, p99: ${b.p99}ms (${b.results.length} samples)`);
+  console.log(
+    `  ${icon}${RESET} ${name} → p50: ${b.p50}ms, p95: ${b.p95}ms, p99: ${b.p99}ms (${b.results.length} samples)`,
+  );
   BENCHMARKS.push(b);
 }
 
@@ -104,20 +117,33 @@ async function benchmarkDBLatency(iterations = 10) {
   const p50 = results[Math.floor(results.length * 0.5)];
   const p95 = results[Math.floor(results.length * 0.95)];
   const p99 = results[Math.floor(results.length * 0.99)];
-  const pass = p50 <= (THRESHOLDS['PostgreSQL SELECT 1']?.p50 || 10) && p95 <= (THRESHOLDS['PostgreSQL SELECT 1']?.p95 || 50);
+  const pass =
+    p50 <= (THRESHOLDS['PostgreSQL SELECT 1']?.p50 || 10) &&
+    p95 <= (THRESHOLDS['PostgreSQL SELECT 1']?.p95 || 50);
 
   BENCHMARKS.push({
-    name: 'PostgreSQL SELECT 1', target: 'Database', type: 'latency',
-    iterations, results, p50, p95, p99, pass,
+    name: 'PostgreSQL SELECT 1',
+    target: 'Database',
+    type: 'latency',
+    iterations,
+    results,
+    p50,
+    p95,
+    p99,
+    pass,
   });
 
   const icon = pass ? GREEN + '✅' : RED + '❌';
-  console.log(`  ${icon}${RESET} PostgreSQL SELECT 1 → p50: ${p50}ms, p95: ${p95}ms, p99: ${p99}ms`);
+  console.log(
+    `  ${icon}${RESET} PostgreSQL SELECT 1 → p50: ${p50}ms, p95: ${p95}ms, p99: ${p99}ms`,
+  );
 }
 
 async function benchmarkRedisLatency(iterations = 10) {
   const redis = new Redis({
-    host: 'localhost', port: 6380, password: 'S7cfYHFut2S7aZF9H9KvZASA',
+    host: process.env.REDIS_HOST || 'localhost',
+    port: Number(process.env.REDIS_PORT) || 6380,
+    password: process.env.REDIS_PASSWORD || '',
     retryStrategy: () => null,
   });
   const results: number[] = [];
@@ -139,11 +165,19 @@ async function benchmarkRedisLatency(iterations = 10) {
   const p50 = results[Math.floor(results.length * 0.5)];
   const p95 = results[Math.floor(results.length * 0.95)];
   const p99 = results[Math.floor(results.length * 0.99)];
-  const pass = p50 <= (THRESHOLDS['Redis PING']?.p50 || 5) && p95 <= (THRESHOLDS['Redis PING']?.p95 || 20);
+  const pass =
+    p50 <= (THRESHOLDS['Redis PING']?.p50 || 5) && p95 <= (THRESHOLDS['Redis PING']?.p95 || 20);
 
   BENCHMARKS.push({
-    name: 'Redis PING', target: 'Memory Platform', type: 'latency',
-    iterations, results, p50, p95, p99, pass,
+    name: 'Redis PING',
+    target: 'Memory Platform',
+    type: 'latency',
+    iterations,
+    results,
+    p50,
+    p95,
+    p99,
+    pass,
   });
 
   const icon = pass ? GREEN + '✅' : RED + '❌';
@@ -152,7 +186,8 @@ async function benchmarkRedisLatency(iterations = 10) {
 }
 
 async function benchmarkRabbitMQThroughput(iterations = 5) {
-  const conn = await amqp.connect('amqp://guest:guest@localhost:5672');
+  const rabbitUrl = process.env.RABBITMQ_URL || 'amqp://guest:guest@localhost:5672';
+  const conn = await amqp.connect(rabbitUrl);
   const ch = await conn.createChannel();
 
   const exchange = `s1-perf-ex`;
@@ -174,16 +209,20 @@ async function benchmarkRabbitMQThroughput(iterations = 5) {
   const consumeStart = Date.now();
   await new Promise<void>((resolve) => {
     const timer = setTimeout(resolve, 3000);
-    ch.consume(queue, (msg) => {
-      if (msg) {
-        received++;
-        ch.ack(msg);
-        if (received >= msgCount) {
-          clearTimeout(timer);
-          resolve();
+    ch.consume(
+      queue,
+      (msg) => {
+        if (msg) {
+          received++;
+          ch.ack(msg);
+          if (received >= msgCount) {
+            clearTimeout(timer);
+            resolve();
+          }
         }
-      }
-    }, { noAck: false });
+      },
+      { noAck: false },
+    );
   });
   const consumeMs = Date.now() - consumeStart;
 
@@ -192,11 +231,13 @@ async function benchmarkRabbitMQThroughput(iterations = 5) {
   await ch.close();
   await conn.close();
 
-  const throughput = Math.round((msgCount / (publishMs / 1000)));
+  const throughput = Math.round(msgCount / (publishMs / 1000));
   const pass = received === msgCount;
 
   const icon = pass ? GREEN + '✅' : RED + '❌';
-  console.log(`  ${icon}${RESET} RabbitMQ throughput: ${throughput} msgs/sec (pub), ${received}/${msgCount} received in ${consumeMs}ms`);
+  console.log(
+    `  ${icon}${RESET} RabbitMQ throughput: ${throughput} msgs/sec (pub), ${received}/${msgCount} received in ${consumeMs}ms`,
+  );
 }
 
 async function main() {
@@ -208,7 +249,12 @@ async function main() {
   // ═══ SMOKE TEST (1 request) ═══
   console.log(`  ── Smoke Tests ──`);
   await benchmarkLatency('API /health', 'API', 'http://localhost:3000/api/v1/health', 1);
-  await benchmarkLatency('Engineering /health', 'Engineering Service', 'http://localhost:8001/health', 1);
+  await benchmarkLatency(
+    'Engineering /health',
+    'Engineering Service',
+    'http://localhost:8001/health',
+    1,
+  );
   await benchmarkLatency('AI /health', 'AI Service', 'http://localhost:8002/health', 1);
   await benchmarkLatency('Vision /health', 'Vision Service', 'http://localhost:8003/health', 1);
 
@@ -234,8 +280,8 @@ async function main() {
   await benchmarkRabbitMQThroughput(5);
 
   // ═══ REPORT ═══
-  const passed = BENCHMARKS.filter(b => b.pass).length;
-  const failed = BENCHMARKS.filter(b => !b.pass).length;
+  const passed = BENCHMARKS.filter((b) => b.pass).length;
+  const failed = BENCHMARKS.filter((b) => !b.pass).length;
 
   console.log(`\n${CYAN}══════════════════════════════════════════════════════════════${RESET}`);
   console.log(`${CYAN}  PERFORMANCE BASELINE RESULTS${RESET}`);
@@ -248,7 +294,7 @@ async function main() {
     console.log(`${GREEN}  All benchmarks within thresholds${RESET}`);
   } else {
     console.log(`\n  Failed benchmarks:\n`);
-    for (const b of BENCHMARKS.filter(b => !b.pass)) {
+    for (const b of BENCHMARKS.filter((b) => !b.pass)) {
       const detail = `${b.results.length} samples, p50: ${b.p50}ms, p95: ${b.p95}ms`;
       console.log(`    ${RED}❌${RESET} ${b.name}: ${detail}`);
     }
@@ -256,7 +302,7 @@ async function main() {
   console.log(`${CYAN}══════════════════════════════════════════════════════════════${RESET}\n`);
 }
 
-main().catch(e => {
+main().catch((e) => {
   console.error('Fatal:', e);
   process.exit(1);
 });

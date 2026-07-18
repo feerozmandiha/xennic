@@ -12,8 +12,8 @@ import { PlanEntity } from '../../domain/entities/plan.entity.js';
 // ── Feature keys برای usage tracking ──────────────────────────────────────
 export const FEATURE = {
   CALCULATIONS: 'calculations',
-  AI_REQUESTS:  'ai_requests',
-  STORAGE_GB:   'storage_gb',
+  AI_REQUESTS: 'ai_requests',
+  STORAGE_GB: 'storage_gb',
 } as const;
 
 @Injectable()
@@ -134,14 +134,17 @@ export class SubscriptionService {
    * بررسی می‌کند آیا workspace به حد limit رسیده یا نه
    * @returns true اگر هنوز مجاز است
    */
-  async checkLimit(workspaceId: string, feature: string): Promise<{
+  async checkLimit(
+    workspaceId: string,
+    feature: string,
+  ): Promise<{
     allowed: boolean;
     used: number;
     limit: number;
     planSlug: string;
   }> {
-    const plan  = await this.getActivePlan(workspaceId);
-    const used  = await this.subscriptionRepository.getUsageThisMonth(workspaceId, feature);
+    const plan = await this.getActivePlan(workspaceId);
+    const used = await this.subscriptionRepository.getUsageThisMonth(workspaceId, feature);
 
     let limit = -1; // unlimited by default
 
@@ -169,7 +172,7 @@ export class SubscriptionService {
     if (!check.allowed) {
       throw new ForbiddenException(
         `Monthly ${feature} limit reached (${check.used}/${check.limit}). ` +
-        `Upgrade to Pro for unlimited access.`
+          `Upgrade to Pro for unlimited access.`,
       );
     }
 
@@ -183,18 +186,24 @@ export class SubscriptionService {
     calculations: { used: number; limit: number };
     ai_requests: { used: number; limit: number };
   }> {
-    const plan     = await this.getActivePlan(workspaceId);
-    const calcUsed = await this.subscriptionRepository.getUsageThisMonth(workspaceId, FEATURE.CALCULATIONS);
-    const aiUsed   = await this.subscriptionRepository.getUsageThisMonth(workspaceId, FEATURE.AI_REQUESTS);
+    const plan = await this.getActivePlan(workspaceId);
+    const calcUsed = await this.subscriptionRepository.getUsageThisMonth(
+      workspaceId,
+      FEATURE.CALCULATIONS,
+    );
+    const aiUsed = await this.subscriptionRepository.getUsageThisMonth(
+      workspaceId,
+      FEATURE.AI_REQUESTS,
+    );
 
     return {
       planSlug: plan.slug,
       calculations: {
-        used:  calcUsed,
+        used: calcUsed,
         limit: plan.features.calculations_month,
       },
       ai_requests: {
-        used:  aiUsed,
+        used: aiUsed,
         limit: plan.features.ai_requests_month,
       },
     };

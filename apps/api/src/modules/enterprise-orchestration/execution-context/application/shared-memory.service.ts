@@ -66,7 +66,7 @@ export class SharedMemoryService {
     if (!memory) {
       return [];
     }
-    return memory.entries.filter(e => e.scope === scope);
+    return memory.entries.filter((e) => e.scope === scope);
   }
 
   async search(executionId: string, query: string): Promise<MemoryEntry[]> {
@@ -76,7 +76,7 @@ export class SharedMemoryService {
     }
     const lower = query.toLowerCase();
     return memory.entries.filter(
-      e =>
+      (e) =>
         e.key.toLowerCase().includes(lower) ||
         String(e.value).toLowerCase().includes(lower) ||
         e.source.toLowerCase().includes(lower),

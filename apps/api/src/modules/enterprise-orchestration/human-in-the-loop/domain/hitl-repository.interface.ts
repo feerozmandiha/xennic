@@ -17,11 +17,23 @@ export interface FindReviewOptions {
 export interface IHitlRepository {
   saveApproval(entity: ApprovalRequest): Promise<void>;
   getApproval(id: string): Promise<ApprovalRequest | null>;
-  findApprovals(executionId: string, options?: FindApprovalOptions): Promise<PaginatedResult<ApprovalRequest>>;
-  findPendingApprovals(userId: string, options?: FindApprovalOptions): Promise<PaginatedResult<ApprovalRequest>>;
+  findApprovals(
+    executionId: string,
+    options?: FindApprovalOptions,
+  ): Promise<PaginatedResult<ApprovalRequest>>;
+  findPendingApprovals(
+    userId: string,
+    options?: FindApprovalOptions,
+  ): Promise<PaginatedResult<ApprovalRequest>>;
   saveReview(entity: ReviewTask): Promise<void>;
   getReview(id: string): Promise<ReviewTask | null>;
-  findReviews(executionId: string, options?: FindReviewOptions): Promise<PaginatedResult<ReviewTask>>;
-  findPendingReviews(userId: string, options?: FindReviewOptions): Promise<PaginatedResult<ReviewTask>>;
+  findReviews(
+    executionId: string,
+    options?: FindReviewOptions,
+  ): Promise<PaginatedResult<ReviewTask>>;
+  findPendingReviews(
+    userId: string,
+    options?: FindReviewOptions,
+  ): Promise<PaginatedResult<ReviewTask>>;
   countPending(userId: string): Promise<number>;
 }

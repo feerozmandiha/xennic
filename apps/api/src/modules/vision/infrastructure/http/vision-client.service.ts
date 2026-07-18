@@ -14,7 +14,8 @@ export class VisionClientService {
     imageBuffer: Uint8Array,
     mode: 'read' | 'analyze' = 'read',
   ): Promise<Record<string, unknown>> {
-    const endpoint = mode === 'analyze' ? '/api/v1/vision/nameplate/analyze' : '/api/v1/vision/nameplate/read';
+    const endpoint =
+      mode === 'analyze' ? '/api/v1/vision/nameplate/analyze' : '/api/v1/vision/nameplate/read';
     return this.uploadFile(endpoint, imageBuffer);
   }
 
@@ -22,7 +23,8 @@ export class VisionClientService {
     imageBuffer: Uint8Array,
     mode: 'read' | 'analyze' = 'read',
   ): Promise<Record<string, unknown>> {
-    const endpoint = mode === 'analyze' ? '/api/v1/vision/bill/analyze' : '/api/v1/vision/bill/read';
+    const endpoint =
+      mode === 'analyze' ? '/api/v1/vision/bill/analyze' : '/api/v1/vision/bill/read';
     return this.uploadFile(endpoint, imageBuffer);
   }
 
@@ -54,9 +56,7 @@ export class VisionClientService {
 
       if (!response.ok) {
         this.logger.error(`Vision service returned ${response.status} for ${path}`);
-        throw new ServiceUnavailableException(
-          `Vision service error: ${response.statusText}`,
-        );
+        throw new ServiceUnavailableException(`Vision service error: ${response.statusText}`);
       }
 
       return (await response.json()) as Record<string, unknown>;

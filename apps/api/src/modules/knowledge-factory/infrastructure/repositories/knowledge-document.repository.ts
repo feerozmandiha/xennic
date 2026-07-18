@@ -19,7 +19,11 @@ export class KnowledgeDocumentRepository implements IKnowledgeDocumentRepository
     return rows.map((r) => this._toEntity(r));
   }
 
-  async findByWorkspace(workspaceId: string, offset = 0, limit = 20): Promise<{ data: KnowledgeDocument[]; total: number }> {
+  async findByWorkspace(
+    workspaceId: string,
+    offset = 0,
+    limit = 20,
+  ): Promise<{ data: KnowledgeDocument[]; total: number }> {
     const [data, total] = await Promise.all([
       prisma.knowledge_documents.findMany({
         where: { workspace_id: workspaceId, deleted_at: null },
@@ -100,7 +104,10 @@ export class KnowledgeDocumentRepository implements IKnowledgeDocumentRepository
     });
   }
 
-  async classifyDocument(documentId: string, classification: Record<string, unknown>): Promise<KnowledgeDocument> {
+  async classifyDocument(
+    documentId: string,
+    classification: Record<string, unknown>,
+  ): Promise<KnowledgeDocument> {
     const row = await prisma.knowledge_documents.update({
       where: { id: documentId },
       data: { status: 'classified', classification: classification as any },

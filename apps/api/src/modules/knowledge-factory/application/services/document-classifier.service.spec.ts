@@ -58,7 +58,9 @@ describe('DocumentClassifierService', () => {
     }).compile();
 
     service = module.get<DocumentClassifierService>(DocumentClassifierService);
-    documentRepository = module.get('IKnowledgeDocumentRepository') as jest.Mocked<IKnowledgeDocumentRepository>;
+    documentRepository = module.get(
+      'IKnowledgeDocumentRepository',
+    ) as jest.Mocked<IKnowledgeDocumentRepository>;
   });
 
   afterEach(() => {
@@ -79,18 +81,34 @@ describe('DocumentClassifierService', () => {
       documentRepository.findById.mockResolvedValue(makeDocument());
       documentRepository.classifyDocument.mockResolvedValue(makeDocument());
 
-      const result = await service.classifyDocument(DOCUMENT_ID, 'This is an IEEE electrical standard.');
+      const result = await service.classifyDocument(
+        DOCUMENT_ID,
+        'This is an IEEE electrical standard.',
+      );
 
       expect(result.domain).toBe('electrical-engineering');
       expect(result.standard).toBe('IEEE');
       expect(result.confidence).toBe(0.85);
-      expect(documentRepository.classifyDocument).toHaveBeenCalledWith(DOCUMENT_ID, expect.any(Object));
+      expect(documentRepository.classifyDocument).toHaveBeenCalledWith(
+        DOCUMENT_ID,
+        expect.any(Object),
+      );
     });
   });
 
   describe('runClassification (private)', () => {
     const runClassification = (text: string) =>
-      (service as unknown as { runClassification: (text: string) => Promise<{ domain: string; standard: string; equipmentType: string; confidence: number; suggestedSlug: string }> }).runClassification.bind(service)(text);
+      (
+        service as unknown as {
+          runClassification: (text: string) => Promise<{
+            domain: string;
+            standard: string;
+            equipmentType: string;
+            confidence: number;
+            suggestedSlug: string;
+          }>;
+        }
+      ).runClassification.bind(service)(text);
 
     describe('IEEE/electrical keyword', () => {
       it('should classify as IEEE electrical when IEEE keyword present', async () => {
@@ -120,7 +138,9 @@ describe('DocumentClassifierService', () => {
       });
 
       it('should classify as IEC when international electrotechnical keyword present', async () => {
-        const result = await runClassification('This follows international electrotechnical commission');
+        const result = await runClassification(
+          'This follows international electrotechnical commission',
+        );
 
         expect(result.domain).toBe('electrical-engineering');
         expect(result.standard).toBe('IEC');

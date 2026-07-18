@@ -2,8 +2,11 @@ import { Injectable } from '@nestjs/common';
 import { prisma } from '@xennic/database';
 import { randomUUID } from 'node:crypto';
 import type {
-  IMarketplaceRepository, VendorSearchParams,
-  ProductSearchParams, OrderSearchParams, SearchResult,
+  IMarketplaceRepository,
+  VendorSearchParams,
+  ProductSearchParams,
+  OrderSearchParams,
+  SearchResult,
 } from '../../domain/interfaces/marketplace.repository.interface.js';
 import { VendorEntity } from '../../domain/entities/vendor.entity.js';
 import { ProductEntity } from '../../domain/entities/product.entity.js';
@@ -71,7 +74,7 @@ export class MarketplaceRepository implements IMarketplaceRepository {
       }),
       prisma.vendors.count({ where }),
     ]);
-    return { data: data.map(r => this._vendorToEntity(r)), total };
+    return { data: data.map((r) => this._vendorToEntity(r)), total };
   }
 
   async saveVendor(entity: VendorEntity): Promise<void> {
@@ -109,9 +112,7 @@ export class MarketplaceRepository implements IMarketplaceRepository {
   async searchProducts(params: ProductSearchParams): Promise<SearchResult<ProductEntity>> {
     const where: any = { deleted_at: null };
     if (params.query) {
-      where.OR = [
-        { sku: { contains: params.query, mode: 'insensitive' } },
-      ];
+      where.OR = [{ sku: { contains: params.query, mode: 'insensitive' } }];
     }
     if (params.vendorId) where.vendor_id = params.vendorId;
     if (params.type) where.type = params.type;
@@ -127,11 +128,14 @@ export class MarketplaceRepository implements IMarketplaceRepository {
       }),
       prisma.products.count({ where }),
     ]);
-    return { data: data.map(r => this._productToEntity(r)), total };
+    return { data: data.map((r) => this._productToEntity(r)), total };
   }
 
   async suggestProducts(params: {
-    category: string; specs: Record<string, any>; offset?: number; limit?: number;
+    category: string;
+    specs: Record<string, any>;
+    offset?: number;
+    limit?: number;
   }): Promise<SearchResult<ProductEntity>> {
     const where: any = { deleted_at: null, category: params.category };
 
@@ -145,7 +149,7 @@ export class MarketplaceRepository implements IMarketplaceRepository {
       prisma.products.count({ where }),
     ]);
 
-    const entities = data.map(r => this._productToEntity(r));
+    const entities = data.map((r) => this._productToEntity(r));
 
     // Score and rank by spec match
     const rules = SPEC_MATCH_RULES[params.category];
@@ -195,7 +199,7 @@ export class MarketplaceRepository implements IMarketplaceRepository {
 
       scored.sort((a, b) => b.score - a.score);
       return {
-        data: scored.map(s => s.entity),
+        data: scored.map((s) => s.entity),
         total,
       };
     }
@@ -266,7 +270,7 @@ export class MarketplaceRepository implements IMarketplaceRepository {
       }),
       prisma.orders.count({ where }),
     ]);
-    return { data: data.map(r => this._orderToEntity(r as any)), total };
+    return { data: data.map((r) => this._orderToEntity(r as any)), total };
   }
 
   async saveOrder(entity: OrderEntity): Promise<void> {
@@ -293,7 +297,7 @@ export class MarketplaceRepository implements IMarketplaceRepository {
     await prisma.order_items.deleteMany({ where: { order_id: entity.id } });
     if (entity.items.length > 0) {
       await prisma.order_items.createMany({
-        data: entity.items.map(i => ({
+        data: entity.items.map((i) => ({
           id: randomUUID(),
           order_id: entity.id,
           product_id: i.productId,
@@ -324,7 +328,11 @@ export class MarketplaceRepository implements IMarketplaceRepository {
       vendorId: row.vendor_id,
       type: row.type,
       category: row.category ?? null,
-      specifications: row.specifications ? (typeof row.specifications === 'string' ? JSON.parse(row.specifications) : row.specifications) : null,
+      specifications: row.specifications
+        ? typeof row.specifications === 'string'
+          ? JSON.parse(row.specifications)
+          : row.specifications
+        : null,
       sku: row.sku,
       price: Number(row.price),
       currency: row.currency,

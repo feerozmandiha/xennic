@@ -1,6 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { prisma } from '@xennic/database';
-import { IFeatureFlag, FeatureFlagDefinition } from '../../domain/interfaces/feature-flag.interface.js';
+import {
+  IFeatureFlag,
+  FeatureFlagDefinition,
+} from '../../domain/interfaces/feature-flag.interface.js';
 
 @Injectable()
 export class PrismaFeatureFlagStore implements IFeatureFlag {
@@ -45,7 +48,7 @@ export class PrismaFeatureFlagStore implements IFeatureFlag {
 
   async listFlags(): Promise<FeatureFlagDefinition[]> {
     const rows = await prisma.feature_flags.findMany({ orderBy: { name: 'asc' } });
-    return rows.map(r => ({
+    return rows.map((r) => ({
       key: r.name,
       name: r.name,
       description: r.description ?? '',

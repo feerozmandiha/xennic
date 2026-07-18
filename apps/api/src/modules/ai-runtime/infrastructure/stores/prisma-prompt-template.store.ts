@@ -68,9 +68,7 @@ export class PrismaPromptTemplateStore implements IPromptTemplateStore {
     let templates = rows.map((row: PromptRow) => this.toEntity(row));
 
     if (tags && tags.length > 0) {
-      templates = templates.filter((t: PromptTemplate) =>
-        tags.some(tag => t.tags.includes(tag)),
-      );
+      templates = templates.filter((t: PromptTemplate) => tags.some((tag) => t.tags.includes(tag)));
     }
 
     return templates;

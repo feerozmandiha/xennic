@@ -40,12 +40,7 @@ import { KnowledgeModule } from '../knowledge/knowledge.module.js';
 import { KnowledgeFactoryModule } from '../knowledge-factory/knowledge-factory.module.js';
 
 @Module({
-  imports: [
-    WorkspaceModule,
-    RbacModule,
-    KnowledgeModule,
-    KnowledgeFactoryModule,
-  ],
+  imports: [WorkspaceModule, RbacModule, KnowledgeModule, KnowledgeFactoryModule],
   controllers: [
     GraphController,
     OntologyController,

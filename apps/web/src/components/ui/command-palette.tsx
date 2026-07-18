@@ -6,8 +6,15 @@ import { useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import * as Dialog from '@radix-ui/react-dialog';
 import {
-  Search, FolderKanban, BookOpen, MessageSquare, HardDrive,
-  FileText, Bell, ArrowRight, Loader2,
+  Search,
+  FolderKanban,
+  BookOpen,
+  MessageSquare,
+  HardDrive,
+  FileText,
+  Bell,
+  ArrowRight,
+  Loader2,
 } from 'lucide-react';
 import { useAuthStore } from '@/stores/auth.store';
 import { apiClient } from '@/lib/api/client';
@@ -23,38 +30,44 @@ interface SearchResult {
 }
 
 const TYPE_ICONS: Record<string, React.ElementType> = {
-  project:      FolderKanban,
-  standard:     FileText,
+  project: FolderKanban,
+  standard: FileText,
   conversation: MessageSquare,
-  article:      BookOpen,
-  file:         HardDrive,
+  article: BookOpen,
+  file: HardDrive,
   notification: Bell,
 };
 
 const TYPE_COLORS: Record<string, string> = {
-  project:      'text-blue-500',
-  standard:     'text-purple-500',
+  project: 'text-blue-500',
+  standard: 'text-purple-500',
   conversation: 'text-emerald-500',
-  article:      'text-amber-500',
-  file:         'text-rose-500',
+  article: 'text-amber-500',
+  file: 'text-rose-500',
   notification: 'text-sky-500',
 };
 
-export function CommandPalette({ open, onOpenChange }: {
+export function CommandPalette({
+  open,
+  onOpenChange,
+}: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
   const t = useTranslations('common');
   const locale = useLocale();
   const router = useRouter();
-  const wsId = useAuthStore(s => s.workspaceId);
+  const wsId = useAuthStore((s) => s.workspaceId);
   const inputRef = useRef<HTMLInputElement>(null);
   const [query, setQuery] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
 
   const { data, isFetching } = useQuery({
     queryKey: ['global-search', query, wsId],
-    queryFn: () => apiClient.get<{ success: boolean; data: SearchResult[] }>(`/search?q=${encodeURIComponent(query)}`),
+    queryFn: () =>
+      apiClient.get<{ success: boolean; data: SearchResult[] }>(
+        `/search?q=${encodeURIComponent(query)}`,
+      ),
     enabled: query.length >= 2 && !!wsId,
     staleTime: 30_000,
   });
@@ -73,34 +86,44 @@ export function CommandPalette({ open, onOpenChange }: {
     setSelectedIndex(0);
   }, [query]);
 
-  const onKeyDown = useCallback((e: React.KeyboardEvent) => {
-    if (e.key === 'ArrowDown') {
-      e.preventDefault();
-      setSelectedIndex(i => Math.min(i + 1, results.length - 1));
-    } else if (e.key === 'ArrowUp') {
-      e.preventDefault();
-      setSelectedIndex(i => Math.max(i - 1, 0));
-    } else if (e.key === 'Enter' && results[selectedIndex]) {
-      e.preventDefault();
-      const r = results[selectedIndex];
-      const path = r.url ? `/${locale}${r.url}` : `/${locale}`;
-      router.push(path);
-      onOpenChange(false);
-    }
-  }, [results, selectedIndex, router, locale, onOpenChange]);
+  const onKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        setSelectedIndex((i) => Math.min(i + 1, results.length - 1));
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        setSelectedIndex((i) => Math.max(i - 1, 0));
+      } else if (e.key === 'Enter' && results[selectedIndex]) {
+        e.preventDefault();
+        const r = results[selectedIndex];
+        const path = r.url ? `/${locale}${r.url}` : `/${locale}`;
+        router.push(path);
+        onOpenChange(false);
+      }
+    },
+    [results, selectedIndex, router, locale, onOpenChange],
+  );
 
   function ResultIcon({ type }: { type: string }) {
     const Icon = TYPE_ICONS[type] ?? FileText;
-    return <Icon className={cn('h-4 w-4 shrink-0', TYPE_COLORS[type] ?? 'text-[hsl(var(--muted-foreground))]')} />;
+    return (
+      <Icon
+        className={cn(
+          'h-4 w-4 shrink-0',
+          TYPE_COLORS[type] ?? 'text-[hsl(var(--muted-foreground))]',
+        )}
+      />
+    );
   }
 
   function getTypeLabel(type: string): string {
     const labels: Record<string, string> = {
-      project:      'Project',
-      standard:     'Standard',
+      project: 'Project',
+      standard: 'Standard',
       conversation: 'Conversation',
-      article:      'Article',
-      file:         'File',
+      article: 'Article',
+      file: 'File',
       notification: 'Notification',
     };
     return labels[type] ?? type;
@@ -109,9 +132,7 @@ export function CommandPalette({ open, onOpenChange }: {
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
-        <Dialog.Overlay
-          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm animate-fade-in-fast"
-        />
+        <Dialog.Overlay className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm animate-fade-in-fast" />
         <Dialog.Content
           className={cn(
             'fixed z-50 top-[15%] start-1/2 -translate-x-1/2',
@@ -136,7 +157,7 @@ export function CommandPalette({ open, onOpenChange }: {
               ref={inputRef}
               type="text"
               value={query}
-              onChange={e => setQuery(e.target.value)}
+              onChange={(e) => setQuery(e.target.value)}
               placeholder={t('search')}
               className={cn(
                 'flex-1 bg-transparent text-sm outline-none',
@@ -154,9 +175,7 @@ export function CommandPalette({ open, onOpenChange }: {
           <div className="max-h-[320px] overflow-y-auto p-2 space-y-0.5">
             {query.length >= 2 && results.length === 0 && !isFetching && (
               <div className="py-8 text-center">
-                <p className="text-sm text-[hsl(var(--muted-foreground))]">
-                  {t('noData')}
-                </p>
+                <p className="text-sm text-[hsl(var(--muted-foreground))]">{t('noData')}</p>
               </div>
             )}
 
@@ -211,11 +230,15 @@ export function CommandPalette({ open, onOpenChange }: {
               <span className="text-xs">Navigate</span>
             </div>
             <div className="flex items-center gap-2 text-[10px] text-[hsl(var(--muted-foreground)/0.6)]">
-              <kbd className="px-1 py-0.5 rounded-[2px] text-[9px] font-mono border bg-[hsl(var(--secondary))]">↵</kbd>
+              <kbd className="px-1 py-0.5 rounded-[2px] text-[9px] font-mono border bg-[hsl(var(--secondary))]">
+                ↵
+              </kbd>
               <span className="text-xs">Open</span>
             </div>
             <div className="flex items-center gap-2 text-[10px] text-[hsl(var(--muted-foreground)/0.6)] ms-auto">
-              <kbd className="px-1 py-0.5 rounded-[2px] text-[9px] font-mono border bg-[hsl(var(--secondary))]">ESC</kbd>
+              <kbd className="px-1 py-0.5 rounded-[2px] text-[9px] font-mono border bg-[hsl(var(--secondary))]">
+                ESC
+              </kbd>
               <span className="text-xs">Close</span>
             </div>
           </div>

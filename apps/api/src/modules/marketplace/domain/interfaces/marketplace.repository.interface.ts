@@ -1,6 +1,6 @@
 import type { VendorEntity } from '../entities/vendor.entity.js';
 import type { ProductEntity } from '../entities/product.entity.js';
-import type { OrderEntity} from '../entities/order.entity.js';
+import type { OrderEntity } from '../entities/order.entity.js';
 
 export interface VendorSearchParams {
   query?: string;
@@ -43,7 +43,12 @@ export interface IMarketplaceRepository {
   findProductById(id: string): Promise<ProductEntity | null>;
   findProductBySku(sku: string): Promise<ProductEntity | null>;
   searchProducts(params: ProductSearchParams): Promise<SearchResult<ProductEntity>>;
-  suggestProducts(params: { category: string; specs: Record<string, any>; offset?: number; limit?: number }): Promise<SearchResult<ProductEntity>>;
+  suggestProducts(params: {
+    category: string;
+    specs: Record<string, any>;
+    offset?: number;
+    limit?: number;
+  }): Promise<SearchResult<ProductEntity>>;
   saveProduct(entity: ProductEntity): Promise<void>;
   deleteProduct(id: string): Promise<void>;
 

@@ -17,13 +17,7 @@ export class ProjectMember {
     userId: string,
     role: ProjectMemberRole = 'viewer',
   ): ProjectMember {
-    return new ProjectMember(
-      crypto.randomUUID(),
-      projectId,
-      userId,
-      role,
-      new Date(),
-    );
+    return new ProjectMember(crypto.randomUUID(), projectId, userId, role, new Date());
   }
 }
 
@@ -38,21 +32,11 @@ export class ProjectNote {
     public readonly createdAt: Date,
   ) {}
 
-  static create(
-    projectId: string,
-    content: string,
-    createdBy: string,
-  ): ProjectNote {
+  static create(projectId: string, content: string, createdBy: string): ProjectNote {
     if (!content || content.trim().length === 0) {
       throw new Error('Note content cannot be empty');
     }
-    return new ProjectNote(
-      crypto.randomUUID(),
-      projectId,
-      content.trim(),
-      createdBy,
-      new Date(),
-    );
+    return new ProjectNote(crypto.randomUUID(), projectId, content.trim(), createdBy, new Date());
   }
 }
 
@@ -102,7 +86,7 @@ export class ProjectEntity {
       description?.trim() || null,
       'active',
       startDate || null,
-      endDate   || null,
+      endDate || null,
       createdBy,
       null,
       now,
@@ -143,13 +127,27 @@ export class ProjectEntity {
 
   // ─── Getters ─────────────────────────────────────────────────────────────────
 
-  get name(): string       { return this._name; }
-  get description(): string | null { return this._description; }
-  get status(): ProjectStatus      { return this._status; }
-  get startDate(): Date | null     { return this._startDate; }
-  get endDate(): Date | null       { return this._endDate; }
-  get createdBy(): string          { return this._createdBy; }
-  get updatedBy(): string | null   { return this._updatedBy; }
+  get name(): string {
+    return this._name;
+  }
+  get description(): string | null {
+    return this._description;
+  }
+  get status(): ProjectStatus {
+    return this._status;
+  }
+  get startDate(): Date | null {
+    return this._startDate;
+  }
+  get endDate(): Date | null {
+    return this._endDate;
+  }
+  get createdBy(): string {
+    return this._createdBy;
+  }
+  get updatedBy(): string | null {
+    return this._updatedBy;
+  }
 
   // ─── Business Methods ────────────────────────────────────────────────────────
 
@@ -215,6 +213,10 @@ export class ProjectEntity {
     this.updatedAt = new Date();
   }
 
-  isDeleted(): boolean { return this.deletedAt !== null; }
-  isActive(): boolean  { return this._status === 'active' && !this.isDeleted(); }
+  isDeleted(): boolean {
+    return this.deletedAt !== null;
+  }
+  isActive(): boolean {
+    return this._status === 'active' && !this.isDeleted();
+  }
 }

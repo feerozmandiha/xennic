@@ -24,7 +24,9 @@ export class ClassifyWorker extends BasePipelineWorker {
     super(documentRepository, pipelineRunRepository, eventBus, QUEUE_NAMES.CLASSIFY);
   }
 
-  protected async execute(context: WorkerContext): Promise<{ domain: string; standard: string; confidence: number }> {
+  protected async execute(
+    context: WorkerContext,
+  ): Promise<{ domain: string; standard: string; confidence: number }> {
     const { documentId } = context;
     const job = context.job as any;
     const payload = job.data as ClassifyJobData;

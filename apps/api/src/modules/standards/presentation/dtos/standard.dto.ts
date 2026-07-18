@@ -4,19 +4,26 @@ import { StandardEntity } from '../../domain/entities/standard.entity.js';
 
 export class CreateStandardDto {
   @ApiProperty({ example: 'IEC-60909-0', description: 'Standard code (unique)' })
-  @IsString() @MinLength(1)
+  @IsString()
+  @MinLength(1)
   code!: string;
 
-  @ApiProperty({ example: 'Short-circuit currents in three-phase AC systems', description: 'Standard title' })
-  @IsString() @MinLength(1)
+  @ApiProperty({
+    example: 'Short-circuit currents in three-phase AC systems',
+    description: 'Standard title',
+  })
+  @IsString()
+  @MinLength(1)
   title!: string;
 
   @ApiProperty({ example: 'IEC', description: 'Standards organization' })
-  @IsString() @MinLength(1)
+  @IsString()
+  @MinLength(1)
   organization!: string;
 
   @ApiProperty({ example: '2016', description: 'Standard version/year' })
-  @IsString() @MinLength(1)
+  @IsString()
+  @MinLength(1)
   version!: string;
 
   @ApiPropertyOptional({ example: '2020-01-15', description: 'Publication date' })
@@ -24,25 +31,34 @@ export class CreateStandardDto {
   publishedAt?: string;
 
   @ApiPropertyOptional({ example: 'active', enum: ['active', 'draft', 'superseded'] })
-  @IsOptional() @IsIn(['active', 'draft', 'superseded'])
+  @IsOptional()
+  @IsIn(['active', 'draft', 'superseded'])
   status?: string;
 }
 
 export class UpdateStandardDto {
   @ApiPropertyOptional({ example: 'IEC-60909-0' })
-  @IsOptional() @IsString() @MinLength(1)
+  @IsOptional()
+  @IsString()
+  @MinLength(1)
   code?: string;
 
   @ApiPropertyOptional({ example: 'Short-circuit currents in three-phase AC systems' })
-  @IsOptional() @IsString() @MinLength(1)
+  @IsOptional()
+  @IsString()
+  @MinLength(1)
   title?: string;
 
   @ApiPropertyOptional({ example: 'IEC' })
-  @IsOptional() @IsString() @MinLength(1)
+  @IsOptional()
+  @IsString()
+  @MinLength(1)
   organization?: string;
 
   @ApiPropertyOptional({ example: '2016' })
-  @IsOptional() @IsString() @MinLength(1)
+  @IsOptional()
+  @IsString()
+  @MinLength(1)
   version?: string;
 
   @ApiPropertyOptional()
@@ -50,29 +66,35 @@ export class UpdateStandardDto {
   publishedAt?: string;
 
   @ApiPropertyOptional({ enum: ['active', 'draft', 'superseded'] })
-  @IsOptional() @IsIn(['active', 'draft', 'superseded'])
+  @IsOptional()
+  @IsIn(['active', 'draft', 'superseded'])
   status?: string;
 }
 
 export class StandardSearchQueryDto {
   @ApiPropertyOptional({ description: 'Search query for code or title' })
-  @IsOptional() @IsString()
+  @IsOptional()
+  @IsString()
   q?: string;
 
   @ApiPropertyOptional({ description: 'Filter by organization' })
-  @IsOptional() @IsString()
+  @IsOptional()
+  @IsString()
   organization?: string;
 
   @ApiPropertyOptional({ enum: ['active', 'draft', 'superseded'] })
-  @IsOptional() @IsIn(['active', 'draft', 'superseded'])
+  @IsOptional()
+  @IsIn(['active', 'draft', 'superseded'])
   status?: string;
 
   @ApiPropertyOptional({ example: '1' })
-  @IsOptional() @IsString()
+  @IsOptional()
+  @IsString()
   page?: string;
 
   @ApiPropertyOptional({ example: '20' })
-  @IsOptional() @IsString()
+  @IsOptional()
+  @IsString()
   limit?: string;
 }
 
@@ -98,12 +120,13 @@ export class StandardResponseDto {
   }
 
   static fromEntities(entities: StandardEntity[]): StandardResponseDto[] {
-    return entities.map(e => StandardResponseDto.fromEntity(e));
+    return entities.map((e) => StandardResponseDto.fromEntity(e));
   }
 }
 
 export class LinkStandardDto {
   @ApiProperty({ description: 'Standard ID to link' })
-  @IsString() @MinLength(1)
+  @IsString()
+  @MinLength(1)
   standardId!: string;
 }

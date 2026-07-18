@@ -59,7 +59,7 @@ export class GatewayTelemetryService {
   }
 
   getProviderStats(provider: string): ProviderStats {
-    const providerCalls = this.calls.filter(c => c.provider === provider);
+    const providerCalls = this.calls.filter((c) => c.provider === provider);
 
     if (providerCalls.length === 0) {
       return {
@@ -74,9 +74,12 @@ export class GatewayTelemetryService {
       };
     }
 
-    const successful = providerCalls.filter(c => c.success);
-    const latencies = providerCalls.map(c => c.latency).sort((a, b) => a - b);
-    const totalTokens = providerCalls.reduce((sum, c) => sum + c.promptTokens + c.completionTokens, 0);
+    const successful = providerCalls.filter((c) => c.success);
+    const latencies = providerCalls.map((c) => c.latency).sort((a, b) => a - b);
+    const totalTokens = providerCalls.reduce(
+      (sum, c) => sum + c.promptTokens + c.completionTokens,
+      0,
+    );
 
     return {
       totalCalls: providerCalls.length,
@@ -92,8 +95,8 @@ export class GatewayTelemetryService {
 
   getAggregateStats(): AggregateStats {
     const totalCalls = this.calls.length;
-    const successful = this.calls.filter(c => c.success);
-    const latencies = this.calls.map(c => c.latency);
+    const successful = this.calls.filter((c) => c.success);
+    const latencies = this.calls.map((c) => c.latency);
     const totalTokens = this.calls.reduce((sum, c) => sum + c.promptTokens + c.completionTokens, 0);
 
     const providerBreakdown: Record<string, { calls: number; errors: number }> = {};
@@ -111,14 +114,15 @@ export class GatewayTelemetryService {
       totalCalls,
       successfulCalls: successful.length,
       failedCalls: totalCalls - successful.length,
-      avgLatency: latencies.length > 0 ? latencies.reduce((sum, l) => sum + l, 0) / latencies.length : 0,
+      avgLatency:
+        latencies.length > 0 ? latencies.reduce((sum, l) => sum + l, 0) / latencies.length : 0,
       totalTokens,
       providerBreakdown,
     };
   }
 
   getLatencyHistogram(bucketCount = 10): { bucket: string; count: number }[] {
-    const latencies = this.calls.map(c => c.latency);
+    const latencies = this.calls.map((c) => c.latency);
     if (latencies.length === 0) {
       return [];
     }
@@ -135,14 +139,11 @@ export class GatewayTelemetryService {
     }
 
     for (const latency of latencies) {
-      const index = Math.min(
-        Math.floor((latency - min) / bucketSize),
-        bucketCount - 1,
-      );
+      const index = Math.min(Math.floor((latency - min) / bucketSize), bucketCount - 1);
       buckets[index]!.count++;
     }
 
-    return buckets.map(b => ({
+    return buckets.map((b) => ({
       bucket: `${b.start}-${b.end}`,
       count: b.count,
     }));

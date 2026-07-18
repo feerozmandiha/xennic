@@ -1,5 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
-import type { RateLimitConfig, RateLimitResult, IRateLimiter } from '../../domain/interfaces/rate-limiter.interface.js';
+import type {
+  RateLimitConfig,
+  RateLimitResult,
+  IRateLimiter,
+} from '../../domain/interfaces/rate-limiter.interface.js';
 
 interface Bucket {
   tokens: number;
@@ -14,7 +18,12 @@ export class TokenBucketRateLimiter implements IRateLimiter {
     free: { tier: 'free', requestsPerWindow: 10, windowMs: 60_000 },
     basic: { tier: 'basic', requestsPerWindow: 100, windowMs: 60_000 },
     premium: { tier: 'premium', requestsPerWindow: 1000, windowMs: 60_000, burstLimit: 2000 },
-    enterprise: { tier: 'enterprise', requestsPerWindow: 10000, windowMs: 60_000, burstLimit: 50000 },
+    enterprise: {
+      tier: 'enterprise',
+      requestsPerWindow: 10000,
+      windowMs: 60_000,
+      burstLimit: 50000,
+    },
   };
 
   async check(key: string, tier: RateLimitConfig['tier']): Promise<RateLimitResult> {
@@ -30,7 +39,10 @@ export class TokenBucketRateLimiter implements IRateLimiter {
     const elapsed = now - bucket.lastRefill;
     const refill = Math.floor((elapsed / config.windowMs) * config.requestsPerWindow);
     if (refill > 0) {
-      bucket.tokens = Math.min(config.requestsPerWindow + (config.burstLimit ?? 0), bucket.tokens + refill);
+      bucket.tokens = Math.min(
+        config.requestsPerWindow + (config.burstLimit ?? 0),
+        bucket.tokens + refill,
+      );
       bucket.lastRefill = now;
     }
 

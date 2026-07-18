@@ -5,24 +5,24 @@ import { useParams } from 'next/navigation';
 import { Building2, ChevronDown, Plus, Check } from 'lucide-react';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import { useAuthStore } from '@/stores/auth.store';
-import { apiClient }    from '@/lib/api/client';
-import { cn }           from '@/lib/utils';
+import { apiClient } from '@/lib/api/client';
+import { cn } from '@/lib/utils';
 
 export function WorkspaceSelector() {
-  const params       = useParams();
-  const locale       = (params?.locale as string) ?? 'fa';
-  const wsId         = useAuthStore(s => s.workspaceId);
-  const setWorkspace = useAuthStore(s => s.setWorkspace);
+  const params = useParams();
+  const locale = (params?.locale as string) ?? 'fa';
+  const wsId = useAuthStore((s) => s.workspaceId);
+  const setWorkspace = useAuthStore((s) => s.setWorkspace);
 
   // ✅ فیلتر شده — فقط workspace های خود کاربر
   const { data } = useQuery({
     queryKey: ['workspaces-list'],
-    queryFn:  () => apiClient.get<any>('/workspaces?limit=20'),
+    queryFn: () => apiClient.get<any>('/workspaces?limit=20'),
     retry: false,
   });
 
   const workspaces = data?.data ?? [];
-  const current    = workspaces.find((w: any) => w.id === wsId);
+  const current = workspaces.find((w: any) => w.id === wsId);
 
   function select(id: string) {
     setWorkspace(id);
@@ -35,12 +35,14 @@ export function WorkspaceSelector() {
   return (
     <DropdownMenu.Root>
       <DropdownMenu.Trigger asChild>
-        <button className={cn(
-          'flex items-center gap-2 h-8 px-2.5 rounded-[var(--radius)]',
-          'text-xs font-medium border border-[hsl(var(--border))]',
-          'hover:bg-[hsl(var(--secondary))] transition-colors',
-          'max-w-[160px]',
-        )}>
+        <button
+          className={cn(
+            'flex items-center gap-2 h-8 px-2.5 rounded-[var(--radius)]',
+            'text-xs font-medium border border-[hsl(var(--border))]',
+            'hover:bg-[hsl(var(--secondary))] transition-colors',
+            'max-w-[160px]',
+          )}
+        >
           <Building2 className="h-3.5 w-3.5 text-[hsl(var(--muted-foreground))] shrink-0" />
           <span className="truncate">{current?.name ?? 'انتخاب Workspace'}</span>
           <ChevronDown className="h-3 w-3 text-[hsl(var(--muted-foreground))] shrink-0" />
@@ -85,7 +87,7 @@ export function WorkspaceSelector() {
           <DropdownMenu.Separator className="my-1 h-px bg-[hsl(var(--border))]" />
 
           <DropdownMenu.Item
-            onSelect={() => window.location.href = `/${locale}/workspaces/new`}
+            onSelect={() => (window.location.href = `/${locale}/workspaces/new`)}
             className={cn(
               'flex items-center gap-2 px-3 py-2 rounded-[var(--radius)] text-sm cursor-pointer',
               'text-[hsl(var(--primary))] hover:bg-[hsl(var(--primary)/0.05)]',

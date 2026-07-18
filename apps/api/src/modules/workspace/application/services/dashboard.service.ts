@@ -53,14 +53,14 @@ export class DashboardService {
       `,
     ]);
 
-    const members = (memberRows ?? []).map(r => ({
+    const members = (memberRows ?? []).map((r) => ({
       id: r.id,
       userId: r.user_id,
       role: r.role,
       joinedAt: r.joined_at,
     }));
 
-    const projects = (projectRows ?? []).map(r => ({
+    const projects = (projectRows ?? []).map((r) => ({
       id: r.id,
       name: r.name,
       status: r.status,

@@ -70,7 +70,9 @@ export default function ProductDetailPage() {
             </div>
             <div>
               <p className="text-xs text-[hsl(var(--muted-foreground))] mb-1">{t('createdAt')}</p>
-              <p className="text-sm font-medium">{new Date(p.createdAt).toLocaleDateString('fa-IR')}</p>
+              <p className="text-sm font-medium">
+                {new Date(p.createdAt).toLocaleDateString('fa-IR')}
+              </p>
             </div>
           </div>
         </CardContent>

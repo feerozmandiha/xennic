@@ -1,7 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import type { WorkflowDefinition } from '../domain/workflow-definition.entity.js';
 import type { WorkflowStep } from '../domain/workflow-definition.entity.js';
-import type { IWorkflowValidator, ValidationResult, ValidationError } from '../domain/workflow-validator.interface.js';
+import type {
+  IWorkflowValidator,
+  ValidationResult,
+  ValidationError,
+} from '../domain/workflow-validator.interface.js';
 
 @Injectable()
 export class WorkflowValidatorService implements IWorkflowValidator {
@@ -138,7 +142,7 @@ export class WorkflowValidatorService implements IWorkflowValidator {
     errors.push(...cycleErrors);
 
     return {
-      valid: errors.filter(e => e.severity === 'error').length === 0,
+      valid: errors.filter((e) => e.severity === 'error').length === 0,
       errors,
     };
   }
@@ -158,7 +162,7 @@ export class WorkflowValidatorService implements IWorkflowValidator {
       if (recStack.has(nodeId)) {
         const cyclePath = [...path.slice(path.indexOf(nodeId)), nodeId].join(' -> ');
         errors.push({
-          path: `steps[${steps.findIndex(s => s.id === nodeId)}].next`,
+          path: `steps[${steps.findIndex((s) => s.id === nodeId)}].next`,
           message: `Circular dependency detected: ${cyclePath}`,
           severity: 'error',
         });

@@ -19,9 +19,11 @@ export class DslValidator {
     }
 
     if (!dsl.id || typeof dsl.id !== 'string') errors.push('DSL must have a string id');
-    if (!dsl.version || typeof dsl.version !== 'string') errors.push('DSL must have a string version');
+    if (!dsl.version || typeof dsl.version !== 'string')
+      errors.push('DSL must have a string version');
 
-    if (dsl.standard && typeof dsl.standard !== 'string') errors.push('DSL standard must be a string');
+    if (dsl.standard && typeof dsl.standard !== 'string')
+      errors.push('DSL standard must be a string');
 
     const inputs = dsl.inputs as Array<Record<string, unknown>> | undefined;
     if (!Array.isArray(inputs) || inputs.length === 0) {
@@ -31,11 +33,19 @@ export class DslValidator {
     } else {
       for (const input of inputs) {
         if (typeof input.name !== 'string') errors.push('Each input must have a string name');
-        if (typeof input.label !== 'string') errors.push(`Input '${input.name}' must have a string label`);
-        if (input.type && !['number', 'string', 'boolean', 'enum', 'table'].includes(input.type as string)) {
+        if (typeof input.label !== 'string')
+          errors.push(`Input '${input.name}' must have a string label`);
+        if (
+          input.type &&
+          !['number', 'string', 'boolean', 'enum', 'table'].includes(input.type as string)
+        ) {
           errors.push(`Input '${input.name}' has invalid type '${input.type}'`);
         }
-        if (input.description && typeof input.description === 'string' && input.description.length > MAX_STRING_LENGTH) {
+        if (
+          input.description &&
+          typeof input.description === 'string' &&
+          input.description.length > MAX_STRING_LENGTH
+        ) {
           errors.push(`Input '${input.name}' description exceeds maximum length`);
         }
       }
@@ -61,7 +71,9 @@ export class DslValidator {
 
     const validations = dsl.validation as Array<Record<string, unknown>> | undefined;
     if (validations && validations.length > MAX_VALIDATIONS) {
-      errors.push(`DSL validations count ${validations.length} exceeds maximum of ${MAX_VALIDATIONS}`);
+      errors.push(
+        `DSL validations count ${validations.length} exceeds maximum of ${MAX_VALIDATIONS}`,
+      );
     }
 
     return { valid: errors.length === 0, errors };

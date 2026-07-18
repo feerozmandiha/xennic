@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 
-const STORAGE_KEY  = 'xennic_guest';
-const MAX_GUEST    = 5;
+const STORAGE_KEY = 'xennic_guest';
+const MAX_GUEST = 5;
 
 interface GuestState {
   sessionId: string;
@@ -27,7 +27,9 @@ function load(): GuestState {
         return parsed;
       }
     }
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
 
   const state: GuestState = {
     sessionId: generateId(),
@@ -42,7 +44,9 @@ function save(state: GuestState): void {
   if (typeof window === 'undefined') return;
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
 }
 
 export function useGuestQuota() {

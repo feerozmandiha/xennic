@@ -13,10 +13,7 @@ import { PrismaWorkflowRepository } from './infrastructure/persistence/prisma-wo
     { provide: 'IWorkflowRepository', useClass: PrismaWorkflowRepository },
     { provide: 'IWorkflowValidator', useClass: WorkflowValidatorService },
   ],
-  exports: [
-    WorkflowDefinitionService,
-    WorkflowTemplateService,
-  ],
+  exports: [WorkflowDefinitionService, WorkflowTemplateService],
 })
 export class WorkflowEngineModule implements OnModuleInit {
   private readonly logger = new Logger(WorkflowEngineModule.name);

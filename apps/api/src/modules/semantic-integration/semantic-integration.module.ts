@@ -11,10 +11,7 @@ import { AiRuntimeModule } from '../ai-runtime/ai-runtime.module.js';
 
 @Global()
 @Module({
-  imports: [
-    KnowledgeIntelligenceModule,
-    AiRuntimeModule,
-  ],
+  imports: [KnowledgeIntelligenceModule, AiRuntimeModule],
   providers: [
     EventOutboxRepository,
     EventProcessLogRepository,
@@ -24,10 +21,7 @@ import { AiRuntimeModule } from '../ai-runtime/ai-runtime.module.js';
     DocumentPublishedHandler,
     CacheInvalidationHandler,
   ],
-  exports: [
-    DomainEventPublisher,
-    SemanticEventBus,
-  ],
+  exports: [DomainEventPublisher, SemanticEventBus],
 })
 export class SemanticIntegrationModule implements OnModuleInit {
   private readonly logger = new Logger(SemanticIntegrationModule.name);
@@ -43,6 +37,8 @@ export class SemanticIntegrationModule implements OnModuleInit {
     this.eventBus.register(this.documentPublishedHandler);
     this.eventBus.register(this.cacheInvalidationHandler);
     this.outboxRelay.start();
-    this.logger.log('Semantic Integration Layer initialized: handlers registered, outbox relay started');
+    this.logger.log(
+      'Semantic Integration Layer initialized: handlers registered, outbox relay started',
+    );
   }
 }

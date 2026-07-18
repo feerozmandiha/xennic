@@ -49,13 +49,13 @@ export class PlanResponseDto {
 
   static fromEntity(p: PlanEntity): PlanResponseDto {
     const dto = new PlanResponseDto();
-    dto.id           = p.id;
-    dto.name         = p.name;
-    dto.slug         = p.slug;
+    dto.id = p.id;
+    dto.name = p.name;
+    dto.slug = p.slug;
     dto.monthlyPrice = p.monthlyPrice;
-    dto.yearlyPrice  = p.yearlyPrice;
-    dto.features     = p.features as PlanFeaturesDto;
-    dto.isActive     = p.isActive;
+    dto.yearlyPrice = p.yearlyPrice;
+    dto.features = p.features as PlanFeaturesDto;
+    dto.isActive = p.isActive;
     return dto;
   }
 }
@@ -73,15 +73,15 @@ export class SubscriptionResponseDto {
 
   static fromEntity(s: SubscriptionEntity): SubscriptionResponseDto {
     const dto = new SubscriptionResponseDto();
-    dto.id          = s.id;
+    dto.id = s.id;
     dto.workspaceId = s.workspaceId;
-    dto.planId      = s.planId;
-    dto.planSlug    = s.planSlug;
-    dto.status      = s.status;
-    dto.startsAt    = s.startsAt;
-    dto.expiresAt   = s.expiresAt;
+    dto.planId = s.planId;
+    dto.planSlug = s.planSlug;
+    dto.status = s.status;
+    dto.startsAt = s.startsAt;
+    dto.expiresAt = s.expiresAt;
     dto.cancelledAt = s.cancelledAt;
-    dto.createdAt   = s.createdAt;
+    dto.createdAt = s.createdAt;
     return dto;
   }
 }

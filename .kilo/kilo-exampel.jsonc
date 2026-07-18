@@ -1,15 +1,8 @@
 {
   "$schema": "https://app.kilo.ai/config.json",
-  
-    "openai.apiKey": "sk-cdt-eyJpZCI6IjExMzg5Mjk5MSIsInUiOiIiLCJuIjoiZGVmYXVsdCIsImoiOiJkZWZhdWx0IiwiayI6ImFwaSJ9.2CyhJQYIpCYpzyGAYvaccyq1HBvrWrlYlyM7mn99u2Y",
-    "openai.baseURL": "https://conduit.ozdoev.net/api/v1",
-    "cursor.overrideOpenAIBaseURL": true,
-    "customModels": [
-        "gpt-5",
-        "claude-opus-4-8",
-        "gemini-3-pro",
-        "grok-4",
-        "deepseek-v3-2"
-    ]
 
+  "openai.apiKey": "sk-cdt-eyJpZCI6IjExMzg5Mjk5MSIsInUiOiIiLCJuIjoiZGVmYXVsdCIsImoiOiJkZWZhdWx0IiwiayI6ImFwaSJ9.2CyhJQYIpCYpzyGAYvaccyq1HBvrWrlYlyM7mn99u2Y",
+  "openai.baseURL": "https://conduit.ozdoev.net/api/v1",
+  "cursor.overrideOpenAIBaseURL": true,
+  "customModels": ["gpt-5", "claude-opus-4-8", "gemini-3-pro", "grok-4", "deepseek-v3-2"],
 }

@@ -15,7 +15,9 @@ jest.mock('@xennic/database', () => {
       findMany: jest.fn().mockResolvedValue([]),
       findFirst: jest.fn().mockResolvedValue(null),
       findUnique: jest.fn().mockResolvedValue(null),
-      create: jest.fn().mockImplementation((args) => Promise.resolve({ id: crypto.randomUUID(), ...args.data })),
+      create: jest
+        .fn()
+        .mockImplementation((args) => Promise.resolve({ id: crypto.randomUUID(), ...args.data })),
       update: jest.fn().mockImplementation((args) => Promise.resolve({ id: args.where.id })),
       delete: jest.fn().mockResolvedValue({}),
       count: jest.fn().mockResolvedValue(0),
@@ -23,12 +25,16 @@ jest.mock('@xennic/database', () => {
     knowledge_taxonomy: {
       findFirst: jest.fn().mockResolvedValue(null),
       findMany: jest.fn().mockResolvedValue([]),
-      create: jest.fn().mockImplementation((args) => Promise.resolve({ id: crypto.randomUUID(), ...args.data })),
+      create: jest
+        .fn()
+        .mockImplementation((args) => Promise.resolve({ id: crypto.randomUUID(), ...args.data })),
       delete: jest.fn().mockResolvedValue({}),
     },
     knowledge_analytics: {
       findUnique: jest.fn().mockResolvedValue(null),
-      upsert: jest.fn().mockImplementation((args) => Promise.resolve({ id: crypto.randomUUID(), ...args.create })),
+      upsert: jest
+        .fn()
+        .mockImplementation((args) => Promise.resolve({ id: crypto.randomUUID(), ...args.create })),
       findMany: jest.fn().mockResolvedValue([]),
     },
     knowledge_formulas: { findMany: jest.fn().mockResolvedValue([]) },
@@ -36,12 +42,16 @@ jest.mock('@xennic/database', () => {
     knowledge_versions: {
       findMany: jest.fn().mockResolvedValue([]),
       findUnique: jest.fn().mockResolvedValue(null),
-      create: jest.fn().mockImplementation((args) => Promise.resolve({ id: crypto.randomUUID(), ...args.data })),
+      create: jest
+        .fn()
+        .mockImplementation((args) => Promise.resolve({ id: crypto.randomUUID(), ...args.data })),
     },
     comments: { findMany: jest.fn().mockResolvedValue([]) },
     workflow_entries: {
       findMany: jest.fn().mockResolvedValue([]),
-      create: jest.fn().mockImplementation((args) => Promise.resolve({ id: crypto.randomUUID(), ...args.data })),
+      create: jest
+        .fn()
+        .mockImplementation((args) => Promise.resolve({ id: crypto.randomUUID(), ...args.data })),
     },
     calculations: { findMany: jest.fn().mockResolvedValue([]) },
     $queryRaw: jest.fn().mockResolvedValue([]),
@@ -107,9 +117,24 @@ describe('Knowledge Lifecycle (integration)', () => {
         { provide: 'IKnowledgeRepository', useValue: mockKnowledgeRepository },
       ],
     })
-      .overrideGuard(JwtAuthGuard).useValue({ canActivate: (ctx: any) => { const req = ctx.switchToHttp().getRequest(); req.user = { userId: 'user-1', planSlug: 'enterprise' }; return true; } })
-      .overrideGuard(WorkspaceGuard).useValue({ canActivate: (ctx: any) => { const req = ctx.switchToHttp().getRequest(); req.workspaceId = 'ws-1'; return true; } })
-      .overrideGuard(PermissionsGuard).useValue({ canActivate: () => true })
+      .overrideGuard(JwtAuthGuard)
+      .useValue({
+        canActivate: (ctx: any) => {
+          const req = ctx.switchToHttp().getRequest();
+          req.user = { userId: 'user-1', planSlug: 'enterprise' };
+          return true;
+        },
+      })
+      .overrideGuard(WorkspaceGuard)
+      .useValue({
+        canActivate: (ctx: any) => {
+          const req = ctx.switchToHttp().getRequest();
+          req.workspaceId = 'ws-1';
+          return true;
+        },
+      })
+      .overrideGuard(PermissionsGuard)
+      .useValue({ canActivate: () => true })
       .compile();
 
     app = moduleFixture.createNestApplication();
@@ -129,7 +154,7 @@ describe('Knowledge Lifecycle (integration)', () => {
       .set('x-workspace-id', 'ws-1')
       .send({
         slug: 'ohm-law-basics',
-        content: { blocks: [{ text: 'Ohm\'s law: V = IR' }] },
+        content: { blocks: [{ text: "Ohm's law: V = IR" }] },
         language: 'en',
         visibility: 'workspace',
         difficulty: 'beginner',
@@ -152,9 +177,7 @@ describe('Knowledge Lifecycle (integration)', () => {
   });
 
   it('should get a knowledge article by slug', async () => {
-    const res = await request(app.getHttpServer())
-      .get('/knowledge/slug/test-article')
-      .expect(200);
+    const res = await request(app.getHttpServer()).get('/knowledge/slug/test-article').expect(200);
 
     expect(res.body.success).toBe(true);
     expect(res.body.data.slug).toBe('test-article');
@@ -178,9 +201,7 @@ describe('Knowledge Lifecycle (integration)', () => {
   });
 
   it('should soft-delete a knowledge article', async () => {
-    await request(app.getHttpServer())
-      .delete('/knowledge/test-article-id')
-      .expect(204);
+    await request(app.getHttpServer()).delete('/knowledge/test-article-id').expect(204);
   });
 
   it('should search knowledge articles', async () => {
@@ -194,9 +215,7 @@ describe('Knowledge Lifecycle (integration)', () => {
   });
 
   it('should return 404 for non-existent article', async () => {
-    const res = await request(app.getHttpServer())
-      .get('/knowledge/non-existent-id')
-      .expect(404);
+    const res = await request(app.getHttpServer()).get('/knowledge/non-existent-id').expect(404);
 
     expect(res.body.error || res.body.success === false).toBeTruthy();
   });

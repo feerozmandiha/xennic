@@ -21,19 +21,14 @@ export class ToolDispatcherService {
   async dispatch(call: ToolCall): Promise<DispatchedToolResult> {
     const definition = this.registry.get(call.toolName);
     if (!definition) {
-      throw new ToolExecutionException(
-        call.toolName,
-        'Tool not found in registry',
-      );
+      throw new ToolExecutionException(call.toolName, 'Tool not found in registry');
     }
 
     const errors = this._validator.validate(call, definition.parameters);
     if (errors.length > 0) {
-      throw new ToolExecutionException(
-        call.toolName,
-        `Validation failed: ${errors.join('; ')}`,
-        { errors },
-      );
+      throw new ToolExecutionException(call.toolName, `Validation failed: ${errors.join('; ')}`, {
+        errors,
+      });
     }
 
     const result = await this.registry.dispatch(call);
@@ -41,10 +36,10 @@ export class ToolDispatcherService {
   }
 
   async dispatchBatch(calls: ToolCall[]): Promise<DispatchedToolResult[]> {
-    return Promise.all(calls.map(call => this.dispatch(call)));
+    return Promise.all(calls.map((call) => this.dispatch(call)));
   }
 
   getAvailableTools(): string[] {
-    return this.registry.getAll().map(t => t.name);
+    return this.registry.getAll().map((t) => t.name);
   }
 }

@@ -53,7 +53,13 @@ export class RoleEntity {
     this.updatedAt = new Date();
   }
 
-  get name(): string { return this._name; }
-  get slug(): string { return this._slug.value; }
-  get description(): string | null { return this._description; }
+  get name(): string {
+    return this._name;
+  }
+  get slug(): string {
+    return this._slug.value;
+  }
+  get description(): string | null {
+    return this._description;
+  }
 }

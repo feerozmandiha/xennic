@@ -130,10 +130,7 @@ export class BillingService {
     return { redirectUrl: result.redirectUrl!, authority: result.authority };
   }
 
-  async verifyGatewayPayment(
-    authority: string,
-    amount: number,
-  ): Promise<PaymentEntity> {
+  async verifyGatewayPayment(authority: string, amount: number): Promise<PaymentEntity> {
     const verification = await this.zarinpalGateway.verifyPayment(authority, amount);
     if (!verification.success) {
       throw new Error(`Payment verification failed: ${verification.message}`);
@@ -145,7 +142,9 @@ export class BillingService {
     return payment;
   }
 
-  async verifyByAuthority(authority: string): Promise<{ payment: PaymentEntity; workspaceId: string }> {
+  async verifyByAuthority(
+    authority: string,
+  ): Promise<{ payment: PaymentEntity; workspaceId: string }> {
     const payment = await this.billingRepository.findPaymentByAuthority(authority);
     if (!payment) throw new NotFoundException('Payment not found for this authority');
     if (!payment.isPending() && payment.status !== 'processing') {
@@ -154,7 +153,9 @@ export class BillingService {
 
     const verification = await this.zarinpalGateway.verifyPayment(authority, payment.amount);
     if (!verification.success) {
-      this.logger.warn(`Zarinpal verify failed for authority ${authority}: ${verification.message}`);
+      this.logger.warn(
+        `Zarinpal verify failed for authority ${authority}: ${verification.message}`,
+      );
       throw new Error(`Payment verification failed: ${verification.message}`);
     }
 
@@ -167,7 +168,7 @@ export class BillingService {
     let payment = await this.billingRepository.findPaymentByAuthority(authority);
     if (!payment) {
       const payments = await this.billingRepository.findAllPaymentsByWorkspace('');
-      payment = payments.find(p => p.isPending() && p.amount === amount) ?? null;
+      payment = payments.find((p) => p.isPending() && p.amount === amount) ?? null;
       if (!payment) throw new NotFoundException('Payment not found for verification');
     }
     return payment;
@@ -244,7 +245,11 @@ export class BillingService {
     meta: { page: number; limit: number; total: number; totalPages: number };
   }> {
     const offset = (page - 1) * limit;
-    const data = await this.billingRepository.findAllTransactionsByWorkspace(workspaceId, offset, limit);
+    const data = await this.billingRepository.findAllTransactionsByWorkspace(
+      workspaceId,
+      offset,
+      limit,
+    );
     // Transactions don't have a count method yet, estimate from payments count
     const total = await this.billingRepository.countPaymentsByWorkspace(workspaceId);
     return {
@@ -304,7 +309,11 @@ export class BillingService {
     recentPayments: PaymentEntity[];
   }> {
     const totals = await this.billingRepository.getInvoiceTotalsByWorkspace(workspaceId);
-    const recentPayments = await this.billingRepository.findAllPaymentsByWorkspace(workspaceId, 0, 5);
+    const recentPayments = await this.billingRepository.findAllPaymentsByWorkspace(
+      workspaceId,
+      0,
+      5,
+    );
     return {
       invoices: {
         total: totals.totalInvoiced,

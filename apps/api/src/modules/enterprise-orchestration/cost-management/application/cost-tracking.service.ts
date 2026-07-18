@@ -1,5 +1,8 @@
 import { Injectable, Inject, Logger } from '@nestjs/common';
-import type { ICostRepository, FindByExecutionOptions } from '../domain/cost-repository.interface.js';
+import type {
+  ICostRepository,
+  FindByExecutionOptions,
+} from '../domain/cost-repository.interface.js';
 import { CostEntry } from '../domain/cost-entry.entity.js';
 import { ResourceUsage } from '../domain/resource-usage.vo.js';
 import type { PaginatedResult } from '../../shared/types/index.js';
@@ -61,11 +64,7 @@ export class CostTrackingService {
     return entry;
   }
 
-  async recordToolCost(
-    executionId: string,
-    toolId: string,
-    cost: number,
-  ): Promise<CostEntry> {
+  async recordToolCost(executionId: string, toolId: string, cost: number): Promise<CostEntry> {
     const entry = CostEntry.create({
       workflowExecutionId: executionId,
       sourceType: 'tool',
@@ -80,10 +79,7 @@ export class CostTrackingService {
     return entry;
   }
 
-  async recordWorkflowCost(
-    executionId: string,
-    cost: number,
-  ): Promise<CostEntry> {
+  async recordWorkflowCost(executionId: string, cost: number): Promise<CostEntry> {
     const entry = CostEntry.create({
       workflowExecutionId: executionId,
       sourceType: 'workflow',

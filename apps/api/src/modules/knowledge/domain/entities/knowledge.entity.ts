@@ -113,25 +113,61 @@ export class KnowledgeEntity {
 
   // ─── Getters ─────────────────────────────────────────────────────────────────
 
-  get slug(): string { return this._slug; }
-  get status(): KnowledgeStatus { return this._status; }
-  get visibility(): KnowledgeVisibility { return this._visibility; }
-  get language(): string { return this._language; }
-  get version(): number { return this._version; }
-  get isActive(): boolean { return this._isActive; }
-  get content(): Record<string, unknown> { return this._content; }
-  get searchText(): string | null { return this._searchText; }
-  get readingTime(): number | null { return this._readingTime; }
-  get difficulty(): KnowledgeDifficulty | null { return this._difficulty; }
-  get authorId(): string | null { return this._authorId; }
-  get reviewerId(): string | null { return this._reviewerId; }
-  get createdAt(): Date { return this._createdAt; }
-  get updatedAt(): Date { return this._updatedAt; }
-  get publishedAt(): Date | null { return this._publishedAt; }
-  get reviewedAt(): Date | null { return this._reviewedAt; }
-  get archivedAt(): Date | null { return this._archivedAt; }
+  get slug(): string {
+    return this._slug;
+  }
+  get status(): KnowledgeStatus {
+    return this._status;
+  }
+  get visibility(): KnowledgeVisibility {
+    return this._visibility;
+  }
+  get language(): string {
+    return this._language;
+  }
+  get version(): number {
+    return this._version;
+  }
+  get isActive(): boolean {
+    return this._isActive;
+  }
+  get content(): Record<string, unknown> {
+    return this._content;
+  }
+  get searchText(): string | null {
+    return this._searchText;
+  }
+  get readingTime(): number | null {
+    return this._readingTime;
+  }
+  get difficulty(): KnowledgeDifficulty | null {
+    return this._difficulty;
+  }
+  get authorId(): string | null {
+    return this._authorId;
+  }
+  get reviewerId(): string | null {
+    return this._reviewerId;
+  }
+  get createdAt(): Date {
+    return this._createdAt;
+  }
+  get updatedAt(): Date {
+    return this._updatedAt;
+  }
+  get publishedAt(): Date | null {
+    return this._publishedAt;
+  }
+  get reviewedAt(): Date | null {
+    return this._reviewedAt;
+  }
+  get archivedAt(): Date | null {
+    return this._archivedAt;
+  }
 
-  isDeleted(): boolean { return !this._isActive; }
+  isDeleted(): boolean {
+    return !this._isActive;
+  }
 
   setSearchText(text: string | null): void {
     this._searchText = text;
@@ -204,7 +240,7 @@ export class KnowledgeEntity {
     if (!allowed.includes(target)) {
       throw new Error(
         `Invalid status transition from "${this._status}" to "${target}". ` +
-        `Allowed: ${allowed.join(', ')}`,
+          `Allowed: ${allowed.join(', ')}`,
       );
     }
     this._status = target;

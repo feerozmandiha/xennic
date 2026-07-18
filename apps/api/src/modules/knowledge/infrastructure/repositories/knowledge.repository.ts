@@ -1,6 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { prisma } from '@xennic/database';
-import type { IKnowledgeRepository, KnowledgeSearchParams, KnowledgeSearchResult } from '../../domain/interfaces/knowledge.repository.interface.js';
+import type {
+  IKnowledgeRepository,
+  KnowledgeSearchParams,
+  KnowledgeSearchResult,
+} from '../../domain/interfaces/knowledge.repository.interface.js';
 import { KnowledgeEntity } from '../../domain/entities/knowledge.entity.js';
 
 @Injectable()
@@ -17,7 +21,12 @@ export class KnowledgeRepository implements IKnowledgeRepository {
     return this._toEntity(row);
   }
 
-  async findAll(workspaceId: string, offset = 0, limit = 20, status?: string): Promise<KnowledgeEntity[]> {
+  async findAll(
+    workspaceId: string,
+    offset = 0,
+    limit = 20,
+    status?: string,
+  ): Promise<KnowledgeEntity[]> {
     const rows = await prisma.knowledge.findMany({
       where: {
         workspace_id: workspaceId,

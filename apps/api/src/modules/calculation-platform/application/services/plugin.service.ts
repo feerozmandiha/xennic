@@ -14,7 +14,14 @@ export class PluginService {
     private readonly registry: PluginRegistry,
   ) {}
 
-  async register(data: { slug: string; name: string; description?: string | null; version: string; enabled?: boolean; config?: Record<string, unknown> }): Promise<CalculationPluginEntity> {
+  async register(data: {
+    slug: string;
+    name: string;
+    description?: string | null;
+    version: string;
+    enabled?: boolean;
+    config?: Record<string, unknown>;
+  }): Promise<CalculationPluginEntity> {
     const exists = await this.repo.existsBySlug(data.slug);
     if (exists) throw new ConflictException(`Plugin '${data.slug}' already registered`);
     const entity = CalculationPluginEntity.create(data);
@@ -53,7 +60,15 @@ export class PluginService {
     return entity;
   }
 
-  async update(id: string, data: Partial<{ name: string; description: string | null; version: string; config: Record<string, unknown> }>): Promise<CalculationPluginEntity> {
+  async update(
+    id: string,
+    data: Partial<{
+      name: string;
+      description: string | null;
+      version: string;
+      config: Record<string, unknown>;
+    }>,
+  ): Promise<CalculationPluginEntity> {
     const entity = await this.getById(id);
     entity.update(data);
     await this.repo.save(entity);

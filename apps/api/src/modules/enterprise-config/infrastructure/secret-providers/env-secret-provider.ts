@@ -17,7 +17,7 @@ export class EnvSecretProvider implements ISecretProvider {
 
   async list(): Promise<string[]> {
     return Object.keys(process.env).filter(
-      k => k.startsWith('SECRET_') || k.startsWith('AI_') || k.startsWith('DB_'),
+      (k) => k.startsWith('SECRET_') || k.startsWith('AI_') || k.startsWith('DB_'),
     );
   }
 }

@@ -12,11 +12,7 @@ import { PrismaConversationRepository } from './infrastructure/persistence/prism
     HistoryService,
     { provide: 'IConversationRepository', useClass: PrismaConversationRepository },
   ],
-  exports: [
-    ConversationService,
-    SessionManagerService,
-    HistoryService,
-  ],
+  exports: [ConversationService, SessionManagerService, HistoryService],
 })
 export class ConversationRuntimeModule implements OnModuleInit {
   private readonly logger = new Logger(ConversationRuntimeModule.name);

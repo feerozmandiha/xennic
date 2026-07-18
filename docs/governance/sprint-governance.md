@@ -8,11 +8,11 @@
 
 ## 1. Sprint Planning
 
-| Attribute | Detail |
-|-----------|--------|
-| **When** | Last day of the current sprint (after Sprint Review & Retro) |
-| **Duration** | 2 hours maximum |
-| **Attendees** | All engineers, Product Manager, Tech Lead |
+| Attribute     | Detail                                                       |
+| ------------- | ------------------------------------------------------------ |
+| **When**      | Last day of the current sprint (after Sprint Review & Retro) |
+| **Duration**  | 2 hours maximum                                              |
+| **Attendees** | All engineers, Product Manager, Tech Lead                    |
 
 ### Agenda
 
@@ -38,11 +38,11 @@
 
 ## 2. Daily Standup
 
-| Attribute | Detail |
-|-----------|--------|
-| **When** | Every working day, 9:00 AM (local) |
-| **Duration** | 15 minutes maximum |
-| **Format** | Async option available for remote/distributed team members |
+| Attribute    | Detail                                                     |
+| ------------ | ---------------------------------------------------------- |
+| **When**     | Every working day, 9:00 AM (local)                         |
+| **Duration** | 15 minutes maximum                                         |
+| **Format**   | Async option available for remote/distributed team members |
 
 ### Standard Format
 
@@ -70,10 +70,10 @@ Blocker → Owner named → ETA set
 
 ## 3. Sprint Review
 
-| Attribute | Detail |
-|-----------|--------|
-| **When** | Last day of the sprint |
-| **Duration** | 1 hour maximum |
+| Attribute     | Detail                                              |
+| ------------- | --------------------------------------------------- |
+| **When**      | Last day of the sprint                              |
+| **Duration**  | 1 hour maximum                                      |
 | **Attendees** | All engineers, PM, Tech Lead; stakeholders optional |
 
 ### Agenda
@@ -99,11 +99,11 @@ Blocker → Owner named → ETA set
 
 ## 4. Sprint Retrospective
 
-| Attribute | Detail |
-|-----------|--------|
-| **When** | Immediately after Sprint Review |
-| **Duration** | 1 hour maximum |
-| **Format** | Start-Stop-Continue or 4L (Liked, Learned, Lacked, Longed For) |
+| Attribute    | Detail                                                         |
+| ------------ | -------------------------------------------------------------- |
+| **When**     | Immediately after Sprint Review                                |
+| **Duration** | 1 hour maximum                                                 |
+| **Format**   | Start-Stop-Continue or 4L (Liked, Learned, Lacked, Longed For) |
 
 ### Structure
 
@@ -113,11 +113,11 @@ Blocker → Owner named → ETA set
 
 ### Action Tracking
 
-| ID | Action | Owner | Sprint Created | Target Sprint | Status |
-|----|--------|-------|----------------|---------------|--------|
-| R-001 | Add linter to CI pipeline | DevOps | S1 | S2 | ✅ Done |
-| R-002 | Improve test data fixtures | BE | S1 | S3 | 🔄 In Progress |
-| R-003 | Schedule ADR sync session | TL | S2 | S2 | ⏳ Open |
+| ID    | Action                     | Owner  | Sprint Created | Target Sprint | Status         |
+| ----- | -------------------------- | ------ | -------------- | ------------- | -------------- |
+| R-001 | Add linter to CI pipeline  | DevOps | S1             | S2            | ✅ Done        |
+| R-002 | Improve test data fixtures | BE     | S1             | S3            | 🔄 In Progress |
+| R-003 | Schedule ADR sync session  | TL     | S2             | S2            | ⏳ Open        |
 
 - Action items are reviewed at the start of each retrospective for status updates.
 - Incomplete actions are re-prioritised or closed with rationale.
@@ -126,10 +126,10 @@ Blocker → Owner named → ETA set
 
 ## 5. Architecture Review
 
-| Attribute | Detail |
-|-----------|--------|
-| **When** | Weekly, mid-sprint |
-| **Duration** | 30 minutes |
+| Attribute     | Detail                                |
+| ------------- | ------------------------------------- |
+| **When**      | Weekly, mid-sprint                    |
+| **Duration**  | 30 minutes                            |
 | **Attendees** | Tech Lead, senior/principal engineers |
 
 ### Agenda
@@ -141,22 +141,22 @@ Blocker → Owner named → ETA set
 
 ### Architecture Score Criteria
 
-| Score | Meaning |
-|-------|---------|
-| 5 | Fully aligned — no deviations |
-| 4 | Minor deviations with documented rationale |
-| 3 | Significant deviation — mitigation planned |
-| 2 | Major deviation — RFC required |
-| 1 | Architecture breach — escalation needed |
+| Score | Meaning                                    |
+| ----- | ------------------------------------------ |
+| 5     | Fully aligned — no deviations              |
+| 4     | Minor deviations with documented rationale |
+| 3     | Significant deviation — mitigation planned |
+| 2     | Major deviation — RFC required             |
+| 1     | Architecture breach — escalation needed    |
 
 ---
 
 ## 6. Risk Review
 
-| Attribute | Detail |
-|-----------|--------|
-| **When** | Biweekly (every other sprint), 30 minutes |
-| **Attendees** | Tech Lead, Product Manager |
+| Attribute     | Detail                                    |
+| ------------- | ----------------------------------------- |
+| **When**      | Biweekly (every other sprint), 30 minutes |
+| **Attendees** | Tech Lead, Product Manager                |
 
 ### Agenda
 
@@ -170,12 +170,12 @@ Blocker → Owner named → ETA set
 ### Risk Matrix
 
 | Likelihood ↓ \ Impact → | 1 (Minimal) | 2 (Minor) | 3 (Moderate) | 4 (Significant) | 5 (Severe) |
-|--------------------------|-------------|-----------|--------------|------------------|-------------|
-| **5 (Almost Certain)**   | 5           | 10        | 15           | 20               | 25          |
-| **4 (Likely)**           | 4           | 8         | 12           | 16               | 20          |
-| **3 (Possible)**         | 3           | 6         | 9            | 12               | 15          |
-| **2 (Unlikely)**         | 2           | 4         | 6            | 8                | 10          |
-| **1 (Rare)**             | 1           | 2         | 3            | 4                | 5            |
+| ----------------------- | ----------- | --------- | ------------ | --------------- | ---------- |
+| **5 (Almost Certain)**  | 5           | 10        | 15           | 20              | 25         |
+| **4 (Likely)**          | 4           | 8         | 12           | 16              | 20         |
+| **3 (Possible)**        | 3           | 6         | 9            | 12              | 15         |
+| **2 (Unlikely)**        | 2           | 4         | 6            | 8               | 10         |
+| **1 (Rare)**            | 1           | 2         | 3            | 4               | 5          |
 
 > **Critical threshold:** ≥ 15 (shaded cells) → escalate to management.
 
@@ -209,6 +209,7 @@ Blocker → Owner named → ETA set
 ```
 
 **Weekly ceremonies within the sprint:**
+
 - **Mon–Fri:** Daily Standup (15 min)
 - **Mid-sprint (e.g., Wed):** Architecture Review (30 min)
 - **Alternating sprints:** Risk Review (30 min)
@@ -276,31 +277,31 @@ Exclusions (stretch):
 
 ## 9. Roles & Responsibilities
 
-| Role | Key Responsibilities |
-|------|---------------------|
-| **Tech Lead** | Architecture decisions, code review standards, technical guidance, ADR authorship, RFC approval, architecture score tracking, risk register maintenance, tech debt prioritisation |
-| **Backend Engineer** | Feature implementation (NestJS/Postgres), unit/integration tests, API documentation, code review participation, task breakdown, sprint commitment |
-| **AI/ML Engineer** | AI pipeline implementation (ai-service), model evaluation, data pipeline coordination, integration with vision/engineering services |
-| **DevOps Engineer** | Infrastructure (Docker/K8s), CI/CD pipeline, monitoring & alerting, secret management, database migrations support, environment management |
-| **Product Manager** | Backlog prioritisation, stakeholder communication, acceptance criteria sign-off, DoR/DoD gatekeeping, sprint goal definition, feedback collection, risk escalation |
-| **QA Engineer** | Test planning, manual/automated verification, regression testing, non-functional testing (if available), sign-off on DoD |
+| Role                 | Key Responsibilities                                                                                                                                                              |
+| -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Tech Lead**        | Architecture decisions, code review standards, technical guidance, ADR authorship, RFC approval, architecture score tracking, risk register maintenance, tech debt prioritisation |
+| **Backend Engineer** | Feature implementation (NestJS/Postgres), unit/integration tests, API documentation, code review participation, task breakdown, sprint commitment                                 |
+| **AI/ML Engineer**   | AI pipeline implementation (ai-service), model evaluation, data pipeline coordination, integration with vision/engineering services                                               |
+| **DevOps Engineer**  | Infrastructure (Docker/K8s), CI/CD pipeline, monitoring & alerting, secret management, database migrations support, environment management                                        |
+| **Product Manager**  | Backlog prioritisation, stakeholder communication, acceptance criteria sign-off, DoR/DoD gatekeeping, sprint goal definition, feedback collection, risk escalation                |
+| **QA Engineer**      | Test planning, manual/automated verification, regression testing, non-functional testing (if available), sign-off on DoD                                                          |
 
 ### RACI Matrix
 
-| Activity | TL | BE | AI | DE | PM | QA |
-|----------|----|----|----|----|----|----|
-| Sprint Planning | A | R | R | R | R | C |
-| Daily Standup | A | R | R | R | C | R |
-| Sprint Review | A | R | R | R | R | C |
-| Retrospective | A | R | R | R | R | R |
-| Architecture Review | R | C | C | C | I | - |
-| Risk Review | R | C | C | C | R | - |
-| Backlog Refinement | C | C | C | C | R | C |
-| Code Review | A | R | R | R | - | - |
-| ADR Creation | A | C | C | C | - | - |
+| Activity            | TL  | BE  | AI  | DE  | PM  | QA  |
+| ------------------- | --- | --- | --- | --- | --- | --- |
+| Sprint Planning     | A   | R   | R   | R   | R   | C   |
+| Daily Standup       | A   | R   | R   | R   | C   | R   |
+| Sprint Review       | A   | R   | R   | R   | R   | C   |
+| Retrospective       | A   | R   | R   | R   | R   | R   |
+| Architecture Review | R   | C   | C   | C   | I   | -   |
+| Risk Review         | R   | C   | C   | C   | R   | -   |
+| Backlog Refinement  | C   | C   | C   | C   | R   | C   |
+| Code Review         | A   | R   | R   | R   | -   | -   |
+| ADR Creation        | A   | C   | C   | C   | -   | -   |
 
 **Key:** R = Responsible, A = Accountable, C = Consulted, I = Informed
 
 ---
 
-*Document owner: Tech Lead · Review cadence: Every 4 sprints or when process changes*
+_Document owner: Tech Lead · Review cadence: Every 4 sprints or when process changes_

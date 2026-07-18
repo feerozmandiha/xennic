@@ -45,9 +45,7 @@ export class ContextAssemblerService implements IContextAssembler {
 
     const snapshot = ContextSnapshot.create(entities.items);
 
-    const ttl = sources?.length
-      ? Math.min(...sources.map(s => s.ttl))
-      : 300;
+    const ttl = sources?.length ? Math.min(...sources.map((s) => s.ttl)) : 300;
     this.cache.set(cacheKey, snapshot, ttl);
 
     this.logger.debug(`Context assembled for ${scope}:${scopeId} (${entities.total} sources)`);

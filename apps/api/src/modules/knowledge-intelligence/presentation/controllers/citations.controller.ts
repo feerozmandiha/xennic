@@ -10,8 +10,16 @@ export class CitationsController {
 
   @Get('citations/graph')
   @ApiOperation({ summary: 'Get citation graph visualization data' })
-  async getCitationGraph(@Request() req: any, @Query('sourceId') sourceId?: string, @Query('targetId') targetId?: string) {
-    const graph = await this.citationExpansionService.getCitationGraph(req.user?.workspaceId, sourceId, targetId);
+  async getCitationGraph(
+    @Request() req: any,
+    @Query('sourceId') sourceId?: string,
+    @Query('targetId') targetId?: string,
+  ) {
+    const graph = await this.citationExpansionService.getCitationGraph(
+      req.user?.workspaceId,
+      sourceId,
+      targetId,
+    );
     return { success: true, data: graph };
   }
 

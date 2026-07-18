@@ -51,7 +51,11 @@ export class OrderService {
     return entity;
   }
 
-  async updateStatus(id: string, workspaceId: string, dto: UpdateOrderStatusDto): Promise<OrderEntity> {
+  async updateStatus(
+    id: string,
+    workspaceId: string,
+    dto: UpdateOrderStatusDto,
+  ): Promise<OrderEntity> {
     const entity = await this.findById(id, workspaceId);
     entity.updateStatus(dto.status);
     await this.repo.saveOrder(entity);

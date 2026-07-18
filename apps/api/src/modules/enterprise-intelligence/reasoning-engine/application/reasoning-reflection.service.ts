@@ -15,9 +15,7 @@ export class ReasoningReflectionService {
   private readonly logger = new Logger(ReasoningReflectionService.name);
   private readonly reflections = new Map<string, ReflectionResult[]>();
 
-  constructor(
-    @Inject('IReasoningRepository') private readonly repo: IReasoningRepository,
-  ) {}
+  constructor(@Inject('IReasoningRepository') private readonly repo: IReasoningRepository) {}
 
   async reflect(stepId: string, result: Record<string, unknown>): Promise<ReflectionResult> {
     const observations = this.generateObservations(result);
@@ -30,7 +28,9 @@ export class ReasoningReflectionService {
     existing.push(reflection);
     this.reflections.set(stepId, existing);
 
-    this.logger.debug(`Reflection for step ${stepId}: score=${score}, observations=${observations.length}`);
+    this.logger.debug(
+      `Reflection for step ${stepId}: score=${score}, observations=${observations.length}`,
+    );
     return reflection;
   }
 
@@ -71,9 +71,9 @@ export class ReasoningReflectionService {
       .map(([sug]) => sug);
 
     const scoreDistribution = {
-      low: reflections.filter(r => r.score < 0.4).length,
-      medium: reflections.filter(r => r.score >= 0.4 && r.score < 0.7).length,
-      high: reflections.filter(r => r.score >= 0.7).length,
+      low: reflections.filter((r) => r.score < 0.4).length,
+      medium: reflections.filter((r) => r.score >= 0.4 && r.score < 0.7).length,
+      high: reflections.filter((r) => r.score >= 0.7).length,
     };
 
     return {
@@ -118,7 +118,9 @@ export class ReasoningReflectionService {
     }
 
     if (result.data) {
-      observations.push(`Output data available with ${typeof result.data === 'object' ? Object.keys(result.data as Record<string, unknown>).length : 1} field(s)`);
+      observations.push(
+        `Output data available with ${typeof result.data === 'object' ? Object.keys(result.data as Record<string, unknown>).length : 1} field(s)`,
+      );
     }
 
     if (result.error) {
@@ -133,11 +135,11 @@ export class ReasoningReflectionService {
   }
 
   private calculateScore(observations: string[]): number {
-    const positive = observations.filter(o =>
-      o.includes('successfully') || o.includes('available') || o.includes('completed'),
+    const positive = observations.filter(
+      (o) => o.includes('successfully') || o.includes('available') || o.includes('completed'),
     ).length;
-    const negative = observations.filter(o =>
-      o.includes('error') || o.includes('warning') || o.includes('failed'),
+    const negative = observations.filter(
+      (o) => o.includes('error') || o.includes('warning') || o.includes('failed'),
     ).length;
 
     if (observations.length === 0) return 0.5;

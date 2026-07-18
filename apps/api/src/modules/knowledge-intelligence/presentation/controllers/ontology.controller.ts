@@ -21,7 +21,10 @@ export class OntologyController {
 
   @Post('ontologies')
   @ApiOperation({ summary: 'Register a new ontology' })
-  async registerOntology(@Request() req: any, @Body() body: { name: string; slug: string; version: string; description?: string }) {
+  async registerOntology(
+    @Request() req: any,
+    @Body() body: { name: string; slug: string; version: string; description?: string },
+  ) {
     const ontology = await this.ontologyService.registerOntology({
       workspaceId: req.user?.workspaceId,
       name: body.name,

@@ -1,8 +1,8 @@
 # Architecture Governance Report
 
 > **Profile:** all  
-> **Generated:** 2026-07-17T16:23:20.736Z  
-> **Duration:** 1225ms
+> **Generated:** 2026-07-18T11:58:50.311Z  
+> **Duration:** 1143ms
 
 ## Overall Score
 

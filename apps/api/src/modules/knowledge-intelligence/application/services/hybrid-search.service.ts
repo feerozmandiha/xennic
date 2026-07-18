@@ -13,7 +13,13 @@ export class HybridSearchService {
     citationResults?: any[];
     limit?: number;
   }): Promise<any[]> {
-    const { keywordResults = [], vectorResults = [], graphResults = [], citationResults = [], limit = 20 } = params;
+    const {
+      keywordResults = [],
+      vectorResults = [],
+      graphResults = [],
+      citationResults = [],
+      limit = 20,
+    } = params;
 
     const merged = new Map<string, { item: any; score: number; sources: string[] }>();
 

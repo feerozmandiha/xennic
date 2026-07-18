@@ -1,6 +1,6 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
-import type { } from '../domain/conversation.entity.js';
+import type {} from '../domain/conversation.entity.js';
 interface Session {
   id: string;
   executionId: string;
@@ -32,9 +32,7 @@ export class SessionManagerService {
   }
 
   async getOrCreate(executionId: string): Promise<Session> {
-    const existing = Array.from(this.sessions.values()).find(
-      s => s.executionId === executionId,
-    );
+    const existing = Array.from(this.sessions.values()).find((s) => s.executionId === executionId);
     if (existing) {
       existing.lastActivityAt = new Date();
       return existing;
@@ -55,9 +53,7 @@ export class SessionManagerService {
   }
 
   async getActiveSessions(): Promise<Session[]> {
-    return Array.from(this.sessions.values()).filter(
-      s => s.conversationIds.length > 0,
-    );
+    return Array.from(this.sessions.values()).filter((s) => s.conversationIds.length > 0);
   }
 
   async expireSession(sessionId: string): Promise<void> {

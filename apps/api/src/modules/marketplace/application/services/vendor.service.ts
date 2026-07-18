@@ -26,7 +26,9 @@ export class VendorService {
   }
 
   async create(dto: CreateVendorDto): Promise<VendorEntity> {
-    const existing = await this.repo.findVendorBySlug(dto.slug ?? dto.name.toLowerCase().replace(/\s+/g, '-'));
+    const existing = await this.repo.findVendorBySlug(
+      dto.slug ?? dto.name.toLowerCase().replace(/\s+/g, '-'),
+    );
     if (existing) throw new ConflictException('Vendor slug already exists');
 
     const entity = VendorEntity.create(dto);

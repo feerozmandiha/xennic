@@ -1,4 +1,7 @@
-import { IDiscoveryStrategy, DiscoveryResult } from '../../application/ports/discovery-provider.interface.js';
+import {
+  IDiscoveryStrategy,
+  DiscoveryResult,
+} from '../../application/ports/discovery-provider.interface.js';
 
 export class OllamaDiscoveryStrategy implements IDiscoveryStrategy {
   readonly providerType = 'ollama';
@@ -15,7 +18,10 @@ export class OllamaDiscoveryStrategy implements IDiscoveryStrategy {
     };
   }
 
-  async testConnection(apiKey: string, baseUrl?: string): Promise<{ success: boolean; latencyMs: number; error?: string }> {
+  async testConnection(
+    apiKey: string,
+    baseUrl?: string,
+  ): Promise<{ success: boolean; latencyMs: number; error?: string }> {
     const start = Date.now();
     try {
       const url = baseUrl || 'http://localhost:11434';
@@ -30,15 +36,23 @@ export class OllamaDiscoveryStrategy implements IDiscoveryStrategy {
 
   private async fetchModels(baseUrl: string): Promise<DiscoveryResult['models']> {
     try {
-      const res = await fetch(`${baseUrl.replace('/v1', '')}/api/tags`, { signal: AbortSignal.timeout(5000) });
+      const res = await fetch(`${baseUrl.replace('/v1', '')}/api/tags`, {
+        signal: AbortSignal.timeout(5000),
+      });
       if (!res.ok) return [];
-      const data = await res.json() as any;
+      const data = (await res.json()) as any;
       return (data.models || []).slice(0, 20).map((m: any) => ({
-        modelId: m.name, displayName: m.name,
+        modelId: m.name,
+        displayName: m.name,
         modelType: m.details?.modality === 'embedding' ? 'embedding' : 'chat',
-        contextWindow: 32768, maxOutputTokens: 4096,
-        supportsStreaming: true, supportsTemperature: true, supportsTopP: true,
+        contextWindow: 32768,
+        maxOutputTokens: 4096,
+        supportsStreaming: true,
+        supportsTemperature: true,
+        supportsTopP: true,
       }));
-    } catch { return []; }
+    } catch {
+      return [];
+    }
   }
 }

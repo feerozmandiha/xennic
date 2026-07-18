@@ -53,7 +53,10 @@ export class PrismaCostRepository implements ICostRepository {
     return this.rowToEntry(row);
   }
 
-  async findByExecution(executionId: string, options?: FindByExecutionOptions): Promise<PaginatedResult<CostEntry>> {
+  async findByExecution(
+    executionId: string,
+    options?: FindByExecutionOptions,
+  ): Promise<PaginatedResult<CostEntry>> {
     const where = { execution_id: executionId };
     const offset = options?.offset ?? 0;
     const limit = options?.limit ?? 20;
@@ -69,14 +72,18 @@ export class PrismaCostRepository implements ICostRepository {
     ]);
 
     return {
-      items: rows.map(row => this.rowToEntry(row)),
+      items: rows.map((row) => this.rowToEntry(row)),
       total,
       offset,
       limit,
     };
   }
 
-  async findBySource(sourceType: SourceType, sourceId: string, options?: FindBySourceOptions): Promise<PaginatedResult<CostEntry>> {
+  async findBySource(
+    sourceType: SourceType,
+    sourceId: string,
+    options?: FindBySourceOptions,
+  ): Promise<PaginatedResult<CostEntry>> {
     const where = { source_type: sourceType, source_id: sourceId };
     const offset = options?.offset ?? 0;
     const limit = options?.limit ?? 20;
@@ -92,7 +99,7 @@ export class PrismaCostRepository implements ICostRepository {
     ]);
 
     return {
-      items: rows.map(row => this.rowToEntry(row)),
+      items: rows.map((row) => this.rowToEntry(row)),
       total,
       offset,
       limit,
@@ -108,7 +115,7 @@ export class PrismaCostRepository implements ICostRepository {
     const rows = await prisma.cost_entries.findMany({
       where: { execution_id: { startsWith: workflowId } },
     });
-    const entries = rows.map(row => this.rowToEntry(row));
+    const entries = rows.map((row) => this.rowToEntry(row));
     return this.computeAggregates(entries);
   }
 
@@ -117,7 +124,7 @@ export class PrismaCostRepository implements ICostRepository {
       orderBy: { amount: 'desc' },
       take: limit,
     });
-    return rows.map(row => this.rowToEntry(row));
+    return rows.map((row) => this.rowToEntry(row));
   }
 
   async list(options?: ListCostOptions): Promise<PaginatedResult<CostEntry>> {
@@ -145,7 +152,7 @@ export class PrismaCostRepository implements ICostRepository {
     ]);
 
     return {
-      items: rows.map(row => this.rowToEntry(row)),
+      items: rows.map((row) => this.rowToEntry(row)),
       total,
       offset,
       limit,
@@ -156,7 +163,7 @@ export class PrismaCostRepository implements ICostRepository {
     const rows = await prisma.cost_entries.findMany({
       where: { execution_id: executionId },
     });
-    return rows.map(row => this.rowToEntry(row));
+    return rows.map((row) => this.rowToEntry(row));
   }
 
   private rowToEntry(row: any): CostEntry {

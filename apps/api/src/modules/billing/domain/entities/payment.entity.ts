@@ -49,18 +49,28 @@ export class PaymentEntity {
     createdAt: Date;
   }): PaymentEntity {
     return new PaymentEntity(
-      data.id, data.workspaceId, data.invoiceId,
+      data.id,
+      data.workspaceId,
+      data.invoiceId,
       data.gateway as PaymentGateway,
       data.referenceNumber,
       data.authority,
       data.status as PaymentStatus,
-      data.amount, data.paidAt, data.createdAt,
+      data.amount,
+      data.paidAt,
+      data.createdAt,
     );
   }
 
-  get status(): PaymentStatus { return this._status; }
-  get gatewayReference(): string | null { return this._gatewayReference; }
-  get authority(): string | null { return this._authority; }
+  get status(): PaymentStatus {
+    return this._status;
+  }
+  get gatewayReference(): string | null {
+    return this._gatewayReference;
+  }
+  get authority(): string | null {
+    return this._authority;
+  }
 
   setAuthority(authority: string): void {
     this._authority = authority;
@@ -90,7 +100,13 @@ export class PaymentEntity {
     this._status = 'refunded';
   }
 
-  isPaid(): boolean { return this._status === 'paid'; }
-  isFailed(): boolean { return this._status === 'failed'; }
-  isPending(): boolean { return this._status === 'pending'; }
+  isPaid(): boolean {
+    return this._status === 'paid';
+  }
+  isFailed(): boolean {
+    return this._status === 'failed';
+  }
+  isPending(): boolean {
+    return this._status === 'pending';
+  }
 }

@@ -74,7 +74,9 @@ export class CalculationMetricsService {
 
       this.initialized = true;
     } catch (error) {
-      this.logger.warn(`Metrics initialization failed (may be duplicate): ${error instanceof Error ? error.message : 'Unknown'}`);
+      this.logger.warn(
+        `Metrics initialization failed (may be duplicate): ${error instanceof Error ? error.message : 'Unknown'}`,
+      );
     }
   }
 
@@ -82,47 +84,81 @@ export class CalculationMetricsService {
     if (!this.initialized) return;
     try {
       this.calculationDuration.observe({ definition, status }, durationMs);
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
   }
 
   recordCalculationTotal(definition: string): void {
     if (!this.initialized) return;
-    try { this.calculationTotal.inc({ definition }); } catch { /* ignore */ }
+    try {
+      this.calculationTotal.inc({ definition });
+    } catch {
+      /* ignore */
+    }
   }
 
   recordCalculationSuccess(definition: string): void {
     if (!this.initialized) return;
-    try { this.calculationSuccess.inc({ definition }); } catch { /* ignore */ }
+    try {
+      this.calculationSuccess.inc({ definition });
+    } catch {
+      /* ignore */
+    }
   }
 
   recordCalculationFailure(definition: string, errorType: string): void {
     if (!this.initialized) return;
-    try { this.calculationFailure.inc({ definition, error_type: errorType }); } catch { /* ignore */ }
+    try {
+      this.calculationFailure.inc({ definition, error_type: errorType });
+    } catch {
+      /* ignore */
+    }
   }
 
   recordAiDuration(provider: string, durationMs: number): void {
     if (!this.initialized) return;
-    try { this.calculationAiDuration.observe({ provider }, durationMs); } catch { /* ignore */ }
+    try {
+      this.calculationAiDuration.observe({ provider }, durationMs);
+    } catch {
+      /* ignore */
+    }
   }
 
   recordCertificateGenerated(definition: string): void {
     if (!this.initialized) return;
-    try { this.calculationCertificate.inc({ definition }); } catch { /* ignore */ }
+    try {
+      this.calculationCertificate.inc({ definition });
+    } catch {
+      /* ignore */
+    }
   }
 
   recordCacheHit(store: string): void {
     if (!this.initialized) return;
-    try { this.calculationCacheHits.inc({ store, result: 'hit' }); } catch { /* ignore */ }
+    try {
+      this.calculationCacheHits.inc({ store, result: 'hit' });
+    } catch {
+      /* ignore */
+    }
   }
 
   recordCacheMiss(store: string): void {
     if (!this.initialized) return;
-    try { this.calculationCacheHits.inc({ store, result: 'miss' }); } catch { /* ignore */ }
+    try {
+      this.calculationCacheHits.inc({ store, result: 'miss' });
+    } catch {
+      /* ignore */
+    }
   }
 
   setActiveCalculations(count: number): void {
     if (!this.initialized) return;
-    try { this.calculationActive.set({ status: 'running' }, count); } catch { /* ignore */ }
+    try {
+      this.calculationActive.set({ status: 'running' }, count);
+    } catch {
+      /* ignore */
+    }
   }
 
   getMetrics(): string | null {

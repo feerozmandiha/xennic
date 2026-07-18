@@ -71,11 +71,21 @@ export class KnowledgeGraphNode {
     );
   }
 
-  get label(): string | null { return this._label; }
-  get properties(): GraphNodeProperties { return this._properties; }
-  get embeddingId(): string | null { return this._embeddingId; }
+  get label(): string | null {
+    return this._label;
+  }
+  get properties(): GraphNodeProperties {
+    return this._properties;
+  }
+  get embeddingId(): string | null {
+    return this._embeddingId;
+  }
 
-  update(data: { label?: string | null; properties?: GraphNodeProperties; embeddingId?: string | null }): void {
+  update(data: {
+    label?: string | null;
+    properties?: GraphNodeProperties;
+    embeddingId?: string | null;
+  }): void {
     if (data.label !== undefined) this._label = data.label;
     if (data.properties !== undefined) this._properties = data.properties;
     if (data.embeddingId !== undefined) this._embeddingId = data.embeddingId;

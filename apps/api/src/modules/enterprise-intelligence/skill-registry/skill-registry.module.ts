@@ -12,11 +12,7 @@ import { PrismaSkillRegistry } from './infrastructure/persistence/prisma-skill-r
     SkillExecutorService,
     { provide: 'ISkillRegistry', useClass: PrismaSkillRegistry },
   ],
-  exports: [
-    SkillRegistryService,
-    SkillComposerService,
-    SkillExecutorService,
-  ],
+  exports: [SkillRegistryService, SkillComposerService, SkillExecutorService],
 })
 export class SkillRegistryModule implements OnModuleInit {
   private readonly logger = new Logger(SkillRegistryModule.name);

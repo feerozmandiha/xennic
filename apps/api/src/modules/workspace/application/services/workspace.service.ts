@@ -11,7 +11,10 @@ import { prisma } from '@xennic/database';
 import type { IWorkspaceRepository } from '../../domain/interfaces/workspace.repository.interface.js';
 import type { IWorkspaceMemberRepository } from '../../domain/interfaces/workspace-member.repository.interface.js';
 import { WorkspaceEntity } from '../../domain/entities/workspace.entity.js';
-import { WorkspaceMemberEntity, type WorkspaceMemberRole } from '../../domain/entities/workspace-member.entity.js';
+import {
+  WorkspaceMemberEntity,
+  type WorkspaceMemberRole,
+} from '../../domain/entities/workspace-member.entity.js';
 import { WorkspaceInvitationEntity } from '../../domain/entities/workspace-invitation.entity.js';
 import type { CreateWorkspaceDto } from '../../presentation/dtos/create-workspace.dto.js';
 
@@ -30,15 +33,10 @@ export class WorkspaceService {
   // WORKSPACE CRUD
   // ══════════════════════════════════════════════════════════════════════════
 
-  async create(
-    createWorkspaceDto: CreateWorkspaceDto,
-    userId: string,
-  ): Promise<WorkspaceEntity> {
+  async create(createWorkspaceDto: CreateWorkspaceDto, userId: string): Promise<WorkspaceEntity> {
     const existingWorkspaces = await this.workspaceRepository.findAll(0, 100);
     const duplicate = existingWorkspaces.find(
-      (w) =>
-        w.name.toLowerCase() === createWorkspaceDto.name.toLowerCase() &&
-        !w.isDeleted(),
+      (w) => w.name.toLowerCase() === createWorkspaceDto.name.toLowerCase() && !w.isDeleted(),
     );
     if (duplicate) {
       throw new ConflictException(
@@ -72,7 +70,9 @@ export class WorkspaceService {
             VALUES (${crypto.randomUUID()}, ${userId}, ${roleId}, ${workspace.id})
           `;
         }
-        this.logger.debug(`OWNER role assigned in user_roles for user ${userId} in workspace ${workspace.id}`);
+        this.logger.debug(
+          `OWNER role assigned in user_roles for user ${userId} in workspace ${workspace.id}`,
+        );
       }
     } catch (err) {
       const error = err as Error;
@@ -137,9 +137,9 @@ export class WorkspaceService {
 
       const data = rows.map((r) =>
         WorkspaceEntity.reconstitute({
-          id:        r.id,
-          code:      r.code,
-          name:      r.name,
+          id: r.id,
+          code: r.code,
+          name: r.name,
           createdBy: r.created_by,
           updatedBy: r.updated_by ?? null,
           createdAt: r.created_at,
@@ -166,11 +166,7 @@ export class WorkspaceService {
     return workspace;
   }
 
-  async update(
-    id: string,
-    name: string,
-    userId: string,
-  ): Promise<WorkspaceEntity> {
+  async update(id: string, name: string, userId: string): Promise<WorkspaceEntity> {
     const workspace = await this.findOne(id);
     workspace.updateName(name, userId);
     await this.workspaceRepository.save(workspace);
@@ -224,15 +220,10 @@ export class WorkspaceService {
     return this.memberRepository.findMembers(workspaceId);
   }
 
-  async getMember(
-    workspaceId: string,
-    userId: string,
-  ): Promise<WorkspaceMemberEntity> {
+  async getMember(workspaceId: string, userId: string): Promise<WorkspaceMemberEntity> {
     const member = await this.memberRepository.findMember(workspaceId, userId);
     if (!member) {
-      throw new NotFoundException(
-        `User "${userId}" is not a member of this workspace`,
-      );
+      throw new NotFoundException(`User "${userId}" is not a member of this workspace`);
     }
     return member;
   }
@@ -284,11 +275,7 @@ export class WorkspaceService {
     return member;
   }
 
-  async removeMember(
-    workspaceId: string,
-    userId: string,
-    removedBy: string,
-  ): Promise<void> {
+  async removeMember(workspaceId: string, userId: string, removedBy: string): Promise<void> {
     await this._assertCanManage(workspaceId, removedBy);
 
     const member = await this.getMember(workspaceId, userId);
@@ -317,30 +304,17 @@ export class WorkspaceService {
     }
 
     // بررسی دعوتنامه pending موجود
-    const existing = await this.memberRepository.findInvitationByEmail(
-      workspaceId,
-      email,
-    );
+    const existing = await this.memberRepository.findInvitationByEmail(workspaceId, email);
     if (existing && existing.isPending()) {
-      throw new ConflictException(
-        `A pending invitation already exists for "${email}"`,
-      );
+      throw new ConflictException(`A pending invitation already exists for "${email}"`);
     }
 
-    const invitation = WorkspaceInvitationEntity.create(
-      workspaceId,
-      email,
-      role,
-      invitedBy,
-    );
+    const invitation = WorkspaceInvitationEntity.create(workspaceId, email, role, invitedBy);
     await this.memberRepository.saveInvitation(invitation);
     return invitation;
   }
 
-  async acceptInvitation(
-    token: string,
-    userId: string,
-  ): Promise<WorkspaceMemberEntity> {
+  async acceptInvitation(token: string, userId: string): Promise<WorkspaceMemberEntity> {
     const invitation = await this.memberRepository.findInvitationByToken(token);
     if (!invitation || !invitation.isPending()) {
       throw new BadRequestException('Invalid or expired invitation token');
@@ -349,11 +323,7 @@ export class WorkspaceService {
     invitation.accept();
     await this.memberRepository.updateInvitationStatus(invitation.id, 'accepted');
 
-    const member = WorkspaceMemberEntity.create(
-      invitation.workspaceId,
-      userId,
-      invitation.role,
-    );
+    const member = WorkspaceMemberEntity.create(invitation.workspaceId, userId, invitation.role);
     await this.memberRepository.saveMember(member);
     return member;
   }
@@ -376,19 +346,14 @@ export class WorkspaceService {
   // PRIVATE HELPERS
   // ══════════════════════════════════════════════════════════════════════════
 
-  private async _assertCanManage(
-    workspaceId: string,
-    userId: string,
-  ): Promise<void> {
+  private async _assertCanManage(workspaceId: string, userId: string): Promise<void> {
     const workspace = await this.workspaceRepository.findById(workspaceId);
     // owner همیشه می‌تواند
     if (workspace?.createdBy === userId) return;
 
     const member = await this.memberRepository.findMember(workspaceId, userId);
     if (!member || !member.canManage()) {
-      throw new ForbiddenException(
-        'Only OWNER or ADMIN can perform this action',
-      );
+      throw new ForbiddenException('Only OWNER or ADMIN can perform this action');
     }
   }
 }

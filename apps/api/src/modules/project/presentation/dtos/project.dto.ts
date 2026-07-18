@@ -1,7 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
-  IsString, IsNotEmpty, IsOptional, MinLength, MaxLength,
-  IsEnum, IsDateString, IsUUID,
+  IsString,
+  IsNotEmpty,
+  IsOptional,
+  MinLength,
+  MaxLength,
+  IsEnum,
+  IsDateString,
+  IsUUID,
 } from 'class-validator';
 // ERROR FIX TS1272: type aliases used in decorated class fields must be `import type`
 import {
@@ -28,7 +34,11 @@ export class CreateProjectDto {
   @MaxLength(1000)
   description?: string;
 
-  @ApiProperty({ example: 'active', required: false, enum: ['active','completed','archived','cancelled'] })
+  @ApiProperty({
+    example: 'active',
+    required: false,
+    enum: ['active', 'completed', 'archived', 'cancelled'],
+  })
   @IsOptional()
   @IsEnum(['active', 'completed', 'archived', 'cancelled'])
   status?: string;
@@ -109,12 +119,12 @@ export class ProjectMemberResponseDto {
   @ApiProperty() joinedAt!: Date;
 
   static fromEntity(m: ProjectMember): ProjectMemberResponseDto {
-    const dto        = new ProjectMemberResponseDto();
-    dto.id           = m.id;
-    dto.projectId    = m.projectId;
-    dto.userId       = m.userId;
-    dto.role         = m.role;
-    dto.joinedAt     = m.joinedAt;
+    const dto = new ProjectMemberResponseDto();
+    dto.id = m.id;
+    dto.projectId = m.projectId;
+    dto.userId = m.userId;
+    dto.role = m.role;
+    dto.joinedAt = m.joinedAt;
     return dto;
   }
 }
@@ -127,12 +137,12 @@ export class ProjectNoteResponseDto {
   @ApiProperty() createdAt!: Date;
 
   static fromEntity(n: ProjectNote): ProjectNoteResponseDto {
-    const dto      = new ProjectNoteResponseDto();
-    dto.id         = n.id;
-    dto.projectId  = n.projectId;
-    dto.content    = n.content;
-    dto.createdBy  = n.createdBy;
-    dto.createdAt  = n.createdAt;
+    const dto = new ProjectNoteResponseDto();
+    dto.id = n.id;
+    dto.projectId = n.projectId;
+    dto.content = n.content;
+    dto.createdBy = n.createdBy;
+    dto.createdAt = n.createdAt;
     return dto;
   }
 }
@@ -162,19 +172,19 @@ export class ProjectResponseDto {
   @ApiProperty() isDeleted!: boolean;
 
   static fromEntity(p: ProjectEntity): ProjectResponseDto {
-    const dto        = new ProjectResponseDto();
-    dto.id           = p.id;
-    dto.workspaceId  = p.workspaceId;
-    dto.name         = p.name;
-    dto.description  = p.description;
-    dto.status       = p.status;
-    dto.startDate    = p.startDate;
-    dto.endDate      = p.endDate;
-    dto.createdBy    = p.createdBy;
-    dto.updatedBy    = p.updatedBy;
-    dto.createdAt    = p.createdAt;
-    dto.updatedAt    = p.updatedAt;
-    dto.isDeleted    = p.isDeleted();
+    const dto = new ProjectResponseDto();
+    dto.id = p.id;
+    dto.workspaceId = p.workspaceId;
+    dto.name = p.name;
+    dto.description = p.description;
+    dto.status = p.status;
+    dto.startDate = p.startDate;
+    dto.endDate = p.endDate;
+    dto.createdBy = p.createdBy;
+    dto.updatedBy = p.updatedBy;
+    dto.createdAt = p.createdAt;
+    dto.updatedAt = p.updatedAt;
+    dto.isDeleted = p.isDeleted();
     return dto;
   }
 }

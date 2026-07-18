@@ -33,13 +33,17 @@ export class HybridSearchService {
     this.aiServiceUrl = process.env.AI_SERVICE_URL || 'http://localhost:8002';
   }
 
-  async search(query: string, workspaceId: string, options: {
-    standard?: string;
-    equipmentType?: string;
-    domain?: string;
-    page?: number;
-    limit?: number;
-  } = {}): Promise<{ results: HybridSearchResult[]; total: number }> {
+  async search(
+    query: string,
+    workspaceId: string,
+    options: {
+      standard?: string;
+      equipmentType?: string;
+      domain?: string;
+      page?: number;
+      limit?: number;
+    } = {},
+  ): Promise<{ results: HybridSearchResult[]; total: number }> {
     const limit = options.limit || 20;
     const [keywordResults, vectorResults] = await Promise.all([
       this.keywordSearch(query, workspaceId, options, limit * 2),
@@ -54,7 +58,12 @@ export class HybridSearchService {
     };
   }
 
-  private async keywordSearch(query: string, workspaceId: string, options: any, limit: number): Promise<HybridSearchResult[]> {
+  private async keywordSearch(
+    query: string,
+    workspaceId: string,
+    options: any,
+    limit: number,
+  ): Promise<HybridSearchResult[]> {
     try {
       const documents = await this.documentRepository.findByWorkspace(workspaceId, 0, limit);
       const results: HybridSearchResult[] = [];
@@ -86,12 +95,19 @@ export class HybridSearchService {
 
       return results.sort((a, b) => b.score - a.score).slice(0, limit);
     } catch (error) {
-      this.logger.warn(`Keyword search failed: ${error instanceof Error ? error.message : 'unknown'}`);
+      this.logger.warn(
+        `Keyword search failed: ${error instanceof Error ? error.message : 'unknown'}`,
+      );
       return [];
     }
   }
 
-  private async vectorSearch(query: string, workspaceId: string, options: any, limit: number): Promise<HybridSearchResult[]> {
+  private async vectorSearch(
+    query: string,
+    workspaceId: string,
+    options: any,
+    limit: number,
+  ): Promise<HybridSearchResult[]> {
     try {
       const response = await fetch(`${this.aiServiceUrl}/rag/search`, {
         method: 'POST',
@@ -110,7 +126,9 @@ export class HybridSearchService {
         throw new Error(`Vector search failed: ${response.status}`);
       }
 
-      const data = await response.json() as { results: Array<{ id: string; score: number; metadata: any; text: string }> };
+      const data = (await response.json()) as {
+        results: Array<{ id: string; score: number; metadata: any; text: string }>;
+      };
       return data.results.map((r) => ({
         documentId: r.metadata.documentId || r.id,
         chunkId: r.id,
@@ -128,7 +146,9 @@ export class HybridSearchService {
         },
       }));
     } catch (error) {
-      this.logger.warn(`Vector search failed: ${error instanceof Error ? error.message : 'unknown'}`);
+      this.logger.warn(
+        `Vector search failed: ${error instanceof Error ? error.message : 'unknown'}`,
+      );
       return [];
     }
   }
@@ -138,7 +158,9 @@ export class HybridSearchService {
     const textLower = text.toLowerCase();
     let score = 0;
     for (const term of queryTerms) {
-      const matches = (textLower.match(new RegExp(term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g')) || []).length;
+      const matches = (
+        textLower.match(new RegExp(term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g')) || []
+      ).length;
       score += matches;
     }
     return score;

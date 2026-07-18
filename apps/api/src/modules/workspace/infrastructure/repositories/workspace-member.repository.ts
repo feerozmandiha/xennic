@@ -6,7 +6,6 @@ import { WorkspaceInvitationEntity } from '../../domain/entities/workspace-invit
 
 @Injectable()
 export class WorkspaceMemberRepository implements IWorkspaceMemberRepository {
-
   // ══════════════════════════════════════════════════════════════════════════
   // MEMBERS
   // ══════════════════════════════════════════════════════════════════════════
@@ -37,10 +36,7 @@ export class WorkspaceMemberRepository implements IWorkspaceMemberRepository {
     }
   }
 
-  async findMember(
-    workspaceId: string,
-    userId: string,
-  ): Promise<WorkspaceMemberEntity | null> {
+  async findMember(workspaceId: string, userId: string): Promise<WorkspaceMemberEntity | null> {
     try {
       const rows = await prisma.$queryRaw<any[]>`
         SELECT * FROM "workspace_members"
@@ -138,9 +134,7 @@ export class WorkspaceMemberRepository implements IWorkspaceMemberRepository {
     }
   }
 
-  async findInvitationByToken(
-    token: string,
-  ): Promise<WorkspaceInvitationEntity | null> {
+  async findInvitationByToken(token: string): Promise<WorkspaceInvitationEntity | null> {
     try {
       const rows = await prisma.$queryRaw<any[]>`
         SELECT * FROM "workspace_invitations"
@@ -173,9 +167,7 @@ export class WorkspaceMemberRepository implements IWorkspaceMemberRepository {
     }
   }
 
-  async findInvitations(
-    workspaceId: string,
-  ): Promise<WorkspaceInvitationEntity[]> {
+  async findInvitations(workspaceId: string): Promise<WorkspaceInvitationEntity[]> {
     try {
       const rows = await prisma.$queryRaw<any[]>`
         SELECT * FROM "workspace_invitations"
@@ -207,25 +199,25 @@ export class WorkspaceMemberRepository implements IWorkspaceMemberRepository {
 
   private _mapMember(row: any): WorkspaceMemberEntity {
     return WorkspaceMemberEntity.reconstitute({
-      id:          row.id,
+      id: row.id,
       workspaceId: row.workspace_id,
-      userId:      row.user_id,
-      role:        row.role,
-      joinedAt:    row.joined_at,
+      userId: row.user_id,
+      role: row.role,
+      joinedAt: row.joined_at,
     });
   }
 
   private _mapInvitation(row: any): WorkspaceInvitationEntity {
     return WorkspaceInvitationEntity.reconstitute({
-      id:          row.id,
+      id: row.id,
       workspaceId: row.workspace_id,
-      email:       row.email,
-      role:        row.role,
-      token:       row.token,
-      invitedBy:   row.invited_by,
-      status:      row.status,
-      expiresAt:   row.expires_at,
-      createdAt:   row.created_at,
+      email: row.email,
+      role: row.role,
+      token: row.token,
+      invitedBy: row.invited_by,
+      status: row.status,
+      expiresAt: row.expires_at,
+      createdAt: row.created_at,
     });
   }
 }

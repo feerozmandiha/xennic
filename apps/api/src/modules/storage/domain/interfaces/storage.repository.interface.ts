@@ -5,7 +5,7 @@ export interface IStorageRepository {
   findById(id: string): Promise<FileEntity | null>;
   findAll(
     workspaceId: string,
-    options?: { mimeType?: string; bucket?: string; offset?: number; limit?: number }
+    options?: { mimeType?: string; bucket?: string; offset?: number; limit?: number },
   ): Promise<FileEntity[]>;
   count(workspaceId: string): Promise<number>;
   softDelete(id: string): Promise<void>;

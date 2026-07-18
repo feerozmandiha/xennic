@@ -11,16 +11,16 @@ export class DocumentClassifierService {
     private readonly documentRepository: IKnowledgeDocumentRepository,
   ) {}
 
-  async classifyDocument(
-    documentId: string,
-    text: string,
-  ): Promise<ClassificationResult> {
+  async classifyDocument(documentId: string, text: string): Promise<ClassificationResult> {
     const document = await this.documentRepository.findById(documentId);
     if (!document) throw new Error(`Document ${documentId} not found`);
 
     const classification = await this.runClassification(text);
 
-    await this.documentRepository.classifyDocument(documentId, classification as unknown as Record<string, unknown>);
+    await this.documentRepository.classifyDocument(
+      documentId,
+      classification as unknown as Record<string, unknown>,
+    );
 
     return classification;
   }
@@ -82,7 +82,9 @@ export class DocumentClassifierService {
     const classification = await this.runClassification(text);
 
     return {
-      tags: [classification.domain, classification.standard, classification.equipmentType].filter((v): v is string => Boolean(v)),
+      tags: [classification.domain, classification.standard, classification.equipmentType].filter(
+        (v): v is string => Boolean(v),
+      ),
       categories: [classification.domain],
       suggestedKnowledgeId: undefined,
     };

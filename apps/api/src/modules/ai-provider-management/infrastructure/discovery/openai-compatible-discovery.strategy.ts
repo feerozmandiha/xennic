@@ -1,4 +1,7 @@
-import { IDiscoveryStrategy, DiscoveryResult } from '../../application/ports/discovery-provider.interface.js';
+import {
+  IDiscoveryStrategy,
+  DiscoveryResult,
+} from '../../application/ports/discovery-provider.interface.js';
 
 export class OpenAICompatibleDiscoveryStrategy implements IDiscoveryStrategy {
   readonly providerType = 'openai_compatible';
@@ -16,7 +19,10 @@ export class OpenAICompatibleDiscoveryStrategy implements IDiscoveryStrategy {
     };
   }
 
-  async testConnection(apiKey: string, baseUrl?: string): Promise<{ success: boolean; latencyMs: number; error?: string }> {
+  async testConnection(
+    apiKey: string,
+    baseUrl?: string,
+  ): Promise<{ success: boolean; latencyMs: number; error?: string }> {
     const start = Date.now();
     try {
       if (!baseUrl) throw new Error('Base URL required');
@@ -40,11 +46,17 @@ export class OpenAICompatibleDiscoveryStrategy implements IDiscoveryStrategy {
         signal: AbortSignal.timeout(10000),
       });
       if (!res.ok) return [];
-      const data = await res.json() as any;
+      const data = (await res.json()) as any;
       return (data.data || []).slice(0, 30).map((m: any) => ({
-        modelId: m.id, displayName: m.id, modelType: 'chat',
-        supportsStreaming: true, supportsTemperature: true, supportsTopP: true,
+        modelId: m.id,
+        displayName: m.id,
+        modelType: 'chat',
+        supportsStreaming: true,
+        supportsTemperature: true,
+        supportsTopP: true,
       }));
-    } catch { return []; }
+    } catch {
+      return [];
+    }
   }
 }

@@ -3,7 +3,16 @@ import type { IKnowledgeDocumentRepository } from '../../domain/interfaces/knowl
 import type { IPipelineRunRepository } from '../../domain/interfaces/pipeline-run.repository.interface.js';
 import { PipelineEventBus } from '../../infrastructure/queues/pipeline-event-bus.js';
 
-type PipelineStage = 'intake' | 'classify' | 'parse' | 'normalize' | 'chunk' | 'embed' | 'publish' | 'completed' | 'failed';
+type PipelineStage =
+  | 'intake'
+  | 'classify'
+  | 'parse'
+  | 'normalize'
+  | 'chunk'
+  | 'embed'
+  | 'publish'
+  | 'completed'
+  | 'failed';
 
 export interface PipelineResult {
   success: boolean;
@@ -30,7 +39,14 @@ export class PipelineOrchestratorService {
     const startedAt = new Date();
     const document = await this.documentRepository.findById(documentId);
     if (!document) {
-      return { success: false, documentId, completedStages: [], failedAt: 'intake', error: 'Document not found', durationMs: Date.now() - startedAt.getTime() };
+      return {
+        success: false,
+        documentId,
+        completedStages: [],
+        failedAt: 'intake',
+        error: 'Document not found',
+        durationMs: Date.now() - startedAt.getTime(),
+      };
     }
 
     this.eventBus.enqueueIntake({
@@ -71,7 +87,14 @@ export class PipelineOrchestratorService {
   async publishDocument(documentId: string, knowledgeId?: string): Promise<PipelineResult> {
     const document = await this.documentRepository.findById(documentId);
     if (!document) {
-      return { success: false, documentId, completedStages: [], failedAt: 'publish', error: 'Document not found', durationMs: 0 };
+      return {
+        success: false,
+        documentId,
+        completedStages: [],
+        failedAt: 'publish',
+        error: 'Document not found',
+        durationMs: 0,
+      };
     }
 
     await this.eventBus.enqueuePublish({

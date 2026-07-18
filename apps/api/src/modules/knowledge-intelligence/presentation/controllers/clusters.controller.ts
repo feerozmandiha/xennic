@@ -30,7 +30,10 @@ export class ClustersController {
   @Get('duplicates/:nodeId')
   @ApiOperation({ summary: 'Find duplicates and near-duplicates for a node' })
   async findDuplicates(@Request() req: any, @Param('nodeId') nodeId: string) {
-    const analysis = await this.duplicateService.analyzeDuplicateCandidates(nodeId, req.user?.workspaceId);
+    const analysis = await this.duplicateService.analyzeDuplicateCandidates(
+      nodeId,
+      req.user?.workspaceId,
+    );
     return { success: true, data: analysis };
   }
 }

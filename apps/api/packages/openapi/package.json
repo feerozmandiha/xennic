@@ -5,5 +5,7 @@
   "description": "Xennic Platform OpenAPI Specification",
   "main": "./v1/openapi.json",
   "types": "./v1/openapi.json",
-  "files": ["v1/"]
+  "files": [
+    "v1/"
+  ]
 }

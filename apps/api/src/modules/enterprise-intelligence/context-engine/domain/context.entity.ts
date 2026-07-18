@@ -66,16 +66,6 @@ export class ContextEntity {
     createdAt: Date,
     createdBy: string,
   ): ContextEntity {
-    return new ContextEntity(
-      id,
-      scope,
-      scopeId,
-      source,
-      key,
-      value,
-      version,
-      createdAt,
-      createdBy,
-    );
+    return new ContextEntity(id, scope, scopeId, source, key, value, version, createdAt, createdBy);
   }
 }

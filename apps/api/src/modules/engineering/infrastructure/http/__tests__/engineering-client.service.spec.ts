@@ -24,7 +24,13 @@ describe('EngineeringClientService', () => {
   it('should successfully execute a calculation', async () => {
     const responseBody = {
       success: true,
-      data: { results: { voltage_v: 230 }, inputs: { current_a: 10, resistance_ohm: 23 }, formula_version: '1.0', engine_version: '2.0', standard_version: 'IEC' },
+      data: {
+        results: { voltage_v: 230 },
+        inputs: { current_a: 10, resistance_ohm: 23 },
+        formula_version: '1.0',
+        engine_version: '2.0',
+        standard_version: 'IEC',
+      },
       meta: {},
     };
 
@@ -34,7 +40,10 @@ describe('EngineeringClientService', () => {
       json: async () => responseBody,
     });
 
-    const result = await client.calculate('/api/v1/engineering/basic/ohms-law', { current_a: 10, resistance_ohm: 23 });
+    const result = await client.calculate('/api/v1/engineering/basic/ohms-law', {
+      current_a: 10,
+      resistance_ohm: 23,
+    });
 
     expect(result.success).toBe(true);
     expect(result.data.results.voltage_v).toBe(230);
@@ -76,13 +85,11 @@ describe('EngineeringClientService', () => {
   });
 
   it('should retry on transient failure', async () => {
-    mockFetch
-      .mockRejectedValueOnce(new Error('Connection refused'))
-      .mockResolvedValueOnce({
-        ok: true,
-        status: 200,
-        json: async () => ({ success: true, data: { results: {} }, meta: {} }),
-      });
+    mockFetch.mockRejectedValueOnce(new Error('Connection refused')).mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      json: async () => ({ success: true, data: { results: {} }, meta: {} }),
+    });
 
     const result = await client.calculate('/api/v1/engineering/basic/ohms-law', { current_a: 10 });
 
@@ -96,9 +103,9 @@ describe('EngineeringClientService', () => {
       .mockRejectedValueOnce(new Error('Connection refused'))
       .mockRejectedValueOnce(new Error('Connection refused'));
 
-    await expect(
-      client.calculate('/api/v1/engineering/basic/ohms-law', {}),
-    ).rejects.toThrow(ServiceUnavailableException);
+    await expect(client.calculate('/api/v1/engineering/basic/ohms-law', {})).rejects.toThrow(
+      ServiceUnavailableException,
+    );
 
     expect(mockFetch).toHaveBeenCalledTimes(3);
   });
@@ -125,9 +132,9 @@ describe('EngineeringClientService', () => {
       json: async () => ({}),
     });
 
-    await expect(
-      client.calculate('/api/v1/engineering/basic/ohms-law', {}),
-    ).rejects.toThrow(ServiceUnavailableException);
+    await expect(client.calculate('/api/v1/engineering/basic/ohms-law', {})).rejects.toThrow(
+      ServiceUnavailableException,
+    );
   });
 
   it('should handle timeout (AbortError)', async () => {
@@ -135,9 +142,9 @@ describe('EngineeringClientService', () => {
     abortError.name = 'AbortError';
     mockFetch.mockRejectedValueOnce(abortError);
 
-    await expect(
-      client.calculate('/api/v1/engineering/basic/ohms-law', {}),
-    ).rejects.toThrow(ServiceUnavailableException);
+    await expect(client.calculate('/api/v1/engineering/basic/ohms-law', {})).rejects.toThrow(
+      ServiceUnavailableException,
+    );
   });
 
   it('should report health with circuit breaker state', async () => {
@@ -172,9 +179,9 @@ describe('EngineeringClientService', () => {
       json: async () => ({ error: { message: 'Bad input' } }),
     });
 
-    await expect(
-      client.calculate('/api/v1/engineering/basic/ohms-law', {}),
-    ).rejects.toThrow(BadRequestException);
+    await expect(client.calculate('/api/v1/engineering/basic/ohms-law', {})).rejects.toThrow(
+      BadRequestException,
+    );
 
     expect(mockFetch).toHaveBeenCalledTimes(1);
   });

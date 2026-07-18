@@ -31,7 +31,11 @@ export class SubscriptionBillingService {
     const totalAmount = monthlyPrice + taxAmount;
 
     const invoice = await this._createSubscriptionInvoice(
-      workspaceId, plan, monthlyPrice, taxAmount, totalAmount,
+      workspaceId,
+      plan,
+      monthlyPrice,
+      taxAmount,
+      totalAmount,
     );
 
     const payment = PaymentEntity.create({
@@ -78,17 +82,19 @@ export class SubscriptionBillingService {
 
       return this.chargeForSubscription(workspaceId, subscriptionId, plan);
     } catch (err) {
-      this.logger.error(`Failed to process renewal for workspace ${workspaceId}: ${(err as Error).message}`);
+      this.logger.error(
+        `Failed to process renewal for workspace ${workspaceId}: ${(err as Error).message}`,
+      );
       throw err;
     }
   }
 
-  async getSubscriptionPaymentHistory(
-    workspaceId: string,
-  ): Promise<{
-    invoice: InvoiceEntity;
-    payment: PaymentEntity | null;
-  }[]> {
+  async getSubscriptionPaymentHistory(workspaceId: string): Promise<
+    {
+      invoice: InvoiceEntity;
+      payment: PaymentEntity | null;
+    }[]
+  > {
     const invoices = await this.billingRepository.findAllInvoicesByWorkspace(workspaceId, 0, 100);
     const result: { invoice: InvoiceEntity; payment: PaymentEntity | null }[] = [];
 

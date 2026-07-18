@@ -22,7 +22,7 @@ export class PolicyEvaluationService {
   ): PolicyEntity[] {
     if (!policies || policies.length === 0) return [];
 
-    return policies.filter(policy => {
+    return policies.filter((policy) => {
       if (!policy.enabled) return false;
 
       const actionMatch = this.matchPattern(policy.action, action);
@@ -32,7 +32,8 @@ export class PolicyEvaluationService {
 
       if (context?.scope && policy.scope !== 'global') {
         if (policy.scope !== context.scope) return false;
-        if (policy.scopeId && policy.scopeId !== '*' && policy.scopeId !== context.scopeId) return false;
+        if (policy.scopeId && policy.scopeId !== '*' && policy.scopeId !== context.scopeId)
+          return false;
       }
 
       return true;
@@ -46,7 +47,7 @@ export class PolicyEvaluationService {
     for (const [key, value] of Object.entries(policy.conditions)) {
       if (key === 'roles' && context.roles) {
         const requiredRoles = value as string[];
-        if (!requiredRoles.some(role => context.roles!.includes(role))) return false;
+        if (!requiredRoles.some((role) => context.roles!.includes(role))) return false;
         continue;
       }
 
@@ -78,29 +79,27 @@ export class PolicyEvaluationService {
 
     const sorted = [...matches].sort((a, b) => b.priority - a.priority);
     const highestPriority = sorted[0]!.priority;
-    const topMatches = sorted.filter(m => m.priority === highestPriority);
+    const topMatches = sorted.filter((m) => m.priority === highestPriority);
 
-    const hasDeny = topMatches.some(m => m.effect === 'deny');
+    const hasDeny = topMatches.some((m) => m.effect === 'deny');
 
     if (hasDeny) {
-      const denyPolicies = topMatches.filter(m => m.effect === 'deny');
+      const denyPolicies = topMatches.filter((m) => m.effect === 'deny');
       return {
         allowed: false,
-        reason: `Denied by policies: ${denyPolicies.map(m => `${m.name} (${m.policyId})`).join(', ')}`,
+        reason: `Denied by policies: ${denyPolicies.map((m) => `${m.name} (${m.policyId})`).join(', ')}`,
       };
     }
 
     return {
       allowed: true,
-      reason: `Allowed by policies: ${topMatches.map(m => `${m.name} (${m.policyId})`).join(', ')}`,
+      reason: `Allowed by policies: ${topMatches.map((m) => `${m.name} (${m.policyId})`).join(', ')}`,
     };
   }
 
   private matchPattern(pattern: string, value: string): boolean {
     if (pattern === '*') return true;
-    const regexStr = pattern
-      .replace(/\*/g, '.*')
-      .replace(/\?/g, '.');
+    const regexStr = pattern.replace(/\*/g, '.*').replace(/\?/g, '.');
     return new RegExp(`^${regexStr}$`).test(value);
   }
 }

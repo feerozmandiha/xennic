@@ -14,10 +14,7 @@ import { PrismaHitlRepository } from './infrastructure/persistence/prisma-hitl-r
     EscalationService,
     { provide: 'IHitlRepository', useClass: PrismaHitlRepository },
   ],
-  exports: [
-    ApprovalService,
-    ReviewService,
-  ],
+  exports: [ApprovalService, ReviewService],
 })
 export class HumanInTheLoopModule implements OnModuleInit {
   private readonly logger = new Logger(HumanInTheLoopModule.name);

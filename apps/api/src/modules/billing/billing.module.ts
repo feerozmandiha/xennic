@@ -10,11 +10,7 @@ import { WorkspaceModule } from '../workspace/workspace.module.js';
 import { RbacModule } from '../rbac/rbac.module.js';
 
 @Module({
-  imports: [
-    SubscriptionModule,
-    WorkspaceModule,
-    RbacModule,
-  ],
+  imports: [SubscriptionModule, WorkspaceModule, RbacModule],
   controllers: [BillingController, BillingCallbackController],
   providers: [
     BillingService,

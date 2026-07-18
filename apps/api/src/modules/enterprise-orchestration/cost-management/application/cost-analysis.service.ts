@@ -96,9 +96,9 @@ export class CostAnalysisService {
     return this.repository.getTopCosts(limit);
   }
 
-  async getCostBreakdown(executionId: string): Promise<
-    { label: string; value: number; percentage: number }[]
-  > {
+  async getCostBreakdown(
+    executionId: string,
+  ): Promise<{ label: string; value: number; percentage: number }[]> {
     const all = await this.repository.findByExecution(executionId);
     const grouped = new Map<string, number>();
 
@@ -135,9 +135,10 @@ export class CostAnalysisService {
       estimatedDuration += this.getAverageDurationForStep(step);
     }
 
-    const confidence = workflowDefinition.steps.length > 0
-      ? Math.min(0.9, 0.3 + workflowDefinition.steps.length * 0.1)
-      : 0;
+    const confidence =
+      workflowDefinition.steps.length > 0
+        ? Math.min(0.9, 0.3 + workflowDefinition.steps.length * 0.1)
+        : 0;
 
     return {
       estimatedCost,

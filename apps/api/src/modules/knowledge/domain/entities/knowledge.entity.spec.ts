@@ -1,9 +1,11 @@
-import { KnowledgeEntity} from './knowledge.entity.js';
+import { KnowledgeEntity } from './knowledge.entity.js';
 
 const WS_ID = 'ws-123';
 const AUTHOR_ID = 'user-456';
 
-function createEntity(overrides?: Partial<ConstructorParameters<typeof KnowledgeEntity>>): KnowledgeEntity {
+function createEntity(
+  overrides?: Partial<ConstructorParameters<typeof KnowledgeEntity>>,
+): KnowledgeEntity {
   return KnowledgeEntity.create({
     workspaceId: WS_ID,
     slug: 'test-article',
@@ -179,7 +181,7 @@ describe('KnowledgeEntity', () => {
 
     const INVALID_SPEC: [string, string, string][] = [
       ['draft', 'published', 'publish'],
-      ['draft', 'archived',  'archive'],
+      ['draft', 'archived', 'archive'],
       ['review', 'archived', 'archive'],
       ['published', 'draft', 'reject'],
       ['archived', 'published', 'publish'],
@@ -271,7 +273,9 @@ function step(entity: KnowledgeEntity, steps: string[]) {
   }
 }
 
-function createEntityWithStatus(status: 'draft' | 'review' | 'published' | 'archived'): KnowledgeEntity {
+function createEntityWithStatus(
+  status: 'draft' | 'review' | 'published' | 'archived',
+): KnowledgeEntity {
   const entity = KnowledgeEntity.create({ workspaceId: WS_ID });
   const path: Record<string, string[]> = {
     draft: [],
@@ -285,10 +289,20 @@ function createEntityWithStatus(status: 'draft' | 'review' | 'published' | 'arch
 
 function doAction(entity: KnowledgeEntity, action: string): void {
   switch (action) {
-    case 'review':  entity.requestReview('x'); break;
-    case 'publish': entity.publish(); break;
-    case 'archive': entity.archive(); break;
-    case 'restore': entity.restoreFromArchive(); break;
-    case 'reject':  entity.rejectReview(); break;
+    case 'review':
+      entity.requestReview('x');
+      break;
+    case 'publish':
+      entity.publish();
+      break;
+    case 'archive':
+      entity.archive();
+      break;
+    case 'restore':
+      entity.restoreFromArchive();
+      break;
+    case 'reject':
+      entity.rejectReview();
+      break;
   }
 }

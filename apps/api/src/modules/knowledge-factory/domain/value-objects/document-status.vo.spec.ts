@@ -1,4 +1,8 @@
-import { DOCUMENT_STATUSES, VALID_STATUS_TRANSITIONS, DocumentStatusTransitionError } from './document-status.vo.js';
+import {
+  DOCUMENT_STATUSES,
+  VALID_STATUS_TRANSITIONS,
+  DocumentStatusTransitionError,
+} from './document-status.vo.js';
 
 describe('DocumentStatus', () => {
   it('should have all expected statuses', () => {

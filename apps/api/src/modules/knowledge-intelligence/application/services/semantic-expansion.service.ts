@@ -13,7 +13,10 @@ export class SemanticExpansionService {
     private readonly edgeRepo: IGraphEdgeRepository,
   ) {}
 
-  async expand(nodeId: string, maxDepth = 2): Promise<{ nodeId: string; relevance: number; edgeTypes: string[] }[]> {
+  async expand(
+    nodeId: string,
+    maxDepth = 2,
+  ): Promise<{ nodeId: string; relevance: number; edgeTypes: string[] }[]> {
     const neighbors = await this.edgeRepo.findAllBySource(nodeId);
     const expansion: { nodeId: string; relevance: number; edgeTypes: string[] }[] = [];
     const seen = new Set<string>();

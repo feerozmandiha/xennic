@@ -5,7 +5,7 @@ export class SubscriptionEntity {
     public readonly id: string,
     public readonly workspaceId: string,
     public readonly planId: string,
-    public readonly planSlug: string,      // cached for quick access
+    public readonly planSlug: string, // cached for quick access
     private _status: SubscriptionStatus,
     public readonly startsAt: Date,
     public expiresAt: Date | null,
@@ -49,16 +49,24 @@ export class SubscriptionEntity {
     updatedAt: Date;
   }): SubscriptionEntity {
     return new SubscriptionEntity(
-      data.id, data.workspaceId, data.planId, data.planSlug,
+      data.id,
+      data.workspaceId,
+      data.planId,
+      data.planSlug,
       data.status as SubscriptionStatus,
-      data.startsAt, data.expiresAt, data.cancelledAt,
-      data.createdAt, data.updatedAt,
+      data.startsAt,
+      data.expiresAt,
+      data.cancelledAt,
+      data.createdAt,
+      data.updatedAt,
     );
   }
 
   // ── getters ──────────────────────────────────────────────────────────────
 
-  get status(): SubscriptionStatus { return this._status; }
+  get status(): SubscriptionStatus {
+    return this._status;
+  }
 
   // ── business methods ─────────────────────────────────────────────────────
 
@@ -66,9 +74,9 @@ export class SubscriptionEntity {
     if (this._status === 'cancelled') {
       throw new Error('Subscription is already cancelled');
     }
-    this._status    = 'cancelled';
+    this._status = 'cancelled';
     this.cancelledAt = new Date();
-    this.updatedAt   = new Date();
+    this.updatedAt = new Date();
   }
 
   isActive(): boolean {
@@ -77,8 +85,10 @@ export class SubscriptionEntity {
     return true;
   }
 
-  isCancelled(): boolean  { return this._status === 'cancelled'; }
-  isExpired(): boolean    {
+  isCancelled(): boolean {
+    return this._status === 'cancelled';
+  }
+  isExpired(): boolean {
     return this.expiresAt !== null && this.expiresAt < new Date();
   }
 }

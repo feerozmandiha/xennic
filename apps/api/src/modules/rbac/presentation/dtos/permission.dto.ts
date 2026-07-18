@@ -30,7 +30,11 @@ export class CreatePermissionDto {
   @IsNotEmpty()
   domain!: string;
 
-  @ApiProperty({ example: 'Can read user information', description: 'Permission description', required: false })
+  @ApiProperty({
+    example: 'Can read user information',
+    description: 'Permission description',
+    required: false,
+  })
   @IsOptional()
   @IsString()
   description?: string;
@@ -59,12 +63,12 @@ export class PermissionResponseDto {
 
   static fromEntity(permission: PermissionEntity): PermissionResponseDto {
     const dto = new PermissionResponseDto();
-    dto.id          = permission.id;
-    dto.name        = permission.name;
-    dto.slug        = permission.slug;
+    dto.id = permission.id;
+    dto.name = permission.name;
+    dto.slug = permission.slug;
     dto.description = permission.description;
-    dto.domain      = permission.domain;
-    dto.createdAt   = permission.createdAt;
+    dto.domain = permission.domain;
+    dto.createdAt = permission.createdAt;
     return dto;
   }
 }

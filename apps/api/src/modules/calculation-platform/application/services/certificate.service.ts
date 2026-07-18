@@ -27,12 +27,16 @@ export class CertificateService {
     confidence?: number | null;
   }): Promise<CalculationCertificateEntity> {
     const calculationHash = createHash('sha256')
-      .update(JSON.stringify({ definition: data.definition.slug, version: data.version.version, outputs: data.outputs }))
+      .update(
+        JSON.stringify({
+          definition: data.definition.slug,
+          version: data.version.version,
+          outputs: data.outputs,
+        }),
+      )
       .digest('hex');
 
-    const inputHash = createHash('sha256')
-      .update(JSON.stringify(data.inputs))
-      .digest('hex');
+    const inputHash = createHash('sha256').update(JSON.stringify(data.inputs)).digest('hex');
 
     const certId = `CERT-${data.definition.slug.toUpperCase()}-${Date.now()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
 
@@ -64,13 +68,18 @@ export class CertificateService {
     return this.repo.findByResultId(resultId);
   }
 
-  async getCertificateByCertificateId(certificateId: string): Promise<CalculationCertificateEntity> {
+  async getCertificateByCertificateId(
+    certificateId: string,
+  ): Promise<CalculationCertificateEntity> {
     const entity = await this.repo.findByCertificateId(certificateId);
     if (!entity) throw new NotFoundException(`Certificate '${certificateId}' not found`);
     return entity;
   }
 
-  async getCertificatesByWorkspace(workspaceId: string, options?: { page?: number; limit?: number }) {
+  async getCertificatesByWorkspace(
+    workspaceId: string,
+    options?: { page?: number; limit?: number },
+  ) {
     return this.repo.findByWorkspaceId(workspaceId, options);
   }
 

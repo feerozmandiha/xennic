@@ -28,7 +28,7 @@ export class SchemaRegistryService implements ISchemaRegistry {
     const versions = this.schemas.get(eventType);
     if (!versions || versions.length === 0) return null;
     if (version === undefined) return versions[versions.length - 1] ?? null;
-    return versions.find(v => v.version === version) ?? null;
+    return versions.find((v) => v.version === version) ?? null;
   }
 
   async getLatestVersion(eventType: string): Promise<number> {

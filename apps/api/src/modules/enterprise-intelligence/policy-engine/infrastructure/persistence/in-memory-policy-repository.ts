@@ -1,7 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
 import type { PaginatedResult } from '../../../shared/types/index.js';
 import type { PolicyEntity, PolicyEffect } from '../../domain/policy.entity.js';
-import type { IPolicyRepository, PolicyFindOptions } from '../../domain/policy-repository.interface.js';
+import type {
+  IPolicyRepository,
+  PolicyFindOptions,
+} from '../../domain/policy-repository.interface.js';
 
 @Injectable()
 export class InMemoryPolicyRepository implements IPolicyRepository {
@@ -20,13 +23,13 @@ export class InMemoryPolicyRepository implements IPolicyRepository {
   async list(options?: PolicyFindOptions): Promise<PaginatedResult<PolicyEntity>> {
     let items = Array.from(this.store.values());
     if (options?.enabled !== undefined) {
-      items = items.filter(e => e.enabled === options.enabled);
+      items = items.filter((e) => e.enabled === options.enabled);
     }
     return this.paginate(items, options);
   }
 
   async findByResource(resource: string, scope?: string): Promise<PolicyEntity[]> {
-    return Array.from(this.store.values()).filter(e => {
+    return Array.from(this.store.values()).filter((e) => {
       const resourceMatch = this.matchPattern(e.resource, resource);
       if (!resourceMatch) return false;
       if (scope !== undefined) {
@@ -37,15 +40,15 @@ export class InMemoryPolicyRepository implements IPolicyRepository {
   }
 
   async findByAction(action: string): Promise<PolicyEntity[]> {
-    return Array.from(this.store.values()).filter(e => this.matchPattern(e.action, action));
+    return Array.from(this.store.values()).filter((e) => this.matchPattern(e.action, action));
   }
 
   async findByEffect(effect: PolicyEffect): Promise<PolicyEntity[]> {
-    return Array.from(this.store.values()).filter(e => e.effect === effect);
+    return Array.from(this.store.values()).filter((e) => e.effect === effect);
   }
 
   async findByScope(scope: string): Promise<PolicyEntity[]> {
-    return Array.from(this.store.values()).filter(e => e.scope === scope);
+    return Array.from(this.store.values()).filter((e) => e.scope === scope);
   }
 
   async delete(id: string): Promise<void> {
@@ -54,9 +57,7 @@ export class InMemoryPolicyRepository implements IPolicyRepository {
 
   private matchPattern(pattern: string, value: string): boolean {
     if (pattern === '*') return true;
-    const regexStr = pattern
-      .replace(/\*/g, '.*')
-      .replace(/\?/g, '.');
+    const regexStr = pattern.replace(/\*/g, '.*').replace(/\?/g, '.');
     return new RegExp(`^${regexStr}$`).test(value);
   }
 

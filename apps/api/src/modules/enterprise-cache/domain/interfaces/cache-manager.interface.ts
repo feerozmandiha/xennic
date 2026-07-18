@@ -1,7 +1,14 @@
 export const ICACHE_MANAGER = 'ICacheManager' as const;
 export const ICACHE_INVALIDATION = 'ICacheInvalidation' as const;
 
-export type CacheNamespace = 'semantic' | 'prompt' | 'embedding' | 'session' | 'memory' | 'config' | 'search';
+export type CacheNamespace =
+  | 'semantic'
+  | 'prompt'
+  | 'embedding'
+  | 'session'
+  | 'memory'
+  | 'config'
+  | 'search';
 
 export interface CacheEntry<T = unknown> {
   key: string;

@@ -9,7 +9,8 @@ export const ProviderDomainEventTypes = {
   PROVIDER_QUOTA_EXCEEDED: 'provider.quota_exceeded',
 } as const;
 
-export type ProviderDomainEventType = (typeof ProviderDomainEventTypes)[keyof typeof ProviderDomainEventTypes];
+export type ProviderDomainEventType =
+  (typeof ProviderDomainEventTypes)[keyof typeof ProviderDomainEventTypes];
 
 export interface ProviderDomainEvent {
   eventType: ProviderDomainEventType;

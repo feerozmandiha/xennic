@@ -8,6 +8,11 @@ export interface IRoleRepository {
   count(): Promise<number>;
   delete(id: string): Promise<void>;
   findUserRolesInWorkspace(userId: string, workspaceId: string): Promise<RoleEntity[]>;
-  assignRoleToUser(userId: string, roleId: string, workspaceId: string, assignedBy?: string): Promise<void>;
+  assignRoleToUser(
+    userId: string,
+    roleId: string,
+    workspaceId: string,
+    assignedBy?: string,
+  ): Promise<void>;
   removeRoleFromUser(userId: string, roleId: string, workspaceId: string): Promise<void>;
 }

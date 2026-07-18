@@ -1,5 +1,5 @@
 export type NotificationChannel = 'in_app' | 'email' | 'sms' | 'push';
-export type NotificationStatus  = 'pending' | 'sent' | 'read' | 'failed';
+export type NotificationStatus = 'pending' | 'sent' | 'read' | 'failed';
 export type NotificationType =
   | 'workspace_invite'
   | 'workspace_member_added'
@@ -78,13 +78,15 @@ export class NotificationEntity {
 
   // ── getters ──────────────────────────────────────────────────────────────
 
-  get status(): NotificationStatus { return this._status; }
+  get status(): NotificationStatus {
+    return this._status;
+  }
 
   // ── business methods ─────────────────────────────────────────────────────
 
   markAsSent(): void {
     this._status = 'sent';
-    this.sentAt  = new Date();
+    this.sentAt = new Date();
   }
 
   markAsRead(): void {
@@ -96,7 +98,13 @@ export class NotificationEntity {
     this._status = 'failed';
   }
 
-  isPending(): boolean { return this._status === 'pending'; }
-  isRead(): boolean    { return this._status === 'read'; }
-  isSent(): boolean    { return this._status === 'sent'; }
+  isPending(): boolean {
+    return this._status === 'pending';
+  }
+  isRead(): boolean {
+    return this._status === 'read';
+  }
+  isSent(): boolean {
+    return this._status === 'sent';
+  }
 }

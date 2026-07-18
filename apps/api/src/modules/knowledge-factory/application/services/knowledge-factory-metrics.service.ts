@@ -28,18 +28,30 @@ export class KnowledgeFactoryMetricsService {
   ) {}
 
   async getMetrics(): Promise<KnowledgeFactoryMetrics> {
-    const documentsUploaded = await this.documentRepository.countByStatus('', 'uploaded' as DocumentStatus);
-    const documentsProcessed = await this.documentRepository.countByStatus('', 'published' as DocumentStatus);
-    const documentsFailed = await this.documentRepository.countByStatus('', 'failed' as DocumentStatus);
+    const documentsUploaded = await this.documentRepository.countByStatus(
+      '',
+      'uploaded' as DocumentStatus,
+    );
+    const documentsProcessed = await this.documentRepository.countByStatus(
+      '',
+      'published' as DocumentStatus,
+    );
+    const documentsFailed = await this.documentRepository.countByStatus(
+      '',
+      'failed' as DocumentStatus,
+    );
 
     const queueDepths: Record<string, number> = {};
-    const queueNames = Object.values(QUEUE_NAMES).filter(name => name !== QUEUE_NAMES.DEAD_LETTER);
+    const queueNames = Object.values(QUEUE_NAMES).filter(
+      (name) => name !== QUEUE_NAMES.DEAD_LETTER,
+    );
     for (const queueName of queueNames) {
       try {
         const queue = (this.eventBus as any)?.queues?.get(queueName);
         if (queue) {
           const count = await queue.getJobCounts('waiting', 'active', 'delayed');
-          queueDepths[queueName] = (count.waiting || 0) + (count.active || 0) + (count.delayed || 0);
+          queueDepths[queueName] =
+            (count.waiting || 0) + (count.active || 0) + (count.delayed || 0);
         }
       } catch {
         queueDepths[queueName] = 0;
@@ -76,7 +88,7 @@ export class KnowledgeFactoryMetricsService {
       checks.queues = false;
     }
 
-    const allHealthy = Object.values(checks).every(v => v);
+    const allHealthy = Object.values(checks).every((v) => v);
     return {
       status: allHealthy ? 'healthy' : 'degraded',
       checks,

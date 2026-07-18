@@ -1,5 +1,5 @@
 export interface JwtPayload {
-  sub: string;        // user_id
+  sub: string; // user_id
   email: string;
   workspaceId?: string;
   roles: string[];
@@ -15,7 +15,12 @@ export class JwtPayloadVO {
     public readonly roles: string[],
   ) {}
 
-  static create(userId: string, email: string, roles: string[] = [], workspaceId?: string): JwtPayloadVO {
+  static create(
+    userId: string,
+    email: string,
+    roles: string[] = [],
+    workspaceId?: string,
+  ): JwtPayloadVO {
     if (!userId || userId.trim().length === 0) {
       throw new Error('User ID is required for JWT payload');
     }

@@ -25,10 +25,17 @@ export class CalculationLoggerService {
     const message = `[${entry.definition ?? 'unknown'}]${entry.calculationId ? ` (${entry.calculationId})` : ''}${entry.error ? ` ERROR: ${entry.error}` : ''}${entry.durationMs ? ` ${entry.durationMs}ms` : ''}`;
 
     switch (entry.level) {
-      case 'error': this.logger.error(message); break;
-      case 'warn': this.logger.warn(message); break;
-      case 'debug': this.logger.debug(message); break;
-      default: this.logger.log(message);
+      case 'error':
+        this.logger.error(message);
+        break;
+      case 'warn':
+        this.logger.warn(message);
+        break;
+      case 'debug':
+        this.logger.debug(message);
+        break;
+      default:
+        this.logger.log(message);
     }
 
     this.logBuffer.push(entry);
@@ -45,8 +52,19 @@ export class CalculationLoggerService {
     this.log({ timestamp: new Date().toISOString(), level: 'warn', definition, ...data });
   }
 
-  error(definition: string, message: string, error?: string, data?: Partial<CalculationLogEntry>): void {
-    this.log({ timestamp: new Date().toISOString(), level: 'error', definition, error: error ?? message, ...data });
+  error(
+    definition: string,
+    message: string,
+    error?: string,
+    data?: Partial<CalculationLogEntry>,
+  ): void {
+    this.log({
+      timestamp: new Date().toISOString(),
+      level: 'error',
+      definition,
+      error: error ?? message,
+      ...data,
+    });
   }
 
   debug(definition: string, message: string, data?: Partial<CalculationLogEntry>): void {
@@ -58,10 +76,10 @@ export class CalculationLoggerService {
   }
 
   getErrorLogs(): CalculationLogEntry[] {
-    return this.logBuffer.filter(e => e.level === 'error');
+    return this.logBuffer.filter((e) => e.level === 'error');
   }
 
   getSlowCalculations(thresholdMs: number = 1000): CalculationLogEntry[] {
-    return this.logBuffer.filter(e => (e.durationMs ?? 0) > thresholdMs);
+    return this.logBuffer.filter((e) => (e.durationMs ?? 0) > thresholdMs);
   }
 }

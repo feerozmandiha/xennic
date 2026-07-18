@@ -18,14 +18,24 @@ export class GraphController {
 
   @Get('graph/shortest-path/:sourceId/:targetId')
   @ApiOperation({ summary: 'Find shortest path between two graph nodes' })
-  async shortestPath(@Request() req: any, @Param('sourceId') sourceId: string, @Param('targetId') targetId: string, @Query('_maxDepth') _maxDepth = 10) {
+  async shortestPath(
+    @Request() req: any,
+    @Param('sourceId') sourceId: string,
+    @Param('targetId') targetId: string,
+    @Query('_maxDepth') _maxDepth = 10,
+  ) {
     const result = await this.traversalService.findShortestPath(sourceId, targetId, _maxDepth);
     return { success: true, data: result };
   }
 
   @Get('graph/neighbors/:nodeId')
   @ApiOperation({ summary: 'Get neighbors of a graph node' })
-  async neighbors(@Request() req: any, @Param('nodeId') nodeId: string, @Query('direction') direction: 'in' | 'out' | 'both' = 'both', @Query('edgeType') edgeType?: string) {
+  async neighbors(
+    @Request() req: any,
+    @Param('nodeId') nodeId: string,
+    @Query('direction') direction: 'in' | 'out' | 'both' = 'both',
+    @Query('edgeType') edgeType?: string,
+  ) {
     const neighbors = await this.traversalService.getNeighbors(nodeId, direction, edgeType);
     return { success: true, data: neighbors };
   }
@@ -40,21 +50,33 @@ export class GraphController {
 
   @Get('graph/ancestors/:nodeId')
   @ApiOperation({ summary: 'Get all ancestors of a node' })
-  async ancestors(@Request() req: any, @Param('nodeId') nodeId: string, @Query('maxDepth') maxDepth = 10) {
+  async ancestors(
+    @Request() req: any,
+    @Param('nodeId') nodeId: string,
+    @Query('maxDepth') maxDepth = 10,
+  ) {
     const ancestors = await this.traversalService.getAncestors(nodeId, maxDepth);
     return { success: true, data: ancestors };
   }
 
   @Get('graph/descendants/:nodeId')
   @ApiOperation({ summary: 'Get all descendants of a node' })
-  async descendants(@Request() req: any, @Param('nodeId') nodeId: string, @Query('maxDepth') maxDepth = 10) {
+  async descendants(
+    @Request() req: any,
+    @Param('nodeId') nodeId: string,
+    @Query('maxDepth') maxDepth = 10,
+  ) {
     const descendants = await this.traversalService.getDescendants(nodeId, maxDepth);
     return { success: true, data: descendants };
   }
 
   @Get('graph/provenance/:nodeId')
   @ApiOperation({ summary: 'Build provenance chain for a node' })
-  async provenance(@Request() req: any, @Param('nodeId') nodeId: string, @Query('maxDepth') maxDepth = 10) {
+  async provenance(
+    @Request() req: any,
+    @Param('nodeId') nodeId: string,
+    @Query('maxDepth') maxDepth = 10,
+  ) {
     const provenance = await this.provenanceService.buildProvenanceChain(nodeId, maxDepth);
     return { success: true, data: provenance };
   }

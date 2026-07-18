@@ -4,7 +4,8 @@ import { OntologyClass } from '../../domain/entities/ontology-class.entity.js';
 import { OntologyRelation } from '../../domain/entities/ontology-relation.entity.js';
 import type { IOntologyRepository } from '../../domain/interfaces/ontology.repository.interface.js';
 
-const toProps = (v: unknown): Record<string, unknown> => (v && typeof v === 'object' && !Array.isArray(v) ? (v as Record<string, unknown>) : {});
+const toProps = (v: unknown): Record<string, unknown> =>
+  v && typeof v === 'object' && !Array.isArray(v) ? (v as Record<string, unknown>) : {};
 
 @Injectable()
 export class OntologyRepository implements IOntologyRepository {

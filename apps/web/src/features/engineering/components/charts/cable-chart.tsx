@@ -1,7 +1,14 @@
 'use client';
 
 import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ReferenceLine, Cell,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ReferenceLine,
+  Cell,
   ResponsiveContainer,
 } from 'recharts';
 
@@ -36,14 +43,21 @@ export function CableChart({ title = 'Cable Sizing Summary', bars }: CableChartP
   }));
 
   return (
-    <div dir="ltr" className="rounded-[var(--radius-lg)] border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-4">
-      {title && <h4 className="text-sm font-semibold mb-3 text-[hsl(var(--foreground))]">{title}</h4>}
+    <div
+      dir="ltr"
+      className="rounded-[var(--radius-lg)] border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-4"
+    >
+      {title && (
+        <h4 className="text-sm font-semibold mb-3 text-[hsl(var(--foreground))]">{title}</h4>
+      )}
       <ResponsiveContainer width="100%" height={260}>
         <BarChart data={data} margin={{ top: 4, right: 8, bottom: 4, left: 8 }} layout="vertical">
           <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" horizontal={false} />
           <XAxis type="number" tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} />
           <YAxis
-            type="category" dataKey="label" width={100}
+            type="category"
+            dataKey="label"
+            width={100}
             tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }}
           />
           <Tooltip
@@ -54,19 +68,26 @@ export function CableChart({ title = 'Cable Sizing Summary', bars }: CableChartP
               fontSize: 12,
             }}
             formatter={(value: any, name: any) => {
-              const bar = data.find(b => b.label === name);
+              const bar = data.find((b) => b.label === name);
               return [`${Number(value)} ${bar?.unit ?? ''}`, name];
             }}
             labelFormatter={(label: any) => {
-              const bar = data.find(b => b.label === label);
+              const bar = data.find((b) => b.label === label);
               return bar?.limit ? `${label} (Limit: ${bar.limit} ${bar.unit})` : label;
             }}
           />
-          {data.map((b, idx) => (
-            b.limit != null && (
-              <ReferenceLine key={`ref-${idx}`} x={b.limit} stroke="#ef4444" strokeWidth={1.5} strokeDasharray="4 2" />
-            )
-          ))}
+          {data.map(
+            (b, idx) =>
+              b.limit != null && (
+                <ReferenceLine
+                  key={`ref-${idx}`}
+                  x={b.limit}
+                  stroke="#ef4444"
+                  strokeWidth={1.5}
+                  strokeDasharray="4 2"
+                />
+              ),
+          )}
           <Bar dataKey="value" radius={[0, 3, 3, 0]} maxBarSize={24}>
             {data.map((entry, idx) => (
               <Cell

@@ -21,11 +21,13 @@ export class UnitConversionEngine {
     if (!from) throw new Error(`Unknown unit: ${fromUnit}`);
     if (!to) throw new Error(`Unknown unit: ${toUnit}`);
     if (from.category !== to.category) {
-      throw new Error(`Incompatible units: cannot convert ${fromUnit} (${from.category}) to ${toUnit} (${to.category})`);
+      throw new Error(
+        `Incompatible units: cannot convert ${fromUnit} (${from.category}) to ${toUnit} (${to.category})`,
+      );
     }
 
     const baseValue = (value + from.offset) * from.factor;
-    const result = (baseValue / to.factor) - to.offset;
+    const result = baseValue / to.factor - to.offset;
 
     return result;
   }

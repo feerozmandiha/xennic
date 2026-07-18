@@ -9,7 +9,10 @@ export class CreateApiKeyDto {
   @MaxLength(100)
   name!: string;
 
-  @ApiPropertyOptional({ description: 'Expiration date (ISO 8601)', example: '2027-06-20T00:00:00Z' })
+  @ApiPropertyOptional({
+    description: 'Expiration date (ISO 8601)',
+    example: '2027-06-20T00:00:00Z',
+  })
   @IsOptional()
   @IsDateString()
   expiresAt?: string;

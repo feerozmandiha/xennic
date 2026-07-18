@@ -6,54 +6,54 @@ const FEATURES = [
   {
     icon: FlaskConical,
     color: 'from-[#3b82f6] to-[#6366f1]',
-    glow:  'rgba(99,102,241,0.25)',
+    glow: 'rgba(99,102,241,0.25)',
     title: 'محاسبات استاندارد',
-    desc:  '۲۰+ محاسبه تخصصی مطابق IEC 60364، IEC 60076، IEEE 519 و IEEE C57.110',
-    tags:  ['کابل‌سایزینگ', 'افت ولتاژ', 'اتصال کوتاه', 'ترانسفورماتور'],
+    desc: '۲۰+ محاسبه تخصصی مطابق IEC 60364، IEC 60076، IEEE 519 و IEEE C57.110',
+    tags: ['کابل‌سایزینگ', 'افت ولتاژ', 'اتصال کوتاه', 'ترانسفورماتور'],
   },
   {
     icon: BarChart3,
     color: 'from-[#06b6d4] to-[#3b82f6]',
-    glow:  'rgba(6,182,212,0.25)',
+    glow: 'rgba(6,182,212,0.25)',
     title: 'کیفیت توان',
-    desc:  'تحلیل THD، TDD، K-Factor، رزونانس هارمونیک و طراحی فیلتر پسیو/فعال مطابق IEEE 519',
-    tags:  ['THD', 'TDD', 'Passive Filter', 'Active APF'],
+    desc: 'تحلیل THD، TDD، K-Factor، رزونانس هارمونیک و طراحی فیلتر پسیو/فعال مطابق IEEE 519',
+    tags: ['THD', 'TDD', 'Passive Filter', 'Active APF'],
   },
   {
     icon: Cpu,
     color: 'from-[#8b5cf6] to-[#6366f1]',
-    glow:  'rgba(139,92,246,0.25)',
+    glow: 'rgba(139,92,246,0.25)',
     title: 'هوش مصنوعی مهندسی',
-    desc:  'مشاور AI تخصصی برق با دانش استانداردها، طراحی سیستم و تشخیص اشکال',
-    tags:  ['مشاور تخصصی', 'تشخیص خطا', 'بهینه‌سازی'],
+    desc: 'مشاور AI تخصصی برق با دانش استانداردها، طراحی سیستم و تشخیص اشکال',
+    tags: ['مشاور تخصصی', 'تشخیص خطا', 'بهینه‌سازی'],
   },
   {
     icon: Layers,
     color: 'from-[#f59e0b] to-[#ef4444]',
-    glow:  'rgba(245,158,11,0.2)',
+    glow: 'rgba(245,158,11,0.2)',
     title: 'مدیریت پروژه',
-    desc:  'سازماندهی پروژه‌های مهندسی، یادداشت‌های فنی، تاریخچه محاسبات و همکاری تیمی',
-    tags:  ['Multi-tenant', 'Team RBAC', 'تاریخچه'],
+    desc: 'سازماندهی پروژه‌های مهندسی، یادداشت‌های فنی، تاریخچه محاسبات و همکاری تیمی',
+    tags: ['Multi-tenant', 'Team RBAC', 'تاریخچه'],
   },
   {
     icon: Shield,
     color: 'from-[#10b981] to-[#06b6d4]',
-    glow:  'rgba(16,185,129,0.2)',
+    glow: 'rgba(16,185,129,0.2)',
     title: 'امنیت و تطابق',
-    desc:  'احراز هویت JWT، کنترل دسترسی نقش‌محور، ثبت تمام رویدادها و رمزگذاری داده',
-    tags:  ['JWT Auth', 'RBAC', 'Audit Log'],
+    desc: 'احراز هویت JWT، کنترل دسترسی نقش‌محور، ثبت تمام رویدادها و رمزگذاری داده',
+    tags: ['JWT Auth', 'RBAC', 'Audit Log'],
   },
   {
     icon: Globe,
     color: 'from-[#6366f1] to-[#8b5cf6]',
-    glow:  'rgba(99,102,241,0.2)',
+    glow: 'rgba(99,102,241,0.2)',
     title: 'چندزبانه & RTL',
-    desc:  'پشتیبانی کامل از زبان فارسی با چینش RTL، فونت IranSansX و تقویم شمسی',
-    tags:  ['فارسی', 'RTL', 'IranSansX'],
+    desc: 'پشتیبانی کامل از زبان فارسی با چینش RTL، فونت IranSansX و تقویم شمسی',
+    tags: ['فارسی', 'RTL', 'IranSansX'],
   },
 ];
 
-function FeatureCard({ feature: f, index }: { feature: typeof FEATURES[0]; index: number }) {
+function FeatureCard({ feature: f, index }: { feature: (typeof FEATURES)[0]; index: number }) {
   const Icon = f.icon;
   return (
     <div
@@ -79,8 +79,11 @@ function FeatureCard({ feature: f, index }: { feature: typeof FEATURES[0]; index
       <p className="text-sm text-white/45 leading-relaxed mb-4">{f.desc}</p>
 
       <div className="flex flex-wrap gap-1.5">
-        {f.tags.map(tag => (
-          <span key={tag} className="px-2 py-0.5 rounded-full text-[10px] font-medium border border-white/8 text-white/40">
+        {f.tags.map((tag) => (
+          <span
+            key={tag}
+            className="px-2 py-0.5 rounded-full text-[10px] font-medium border border-white/8 text-white/40"
+          >
             {tag}
           </span>
         ))}
@@ -98,7 +101,8 @@ export function FeaturesSection() {
         <div className="text-center mb-16 space-y-4">
           <p className="text-xs text-[#3b82f6] font-mono uppercase tracking-[0.2em]">// ویژگی‌ها</p>
           <h2 className="text-3xl sm:text-4xl font-black text-white text-balance">
-            همه ابزارهای مهندسی برق<br />
+            همه ابزارهای مهندسی برق
+            <br />
             <span
               style={{
                 background: 'linear-gradient(135deg, #3b82f6, #06b6d4)',

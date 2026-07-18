@@ -27,10 +27,10 @@
 
 ### Eligible categories
 
-| Exemption | Criteria | Expiry |
-|-----------|----------|--------|
-| **Hotfix** | P0 security issue in production | Must be regularised within 1 sprint |
-| **Trivial change** | Typo fix, dependency bump, comment-only change | None |
+| Exemption          | Criteria                                       | Expiry                              |
+| ------------------ | ---------------------------------------------- | ----------------------------------- |
+| **Hotfix**         | P0 security issue in production                | Must be regularised within 1 sprint |
+| **Trivial change** | Typo fix, dependency bump, comment-only change | None                                |
 
 ### Exemption approval process
 
@@ -68,22 +68,22 @@ Copy the following block into each implementation item before sprint planning:
 ```markdown
 ### DoR Checklist
 
-| # | Criterion | Status | Notes |
-|---|-----------|--------|-------|
-| 1 | Gap ID assigned | ☐ | |
-| 2 | ADR exists / being created | ☐ | |
-| 3 | RFC submitted & approved | ☐ | N/A if exempt |
-| 4 | Acceptance criteria defined & testable | ☐ | |
-| 5 | Dependencies identified & unblocked | ☐ | |
-| 6 | Effort estimated (hours) + confidence | ☐ | |
-| 7 | Risk assessment completed | ☐ | |
-| 8 | Rollback strategy defined | ☐ | |
-| 9 | Affected modules (source → target) | ☐ | |
-| 10 | Required libraries/packages identified | ☐ | |
-| 11 | Environment requirements known | ☐ | |
-| 12 | Test strategy defined | ☐ | |
-| 13 | Security impact assessed | ☐ | |
-| 14 | Performance impact assessed | ☐ | |
+| #   | Criterion                              | Status | Notes         |
+| --- | -------------------------------------- | ------ | ------------- |
+| 1   | Gap ID assigned                        | ☐      |               |
+| 2   | ADR exists / being created             | ☐      |               |
+| 3   | RFC submitted & approved               | ☐      | N/A if exempt |
+| 4   | Acceptance criteria defined & testable | ☐      |               |
+| 5   | Dependencies identified & unblocked    | ☐      |               |
+| 6   | Effort estimated (hours) + confidence  | ☐      |               |
+| 7   | Risk assessment completed              | ☐      |               |
+| 8   | Rollback strategy defined              | ☐      |               |
+| 9   | Affected modules (source → target)     | ☐      |               |
+| 10  | Required libraries/packages identified | ☐      |               |
+| 11  | Environment requirements known         | ☐      |               |
+| 12  | Test strategy defined                  | ☐      |               |
+| 13  | Security impact assessed               | ☐      |               |
+| 14  | Performance impact assessed            | ☐      |               |
 
-**Reviewer:** __________________ **Date:** ___________ **Result:** ☐ Pass ☐ Fail
+**Reviewer:** **\*\*\*\***\_\_**\*\*\*\*** **Date:** \***\*\_\_\_\*\*** **Result:** ☐ Pass ☐ Fail
 ```

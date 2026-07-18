@@ -23,10 +23,7 @@ export class StreamingResponseManagerService {
     return this._handlers.get(streamId) ?? null;
   }
 
-  async sendToken(
-    streamId: string,
-    token: string,
-  ): Promise<void> {
+  async sendToken(streamId: string, token: string): Promise<void> {
     const handler = this._handlers.get(streamId);
     if (handler) {
       await handler.onChunk(StreamChunk.token(token));
@@ -61,15 +58,11 @@ export class StreamingResponseManagerService {
     }
   }
 
-  async streamResponse(
-    streamId: string,
-    response: string,
-    delayMs = 15,
-  ): Promise<void> {
+  async streamResponse(streamId: string, response: string, delayMs = 15): Promise<void> {
     const words = response.split(' ');
     for (const word of words) {
       await this.sendToken(streamId, word + ' ');
-      await new Promise(r => setTimeout(r, delayMs));
+      await new Promise((r) => setTimeout(r, delayMs));
     }
     await this.endStream(streamId);
   }

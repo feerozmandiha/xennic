@@ -1,6 +1,9 @@
 import { Logger } from '@nestjs/common';
 import type { ExecutionStatus, PaginatedResult } from '../../../shared/types/index.js';
-import type { IExecutionRepository, ListExecutionOptions } from '../../domain/execution-repository.interface.js';
+import type {
+  IExecutionRepository,
+  ListExecutionOptions,
+} from '../../domain/execution-repository.interface.js';
 import type { WorkflowExecution } from '../../domain/workflow-execution.entity.js';
 import type { CompensationEntry } from '../../domain/compensation.entity.js';
 
@@ -26,12 +29,17 @@ export class InMemoryExecutionRepository implements IExecutionRepository {
     return this.executions.get(id) ?? null;
   }
 
-  async findByWorkflow(workflowId: string, options?: ListExecutionOptions): Promise<PaginatedResult<WorkflowExecution>> {
+  async findByWorkflow(
+    workflowId: string,
+    options?: ListExecutionOptions,
+  ): Promise<PaginatedResult<WorkflowExecution>> {
     const ids = this.workflowIndex.get(workflowId) ?? [];
-    let items = ids.map(id => this.executions.get(id)).filter((e): e is WorkflowExecution => e !== undefined);
+    let items = ids
+      .map((id) => this.executions.get(id))
+      .filter((e): e is WorkflowExecution => e !== undefined);
 
     if (options?.status) {
-      items = items.filter(e => e.status === options.status);
+      items = items.filter((e) => e.status === options.status);
     }
 
     const offset = options?.offset ?? 0;
@@ -49,11 +57,11 @@ export class InMemoryExecutionRepository implements IExecutionRepository {
     let items = Array.from(this.executions.values());
 
     if (options?.status) {
-      items = items.filter(e => e.status === options.status);
+      items = items.filter((e) => e.status === options.status);
     }
 
     if (options?.workflowId) {
-      items = items.filter(e => e.workflowId === options.workflowId);
+      items = items.filter((e) => e.workflowId === options.workflowId);
     }
 
     const offset = options?.offset ?? 0;

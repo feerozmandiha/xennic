@@ -19,9 +19,13 @@ export class ProductEntity {
   ) {}
 
   static create(data: {
-    vendorId: string; type: string; category?: string;
-    specifications?: Record<string, any>; sku?: string;
-    price: number; currency?: string;
+    vendorId: string;
+    type: string;
+    category?: string;
+    specifications?: Record<string, any>;
+    sku?: string;
+    price: number;
+    currency?: string;
   }): ProductEntity {
     return new ProductEntity(
       randomUUID(),
@@ -40,34 +44,76 @@ export class ProductEntity {
   }
 
   static reconstitute(data: {
-    id: string; vendorId: string; type: string; category?: string | null;
-    specifications?: Record<string, any> | null; sku: string;
-    price: number; currency: string; status: string;
-    createdAt: Date; updatedAt: Date; deletedAt: Date | null;
+    id: string;
+    vendorId: string;
+    type: string;
+    category?: string | null;
+    specifications?: Record<string, any> | null;
+    sku: string;
+    price: number;
+    currency: string;
+    status: string;
+    createdAt: Date;
+    updatedAt: Date;
+    deletedAt: Date | null;
   }): ProductEntity {
     return new ProductEntity(
-      data.id, data.vendorId, data.type,
-      data.category ?? null, data.specifications ?? null,
-      data.sku, data.price, data.currency, data.status as ProductStatus,
-      data.createdAt, data.updatedAt, data.deletedAt,
+      data.id,
+      data.vendorId,
+      data.type,
+      data.category ?? null,
+      data.specifications ?? null,
+      data.sku,
+      data.price,
+      data.currency,
+      data.status as ProductStatus,
+      data.createdAt,
+      data.updatedAt,
+      data.deletedAt,
     );
   }
 
-  get vendorId(): string { return this._vendorId; }
-  get type(): string { return this._type; }
-  get category(): string | null { return this._category; }
-  get specifications(): Record<string, any> | null { return this._specifications; }
-  get sku(): string { return this._sku; }
-  get price(): number { return this._price; }
-  get currency(): string { return this._currency; }
-  get status(): ProductStatus { return this._status; }
-  get createdAt(): Date { return this._createdAt; }
-  get updatedAt(): Date { return this._updatedAt; }
-  get deletedAt(): Date | null { return this._deletedAt; }
+  get vendorId(): string {
+    return this._vendorId;
+  }
+  get type(): string {
+    return this._type;
+  }
+  get category(): string | null {
+    return this._category;
+  }
+  get specifications(): Record<string, any> | null {
+    return this._specifications;
+  }
+  get sku(): string {
+    return this._sku;
+  }
+  get price(): number {
+    return this._price;
+  }
+  get currency(): string {
+    return this._currency;
+  }
+  get status(): ProductStatus {
+    return this._status;
+  }
+  get createdAt(): Date {
+    return this._createdAt;
+  }
+  get updatedAt(): Date {
+    return this._updatedAt;
+  }
+  get deletedAt(): Date | null {
+    return this._deletedAt;
+  }
 
   update(data: {
-    type?: string; category?: string; specifications?: Record<string, any>;
-    price?: number; currency?: string; status?: ProductStatus;
+    type?: string;
+    category?: string;
+    specifications?: Record<string, any>;
+    price?: number;
+    currency?: string;
+    status?: ProductStatus;
   }): void {
     if (data.type !== undefined) this._type = data.type;
     if (data.category !== undefined) this._category = data.category;

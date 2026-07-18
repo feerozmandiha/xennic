@@ -129,9 +129,7 @@ export class ReasoningPlan implements Versioned {
   }
 
   withStepStatus(stepId: string, status: PlanStepStatus): ReasoningPlan {
-    const steps = this.steps.map(s =>
-      s.id === stepId ? { ...s, status } : s,
-    );
+    const steps = this.steps.map((s) => (s.id === stepId ? { ...s, status } : s));
     return new ReasoningPlan(
       this.id,
       this.goal,

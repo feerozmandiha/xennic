@@ -14,11 +14,10 @@ export class ApiKeyEntity {
     private _status: ApiKeyStatus,
   ) {}
 
-  static create(data: {
-    workspaceId: string;
-    name: string;
-    expiresAt?: Date;
-  }): { entity: ApiKeyEntity; rawKey: string } {
+  static create(data: { workspaceId: string; name: string; expiresAt?: Date }): {
+    entity: ApiKeyEntity;
+    rawKey: string;
+  } {
     const rawKey = `xennic_sk_${randomBytes(32).toString('hex')}`;
     const keyHash = createHash('sha256').update(rawKey).digest('hex');
 
@@ -58,8 +57,12 @@ export class ApiKeyEntity {
     );
   }
 
-  get status(): ApiKeyStatus { return this._status; }
-  get lastUsedAt(): Date | null { return this._lastUsedAt; }
+  get status(): ApiKeyStatus {
+    return this._status;
+  }
+  get lastUsedAt(): Date | null {
+    return this._lastUsedAt;
+  }
 
   markAsUsed(): void {
     this._lastUsedAt = new Date();

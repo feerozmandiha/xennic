@@ -12,11 +12,7 @@ import { PrismaContextRepository } from './infrastructure/persistence/prisma-con
     SharedMemoryService,
     { provide: 'IContextRepository', useClass: PrismaContextRepository },
   ],
-  exports: [
-    ContextVariablesService,
-    ArtifactService,
-    SharedMemoryService,
-  ],
+  exports: [ContextVariablesService, ArtifactService, SharedMemoryService],
 })
 export class ExecutionContextModule implements OnModuleInit {
   private readonly logger = new Logger(ExecutionContextModule.name);

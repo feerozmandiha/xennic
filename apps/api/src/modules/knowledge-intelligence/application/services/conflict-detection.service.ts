@@ -16,21 +16,33 @@ export class ConflictDetectionService {
     private readonly traversalRepo: IGraphTraversalRepository,
   ) {}
 
-  async detectSupersededConflicts(nodeId: string): Promise<{ nodeId: string; supersededBy: string[]; conflictType: string }[]> {
+  async detectSupersededConflicts(
+    nodeId: string,
+  ): Promise<{ nodeId: string; supersededBy: string[]; conflictType: string }[]> {
     const supersededBy = await this.edgeRepo.findAllByTarget(nodeId, 'supersedes');
     const supersedes = await this.edgeRepo.findAllBySource(nodeId, 'supersedes');
 
     const conflicts: { nodeId: string; supersededBy: string[]; conflictType: string }[] = [];
     for (const edge of supersededBy) {
-      conflicts.push({ nodeId: edge.sourceId, supersededBy: [nodeId], conflictType: 'superseded_by_active' });
+      conflicts.push({
+        nodeId: edge.sourceId,
+        supersededBy: [nodeId],
+        conflictType: 'superseded_by_active',
+      });
     }
     for (const edge of supersedes) {
-      conflicts.push({ nodeId: edge.targetId, supersededBy: [nodeId], conflictType: 'supersedes_active' });
+      conflicts.push({
+        nodeId: edge.targetId,
+        supersededBy: [nodeId],
+        conflictType: 'supersedes_active',
+      });
     }
     return conflicts;
   }
 
-  async detectEquivalentConflicts(nodeId: string): Promise<{ nodeId: string; equivalentNodes: string[]; conflictType: string }[]> {
+  async detectEquivalentConflicts(
+    nodeId: string,
+  ): Promise<{ nodeId: string; equivalentNodes: string[]; conflictType: string }[]> {
     const equivalents = await this.edgeRepo.findAllBySource(nodeId, 'equivalent_to');
     if (equivalents.length > 0) {
       return [
@@ -44,7 +56,10 @@ export class ConflictDetectionService {
     return [];
   }
 
-  async detectDisjointViolations(nodeId: string, _ontologyId: string): Promise<{ source: string; target: string; relation: string }[]> {
+  async detectDisjointViolations(
+    nodeId: string,
+    _ontologyId: string,
+  ): Promise<{ source: string; target: string; relation: string }[]> {
     const ancestors = await this.traversalRepo.ancestors(nodeId, 5);
     const violations: { source: string; target: string; relation: string }[] = [];
     for (const ancestor of ancestors) {
@@ -53,7 +68,11 @@ export class ConflictDetectionService {
         const otherAncestors = await this.traversalRepo.ancestors(eq.targetId, 5);
         for (const other of otherAncestors) {
           if (ancestor.nodeId !== other.nodeId) {
-            violations.push({ source: ancestor.nodeId, target: other.nodeId, relation: 'disjoint_with' });
+            violations.push({
+              source: ancestor.nodeId,
+              target: other.nodeId,
+              relation: 'disjoint_with',
+            });
           }
         }
       }

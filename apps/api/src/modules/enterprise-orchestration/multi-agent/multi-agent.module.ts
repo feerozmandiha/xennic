@@ -16,10 +16,7 @@ import { PrismaCoordinationRepository } from './infrastructure/persistence/prism
     SupervisorService,
     { provide: 'ICoordinationRepository', useClass: PrismaCoordinationRepository },
   ],
-  exports: [
-    CoordinatorService,
-    SupervisorService,
-  ],
+  exports: [CoordinatorService, SupervisorService],
 })
 export class MultiAgentModule implements OnModuleInit {
   private readonly logger = new Logger(MultiAgentModule.name);

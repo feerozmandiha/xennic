@@ -26,11 +26,10 @@ export class InMemoryHitlRepository implements IHitlRepository {
     executionId: string,
     options?: FindApprovalOptions,
   ): Promise<PaginatedResult<ApprovalRequest>> {
-    let items = Array.from(this.approvals.values())
-      .filter(a => a.executionId === executionId);
+    let items = Array.from(this.approvals.values()).filter((a) => a.executionId === executionId);
 
     if (options?.status) {
-      items = items.filter(a => a.status === options.status);
+      items = items.filter((a) => a.status === options.status);
     }
 
     const offset = options?.offset ?? 0;
@@ -48,8 +47,9 @@ export class InMemoryHitlRepository implements IHitlRepository {
     userId: string,
     options?: FindApprovalOptions,
   ): Promise<PaginatedResult<ApprovalRequest>> {
-    const items = Array.from(this.approvals.values())
-      .filter(a => a.status === 'pending' && a.assignedTo.includes(userId));
+    const items = Array.from(this.approvals.values()).filter(
+      (a) => a.status === 'pending' && a.assignedTo.includes(userId),
+    );
 
     const offset = options?.offset ?? 0;
     const limit = options?.limit ?? items.length;
@@ -75,11 +75,10 @@ export class InMemoryHitlRepository implements IHitlRepository {
     executionId: string,
     options?: FindReviewOptions,
   ): Promise<PaginatedResult<ReviewTask>> {
-    let items = Array.from(this.reviews.values())
-      .filter(r => r.executionId === executionId);
+    let items = Array.from(this.reviews.values()).filter((r) => r.executionId === executionId);
 
     if (options?.status) {
-      items = items.filter(r => r.status === options.status);
+      items = items.filter((r) => r.status === options.status);
     }
 
     const offset = options?.offset ?? 0;
@@ -97,8 +96,9 @@ export class InMemoryHitlRepository implements IHitlRepository {
     userId: string,
     options?: FindReviewOptions,
   ): Promise<PaginatedResult<ReviewTask>> {
-    const items = Array.from(this.reviews.values())
-      .filter(r => r.status === 'pending' && r.assignedTo === userId);
+    const items = Array.from(this.reviews.values()).filter(
+      (r) => r.status === 'pending' && r.assignedTo === userId,
+    );
 
     const offset = options?.offset ?? 0;
     const limit = options?.limit ?? items.length;

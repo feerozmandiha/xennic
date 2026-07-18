@@ -11,14 +11,14 @@ const __dirname = join(__filename, '..');
 
 async function exportOpenAPI() {
   console.log('🚀 Generating OpenAPI specification...');
-  
+
   try {
     // Import module dynamically
     const { ApiModule } = await import('../src/api.module.js');
-    
+
     // Create application with minimal logging
-    const app = await NestFactory.create(ApiModule, { 
-      logger: false 
+    const app = await NestFactory.create(ApiModule, {
+      logger: false,
     });
 
     // Swagger configuration

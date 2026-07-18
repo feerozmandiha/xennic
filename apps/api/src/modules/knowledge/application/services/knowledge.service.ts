@@ -10,8 +10,23 @@ import { prisma } from '@xennic/database';
 import type { IKnowledgeRepository } from '../../domain/interfaces/knowledge.repository.interface.js';
 import { KnowledgeEntity } from '../../domain/entities/knowledge.entity.js';
 import { extractKnowledgeText } from '../utils/extract-text.js';
-import type { CreateKnowledgeDto, UpdateKnowledgeDto, KnowledgeSearchQueryDto, AddTaxonomyDto, CreateCommentDto, UpdateCommentDto } from '../../presentation/dtos/knowledge.dto.js';
-import { KnowledgeVersionDto, CommentResponseDto, CreateWorkflowCommentDto, WorkflowResponseDto, KnowledgeAnalyticsDto, KnowledgeDashboardStatsDto, RelatedCalculationDto } from '../../presentation/dtos/knowledge.dto.js';
+import type {
+  CreateKnowledgeDto,
+  UpdateKnowledgeDto,
+  KnowledgeSearchQueryDto,
+  AddTaxonomyDto,
+  CreateCommentDto,
+  UpdateCommentDto,
+} from '../../presentation/dtos/knowledge.dto.js';
+import {
+  KnowledgeVersionDto,
+  CommentResponseDto,
+  CreateWorkflowCommentDto,
+  WorkflowResponseDto,
+  KnowledgeAnalyticsDto,
+  KnowledgeDashboardStatsDto,
+  RelatedCalculationDto,
+} from '../../presentation/dtos/knowledge.dto.js';
 
 export interface PaginatedKnowledge {
   data: KnowledgeEntity[];
@@ -48,11 +63,7 @@ export class KnowledgeService {
 
   // ── findPublished (public, no workspace) ────────────────────────────────────
 
-  async findPublished(
-    page = 1,
-    limit = 20,
-    locale?: string,
-  ): Promise<PaginatedKnowledge> {
+  async findPublished(page = 1, limit = 20, locale?: string): Promise<PaginatedKnowledge> {
     const offset = (page - 1) * limit;
     const where: any = {
       status: 'published',
@@ -182,11 +193,7 @@ export class KnowledgeService {
 
   // ── update ──────────────────────────────────────────────────────────────────
 
-  async update(
-    id: string,
-    workspaceId: string,
-    dto: UpdateKnowledgeDto,
-  ): Promise<KnowledgeEntity> {
+  async update(id: string, workspaceId: string, dto: UpdateKnowledgeDto): Promise<KnowledgeEntity> {
     const entity = await this.findOne(id, workspaceId);
     entity.update({
       slug: dto.slug,
@@ -267,10 +274,7 @@ export class KnowledgeService {
 
   // ── search ──────────────────────────────────────────────────────────────────
 
-  async search(
-    workspaceId: string,
-    query: KnowledgeSearchQueryDto,
-  ): Promise<PaginatedKnowledge> {
+  async search(workspaceId: string, query: KnowledgeSearchQueryDto): Promise<PaginatedKnowledge> {
     const page = query.page ? parseInt(query.page, 10) : 1;
     const limit = query.limit ? parseInt(query.limit, 10) : 20;
     const offset = (page - 1) * limit;
@@ -295,11 +299,7 @@ export class KnowledgeService {
 
   // ── Taxonomy Management ─────────────────────────────────────────────────────
 
-  async addTaxonomy(
-    id: string,
-    workspaceId: string,
-    dto: AddTaxonomyDto,
-  ): Promise<void> {
+  async addTaxonomy(id: string, workspaceId: string, dto: AddTaxonomyDto): Promise<void> {
     await this.findOne(id, workspaceId);
 
     const existing = await prisma.knowledge_taxonomy.findFirst({
@@ -323,11 +323,7 @@ export class KnowledgeService {
     });
   }
 
-  async removeTaxonomy(
-    id: string,
-    workspaceId: string,
-    taxonomyId: string,
-  ): Promise<void> {
+  async removeTaxonomy(id: string, workspaceId: string, taxonomyId: string): Promise<void> {
     await this.findOne(id, workspaceId);
 
     const row = await prisma.knowledge_taxonomy.findFirst({
@@ -387,10 +383,7 @@ export class KnowledgeService {
     });
   }
 
-  async getRelatedCalculations(
-    id: string,
-    workspaceId: string,
-  ): Promise<RelatedCalculationDto[]> {
+  async getRelatedCalculations(id: string, workspaceId: string): Promise<RelatedCalculationDto[]> {
     const entity = await this.findOne(id, workspaceId);
 
     // Collect all calculator types referenced by formulas and examples
@@ -463,9 +456,7 @@ export class KnowledgeService {
     return KnowledgeAnalyticsDto.fromPrisma(row);
   }
 
-  async getDashboardAnalytics(
-    workspaceId: string,
-  ): Promise<KnowledgeDashboardStatsDto> {
+  async getDashboardAnalytics(workspaceId: string): Promise<KnowledgeDashboardStatsDto> {
     const where = { workspace_id: workspaceId, deleted_at: null as Date | null };
 
     const [articles, analyticsRows] = await Promise.all([
@@ -475,26 +466,31 @@ export class KnowledgeService {
       }),
     ]);
 
-    const wsAnalytics = analyticsRows.filter(a => a.knowledge?.workspace_id === workspaceId);
+    const wsAnalytics = analyticsRows.filter((a) => a.knowledge?.workspace_id === workspaceId);
 
     const totalArticles = articles.length;
     const totalViews = wsAnalytics.reduce((sum, a) => sum + a.views, 0);
-    const publishedArticles = articles.filter(a => a.status === 'published').length;
-    const draftArticles = articles.filter(a => a.status === 'draft').length;
+    const publishedArticles = articles.filter((a) => a.status === 'published').length;
+    const draftArticles = articles.filter((a) => a.status === 'draft').length;
 
     const mostViewed = wsAnalytics
       .sort((a, b) => b.views - a.views)
       .slice(0, 10)
-      .map(a => ({ id: a.knowledge_id, slug: a.knowledge?.slug ?? 'unknown', views: a.views }));
+      .map((a) => ({ id: a.knowledge_id, slug: a.knowledge?.slug ?? 'unknown', views: a.views }));
 
     const viewsByStatus: Record<string, number> = {};
     for (const a of articles) {
-      const analytic = wsAnalytics.find(an => an.knowledge_id === a.id);
+      const analytic = wsAnalytics.find((an) => an.knowledge_id === a.id);
       viewsByStatus[a.status] = (viewsByStatus[a.status] ?? 0) + (analytic?.views ?? 0);
     }
 
     return KnowledgeDashboardStatsDto.fromData({
-      totalArticles, totalViews, publishedArticles, draftArticles, mostViewed, viewsByStatus,
+      totalArticles,
+      totalViews,
+      publishedArticles,
+      draftArticles,
+      mostViewed,
+      viewsByStatus,
     });
   }
 
@@ -506,7 +502,7 @@ export class KnowledgeService {
       where: { knowledge_id: id },
       orderBy: { version: 'desc' },
     });
-    return rows.map(r => KnowledgeVersionDto.fromPrisma(r));
+    return rows.map((r) => KnowledgeVersionDto.fromPrisma(r));
   }
 
   async getVersion(
@@ -555,7 +551,7 @@ export class KnowledgeService {
       },
       orderBy: { created_at: 'desc' },
     });
-    return rows.flatMap(c => [
+    return rows.flatMap((c) => [
       CommentResponseDto.fromPrisma(c),
       ...c.replies.map((r: any) => CommentResponseDto.fromPrisma(r)),
     ]);
@@ -768,10 +764,7 @@ export class KnowledgeService {
 
   // ── Private ─────────────────────────────────────────────────────────────────
 
-  private async _saveTaxonomy(
-    knowledgeId: string,
-    items: AddTaxonomyDto[],
-  ): Promise<void> {
+  private async _saveTaxonomy(knowledgeId: string, items: AddTaxonomyDto[]): Promise<void> {
     await prisma.knowledge_taxonomy.createMany({
       data: items.map((item) => ({
         id: crypto.randomUUID(),

@@ -4,4 +4,5 @@ export const PIPELINE_STAGE_STATUSES = {
   FAILED: 'failed',
 } as const;
 
-export type PipelineStageStatus = typeof PIPELINE_STAGE_STATUSES[keyof typeof PIPELINE_STAGE_STATUSES];
+export type PipelineStageStatus =
+  (typeof PIPELINE_STAGE_STATUSES)[keyof typeof PIPELINE_STAGE_STATUSES];

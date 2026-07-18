@@ -12,7 +12,9 @@ export class EventProcessLogRepository {
     durationMs?: number;
   }): Promise<void> {
     await prisma.event_process_log.upsert({
-      where: { event_id_handler_name: { event_id: params.eventId, handler_name: params.handlerName } },
+      where: {
+        event_id_handler_name: { event_id: params.eventId, handler_name: params.handlerName },
+      },
       update: {
         status: params.status,
         error_message: params.errorMessage ?? null,

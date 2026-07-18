@@ -1,12 +1,15 @@
 # ADR-014: Distributed Saga Orchestration Pattern
 
 ## Status
+
 Accepted — Sprint E1
 
 ## Context
+
 Multi-step business processes (e.g., document upload → classify → parse → chunk → embed → publish) need coordinated execution with failure handling and rollback.
 
 ## Decision
+
 Implement a choreography-based saga orchestrator:
 
 1. **SagaDefinition**: Declares steps, timeout, and whether compensation is supported
@@ -17,6 +20,7 @@ Implement a choreography-based saga orchestrator:
 The orchestrator runs steps asynchronously via `setImmediate`. Each step has a `compensate()` method that undoes the step's changes.
 
 ## Consequences
+
 - Sagas are self-contained without external workflow engine
 - Compensation ensures eventual consistency even on partial failures
 - Timeout prevents hung sagas

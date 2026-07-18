@@ -1,5 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
-import type { ICommand, ICommandHandler, ICommandBus } from '../../domain/interfaces/command-bus.interface.js';
+import type {
+  ICommand,
+  ICommandHandler,
+  ICommandBus,
+} from '../../domain/interfaces/command-bus.interface.js';
 
 @Injectable()
 export class InProcessCommandBus implements ICommandBus {

@@ -6,26 +6,29 @@ import { useAuthStore } from '@/stores/auth.store';
 import { AdminClient } from '@/features/admin/components/admin-client';
 import { Shield, Loader2 } from 'lucide-react';
 
-const API_BASE = typeof window !== 'undefined'
-  ? `${process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000'}/api/v1`
-  : 'http://localhost:3000/api/v1';
+const API_BASE =
+  typeof window !== 'undefined'
+    ? `${process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000'}/api/v1`
+    : 'http://localhost:3000/api/v1';
 
 export default function AdminPage() {
-  const router  = useRouter();
-  const params  = useParams();
-  const locale  = (params?.locale as string) ?? 'fa';
+  const router = useRouter();
+  const params = useParams();
+  const locale = (params?.locale as string) ?? 'fa';
 
-  const isAuthenticated = useAuthStore(s => s.isAuthenticated);
-  const storeIsAdmin    = useAuthStore(s => s.isAdmin);
-  const token           = useAuthStore(s => s.token);
-  const setIsAdmin      = useAuthStore(s => s.setIsAdmin);
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const storeIsAdmin = useAuthStore((s) => s.isAdmin);
+  const token = useAuthStore((s) => s.token);
+  const setIsAdmin = useAuthStore((s) => s.setIsAdmin);
 
-  const [hydrated,    setHydrated]    = useState(false);
-  const [checking,    setChecking]    = useState(true);
-  const [isAdmin,     setLocalAdmin]  = useState(false);
+  const [hydrated, setHydrated] = useState(false);
+  const [checking, setChecking] = useState(true);
+  const [isAdmin, setLocalAdmin] = useState(false);
 
   // ── hydration guard ──────────────────────────────────────────────────────
-  useEffect(() => { setHydrated(true); }, []);
+  useEffect(() => {
+    setHydrated(true);
+  }, []);
 
   useEffect(() => {
     if (!hydrated) return;
@@ -36,10 +39,10 @@ export default function AdminPage() {
     }
 
     fetch(`${API_BASE}/admin/check`, {
-      headers: { 'Authorization': `Bearer ${token}` },
+      headers: { Authorization: `Bearer ${token}` },
     })
-      .then(r => r.json())
-      .then(json => {
+      .then((r) => r.json())
+      .then((json) => {
         const ok = json?.data?.isAdmin === true || json?.isAdmin === true;
         setIsAdmin(ok);
         setLocalAdmin(ok);
@@ -71,9 +74,13 @@ export default function AdminPage() {
           <Shield className="h-8 w-8 text-red-500" />
         </div>
         <h1 className="text-lg font-bold text-red-600">دسترسی ممنوع</h1>
-        <p className="text-sm text-[hsl(var(--muted-foreground))]">فقط ادمین‌های سیستم دسترسی دارند</p>
-        <button onClick={() => router.push(`/${locale}/dashboard`)}
-          className="h-9 px-5 rounded-lg bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] text-sm">
+        <p className="text-sm text-[hsl(var(--muted-foreground))]">
+          فقط ادمین‌های سیستم دسترسی دارند
+        </p>
+        <button
+          onClick={() => router.push(`/${locale}/dashboard`)}
+          className="h-9 px-5 rounded-lg bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] text-sm"
+        >
           بازگشت به داشبورد
         </button>
       </div>

@@ -21,7 +21,8 @@ const PLANS = [
       'پشتیبانی ایمیل',
     ],
     cta: 'شروع رایگان',
-    ctaStyle: 'border border-[hsl(var(--border))] text-[hsl(var(--foreground))] hover:bg-[hsl(var(--secondary))]',
+    ctaStyle:
+      'border border-[hsl(var(--border))] text-[hsl(var(--foreground))] hover:bg-[hsl(var(--secondary))]',
   },
   {
     name: 'حرفه‌ای',
@@ -61,7 +62,8 @@ const PLANS = [
       'پشتیبانی ۲۴/۷',
     ],
     cta: 'تماس با ما',
-    ctaStyle: 'border border-[hsl(var(--border))] text-[hsl(var(--foreground))] hover:bg-[hsl(var(--secondary))]',
+    ctaStyle:
+      'border border-[hsl(var(--border))] text-[hsl(var(--foreground))] hover:bg-[hsl(var(--secondary))]',
   },
 ];
 
@@ -69,9 +71,10 @@ export function PricingSection({ locale }: { locale: string }) {
   return (
     <section id="pricing" className="relative py-28 bg-[hsl(var(--background))]">
       <div className="max-w-6xl mx-auto px-5">
-
         <div className="text-center mb-16 space-y-4">
-          <p className="text-xs text-[hsl(var(--success))] font-mono uppercase tracking-[0.2em]">// پلن‌ها</p>
+          <p className="text-xs text-[hsl(var(--success))] font-mono uppercase tracking-[0.2em]">
+            // پلن‌ها
+          </p>
           <h2 className="text-3xl sm:text-4xl font-black text-[hsl(var(--foreground))]">
             قیمت‌گذاری شفاف
           </h2>
@@ -106,22 +109,33 @@ export function PricingSection({ locale }: { locale: string }) {
 
               <div className="mb-6">
                 <div className="flex items-baseline gap-2 mb-1">
-                  <span className="text-xs text-[hsl(var(--foreground))/0.3] font-mono">{plan.nameEn}</span>
+                  <span className="text-xs text-[hsl(var(--foreground))/0.3] font-mono">
+                    {plan.nameEn}
+                  </span>
                 </div>
-                <h3 className="text-xl font-bold text-[hsl(var(--foreground))] mb-1">{plan.name}</h3>
+                <h3 className="text-xl font-bold text-[hsl(var(--foreground))] mb-1">
+                  {plan.name}
+                </h3>
                 <p className="text-xs text-[hsl(var(--foreground))/0.35]">{plan.desc}</p>
               </div>
 
               <div className="mb-7 pb-7 border-b border-[hsl(var(--border))]">
                 <div className="flex items-end gap-1">
-                  <span className="text-3xl font-black text-[hsl(var(--foreground))] tabular-nums">{plan.price}</span>
-                  <span className="text-xs text-[hsl(var(--foreground))/0.3] pb-1">{plan.period}</span>
+                  <span className="text-3xl font-black text-[hsl(var(--foreground))] tabular-nums">
+                    {plan.price}
+                  </span>
+                  <span className="text-xs text-[hsl(var(--foreground))/0.3] pb-1">
+                    {plan.period}
+                  </span>
                 </div>
               </div>
 
               <ul className="space-y-2.5 mb-8">
                 {plan.features.map((f, j) => (
-                  <li key={j} className="flex items-start gap-2.5 text-sm text-[hsl(var(--foreground))/0.6]">
+                  <li
+                    key={j}
+                    className="flex items-start gap-2.5 text-sm text-[hsl(var(--foreground))/0.6]"
+                  >
                     <CheckCircle2 className="h-4 w-4 text-[hsl(var(--success))] shrink-0 mt-0.5" />
                     {f}
                   </li>

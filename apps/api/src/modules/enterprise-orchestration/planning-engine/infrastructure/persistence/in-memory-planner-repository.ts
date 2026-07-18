@@ -46,7 +46,7 @@ export class InMemoryPlannerRepository implements IPlannerRepository {
     let items = Array.from(this.plans.values());
 
     if (options?.status) {
-      items = items.filter(p => p.status === options.status);
+      items = items.filter((p) => p.status === options.status);
     }
 
     const offset = options?.offset ?? 0;

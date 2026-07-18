@@ -55,7 +55,10 @@ export const MathInline = Node.create({
 
   addAttributes() {
     return {
-      latex: { default: '', parseHTML: el => (el as HTMLElement).getAttribute('data-latex') || '' },
+      latex: {
+        default: '',
+        parseHTML: (el) => (el as HTMLElement).getAttribute('data-latex') || '',
+      },
     };
   },
 

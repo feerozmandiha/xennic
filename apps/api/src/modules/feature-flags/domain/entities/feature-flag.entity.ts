@@ -39,17 +39,29 @@ export class FeatureFlagEntity {
     createdAt: Date;
   }): FeatureFlagEntity {
     return new FeatureFlagEntity(
-      data.id, data.name, data.description,
-      data.enabled, data.planId, data.workspaceId,
+      data.id,
+      data.name,
+      data.description,
+      data.enabled,
+      data.planId,
+      data.workspaceId,
       data.createdAt,
     );
   }
 
-  get enabled(): boolean { return this._enabled; }
+  get enabled(): boolean {
+    return this._enabled;
+  }
 
-  enable(): void { this._enabled = true; }
-  disable(): void { this._enabled = false; }
-  setDescription(desc: string): void { Object.assign(this, { description: desc }); }
+  enable(): void {
+    this._enabled = true;
+  }
+  disable(): void {
+    this._enabled = false;
+  }
+  setDescription(desc: string): void {
+    Object.assign(this, { description: desc });
+  }
 
   get scope(): FeatureFlagScope {
     if (this.workspaceId) return 'workspace';

@@ -9,9 +9,15 @@ export class ConfidenceScore {
     return new ConfidenceScore(Math.max(0, Math.min(1, value)));
   }
 
-  static low(): ConfidenceScore { return new ConfidenceScore(0.3); }
-  static medium(): ConfidenceScore { return new ConfidenceScore(0.6); }
-  static high(): ConfidenceScore { return new ConfidenceScore(0.9); }
+  static low(): ConfidenceScore {
+    return new ConfidenceScore(0.3);
+  }
+  static medium(): ConfidenceScore {
+    return new ConfidenceScore(0.6);
+  }
+  static high(): ConfidenceScore {
+    return new ConfidenceScore(0.9);
+  }
 
   get level(): 'low' | 'medium' | 'high' {
     if (this.value >= 0.8) return 'high';
@@ -19,5 +25,7 @@ export class ConfidenceScore {
     return 'low';
   }
 
-  toNumber(): number { return this.value; }
+  toNumber(): number {
+    return this.value;
+  }
 }

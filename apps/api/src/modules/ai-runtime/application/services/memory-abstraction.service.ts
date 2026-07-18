@@ -52,10 +52,7 @@ export class MemoryAbstractionService {
     return summaries[0]?.content ?? null;
   }
 
-  async storeConversationSummary(
-    sessionId: string,
-    summary: string,
-  ): Promise<MemoryEntry> {
+  async storeConversationSummary(sessionId: string, summary: string): Promise<MemoryEntry> {
     return this.remember(sessionId, 'summary', summary, { auto: true }, 1.0);
   }
 }

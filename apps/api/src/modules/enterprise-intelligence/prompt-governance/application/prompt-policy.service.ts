@@ -1,7 +1,14 @@
 import { Injectable, Inject, Logger, NotFoundException } from '@nestjs/common';
 import type { PaginatedResult } from '../../shared/types/index.js';
-import { PromptPolicyEntity, type PolicyRule, type PolicyEffect } from '../domain/prompt-policy.entity.js';
-import type { IPromptPolicyRepository, PolicyFindOptions } from '../domain/prompt-policy-repository.interface.js';
+import {
+  PromptPolicyEntity,
+  type PolicyRule,
+  type PolicyEffect,
+} from '../domain/prompt-policy.entity.js';
+import type {
+  IPromptPolicyRepository,
+  PolicyFindOptions,
+} from '../domain/prompt-policy-repository.interface.js';
 
 export interface EvaluationResult {
   allowed: boolean;
@@ -12,20 +19,16 @@ export interface EvaluationResult {
 export class PromptPolicyService {
   private readonly logger = new Logger(PromptPolicyService.name);
 
-  constructor(
-    @Inject('IPromptPolicyRepository') private readonly repo: IPromptPolicyRepository,
-  ) {}
+  constructor(@Inject('IPromptPolicyRepository') private readonly repo: IPromptPolicyRepository) {}
 
-  async create(
-    data: {
-      name: string;
-      description: string;
-      rules: PolicyRule[];
-      effect: PolicyEffect;
-      priority: number;
-      createdBy: string;
-    },
-  ): Promise<PromptPolicyEntity> {
+  async create(data: {
+    name: string;
+    description: string;
+    rules: PolicyRule[];
+    effect: PolicyEffect;
+    priority: number;
+    createdBy: string;
+  }): Promise<PromptPolicyEntity> {
     const entity = PromptPolicyEntity.create(
       data.name,
       data.description,
@@ -55,9 +58,7 @@ export class PromptPolicyService {
     const allowPolicies = await this.repo.findByEffect('allow');
     const denyPolicies = await this.repo.findByEffect('deny');
 
-    const allPolicies = [...denyPolicies, ...allowPolicies].sort(
-      (a, b) => b.priority - a.priority,
-    );
+    const allPolicies = [...denyPolicies, ...allowPolicies].sort((a, b) => b.priority - a.priority);
 
     const matchedRules: PolicyRule[] = [];
     let matchedAllow = false;

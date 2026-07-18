@@ -25,13 +25,25 @@ export class ModelRegistryService {
     return this.modelRepo.findAll(options);
   }
 
-  async updateModel(id: string, updates: Partial<{
-    displayName: string; contextWindow: number; maxOutputTokens: number;
-    supportsTools: boolean; supportsJson: boolean; supportsStreaming: boolean;
-    supportsReasoning: boolean; supportsVision: boolean; supportsEmbedding: boolean;
-    supportsFunctionCalling: boolean; pricingInput: number; pricingOutput: number;
-    enabled: boolean; status: string;
-  }>): Promise<AIModelEntity> {
+  async updateModel(
+    id: string,
+    updates: Partial<{
+      displayName: string;
+      contextWindow: number;
+      maxOutputTokens: number;
+      supportsTools: boolean;
+      supportsJson: boolean;
+      supportsStreaming: boolean;
+      supportsReasoning: boolean;
+      supportsVision: boolean;
+      supportsEmbedding: boolean;
+      supportsFunctionCalling: boolean;
+      pricingInput: number;
+      pricingOutput: number;
+      enabled: boolean;
+      status: string;
+    }>,
+  ): Promise<AIModelEntity> {
     const model = await this.modelRepo.findById(id);
     if (!model) throw new NotFoundException(`Model ${id} not found`);
     model.update(updates as any);

@@ -1,7 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { prisma } from '@xennic/database';
 import type { PaginatedResult } from '../../../shared/types/index.js';
-import type { IReasoningRepository, ListPlansOptions } from '../../domain/reasoning-repository.interface.js';
+import type {
+  IReasoningRepository,
+  ListPlansOptions,
+} from '../../domain/reasoning-repository.interface.js';
 import {
   ReasoningPlan,
   type PlanStatus,
@@ -73,7 +76,7 @@ export class PrismaReasoningRepository implements IReasoningRepository {
       prisma.reasoning_plans.count({ where }),
     ]);
     return {
-      items: items.map(r =>
+      items: items.map((r) =>
         ReasoningPlan.reconstitute(
           r.id,
           r.goal,

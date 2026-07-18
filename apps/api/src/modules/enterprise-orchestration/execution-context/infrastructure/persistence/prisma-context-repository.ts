@@ -99,18 +99,19 @@ export class PrismaContextRepository implements IContextRepository {
     });
 
     const { SharedArtifact: Art } = await import('../../domain/shared-artifact.entity.js');
-    return rows.map(row =>
-      Art.reconstitute(
-        row.id,
-        row.execution_id,
-        row.name,
-        row.type as any,
-        row.content,
-        null,
-        null,
-        (row.metadata as any) ?? {},
-        row.created_at,
-      ) as SharedArtifact,
+    return rows.map(
+      (row) =>
+        Art.reconstitute(
+          row.id,
+          row.execution_id,
+          row.name,
+          row.type as any,
+          row.content,
+          null,
+          null,
+          (row.metadata as any) ?? {},
+          row.created_at,
+        ) as SharedArtifact,
     );
   }
 

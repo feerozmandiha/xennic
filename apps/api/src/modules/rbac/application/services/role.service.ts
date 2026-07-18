@@ -1,9 +1,4 @@
-import {
-  Injectable,
-  Inject,
-  NotFoundException,
-  ConflictException,
-} from '@nestjs/common';
+import { Injectable, Inject, NotFoundException, ConflictException } from '@nestjs/common';
 import type { IRoleRepository } from '../../domain/interfaces/role.repository.interface.js';
 import type { IPermissionRepository } from '../../domain/interfaces/permission.repository.interface.js';
 import type { IAuditLogRepository } from '../../domain/interfaces/audit-log.repository.interface.js';
@@ -54,13 +49,9 @@ export class RoleService {
     createdBy: string,
     meta?: { ipAddress?: string; userAgent?: string; workspaceId?: string },
   ): Promise<RoleEntity> {
-    const existing = await this.roleRepository.findBySlug(
-      input.slug.toUpperCase(),
-    );
+    const existing = await this.roleRepository.findBySlug(input.slug.toUpperCase());
     if (existing) {
-      throw new ConflictException(
-        `Role with slug "${input.slug}" already exists`,
-      );
+      throw new ConflictException(`Role with slug "${input.slug}" already exists`);
     }
 
     const role = RoleEntity.create(input.name, input.slug, input.description);

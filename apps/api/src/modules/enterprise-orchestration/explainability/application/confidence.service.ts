@@ -1,6 +1,9 @@
 import { Injectable, Logger, Inject } from '@nestjs/common';
 import { ConfidenceScore, type ConfidenceFactor } from '../domain/confidence-score.vo.js';
-import type { IExplainabilityRepository, ConfidenceSummary } from '../domain/explainability-repository.interface.js';
+import type {
+  IExplainabilityRepository,
+  ConfidenceSummary,
+} from '../domain/explainability-repository.interface.js';
 
 @Injectable()
 export class ConfidenceService {
@@ -43,8 +46,8 @@ export class ConfidenceService {
   ): Promise<{ stepId: string; score: number; factors: ConfidenceFactor[] }[]> {
     const scores = await this.repository.getConfidenceScores(executionId);
     return scores
-      .filter(s => s.score < threshold)
-      .map(s => ({
+      .filter((s) => s.score < threshold)
+      .map((s) => ({
         stepId: s.stepId,
         score: s.score,
         factors: s.factors,

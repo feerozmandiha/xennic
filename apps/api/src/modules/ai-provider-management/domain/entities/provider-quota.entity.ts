@@ -19,21 +19,33 @@ export class ProviderQuotaEntity {
   ): ProviderQuotaEntity {
     const now = new Date();
     return new ProviderQuotaEntity(
-      randomUUID(), providerId,
-      requestsPerMin ?? 60, tokensPerMin ?? 100000, concurrentMax ?? 10,
-      now, now,
+      randomUUID(),
+      providerId,
+      requestsPerMin ?? 60,
+      tokensPerMin ?? 100000,
+      concurrentMax ?? 10,
+      now,
+      now,
     );
   }
 
   static reconstitute(data: {
-    id: string; provider_id: string;
-    requests_per_min: number; tokens_per_min: number; concurrent_max: number;
-    created_at: Date; updated_at: Date;
+    id: string;
+    provider_id: string;
+    requests_per_min: number;
+    tokens_per_min: number;
+    concurrent_max: number;
+    created_at: Date;
+    updated_at: Date;
   }): ProviderQuotaEntity {
     return new ProviderQuotaEntity(
-      data.id, data.provider_id,
-      data.requests_per_min, data.tokens_per_min, data.concurrent_max,
-      data.created_at, data.updated_at,
+      data.id,
+      data.provider_id,
+      data.requests_per_min,
+      data.tokens_per_min,
+      data.concurrent_max,
+      data.created_at,
+      data.updated_at,
     );
   }
 

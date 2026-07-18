@@ -38,7 +38,7 @@ export class SearchController {
   async getSuggestions(@Request() req: any, @Query('q') query: string) {
     const workspaceId = req.user?.workspaceId;
     const results = await this.search.search(query, workspaceId, { limit: 5 });
-    const suggestions = results.results.map(r => r.text.slice(0, 80)).filter(Boolean);
+    const suggestions = results.results.map((r) => r.text.slice(0, 80)).filter(Boolean);
 
     return { success: true, data: { suggestions, query } };
   }

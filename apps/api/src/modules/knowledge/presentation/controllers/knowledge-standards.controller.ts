@@ -1,6 +1,15 @@
 import {
-  Controller, Get, Post, Delete,
-  Body, Param, Req, UseGuards, HttpCode, HttpStatus, NotFoundException,
+  Controller,
+  Get,
+  Post,
+  Delete,
+  Body,
+  Param,
+  Req,
+  UseGuards,
+  HttpCode,
+  HttpStatus,
+  NotFoundException,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiParam } from '@nestjs/swagger';
 import { prisma } from '@xennic/database';
@@ -31,7 +40,7 @@ export class KnowledgeStandardsController {
     });
     return {
       success: true,
-      data: rows.map(r => ({
+      data: rows.map((r) => ({
         id: r.standard_id,
         code: r.standard.code,
         title: r.standard.title,
@@ -49,13 +58,11 @@ export class KnowledgeStandardsController {
   @ApiParam({ name: 'id', description: 'Article UUID' })
   @ApiResponse({ status: 201, description: 'Standard linked' })
   @ApiResponse({ status: 404, description: 'Article or standard not found' })
-  async linkStandard(
-    @Param('id') id: string,
-    @Body() dto: LinkStandardDto,
-    @Req() req: any,
-  ) {
+  async linkStandard(@Param('id') id: string, @Body() dto: LinkStandardDto, @Req() req: any) {
     await this.knowledgeService.findOne(id, req.workspaceId);
-    const standard = await prisma.engineering_standards.findUnique({ where: { id: dto.standardId } });
+    const standard = await prisma.engineering_standards.findUnique({
+      where: { id: dto.standardId },
+    });
     if (!standard) throw new NotFoundException('Standard not found');
 
     await prisma.knowledge_standards.upsert({

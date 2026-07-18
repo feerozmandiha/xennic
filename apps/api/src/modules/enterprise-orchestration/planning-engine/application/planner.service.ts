@@ -55,9 +55,7 @@ export class PlannerService {
     const plan = await this.getPlanOrThrow(planId);
     const graph = TaskGraph.create(plan);
 
-    return graph.nodes
-      .sort((a, b) => a.level - b.level || a.order - b.order)
-      .map(n => n.taskId);
+    return graph.nodes.sort((a, b) => a.level - b.level || a.order - b.order).map((n) => n.taskId);
   }
 
   async getCriticalPath(planId: string): Promise<string[]> {
@@ -70,20 +68,20 @@ export class PlannerService {
   async getReadyTasks(planId: string, completedIds: string[]): Promise<PlanTask[]> {
     const plan = await this.getPlanOrThrow(planId);
     const graph = TaskGraph.create(plan);
-    const readyIds = new Set(graph.getReadyTasks(completedIds).map(t => t.id));
+    const readyIds = new Set(graph.getReadyTasks(completedIds).map((t) => t.id));
 
-    return plan.tasks.filter(t => readyIds.has(t.id));
+    return plan.tasks.filter((t) => readyIds.has(t.id));
   }
 
   async analyzeProgress(planId: string): Promise<ProgressAnalysis> {
     const plan = await this.getPlanOrThrow(planId);
-    const completed = plan.tasks.filter(t => t.status === 'completed').length;
-    const failed = plan.tasks.filter(t => t.status === 'failed').length;
-    const remaining = plan.tasks.filter(t => t.status === 'pending').length;
+    const completed = plan.tasks.filter((t) => t.status === 'completed').length;
+    const failed = plan.tasks.filter((t) => t.status === 'failed').length;
+    const remaining = plan.tasks.filter((t) => t.status === 'pending').length;
 
-    const failedIds = plan.tasks.filter(t => t.status === 'failed').map(t => t.id);
+    const failedIds = plan.tasks.filter((t) => t.status === 'failed').map((t) => t.id);
     const blockedByFailure = plan.tasks.filter(
-      t => t.status === 'pending' && t.dependsOn.some(d => failedIds.includes(d)),
+      (t) => t.status === 'pending' && t.dependsOn.some((d) => failedIds.includes(d)),
     ).length;
     const blocked = failed + blockedByFailure;
 

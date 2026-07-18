@@ -18,6 +18,6 @@ export class SagaInstanceRepository {
   }
 
   findByStatus(status: string): SagaInstanceEntity[] {
-    return Array.from(this.store.values()).filter(i => i.status === status);
+    return Array.from(this.store.values()).filter((i) => i.status === status);
   }
 }

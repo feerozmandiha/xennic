@@ -25,7 +25,7 @@ export function ProductList() {
   const tCommon = useTranslations('common');
   const params = useParams();
   const locale = (params?.locale as string) ?? 'fa';
-  const wsId = useAuthStore(s => s.workspaceId);
+  const wsId = useAuthStore((s) => s.workspaceId);
   const toast = useToast();
   const queryClient = useQueryClient();
 
@@ -58,7 +58,7 @@ export function ProductList() {
           <Input
             placeholder={tCommon('search')}
             value={search}
-            onChange={e => setSearch(e.target.value)}
+            onChange={(e) => setSearch(e.target.value)}
             startIcon={<Search className="h-4 w-4" />}
             className="max-w-xs"
           />
@@ -104,7 +104,10 @@ export function ProductList() {
 
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Badge variant={STATUS_VARIANT[p.status] ?? 'secondary'} className="text-[10px]">
+                    <Badge
+                      variant={STATUS_VARIANT[p.status] ?? 'secondary'}
+                      className="text-[10px]"
+                    >
                       {p.status}
                     </Badge>
                     <span className="text-sm font-semibold">
@@ -129,7 +132,13 @@ export function ProductList() {
         </div>
       )}
 
-      <ProductForm open={showForm} onClose={() => { setShowForm(false); queryClient.invalidateQueries({ queryKey: ['marketplace'] }); }} />
+      <ProductForm
+        open={showForm}
+        onClose={() => {
+          setShowForm(false);
+          queryClient.invalidateQueries({ queryKey: ['marketplace'] });
+        }}
+      />
     </div>
   );
 }

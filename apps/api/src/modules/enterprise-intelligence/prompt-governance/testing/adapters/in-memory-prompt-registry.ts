@@ -17,10 +17,10 @@ export class InMemoryPromptRegistry implements IPromptRegistry {
   }
 
   async getByName(name: string, version?: number): Promise<PromptEntity | null> {
-    const candidates = Array.from(this.store.values()).filter(e => e.name === name);
+    const candidates = Array.from(this.store.values()).filter((e) => e.name === name);
     if (candidates.length === 0) return null;
     if (version !== undefined) {
-      return candidates.find(e => e.version === version) ?? null;
+      return candidates.find((e) => e.version === version) ?? null;
     }
     return candidates.reduce((a, b) => (a.version > b.version ? a : b));
   }
@@ -28,7 +28,7 @@ export class InMemoryPromptRegistry implements IPromptRegistry {
   async list(options?: PromptFindOptions): Promise<PaginatedResult<PromptEntity>> {
     let items = Array.from(this.store.values());
     if (options?.status) {
-      items = items.filter(e => e.status === options.status);
+      items = items.filter((e) => e.status === options.status);
     }
     return this.paginate(items, options);
   }
@@ -36,14 +36,14 @@ export class InMemoryPromptRegistry implements IPromptRegistry {
   async search(query: string, options?: PromptFindOptions): Promise<PaginatedResult<PromptEntity>> {
     const lower = query.toLowerCase();
     let items = Array.from(this.store.values()).filter(
-      e =>
+      (e) =>
         e.name.toLowerCase().includes(lower) ||
         e.description.toLowerCase().includes(lower) ||
         e.content.toLowerCase().includes(lower) ||
-        e.tags.some(t => t.toLowerCase().includes(lower)),
+        e.tags.some((t) => t.toLowerCase().includes(lower)),
     );
     if (options?.status) {
-      items = items.filter(e => e.status === options.status);
+      items = items.filter((e) => e.status === options.status);
     }
     return this.paginate(items, options);
   }
@@ -52,7 +52,10 @@ export class InMemoryPromptRegistry implements IPromptRegistry {
     this.store.delete(id);
   }
 
-  private paginate(items: PromptEntity[], options?: PromptFindOptions): PaginatedResult<PromptEntity> {
+  private paginate(
+    items: PromptEntity[],
+    options?: PromptFindOptions,
+  ): PaginatedResult<PromptEntity> {
     const offset = options?.offset ?? 0;
     const limit = options?.limit ?? items.length;
     return {

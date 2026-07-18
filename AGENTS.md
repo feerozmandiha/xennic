@@ -3,26 +3,30 @@
 > **⚠️ MANDATORY STARTUP SEQUENCE — Complete before ANY code changes.**
 
 **1. Read completely: `docs/PROJECT_BOOTSTRAP.md`**
-   - Full architecture, module registry, sprint history, readiness, debt, topology, events, AI infrastructure, roadmap
-   - Execute the AI Startup Checklist in Section 15
+
+- Full architecture, module registry, sprint history, readiness, debt, topology, events, AI infrastructure, roadmap
+- Execute the AI Startup Checklist in Section 15
 
 **2. Read only AFTER bootstrap:**
-   - `docs/STATUS_REPORT.md` — Current module-level status
-   - `docs/critical-path.md` — Production dependency chain
-   - `docs/AI_SESSION_CONTRACT.md` — Governance contract for all sessions
-   - Relevant ADR files in `docs/adr/` (minimum: ADR-020, ADR-019, ADR-017, ADR-011, ADR-012)
+
+- `docs/STATUS_REPORT.md` — Current module-level status
+- `docs/critical-path.md` — Production dependency chain
+- `docs/AI_SESSION_CONTRACT.md` — Governance contract for all sessions
+- Relevant ADR files in `docs/adr/` (minimum: ADR-020, ADR-019, ADR-017, ADR-011, ADR-012)
 
 **3. Validate:**
-   - Run `scripts/bootstrap/bootstrap-check.sh` to verify governance artifact integrity
-   - Run `pnpm validate:arch` to enforce architecture rules (zero tolerance: exit 0 required)
-   - Confirm bootstrap version compatibility (see Section 16 of PROJECT_BOOTSTRAP.md)
-   - Review `docs/TECHNICAL_DEBT_REGISTER.md` if constraints prevent clean validation
+
+- Run `scripts/bootstrap/bootstrap-check.sh` to verify governance artifact integrity
+- Run `pnpm validate:arch` to enforce architecture rules (zero tolerance: exit 0 required)
+- Confirm bootstrap version compatibility (see Section 16 of PROJECT_BOOTSTRAP.md)
+- Review `docs/TECHNICAL_DEBT_REGISTER.md` if constraints prevent clean validation
 
 **4. Release Validation (must pass before marking work complete):**
-   - Run `npx tsx tools/release/release-validator.ts` to execute all 15 validation gates
-   - Verify `docs/generated/release-validation-report.md` shows zero failures
-   - Verify `docs/generated/build-certification.md` shows grade A+ or A
-   - Run `pnpm validate:arch` and confirm exit 0
+
+- Run `npx tsx tools/release/release-validator.ts` to execute all 15 validation gates
+- Verify `docs/generated/release-validation-report.md` shows zero failures
+- Verify `docs/generated/build-certification.md` shows grade A+ or A
+- Run `pnpm validate:arch` and confirm exit 0
 
 **5. Never begin coding before the bootstrap has been fully loaded and understood.**
 
@@ -85,11 +89,11 @@ pnpm db:migrate  # prisma migrate dev
 
 Each has its own venv. Activate before working:
 
-| Service | Port | Framework | Lint/Type | Test Runner |
-|---------|------|-----------|-----------|-------------|
-| `engineering-service/` | 8001 | FastAPI | ruff, mypy | pytest --cov=src (min 80%) |
-| `ai-service/` | 8002 | FastAPI | ruff, mypy | pytest-asyncio (asyncio_mode=auto) |
-| `vision-service/` | 8003 | FastAPI | ruff, mypy | pytest (asyncio_mode=auto) |
+| Service                | Port | Framework | Lint/Type  | Test Runner                        |
+| ---------------------- | ---- | --------- | ---------- | ---------------------------------- |
+| `engineering-service/` | 8001 | FastAPI   | ruff, mypy | pytest --cov=src (min 80%)         |
+| `ai-service/`          | 8002 | FastAPI   | ruff, mypy | pytest-asyncio (asyncio_mode=auto) |
+| `vision-service/`      | 8003 | FastAPI   | ruff, mypy | pytest (asyncio_mode=auto)         |
 
 ```bash
 source venv/bin/activate
@@ -120,11 +124,13 @@ pytest tests -v --cov=src --cov-report=term-missing
 **8 phases complete.** Governance-only sprint — zero business logic changes.
 
 ### Location
+
 - `tools/release/release-validator.ts` — 15-step release validation orchestrator
 - `.github/workflows/release-gate.yml` — GitHub Actions pipeline (8 jobs, sequential)
 - `docs/VERSION_POLICY.md` — SemVer, ADR, bootstrap, migration numbering policy
 
 ### Key Deliverables
+
 - **Release Validator**: architecture → typecheck → lint → unit tests → e2e tests → Prisma schema → migration history → bootstrap version → STATUS_REPORT → ADR refs → OpenAPI → Mermaid → doc links → AGENTS.md refs → rules version
 - **Release Manifest**: `docs/generated/release-manifest.json` (commit, timestamp, versions, checksums)
 - **Build Certification**: `docs/generated/build-certification.md` (6 scores, overall grade A+-Fail)
@@ -133,6 +139,7 @@ pytest tests -v --cov=src --cov-report=term-missing
 - **Version Policy**: `docs/VERSION_POLICY.md` governing all versioning conventions
 
 ### Verification
+
 ```bash
 npx tsx tools/release/release-validator.ts    # 15-step validation + 4 reports
 pnpm validate:release                           # Quick: skip slow tests
@@ -169,12 +176,14 @@ pnpm validate:arch                              # Must pass (exit 0)
 - Retry: 3 attempts with exponential backoff, then dead-letter
 
 ### Event Flow
+
 1. `PublishWorker` emits `DocumentPublished` → `DomainEventPublisher` writes to `event_outbox`
 2. `OutboxRelayService` polls every 5s → dispatches to `SemanticEventBus`
 3. `DocumentPublishedHandler` creates graph node + metrics via KI services
 4. `CacheInvalidationHandler` clears AI Runtime in-memory caches (memory store, prompt store)
 
 ### Verification
+
 ```bash
 pnpm typecheck      # Must pass (tsc --noEmit)
 pnpm db:generate    # If schema changes
@@ -185,18 +194,21 @@ pnpm db:generate    # If schema changes
 **All 5 phases complete.** 36 integration tests (43 assertions) — 100% pass.
 
 ### Test Files
+
 - `apps/api/test/knowledge-lifecycle.e2e-spec.ts` — Full lifecycle: create → update → publish → delete → search → 404
 - `apps/api/test/semantic-event-bus.e2e-spec.ts` — Event outbox → bus → handler dispatch, 12 event types
 - `apps/api/src/modules/engineering/infrastructure/http/__tests__/circuit-breaker.spec.ts` — 9 unit tests: state transitions, concurrency, recovery
 - `apps/api/src/modules/engineering/infrastructure/http/__tests__/engineering-client.service.spec.ts` — 11 integration tests: retry, timeout, correlation ID, circuit breaker integration
 
 ### Infrastructure Scripts
+
 - `infrastructure/scripts/health-check.sh` — Verify all 8 services
 - `infrastructure/scripts/validate-startup-order.sh` — Validate depends_on + healthcheck
 - `infrastructure/scripts/graceful-shutdown.sh` — Test reverse-order shutdown
 - `infrastructure/scripts/benchmark.sh` — Performance baseline (latency + concurrency + resource usage)
 
 ### Reports (in `docs/`)
+
 - `production-integration-report.md` — Test results, integration points
 - `architecture-validation-report.md` — Architecture diagram, ADR validation, security
 - `technical-debt-report.md` — 18 items tracked, 7 fixed in K4
@@ -205,6 +217,7 @@ pnpm db:generate    # If schema changes
 - `benchmarks/performance-baseline-template.md` — Ready for production execution
 
 ### Run Commands
+
 ```bash
 pnpm test:e2e                    # E2E tests (knowledge-lifecycle + semantic-event-bus)
 npx jest --config jest.config.ts --testPathPattern "circuit-breaker|engineering-client"  # Engineering tests
@@ -216,24 +229,27 @@ pnpm typecheck                   # Must pass
 **10 phases complete.** 135 files, ~12,000 LOC, 39 integration tests — 100% pass. No end-user agents or chatbots — pure infrastructure.
 
 ### Location
+
 `apps/api/src/modules/enterprise-intelligence/` — each phase is a sub-module with DDD layers.
 
 ### Module Structure
-| Phase | Module | Files | Tests |
-|-------|--------|-------|-------|
-| 1 | `context-engine/` | 13 | 29 unit |
-| 2 | `memory-platform/` | 12 | 28 unit |
-| 3 | `prompt-governance/` | 18 | 37 unit |
-| 4 | `tool-registry/` | 11 | 35 unit |
-| 5 | `skill-registry/` | 11 | 24 unit |
-| 6 | `reasoning-engine/` | 15 | 26 unit |
-| 7 | `policy-engine/` | 10 | 22 unit |
-| 8 | `ai-gateway/` | 16 | 15 unit |
-| 9 | `evaluation-platform/` | 13 | 21 unit |
-| 10 | `sdk/` | 11 | — |
-| — | **total** | **135** | **~237 unit + 39 e2e** |
+
+| Phase | Module                 | Files   | Tests                  |
+| ----- | ---------------------- | ------- | ---------------------- |
+| 1     | `context-engine/`      | 13      | 29 unit                |
+| 2     | `memory-platform/`     | 12      | 28 unit                |
+| 3     | `prompt-governance/`   | 18      | 37 unit                |
+| 4     | `tool-registry/`       | 11      | 35 unit                |
+| 5     | `skill-registry/`      | 11      | 24 unit                |
+| 6     | `reasoning-engine/`    | 15      | 26 unit                |
+| 7     | `policy-engine/`       | 10      | 22 unit                |
+| 8     | `ai-gateway/`          | 16      | 15 unit                |
+| 9     | `evaluation-platform/` | 13      | 21 unit                |
+| 10    | `sdk/`                 | 11      | —                      |
+| —     | **total**              | **135** | **~237 unit + 39 e2e** |
 
 ### Key Architecture Decisions
+
 - All sub-modules are `@Global()` — SDK module imports them explicitly
 - In-memory first — all persistence uses interfaces (`IMemoryStore`, `IContextRepository`, etc.) for future DB swap
 - No LLM-specific code in reasoning engine — pure structured planning and verification
@@ -241,12 +257,14 @@ pnpm typecheck                   # Must pass
 - All relative imports use `.js` extension
 
 ### Verification
+
 ```bash
 pnpm typecheck                   # Must pass (zero errors)
 npx jest --config test/jest-e2e.json --testPathPattern "enterprise-intelligence"  # E2E tests
 ```
 
 ### Phase Details
+
 - **Context Engine** — 11 source builders (`fromWorkspace`, `fromUser`, `fromProject`, etc.) + context assembler with caching
 - **Memory Platform** — 7 memory types with `MemoryService`, `MemoryIndexerService`, `MemoryExpirationService`
 - **Prompt Governance** — registry with versioning, templates with `{{variable}}` rendering, policy evaluation with wildcards

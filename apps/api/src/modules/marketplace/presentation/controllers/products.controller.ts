@@ -1,4 +1,14 @@
-import { Controller, Get, Post, Patch, Delete, Param, Body, Query, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Delete,
+  Param,
+  Body,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { ProductService } from '../../application/services/product.service.js';
 import { CreateProductDto, UpdateProductDto } from '../dtos/product.dto.js';
@@ -23,7 +33,11 @@ export class ProductsController {
     @Query('limit') limit?: string,
   ) {
     return this.productService.findAll(
-      q, vendorId, type, category, status,
+      q,
+      vendorId,
+      type,
+      category,
+      status,
       page ? parseInt(page, 10) : 1,
       limit ? parseInt(limit, 10) : 20,
     );
@@ -39,7 +53,8 @@ export class ProductsController {
   ) {
     const params = resultParams ? JSON.parse(decodeURIComponent(resultParams)) : {};
     return this.productService.suggest(
-      calculationType, params,
+      calculationType,
+      params,
       page ? parseInt(page, 10) : 1,
       limit ? parseInt(limit, 10) : 10,
     );

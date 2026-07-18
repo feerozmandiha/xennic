@@ -4,15 +4,8 @@ import { EnvConfigProvider } from './infrastructure/providers/env-config-provide
 import { FeatureFlagStore } from './infrastructure/stores/feature-flag.store.js';
 
 @Module({
-  providers: [
-    ConfigManagerService,
-    EnvConfigProvider,
-    FeatureFlagStore,
-  ],
-  exports: [
-    ConfigManagerService,
-    EnvConfigProvider,
-  ],
+  providers: [ConfigManagerService, EnvConfigProvider, FeatureFlagStore],
+  exports: [ConfigManagerService, EnvConfigProvider],
 })
 export class EnterpriseConfigModule implements OnModuleInit {
   private readonly logger = new Logger(EnterpriseConfigModule.name);

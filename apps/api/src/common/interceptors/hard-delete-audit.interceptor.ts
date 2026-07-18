@@ -1,10 +1,4 @@
-import {
-  Injectable,
-  NestInterceptor,
-  ExecutionContext,
-  CallHandler,
-  Logger,
-} from '@nestjs/common';
+import { Injectable, NestInterceptor, ExecutionContext, CallHandler, Logger } from '@nestjs/common';
 import { Observable, tap } from 'rxjs';
 import { prisma } from '@xennic/database';
 import { randomUUID } from 'crypto';
@@ -35,10 +29,7 @@ import { randomUUID } from 'crypto';
 export class HardDeleteAuditInterceptor implements NestInterceptor {
   private readonly logger = new Logger(HardDeleteAuditInterceptor.name);
 
-  intercept(
-    context: ExecutionContext,
-    next: CallHandler,
-  ): Observable<any> {
+  intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const req = context.switchToHttp().getRequest();
     const startTime = Date.now();
 
@@ -113,18 +104,16 @@ export class HardDeleteAuditInterceptor implements NestInterceptor {
 
       this.logger.warn(
         `HARD_DELETE_AUDIT: ` +
-        `entity=${entityType}, ` +
-        `entityId=${entityId}, ` +
-        `userId=${req.user?.userId}, ` +
-        `ip=${req.ip}, ` +
-        `success=${!error}, ` +
-        `duration=${durationMs}ms`
+          `entity=${entityType}, ` +
+          `entityId=${entityId}, ` +
+          `userId=${req.user?.userId}, ` +
+          `ip=${req.ip}, ` +
+          `success=${!error}, ` +
+          `duration=${durationMs}ms`,
       );
     } catch (auditErr) {
       // ❌ خطا در audit نباید عملیات اصلی را متوقف کند
-      this.logger.error(
-        `Audit log failed (non-blocking): ${(auditErr as Error).message}`
-      );
+      this.logger.error(`Audit log failed (non-blocking): ${(auditErr as Error).message}`);
     }
   }
 

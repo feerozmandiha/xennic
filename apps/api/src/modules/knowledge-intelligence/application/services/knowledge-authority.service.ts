@@ -18,9 +18,11 @@ export class KnowledgeAuthorityService {
 
   async calculateAuthority(nodeId: string): Promise<number> {
     const incomingEdges = await this.edgeRepo.findAllByTarget(nodeId);
-    const citationCount = incomingEdges.filter((e) => e.type === 'cites' || e.type === 'references').length;
+    const citationCount = incomingEdges.filter(
+      (e) => e.type === 'cites' || e.type === 'references',
+    ).length;
     const regulatesCount = incomingEdges.filter((e) => e.type === 'regulates').length;
-    const authority = Math.min(1, (citationCount * 0.1) + (regulatesCount * 0.05) + 0.5);
+    const authority = Math.min(1, citationCount * 0.1 + regulatesCount * 0.05 + 0.5);
 
     const existing = await this.metricsRepo.findByNodeId(nodeId);
     if (existing) {
@@ -36,11 +38,20 @@ export class KnowledgeAuthorityService {
       return blended;
     }
 
-    await this.metricsRepo.save({ nodeId, confidence: 0.5, freshness: 0.5, authority, completeness: 0.5 });
+    await this.metricsRepo.save({
+      nodeId,
+      confidence: 0.5,
+      freshness: 0.5,
+      authority,
+      completeness: 0.5,
+    });
     return authority;
   }
 
-  async rankNodes(workspaceId: string, limit = 20): Promise<{ nodeId: string; authority: number }[]> {
+  async rankNodes(
+    workspaceId: string,
+    limit = 20,
+  ): Promise<{ nodeId: string; authority: number }[]> {
     const top = await this.metricsRepo.topNodesByMetric(workspaceId, 'authority', limit);
     return top.map((t) => ({ nodeId: t.nodeId, authority: t.score }));
   }

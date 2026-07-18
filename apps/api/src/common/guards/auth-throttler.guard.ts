@@ -24,9 +24,7 @@ export class AuthThrottlerGuard extends ThrottlerGuard {
 
   protected override async throwThrottlingException(): Promise<void> {
     this.logger.warn('Auth rate limit exceeded');
-    throw new ThrottlerException(
-      'تعداد تلاش‌های ورود بیش از حد مجاز است. لطفاً ۵ دقیقه صبر کنید.',
-    );
+    throw new ThrottlerException('تعداد تلاش‌های ورود بیش از حد مجاز است. لطفاً ۵ دقیقه صبر کنید.');
   }
 
   protected override getRequestResponse(context: ExecutionContext) {

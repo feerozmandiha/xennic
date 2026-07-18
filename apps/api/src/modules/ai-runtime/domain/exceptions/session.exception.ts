@@ -1,11 +1,7 @@
 import { AiRuntimeException } from './ai-runtime.exception.js';
 
 export class SessionException extends AiRuntimeException {
-  constructor(
-    message: string,
-    code: string = 'SESSION_ERROR',
-    details?: Record<string, unknown>,
-  ) {
+  constructor(message: string, code: string = 'SESSION_ERROR', details?: Record<string, unknown>) {
     super(message, code, details);
     this.name = 'SessionException';
   }

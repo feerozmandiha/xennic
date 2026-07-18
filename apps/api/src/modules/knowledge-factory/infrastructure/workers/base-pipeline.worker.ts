@@ -4,7 +4,10 @@ import { Inject, Injectable, Logger } from '@nestjs/common';
 import { KnowledgePipelineRun } from '../../domain/entities/knowledge-pipeline-run.entity.js';
 import type { IKnowledgeDocumentRepository } from '../../domain/interfaces/knowledge-document.repository.interface.js';
 import type { IPipelineRunRepository } from '../../domain/interfaces/pipeline-run.repository.interface.js';
-import { PipelineEventBus, type PipelineJobData } from '../../infrastructure/queues/pipeline-event-bus.js';
+import {
+  PipelineEventBus,
+  type PipelineJobData,
+} from '../../infrastructure/queues/pipeline-event-bus.js';
 
 export interface WorkerContext {
   documentId: string;
@@ -33,7 +36,9 @@ export abstract class BasePipelineWorker extends WorkerHost {
   abstract get queueName(): string;
   abstract getStageName(): string;
 
-  async process(job: Job<PipelineJobData>): Promise<{ success: boolean; output?: unknown; error?: string }> {
+  async process(
+    job: Job<PipelineJobData>,
+  ): Promise<{ success: boolean; output?: unknown; error?: string }> {
     const { documentId, workspaceId, stage } = job.data;
     const context: WorkerContext = { documentId, workspaceId, stage, job };
 
@@ -43,7 +48,11 @@ export abstract class BasePipelineWorker extends WorkerHost {
     let pipelineRun: KnowledgePipelineRun | null = null;
 
     try {
-      pipelineRun = KnowledgePipelineRun.create({ documentId, stage: this.getStageName(), input: job.data.metadata || {} });
+      pipelineRun = KnowledgePipelineRun.create({
+        documentId,
+        stage: this.getStageName(),
+        input: job.data.metadata || {},
+      });
       pipelineRun = await this.pipelineRunRepository.create(pipelineRun);
 
       await job.updateProgress(10);

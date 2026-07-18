@@ -7,7 +7,10 @@ import { ToolExecutionException } from '../../domain/exceptions/tool-execution.e
 @Injectable()
 export class ToolRegistryService implements IToolRegistry {
   private readonly _tools = new Map<string, ToolDefinition>();
-  private readonly _handlers = new Map<string, (params: Record<string, unknown>) => Promise<unknown>>();
+  private readonly _handlers = new Map<
+    string,
+    (params: Record<string, unknown>) => Promise<unknown>
+  >();
 
   register(tool: ToolDefinition): void {
     this._tools.set(tool.name, tool);
@@ -36,25 +39,16 @@ export class ToolRegistryService implements IToolRegistry {
   async dispatch(call: ToolCall): Promise<ToolResult> {
     const tool = this._tools.get(call.toolName);
     if (!tool) {
-      throw new ToolExecutionException(
-        call.toolName,
-        'Tool not found',
-      );
+      throw new ToolExecutionException(call.toolName, 'Tool not found');
     }
 
     if (tool.status === 'disabled') {
-      throw new ToolExecutionException(
-        call.toolName,
-        'Tool is disabled',
-      );
+      throw new ToolExecutionException(call.toolName, 'Tool is disabled');
     }
 
     const handler = this._handlers.get(call.toolName);
     if (!handler) {
-      throw new ToolExecutionException(
-        call.toolName,
-        'No handler registered',
-      );
+      throw new ToolExecutionException(call.toolName, 'No handler registered');
     }
 
     const start = Date.now();

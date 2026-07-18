@@ -1,7 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { prisma } from '@xennic/database';
 import type { ExecutionStatus, PaginatedResult } from '../../../shared/types/index.js';
-import type { IExecutionRepository, ListExecutionOptions } from '../../domain/execution-repository.interface.js';
+import type {
+  IExecutionRepository,
+  ListExecutionOptions,
+} from '../../domain/execution-repository.interface.js';
 import type { WorkflowExecution } from '../../domain/workflow-execution.entity.js';
 import type { CompensationEntry } from '../../domain/compensation.entity.js';
 
@@ -65,7 +68,10 @@ export class PrismaExecutionRepository implements IExecutionRepository {
     ) as WorkflowExecution;
   }
 
-  async findByWorkflow(workflowId: string, options?: ListExecutionOptions): Promise<PaginatedResult<WorkflowExecution>> {
+  async findByWorkflow(
+    workflowId: string,
+    options?: ListExecutionOptions,
+  ): Promise<PaginatedResult<WorkflowExecution>> {
     const where: Record<string, unknown> = { workflow_id: workflowId };
     if (options?.status) {
       where.status = options.status;
@@ -85,7 +91,7 @@ export class PrismaExecutionRepository implements IExecutionRepository {
     ]);
 
     const { WorkflowExecution: WfExec } = await import('../../domain/workflow-execution.entity.js');
-    const items = rows.map(row => {
+    const items = rows.map((row) => {
       const input = row.input as Record<string, unknown> | null;
       return WfExec.reconstitute(
         row.id,
@@ -129,7 +135,7 @@ export class PrismaExecutionRepository implements IExecutionRepository {
     ]);
 
     const { WorkflowExecution: WfExec } = await import('../../domain/workflow-execution.entity.js');
-    const items = rows.map(row => {
+    const items = rows.map((row) => {
       const input = row.input as Record<string, unknown> | null;
       return WfExec.reconstitute(
         row.id,
@@ -187,17 +193,18 @@ export class PrismaExecutionRepository implements IExecutionRepository {
     });
 
     const { CompensationEntry: Comp } = await import('../../domain/compensation.entity.js');
-    return rows.map(row =>
-      Comp.reconstitute(
-        row.id,
-        row.execution_id,
-        row.step_id,
-        row.action,
-        row.status as any,
-        row.payload as Record<string, unknown> | null,
-        row.error,
-        row.created_at,
-      ) as CompensationEntry,
+    return rows.map(
+      (row) =>
+        Comp.reconstitute(
+          row.id,
+          row.execution_id,
+          row.step_id,
+          row.action,
+          row.status as any,
+          row.payload as Record<string, unknown> | null,
+          row.error,
+          row.created_at,
+        ) as CompensationEntry,
     );
   }
 }

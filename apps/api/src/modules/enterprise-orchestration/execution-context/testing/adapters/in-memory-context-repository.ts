@@ -34,9 +34,7 @@ export class InMemoryContextRepository implements IContextRepository {
   }
 
   async listArtifacts(executionId: string): Promise<SharedArtifact[]> {
-    return Array.from(this.artifacts.values()).filter(
-      a => a.executionId === executionId,
-    );
+    return Array.from(this.artifacts.values()).filter((a) => a.executionId === executionId);
   }
 
   async deleteArtifact(id: string): Promise<void> {

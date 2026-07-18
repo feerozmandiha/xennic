@@ -6,7 +6,10 @@ import {
   type PolicyEffect,
   type PolicyRule,
 } from '../../domain/prompt-policy.entity.js';
-import type { IPromptPolicyRepository, PolicyFindOptions } from '../../domain/prompt-policy-repository.interface.js';
+import type {
+  IPromptPolicyRepository,
+  PolicyFindOptions,
+} from '../../domain/prompt-policy-repository.interface.js';
 
 @Injectable()
 export class PrismaPromptPolicyRepo implements IPromptPolicyRepository {
@@ -57,7 +60,7 @@ export class PrismaPromptPolicyRepo implements IPromptPolicyRepository {
       prisma.prompt_policies.count(),
     ]);
     return {
-      items: items.map(r => this.toEntity(r)),
+      items: items.map((r) => this.toEntity(r)),
       total,
       offset,
       limit,
@@ -69,7 +72,7 @@ export class PrismaPromptPolicyRepo implements IPromptPolicyRepository {
       where: { effect },
       orderBy: { priority: 'asc' },
     });
-    return rows.map(r => this.toEntity(r));
+    return rows.map((r) => this.toEntity(r));
   }
 
   async delete(id: string): Promise<void> {

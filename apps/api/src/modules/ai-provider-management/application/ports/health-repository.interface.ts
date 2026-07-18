@@ -1,4 +1,7 @@
-import { ProviderHealthEntity, HealthStatus } from '../../domain/entities/provider-health.entity.js';
+import {
+  ProviderHealthEntity,
+  HealthStatus,
+} from '../../domain/entities/provider-health.entity.js';
 
 export interface IHealthRepository {
   findById(id: string): Promise<ProviderHealthEntity | null>;

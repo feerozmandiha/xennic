@@ -22,7 +22,7 @@ export class WorkspaceGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
-    const user    = request.user;
+    const user = request.user;
 
     if (!user?.userId) {
       throw new ForbiddenException('User not authenticated');
@@ -31,15 +31,15 @@ export class WorkspaceGuard implements CanActivate {
     // ── workspace_id از چند منبع (case-insensitive headers) ────────────────
     const rawHeaders = request.headers as Record<string, string | string[] | undefined>;
     let workspaceId: string | undefined =
-      (rawHeaders['x-workspace-id'] as string)     ||
-      (rawHeaders['X-Workspace-Id'] as string)     ||
-      request.params?.workspaceId                  ||
-      request.params?.id                           ||
+      (rawHeaders['x-workspace-id'] as string) ||
+      (rawHeaders['X-Workspace-Id'] as string) ||
+      request.params?.workspaceId ||
+      request.params?.id ||
       request.body?.workspaceId;
 
     // ── اگر workspaceId نیامد، اولین workspace کاربر را پیدا کن ──────────
     if (!workspaceId) {
-      workspaceId = await this._getFirstWorkspace(user.userId) ?? undefined;
+      workspaceId = (await this._getFirstWorkspace(user.userId)) ?? undefined;
       if (workspaceId) {
         this.logger.debug(
           `WorkspaceGuard: auto-detected workspace ${workspaceId} for user ${user.userId}`,
@@ -48,9 +48,7 @@ export class WorkspaceGuard implements CanActivate {
     }
 
     if (!workspaceId) {
-      this.logger.warn(
-        `WorkspaceGuard: no workspace found for user ${user.userId}`,
-      );
+      this.logger.warn(`WorkspaceGuard: no workspace found for user ${user.userId}`);
       throw new ForbiddenException(
         'Workspace ID is required. Send x-workspace-id header or create a workspace first.',
       );
@@ -65,9 +63,7 @@ export class WorkspaceGuard implements CanActivate {
       throw new ForbiddenException('User does not have access to this workspace');
     }
 
-    this.logger.debug(
-      `WorkspaceGuard: user ${user.userId} ✅ workspace ${workspaceId}`,
-    );
+    this.logger.debug(`WorkspaceGuard: user ${user.userId} ✅ workspace ${workspaceId}`);
     request.workspaceId = workspaceId;
     return true;
   }

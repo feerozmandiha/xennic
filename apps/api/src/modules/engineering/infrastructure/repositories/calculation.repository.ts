@@ -5,7 +5,6 @@ import { CalculationEntity } from '../../domain/entities/calculation.entity.js';
 
 @Injectable()
 export class CalculationRepository implements ICalculationRepository {
-
   async save(calc: CalculationEntity): Promise<void> {
     try {
       await prisma.$executeRaw`
@@ -56,7 +55,7 @@ export class CalculationRepository implements ICalculationRepository {
     },
   ): Promise<CalculationEntity[]> {
     const offset = options?.offset ?? 0;
-    const limit  = options?.limit  ?? 20;
+    const limit = options?.limit ?? 20;
 
     try {
       let rows: any[];
@@ -134,18 +133,18 @@ export class CalculationRepository implements ICalculationRepository {
 
   private _map(row: any): CalculationEntity {
     return CalculationEntity.reconstitute({
-      id:              row.id,
-      workspaceId:     row.workspace_id,
-      projectId:       row.project_id    ?? null,
-      userId:          row.user_id,
-      type:            row.type,
-      version:         row.version,
-      inputs:          row.inputs        ?? {},
-      results:         row.results       ?? {},
-      engineVersion:   row.engine_version,
+      id: row.id,
+      workspaceId: row.workspace_id,
+      projectId: row.project_id ?? null,
+      userId: row.user_id,
+      type: row.type,
+      version: row.version,
+      inputs: row.inputs ?? {},
+      results: row.results ?? {},
+      engineVersion: row.engine_version,
       standardVersion: row.standard_version,
-      durationMs:      row.duration_ms   ?? 0,
-      createdAt:       row.created_at,
+      durationMs: row.duration_ms ?? 0,
+      createdAt: row.created_at,
     });
   }
 }

@@ -14,10 +14,7 @@ import { PrismaExplainabilityRepository } from './infrastructure/persistence/pri
     ExplainabilityService,
     { provide: 'IExplainabilityRepository', useClass: PrismaExplainabilityRepository },
   ],
-  exports: [
-    ExplainabilityService,
-    DecisionLoggerService,
-  ],
+  exports: [ExplainabilityService, DecisionLoggerService],
 })
 export class ExplainabilityModule implements OnModuleInit {
   private readonly logger = new Logger(ExplainabilityModule.name);

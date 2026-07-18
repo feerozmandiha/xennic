@@ -25,11 +25,12 @@ export class InMemoryExplainabilityRepository implements IExplainabilityReposito
     executionId: string,
     options?: FindDecisionOptions,
   ): Promise<PaginatedResult<DecisionLog>> {
-    let items = Array.from(this.decisions.values())
-      .filter(d => d.workflowExecutionId === executionId);
+    let items = Array.from(this.decisions.values()).filter(
+      (d) => d.workflowExecutionId === executionId,
+    );
 
     if (options?.stepId) {
-      items = items.filter(d => d.stepId === options.stepId);
+      items = items.filter((d) => d.stepId === options.stepId);
     }
 
     const offset = options?.offset ?? 0;
@@ -44,8 +45,9 @@ export class InMemoryExplainabilityRepository implements IExplainabilityReposito
   }
 
   async getDecisionsByType(executionId: string, type: DecisionType): Promise<DecisionLog[]> {
-    return Array.from(this.decisions.values())
-      .filter(d => d.workflowExecutionId === executionId && d.decisionType === type);
+    return Array.from(this.decisions.values()).filter(
+      (d) => d.workflowExecutionId === executionId && d.decisionType === type,
+    );
   }
 
   async saveRationale(rationale: SelectionRationale): Promise<void> {
@@ -53,9 +55,13 @@ export class InMemoryExplainabilityRepository implements IExplainabilityReposito
     this.logger.debug(`Saved rationale ${rationale.id}`);
   }
 
-  async getRationale(executionId: string, selectionType?: SelectionType): Promise<SelectionRationale[]> {
-    return Array.from(this.rationales.values())
-      .filter(r => r.executionId === executionId && (!selectionType || r.selectionType === selectionType));
+  async getRationale(
+    executionId: string,
+    selectionType?: SelectionType,
+  ): Promise<SelectionRationale[]> {
+    return Array.from(this.rationales.values()).filter(
+      (r) => r.executionId === executionId && (!selectionType || r.selectionType === selectionType),
+    );
   }
 
   async saveConfidence(score: ConfidenceScore): Promise<void> {
@@ -64,8 +70,7 @@ export class InMemoryExplainabilityRepository implements IExplainabilityReposito
   }
 
   async getConfidenceScores(executionId: string): Promise<ConfidenceScore[]> {
-    return Array.from(this.confidences.values())
-      .filter(c => c.executionId === executionId);
+    return Array.from(this.confidences.values()).filter((c) => c.executionId === executionId);
   }
 
   async getConfidenceSummary(executionId: string): Promise<ConfidenceSummary> {
@@ -83,7 +88,7 @@ export class InMemoryExplainabilityRepository implements IExplainabilityReposito
       byStep[s.stepId]!.push(s.score);
     }
 
-    const allScores = scores.map(s => s.score);
+    const allScores = scores.map((s) => s.score);
     const avg = allScores.reduce((a, b) => a + b, 0) / allScores.length;
 
     return {
@@ -98,7 +103,7 @@ export class InMemoryExplainabilityRepository implements IExplainabilityReposito
     let items = Array.from(this.decisions.values());
 
     if (options?.decisionType) {
-      items = items.filter(d => d.decisionType === options.decisionType);
+      items = items.filter((d) => d.decisionType === options.decisionType);
     }
 
     const offset = options?.offset ?? 0;

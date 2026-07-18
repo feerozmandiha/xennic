@@ -36,7 +36,7 @@
 ## 4. Performance
 
 - [ ] No N+1 queries in changed code
-- [ ] SELECT * replaced with selective field selection
+- [ ] SELECT \* replaced with selective field selection
 - [ ] Pagination on list endpoints
 - [ ] No synchronous I/O in async context
 - [ ] Caching considered for frequently accessed data
@@ -81,11 +81,11 @@
 ```markdown
 ### DoD Sign-off
 
-| Role | Name | Date | Signature |
-|------|------|------|-----------|
-| Developer | __________________ | ________ | ___________ |
-| Reviewer  | __________________ | ________ | ___________ |
-| Tech Lead | __________________ | ________ | ___________ |
+| Role      | Name                         | Date         | Signature          |
+| --------- | ---------------------------- | ------------ | ------------------ |
+| Developer | **\*\*\*\***\_\_**\*\*\*\*** | **\_\_\_\_** | \***\*\_\_\_\*\*** |
+| Reviewer  | **\*\*\*\***\_\_**\*\*\*\*** | **\_\_\_\_** | \***\*\_\_\_\*\*** |
+| Tech Lead | **\*\*\*\***\_\_**\*\*\*\*** | **\_\_\_\_** | \***\*\_\_\_\*\*** |
 
 > **Tech Lead sign-off required for P0/P1 items only.**
 ```
@@ -101,7 +101,7 @@
 
 ### Handling incomplete items
 
-1. The item stays in the **In Progress** column — it is *not* done.
+1. The item stays in the **In Progress** column — it is _not_ done.
 2. The blocker is documented in the gap/ticket with a `dod-blocked` tag.
 3. The Tech Lead triages the blocker:
    - If the blocker can be resolved within the current sprint, the item stays.

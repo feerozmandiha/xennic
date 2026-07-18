@@ -19,8 +19,7 @@ export interface RateLimitOptions {
  * async login() { ... }
  * ```
  */
-export const RateLimit = (options: RateLimitOptions) =>
-  SetMetadata(RATE_LIMIT_KEY, options);
+export const RateLimit = (options: RateLimitOptions) => SetMetadata(RATE_LIMIT_KEY, options);
 
 /**
  * دکوراتورهای پیش‌فرض برای سناریوهای مختلف

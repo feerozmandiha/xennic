@@ -60,15 +60,25 @@ export class InvoiceEntity {
     updatedAt: Date;
   }): InvoiceEntity {
     return new InvoiceEntity(
-      data.id, data.workspaceId, data.invoiceNumber,
+      data.id,
+      data.workspaceId,
+      data.invoiceNumber,
       data.status as InvoiceStatus,
-      data.currency, data.subtotal, data.taxAmount, data.totalAmount,
-      data.issuedAt, data.dueAt, data.paidAt,
-      data.createdAt, data.updatedAt,
+      data.currency,
+      data.subtotal,
+      data.taxAmount,
+      data.totalAmount,
+      data.issuedAt,
+      data.dueAt,
+      data.paidAt,
+      data.createdAt,
+      data.updatedAt,
     );
   }
 
-  get status(): InvoiceStatus { return this._status; }
+  get status(): InvoiceStatus {
+    return this._status;
+  }
 
   markAsPaid(): void {
     if (this._status === 'paid') throw new Error('Invoice is already paid');
@@ -86,7 +96,8 @@ export class InvoiceEntity {
   }
 
   cancel(): void {
-    if (this._status === 'paid') throw new Error('Cannot cancel a paid invoice — issue refund instead');
+    if (this._status === 'paid')
+      throw new Error('Cannot cancel a paid invoice — issue refund instead');
     if (this._status === 'cancelled') throw new Error('Invoice is already cancelled');
     this._status = 'cancelled';
     this.updatedAt = new Date();
@@ -98,8 +109,16 @@ export class InvoiceEntity {
     this.updatedAt = new Date();
   }
 
-  isPaid(): boolean { return this._status === 'paid'; }
-  isPending(): boolean { return this._status === 'pending'; }
-  isOverdue(): boolean { return this._status === 'overdue'; }
-  isCancelled(): boolean { return this._status === 'cancelled'; }
+  isPaid(): boolean {
+    return this._status === 'paid';
+  }
+  isPending(): boolean {
+    return this._status === 'pending';
+  }
+  isOverdue(): boolean {
+    return this._status === 'overdue';
+  }
+  isCancelled(): boolean {
+    return this._status === 'cancelled';
+  }
 }

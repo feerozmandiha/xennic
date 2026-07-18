@@ -9,10 +9,18 @@ export class PublicKnowledgeController {
   constructor(private readonly knowledgeService: KnowledgeService) {}
 
   @Get()
-  @ApiOperation({ summary: 'Public list published articles', description: 'Returns published knowledge articles with public visibility.' })
+  @ApiOperation({
+    summary: 'Public list published articles',
+    description: 'Returns published knowledge articles with public visibility.',
+  })
   @ApiQuery({ name: 'page', required: false, type: Number, example: 1 })
   @ApiQuery({ name: 'limit', required: false, type: Number, example: 20 })
-  @ApiQuery({ name: 'locale', required: false, enum: ['fa', 'en'], description: 'Filter by language' })
+  @ApiQuery({
+    name: 'locale',
+    required: false,
+    enum: ['fa', 'en'],
+    description: 'Filter by language',
+  })
   @ApiResponse({ status: 200, description: 'Articles retrieved' })
   async findAll(
     @Query('page') page?: string,
@@ -32,7 +40,10 @@ export class PublicKnowledgeController {
   }
 
   @Get(':slug')
-  @ApiOperation({ summary: 'Public get article by slug', description: 'Returns a published article by slug.' })
+  @ApiOperation({
+    summary: 'Public get article by slug',
+    description: 'Returns a published article by slug.',
+  })
   @ApiParam({ name: 'slug', description: 'Article slug' })
   @ApiResponse({ status: 200, description: 'Article found' })
   @ApiResponse({ status: 404, description: 'Article not found' })

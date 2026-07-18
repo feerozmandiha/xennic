@@ -56,14 +56,11 @@ export class VisionUploadController {
   @ApiResponse({ status: 200, description: 'Analysis complete' })
   @ApiResponse({ status: 503, description: 'Vision service unavailable' })
   async upload(@Req() req: any, @Res() reply: any) {
-    const VISION_URL =
-      process.env['VISION_SERVICE_URL'] ?? 'http://localhost:8003';
+    const VISION_URL = process.env['VISION_SERVICE_URL'] ?? 'http://localhost:8003';
 
     try {
       if (!req.isMultipart || !req.isMultipart()) {
-        return reply
-          .status(400)
-          .send({ success: false, error: 'multipart/form-data required' });
+        return reply.status(400).send({ success: false, error: 'multipart/form-data required' });
       }
 
       const chunks: Buffer[] = [];
@@ -118,10 +115,7 @@ export class VisionUploadController {
         console.error('Failed to save vision analysis:', dbErr);
       }
 
-      return reply
-        .status(200)
-        .header('Content-Type', 'application/json')
-        .send(visionData);
+      return reply.status(200).header('Content-Type', 'application/json').send(visionData);
     } catch (err) {
       const msg = (err as Error).message;
       return reply.status(503).send({
@@ -135,8 +129,7 @@ export class VisionUploadController {
   @Get('health')
   @ApiOperation({ summary: 'Vision upload health check' })
   async health() {
-    const VISION_URL =
-      process.env['VISION_SERVICE_URL'] ?? 'http://localhost:8003';
+    const VISION_URL = process.env['VISION_SERVICE_URL'] ?? 'http://localhost:8003';
     try {
       const res = await fetch(`${VISION_URL}/health`, {
         signal: AbortSignal.timeout(5_000),

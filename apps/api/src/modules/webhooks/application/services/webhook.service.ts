@@ -115,9 +115,7 @@ export class WebhookService {
       data: payload,
     });
 
-    await Promise.allSettled(
-      webhooks.map(wh => this._deliver(wh, body)),
-    );
+    await Promise.allSettled(webhooks.map((wh) => this._deliver(wh, body)));
   }
 
   private async _deliver(webhook: WebhookEntity, body: string): Promise<void> {
@@ -138,9 +136,7 @@ export class WebhookService {
       });
 
       if (!response.ok) {
-        this.logger.warn(
-          `Webhook ${webhook.id} returned ${response.status} for ${webhook.url}`,
-        );
+        this.logger.warn(`Webhook ${webhook.id} returned ${response.status} for ${webhook.url}`);
       }
     } catch (err) {
       this.logger.error(
@@ -164,7 +160,7 @@ export class WebhookService {
     if (!events || events.length === 0) {
       throw new BadRequestException('At least one event must be specified');
     }
-    const invalid = events.filter(e => !ALL_WEBHOOK_EVENTS.includes(e));
+    const invalid = events.filter((e) => !ALL_WEBHOOK_EVENTS.includes(e));
     if (invalid.length > 0) {
       throw new BadRequestException(`Invalid webhook event(s): ${invalid.join(', ')}`);
     }

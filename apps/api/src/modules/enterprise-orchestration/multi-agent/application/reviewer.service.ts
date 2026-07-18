@@ -54,7 +54,9 @@ export class ReviewerService {
     const feedback = issues.length > 0 ? issues.join('; ') : null;
 
     await this.repository.updateTask(taskId, { status: approved ? 'completed' : 'running' });
-    this.logger.log(`Task ${taskId} ${approved ? 'approved' : 'rejected'}${feedback ? `: ${feedback}` : ''}`);
+    this.logger.log(
+      `Task ${taskId} ${approved ? 'approved' : 'rejected'}${feedback ? `: ${feedback}` : ''}`,
+    );
 
     return { taskId, approved, feedback };
   }

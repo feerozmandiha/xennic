@@ -12,11 +12,7 @@ import { PrismaCostRepository } from './infrastructure/persistence/prisma-cost-r
     BudgetService,
     { provide: 'ICostRepository', useClass: PrismaCostRepository },
   ],
-  exports: [
-    CostTrackingService,
-    CostAnalysisService,
-    BudgetService,
-  ],
+  exports: [CostTrackingService, CostAnalysisService, BudgetService],
 })
 export class CostManagementModule implements OnModuleInit {
   private readonly logger = new Logger(CostManagementModule.name);

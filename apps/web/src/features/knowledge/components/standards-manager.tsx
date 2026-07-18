@@ -59,9 +59,7 @@ export function StandardsManager({ articleId, linked, onLinkedChange }: Props) {
     onError: () => toast.error('خطا در جداسازی استاندارد'),
   });
 
-  const searchResults = (searchData?.data ?? []).filter(
-    (s) => !linked.find((l) => l.id === s.id),
-  );
+  const searchResults = (searchData?.data ?? []).filter((s) => !linked.find((l) => l.id === s.id));
 
   return (
     <div className="space-y-3">
@@ -96,7 +94,9 @@ export function StandardsManager({ articleId, linked, onLinkedChange }: Props) {
                 </Badge>
               </div>
               <button
-                onClick={() => { if (confirm('جدا شود؟')) unlinkMutation.mutate(s.id); }}
+                onClick={() => {
+                  if (confirm('جدا شود؟')) unlinkMutation.mutate(s.id);
+                }}
                 disabled={unlinkMutation.isPending}
                 className="opacity-0 group-hover:opacity-100 p-0.5 rounded hover:bg-red-100 text-red-400 transition-all"
               >

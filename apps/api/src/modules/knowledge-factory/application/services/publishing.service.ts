@@ -28,12 +28,17 @@ export class PublishingService {
     private readonly pipelineRunRepository: IPipelineRunRepository,
   ) {}
 
-  async publishDocument(documentId: string, options: PublishOptions = {}): Promise<PublishingResult> {
+  async publishDocument(
+    documentId: string,
+    options: PublishOptions = {},
+  ): Promise<PublishingResult> {
     const document = await this.documentRepository.findById(documentId);
     if (!document) throw new Error(`Document ${documentId} not found`);
 
     if (document.status !== 'embedding') {
-      throw new Error(`Document ${documentId} is not ready for publishing. Current status: ${document.status}`);
+      throw new Error(
+        `Document ${documentId} is not ready for publishing. Current status: ${document.status}`,
+      );
     }
 
     this.logger.log(`Publishing document: ${document.originalName}`);
@@ -91,7 +96,12 @@ export class PublishingService {
     const hasEmbeddings = chunks.length > 0;
 
     if (document.status !== 'embedding') {
-      return { canPublish: false, reason: `Document status is ${document.status}`, chunkCount: chunks.length, hasEmbeddings };
+      return {
+        canPublish: false,
+        reason: `Document status is ${document.status}`,
+        chunkCount: chunks.length,
+        hasEmbeddings,
+      };
     }
 
     return { canPublish: true, chunkCount: chunks.length, hasEmbeddings };
@@ -104,7 +114,10 @@ export class PublishingService {
     return `knowledge-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
   }
 
-  private async generateEmbeddings(_documentId: string, _chunks: Array<{ id: string; text: string }>): Promise<number> {
+  private async generateEmbeddings(
+    _documentId: string,
+    _chunks: Array<{ id: string; text: string }>,
+  ): Promise<number> {
     return 0;
   }
 }

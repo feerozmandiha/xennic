@@ -21,10 +21,7 @@ export class RedisSessionStore implements ISessionStore {
     await this.redis.hset(key, 'createdAt', session.createdAt.toISOString());
     await this.redis.hset(key, 'expiresAt', session.expiresAt.toISOString());
 
-    const ttlSeconds = Math.max(
-      1,
-      Math.floor((session.expiresAt.getTime() - Date.now()) / 1000),
-    );
+    const ttlSeconds = Math.max(1, Math.floor((session.expiresAt.getTime() - Date.now()) / 1000));
     await this.redis.expire(key, ttlSeconds);
 
     const userSetKey = `${USER_SESSIONS_PREFIX}${session.workspaceId}:${session.userId}`;
@@ -52,9 +49,7 @@ export class RedisSessionStore implements ISessionStore {
       if (session) sessions.push(session);
     }
 
-    return sessions.sort(
-      (a, b) => b.createdAt.getTime() - a.createdAt.getTime(),
-    );
+    return sessions.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
   }
 
   async update(session: AgentSession): Promise<void> {
@@ -63,10 +58,7 @@ export class RedisSessionStore implements ISessionStore {
     await this.redis.hset(key, 'metadata', JSON.stringify(session.metadata));
     await this.redis.hset(key, 'expiresAt', session.expiresAt.toISOString());
 
-    const ttlSeconds = Math.max(
-      1,
-      Math.floor((session.expiresAt.getTime() - Date.now()) / 1000),
-    );
+    const ttlSeconds = Math.max(1, Math.floor((session.expiresAt.getTime() - Date.now()) / 1000));
     await this.redis.expire(key, ttlSeconds);
   }
 

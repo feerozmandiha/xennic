@@ -1,7 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { prisma } from '@xennic/database';
 import type { IConversationRepository } from '../../domain/conversation-repository.interface.js';
-import type { Conversation, Message, ConversationStatus } from '../../domain/conversation.entity.js';
+import type {
+  Conversation,
+  Message,
+  ConversationStatus,
+} from '../../domain/conversation.entity.js';
 import type { ExecutionHistory, HistoryEvent } from '../../domain/execution-history.entity.js';
 
 @Injectable()
@@ -51,7 +55,9 @@ export class PrismaConversationRepository implements IConversationRepository {
       where: { execution_id: executionId, conversation_id: { not: '' } },
       orderBy: { created_at: 'asc' },
     });
-    return (await Promise.all(rows.map(row => this.rowToConversation(row)))).filter((c): c is Conversation => c !== null);
+    return (await Promise.all(rows.map((row) => this.rowToConversation(row)))).filter(
+      (c): c is Conversation => c !== null,
+    );
   }
 
   async findBySession(sessionId: string): Promise<Conversation | null> {

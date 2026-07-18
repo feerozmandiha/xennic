@@ -1,4 +1,8 @@
-import type { ExecutionContext, ExecutionResult, PipelineMiddleware } from '../types/execution.types.js';
+import type {
+  ExecutionContext,
+  ExecutionResult,
+  PipelineMiddleware,
+} from '../types/execution.types.js';
 
 export const I_EXECUTION_PIPELINE = 'IExecutionPipeline';
 

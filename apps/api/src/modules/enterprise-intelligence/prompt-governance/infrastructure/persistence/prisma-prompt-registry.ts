@@ -101,7 +101,7 @@ export class PrismaPromptRegistry implements IPromptRegistry {
       prisma.prompt_registry.count({ where }),
     ]);
     return {
-      items: items.map(r => this.toEntity(r)),
+      items: items.map((r) => this.toEntity(r)),
       total,
       offset,
       limit,

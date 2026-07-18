@@ -37,7 +37,9 @@ export class PaymentMethodEntity {
       data.cardHolderName ?? null,
       data.isDefault ?? false,
       data.expiresAt ?? null,
-      now, now, null,
+      now,
+      now,
+      null,
     );
   }
 
@@ -56,15 +58,24 @@ export class PaymentMethodEntity {
     deletedAt: Date | null;
   }): PaymentMethodEntity {
     return new PaymentMethodEntity(
-      data.id, data.workspaceId, data.userId,
+      data.id,
+      data.workspaceId,
+      data.userId,
       data.gateway as PaymentGatewayType,
-      data.gatewayCustomerId, data.maskedNumber, data.cardHolderName,
-      data.isDefault, data.expiresAt,
-      data.createdAt, data.updatedAt, data.deletedAt,
+      data.gatewayCustomerId,
+      data.maskedNumber,
+      data.cardHolderName,
+      data.isDefault,
+      data.expiresAt,
+      data.createdAt,
+      data.updatedAt,
+      data.deletedAt,
     );
   }
 
-  get isDefault(): boolean { return this._isDefault; }
+  get isDefault(): boolean {
+    return this._isDefault;
+  }
 
   setAsDefault(): void {
     this._isDefault = true;
@@ -81,5 +92,7 @@ export class PaymentMethodEntity {
     this.updatedAt = new Date();
   }
 
-  isDeleted(): boolean { return this.deletedAt !== null; }
+  isDeleted(): boolean {
+    return this.deletedAt !== null;
+  }
 }

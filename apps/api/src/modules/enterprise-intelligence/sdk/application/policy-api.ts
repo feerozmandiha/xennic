@@ -3,7 +3,10 @@ import type { PolicyEntity } from '../../policy-engine/domain/policy.entity.js';
 import type { PolicyEvaluationResult } from '../../policy-engine/domain/policy-evaluation.vo.js';
 import type { EvaluationContext } from '../../policy-engine/application/policy-evaluation.service.js';
 import { PolicyEnforcementService } from '../../policy-engine/application/policy-enforcement.service.js';
-import { PolicyManagementService, type CreatePolicyData } from '../../policy-engine/application/policy-management.service.js';
+import {
+  PolicyManagementService,
+  type CreatePolicyData,
+} from '../../policy-engine/application/policy-management.service.js';
 import type { PaginatedResult } from '../../shared/types/index.js';
 import type { PolicyFindOptions } from '../../policy-engine/domain/policy-repository.interface.js';
 

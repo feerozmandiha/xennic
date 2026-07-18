@@ -111,9 +111,21 @@ export class ApprovalRequest {
     updatedAt: Date,
   ): ApprovalRequest {
     return new ApprovalRequest(
-      id, executionId, stepId, status, requestedBy, assignedTo,
-      title, description, context, dueAt, escalatedAt, escalationReason,
-      metadata, createdAt, updatedAt,
+      id,
+      executionId,
+      stepId,
+      status,
+      requestedBy,
+      assignedTo,
+      title,
+      description,
+      context,
+      dueAt,
+      escalatedAt,
+      escalationReason,
+      metadata,
+      createdAt,
+      updatedAt,
     );
   }
 

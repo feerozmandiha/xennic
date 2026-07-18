@@ -12,9 +12,7 @@ export class ToolInputValidator {
       }
       if (value !== undefined && value !== null) {
         if (!this._typeMatches(value, param.type)) {
-          errors.push(
-            `Parameter "${param.name}" expected ${param.type}, got ${typeof value}`,
-          );
+          errors.push(`Parameter "${param.name}" expected ${param.type}, got ${typeof value}`);
         }
       }
     }

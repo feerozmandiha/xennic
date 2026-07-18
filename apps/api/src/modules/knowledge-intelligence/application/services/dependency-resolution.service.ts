@@ -16,15 +16,24 @@ export class DependencyResolutionService {
     private readonly traversalRepo: IGraphTraversalRepository,
   ) {}
 
-  async resolveUpstream(nodeId: string, maxDepth = 10): Promise<{ nodeId: string; distance: number; edgeType: string }[]> {
+  async resolveUpstream(
+    nodeId: string,
+    maxDepth = 10,
+  ): Promise<{ nodeId: string; distance: number; edgeType: string }[]> {
     return this.traversalRepo.ancestors(nodeId, maxDepth);
   }
 
-  async resolveDownstream(nodeId: string, maxDepth = 10): Promise<{ nodeId: string; distance: number; edgeType: string }[]> {
+  async resolveDownstream(
+    nodeId: string,
+    maxDepth = 10,
+  ): Promise<{ nodeId: string; distance: number; edgeType: string }[]> {
     return this.traversalRepo.descendants(nodeId, maxDepth);
   }
 
-  async resolveFullDependencyGraph(nodeId: string, maxDepth = 5): Promise<{ nodes: string[]; edges: any[] }> {
+  async resolveFullDependencyGraph(
+    nodeId: string,
+    maxDepth = 5,
+  ): Promise<{ nodes: string[]; edges: any[] }> {
     return this.traversalRepo.dependencySubgraph(nodeId, 'both', maxDepth);
   }
 
@@ -33,17 +42,23 @@ export class DependencyResolutionService {
     return paths.map((p) => p.path);
   }
 
-  async getCriticalPath(nodeIds: string[]): Promise<{ ordered: string[]; critical: string | null; bottlenecks: string[] }> {
+  async getCriticalPath(
+    nodeIds: string[],
+  ): Promise<{ ordered: string[]; critical: string | null; bottlenecks: string[] }> {
     if (nodeIds.length <= 1) {
       return { ordered: nodeIds, critical: nodeIds[0] ?? null, bottlenecks: [] };
     }
 
     const firstNode = nodeIds[0] ? await this.nodeRepo.findById(nodeIds[0]) : null;
-    const edges = firstNode ? await this.edgeRepo.findAllByWorkspace(firstNode.workspaceId, 'depends_on') : [];
+    const edges = firstNode
+      ? await this.edgeRepo.findAllByWorkspace(firstNode.workspaceId, 'depends_on')
+      : [];
     const edgeMap = new Map<string, { source: string; target: string; weight: number }[]>();
     for (const edge of edges) {
       if (!edgeMap.has(edge.sourceId)) edgeMap.set(edge.sourceId, []);
-      edgeMap.get(edge.sourceId)!.push({ source: edge.sourceId, target: edge.targetId, weight: edge.weight });
+      edgeMap
+        .get(edge.sourceId)!
+        .push({ source: edge.sourceId, target: edge.targetId, weight: edge.weight });
     }
 
     const indegree = new Map<string, number>();
@@ -61,9 +76,7 @@ export class DependencyResolutionService {
       }
     }
 
-    const bottlenecks = [...indegree.entries()]
-      .filter(([, deg]) => deg > 2)
-      .map(([id]) => id);
+    const bottlenecks = [...indegree.entries()].filter(([, deg]) => deg > 2).map(([id]) => id);
 
     let critical: string | null = nodeIds[0] ?? null;
     let maxCumulative = 0;

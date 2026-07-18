@@ -9,7 +9,6 @@ import {
 
 @Injectable()
 export class NotificationRepository implements INotificationRepository {
-
   async save(n: NotificationEntity): Promise<void> {
     try {
       await prisma.$executeRaw`
@@ -43,7 +42,9 @@ export class NotificationRepository implements INotificationRepository {
       `;
       if (!rows || rows.length === 0) return null;
       return this._map(rows[0]);
-    } catch { return null; }
+    } catch {
+      return null;
+    }
   }
 
   async findByUser(
@@ -56,7 +57,7 @@ export class NotificationRepository implements INotificationRepository {
     },
   ): Promise<NotificationEntity[]> {
     const offset = options?.offset ?? 0;
-    const limit  = options?.limit  ?? 20;
+    const limit = options?.limit ?? 20;
 
     try {
       let rows: any[];
@@ -89,8 +90,10 @@ export class NotificationRepository implements INotificationRepository {
         `;
       }
 
-      return rows.map(r => this._map(r));
-    } catch { return []; }
+      return rows.map((r) => this._map(r));
+    } catch {
+      return [];
+    }
   }
 
   async countUnread(userId: string): Promise<number> {
@@ -102,7 +105,9 @@ export class NotificationRepository implements INotificationRepository {
           AND channel = 'in_app'
       `;
       return Number(result[0]?.count ?? 0);
-    } catch { return 0; }
+    } catch {
+      return 0;
+    }
   }
 
   async delete(id: string): Promise<void> {
@@ -128,19 +133,21 @@ export class NotificationRepository implements INotificationRepository {
         WHERE user_id = ${userId} AND status = 'read' AND channel = 'in_app'
       `;
       return Number(result[0]?.count ?? 0);
-    } catch { return 0; }
+    } catch {
+      return 0;
+    }
   }
 
   private _map(row: any): NotificationEntity {
     return NotificationEntity.reconstitute({
-      id:        row.id,
-      userId:    row.user_id,
-      type:      row.type,
-      channel:   row.channel,
-      title:     row.title,
-      content:   row.content,
-      status:    row.status,
-      sentAt:    row.sent_at    ?? null,
+      id: row.id,
+      userId: row.user_id,
+      type: row.type,
+      channel: row.channel,
+      title: row.title,
+      content: row.content,
+      status: row.status,
+      sentAt: row.sent_at ?? null,
       createdAt: row.created_at,
     });
   }

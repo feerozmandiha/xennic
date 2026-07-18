@@ -4,10 +4,7 @@ import { PromptRenderingException } from '../../domain/exceptions/prompt.excepti
 
 @Injectable()
 export class PromptTemplateEngineService {
-  render(
-    template: PromptTemplate,
-    variables: Record<string, string>,
-  ): string {
+  render(template: PromptTemplate, variables: Record<string, string>): string {
     const missing: string[] = [];
 
     for (const v of template.variables) {
@@ -33,10 +30,7 @@ export class PromptTemplateEngineService {
     return result;
   }
 
-  renderFromString(
-    template: string,
-    variables: Record<string, string>,
-  ): string {
+  renderFromString(template: string, variables: Record<string, string>): string {
     let result = template;
     for (const [key, value] of Object.entries(variables)) {
       result = result.replaceAll(`{{${key}}}`, value);

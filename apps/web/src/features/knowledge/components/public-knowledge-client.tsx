@@ -44,9 +44,11 @@ export function PublicKnowledgeClient() {
   const { data, isLoading } = useQuery({
     queryKey: ['public-knowledge', page],
     queryFn: () =>
-      apiClient.get<{ success: boolean; data: Article[]; meta: { page: number; limit: number; total: number; totalPages: number } }>(
-        `/public/knowledge?page=${page}&limit=12&locale=${locale}`,
-      ),
+      apiClient.get<{
+        success: boolean;
+        data: Article[];
+        meta: { page: number; limit: number; total: number; totalPages: number };
+      }>(`/public/knowledge?page=${page}&limit=12&locale=${locale}`),
   });
 
   const articles = data?.data ?? [];
@@ -66,9 +68,7 @@ export function PublicKnowledgeClient() {
           <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--accent))] flex items-center justify-center mx-auto mb-6 shadow-[0_0_32px_hsl(var(--primary)/0.3)]">
             <BookOpen className="h-8 w-8 text-white" />
           </div>
-          <h1 className="text-3xl md:text-5xl font-bold tracking-tight mb-4">
-            دانشنامه فنی برق
-          </h1>
+          <h1 className="text-3xl md:text-5xl font-bold tracking-tight mb-4">دانشنامه فنی برق</h1>
           <p className="text-lg text-[hsl(var(--muted-foreground))] max-w-2xl mx-auto mb-8">
             مرجع تخصصی مقالات، استانداردها و فرمول‌های مهندسی برق
           </p>
@@ -120,7 +120,9 @@ export function PublicKnowledgeClient() {
                         <Zap className="h-5 w-5 text-[hsl(var(--primary))]" />
                       </div>
                       {article.difficulty && (
-                        <Badge className={`text-[10px] ${DIFFICULTY_COLOR[article.difficulty] ?? ''}`}>
+                        <Badge
+                          className={`text-[10px] ${DIFFICULTY_COLOR[article.difficulty] ?? ''}`}
+                        >
                           {DIFFICULTY_FA[article.difficulty] ?? article.difficulty}
                         </Badge>
                       )}
@@ -138,9 +140,7 @@ export function PublicKnowledgeClient() {
                         </span>
                       )}
                       {article.publishedAt && (
-                        <span>
-                          {new Date(article.publishedAt).toLocaleDateString('fa-IR')}
-                        </span>
+                        <span>{new Date(article.publishedAt).toLocaleDateString('fa-IR')}</span>
                       )}
                     </div>
                   </Link>

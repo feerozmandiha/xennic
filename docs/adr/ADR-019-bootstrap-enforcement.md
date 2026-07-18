@@ -34,13 +34,13 @@ Implement a **Bootstrap Enforcement Layer** — a set of governance artifacts an
 
 ### Components
 
-| Component | Description | Location |
-|-----------|-------------|----------|
-| **PROJECT_BOOTSTRAP.md** | Single entry point with full project context | `docs/PROJECT_BOOTSTRAP.md` |
-| **AI_SESSION_CONTRACT.md** | Governance contract for AI agent sessions | `docs/AI_SESSION_CONTRACT.md` |
-| **AGENTS.md** (updated) | Mandatory startup sequence as first instruction | `AGENTS.md` |
-| **Bootstrap Validator** | Shell script to validate governance artifact integrity | `scripts/bootstrap/bootstrap-check.sh` |
-| **Bootstrap Versioning** | Version compatibility section in PROJECT_BOOTSTRAP.md | Section 16 of bootstrap doc |
+| Component                  | Description                                            | Location                               |
+| -------------------------- | ------------------------------------------------------ | -------------------------------------- |
+| **PROJECT_BOOTSTRAP.md**   | Single entry point with full project context           | `docs/PROJECT_BOOTSTRAP.md`            |
+| **AI_SESSION_CONTRACT.md** | Governance contract for AI agent sessions              | `docs/AI_SESSION_CONTRACT.md`          |
+| **AGENTS.md** (updated)    | Mandatory startup sequence as first instruction        | `AGENTS.md`                            |
+| **Bootstrap Validator**    | Shell script to validate governance artifact integrity | `scripts/bootstrap/bootstrap-check.sh` |
+| **Bootstrap Versioning**   | Version compatibility section in PROJECT_BOOTSTRAP.md  | Section 16 of bootstrap doc            |
 
 ### Architecture
 
@@ -128,12 +128,12 @@ AI Agent Start
 
 ## Alternatives Considered
 
-| Alternative | Reason for Rejection |
-|-------------|---------------------|
-| **Pre-commit hook enforcing bootstrap read** | Technically infeasible — cannot detect if a human or AI has read a document |
-| **Single monolithic README** | Too large to be useful; bootstrap breaks context into digestible sections |
-| **AI-specific configuration file** | Would only work for specific tools (e.g., cursor rules, claude.md) — violates tool-independence goal |
-| **No enforcement (status quo)** | Leads to repeated errors, inconsistent output, and architectural drift |
+| Alternative                                  | Reason for Rejection                                                                                 |
+| -------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| **Pre-commit hook enforcing bootstrap read** | Technically infeasible — cannot detect if a human or AI has read a document                          |
+| **Single monolithic README**                 | Too large to be useful; bootstrap breaks context into digestible sections                            |
+| **AI-specific configuration file**           | Would only work for specific tools (e.g., cursor rules, claude.md) — violates tool-independence goal |
+| **No enforcement (status quo)**              | Leads to repeated errors, inconsistent output, and architectural drift                               |
 
 ## Migration
 
@@ -153,5 +153,5 @@ AI Agent Start
 
 ---
 
-*ADR-019 accepted: 2026-07-06*
-*Enforced by: Bootstrap Enforcement Layer*
+_ADR-019 accepted: 2026-07-06_
+_Enforced by: Bootstrap Enforcement Layer_

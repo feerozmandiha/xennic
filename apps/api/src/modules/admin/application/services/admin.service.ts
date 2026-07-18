@@ -17,7 +17,9 @@ export class AdminService {
         select: { is_admin: true },
       });
       if (user?.is_admin) return { isAdmin: true };
-    } catch { /* column may not exist */ }
+    } catch {
+      /* column may not exist */
+    }
 
     try {
       const roles = await prisma.user_roles.findMany({
@@ -28,7 +30,9 @@ export class AdminService {
         take: 1,
       });
       if (roles.length > 0) return { isAdmin: true };
-    } catch { /* table may not exist */ }
+    } catch {
+      /* table may not exist */
+    }
 
     return { isAdmin: false };
   }
@@ -52,30 +56,38 @@ export class AdminService {
         adminUsers = await prisma.users.count({
           where: { deleted_at: null, is_admin: true },
         });
-      } catch { /* column may not exist */ }
+      } catch {
+        /* column may not exist */
+      }
 
-      let totalWorkspaces = 0, newWorkspaces = 0;
+      let totalWorkspaces = 0,
+        newWorkspaces = 0;
       try {
         totalWorkspaces = await prisma.workspaces.count();
         newWorkspaces = await prisma.workspaces.count({
           where: { created_at: { gte: thirtyDaysAgo } },
         });
-      } catch { /* ignore */ }
+      } catch {
+        /* ignore */
+      }
 
-      let totalCalcs = 0, newCalcs = 0;
+      let totalCalcs = 0,
+        newCalcs = 0;
       try {
         totalCalcs = await prisma.calculations.count();
         newCalcs = await prisma.calculations.count({
           where: { created_at: { gte: thirtyDaysAgo } },
         });
-      } catch { /* ignore */ }
+      } catch {
+        /* ignore */
+      }
 
       return {
-        users:         { total: totalUsers, new_30d: newUsers, active: activeUsers, admins: adminUsers },
-        workspaces:    { total: totalWorkspaces, new_30d: newWorkspaces },
-        calculations:  { total: totalCalcs, new_30d: newCalcs },
+        users: { total: totalUsers, new_30d: newUsers, active: activeUsers, admins: adminUsers },
+        workspaces: { total: totalWorkspaces, new_30d: newWorkspaces },
+        calculations: { total: totalCalcs, new_30d: newCalcs },
         consultations: { total: 0, pending: 0, answered: 0 },
-        revenue:       { total: 0, monthly: 0 },
+        revenue: { total: 0, monthly: 0 },
       };
     } catch (err) {
       this.logger.error('getDashboardStats:', (err as Error).message);
@@ -129,9 +141,7 @@ export class AdminService {
   // USERS
   // ═══════════════════════════════════════
 
-  async getUsers(opts: {
-    page: number; limit: number; search?: string; status?: string;
-  }) {
+  async getUsers(opts: { page: number; limit: number; search?: string; status?: string }) {
     const { page, limit, search, status } = opts;
     const offset = (page - 1) * limit;
 
@@ -139,12 +149,12 @@ export class AdminService {
       const where: any = { deleted_at: null };
       if (search) {
         where.OR = [
-          { email:      { contains: search, mode: 'insensitive' } },
+          { email: { contains: search, mode: 'insensitive' } },
           { first_name: { contains: search, mode: 'insensitive' } },
-          { last_name:  { contains: search, mode: 'insensitive' } },
+          { last_name: { contains: search, mode: 'insensitive' } },
         ];
       }
-      if (status === 'active')    where.is_active = true;
+      if (status === 'active') where.is_active = true;
       if (status === 'suspended') where.is_active = false;
 
       const [rows, total] = await Promise.all([
@@ -154,30 +164,40 @@ export class AdminService {
           skip: offset,
           take: limit,
           select: {
-            id: true, email: true, first_name: true, last_name: true,
-            is_active: true, is_admin: true, created_at: true, last_login: true,
+            id: true,
+            email: true,
+            first_name: true,
+            last_name: true,
+            is_active: true,
+            is_admin: true,
+            created_at: true,
+            last_login: true,
           },
         }),
         prisma.users.count({ where }),
       ]);
 
-      const userIds = rows.map(u => u.id);
-      const wsGroups = userIds.length > 0
-        ? await prisma.workspace_members.groupBy({
-            by: ['user_id'],
-            where: { user_id: { in: userIds } },
-            _count: { id: true },
-          })
-        : [];
-      const wsMap = new Map(wsGroups.map(g => [g.user_id, g._count.id]));
+      const userIds = rows.map((u) => u.id);
+      const wsGroups =
+        userIds.length > 0
+          ? await prisma.workspace_members.groupBy({
+              by: ['user_id'],
+              where: { user_id: { in: userIds } },
+              _count: { id: true },
+            })
+          : [];
+      const wsMap = new Map(wsGroups.map((g) => [g.user_id, g._count.id]));
 
       return {
-        data: rows.map(u => ({
-          id: u.id, email: u.email,
-          first_name: u.first_name, last_name: u.last_name,
+        data: rows.map((u) => ({
+          id: u.id,
+          email: u.email,
+          first_name: u.first_name,
+          last_name: u.last_name,
           status: u.is_active ? 'active' : 'suspended',
           is_admin: u.is_admin ?? false,
-          created_at: u.created_at, last_login_at: u.last_login,
+          created_at: u.created_at,
+          last_login_at: u.last_login,
           workspace_count: wsMap.get(u.id) ?? 0,
         })),
         total,
@@ -203,10 +223,12 @@ export class AdminService {
   }
 
   async deleteUser(userId: string) {
-    await prisma.users.update({
-      where: { id: userId },
-      data: { deleted_at: new Date(), is_active: false },
-    }).catch(() => null);
+    await prisma.users
+      .update({
+        where: { id: userId },
+        data: { deleted_at: new Date(), is_active: false },
+      })
+      .catch(() => null);
     return { success: true };
   }
 
@@ -237,7 +259,7 @@ export class AdminService {
         prisma.workspaces.count({ where }),
       ]);
 
-      const wsIds = rows.map(w => w.id);
+      const wsIds = rows.map((w) => w.id);
 
       const [memberCounts, ownerRows, planRows] = await Promise.all([
         prisma.workspace_members.groupBy({
@@ -262,12 +284,14 @@ export class AdminService {
           : Promise.resolve([]),
       ]);
 
-      const memberMap = new Map(memberCounts.map(m => [m.workspace_id, m._count.id]));
-      const ownerMap = new Map(ownerRows.map(o => [o.workspace_id, o.user]));
-      const planMap = new Map(planRows.map(p => [p.workspace_id, p.plan.slug]));
+      const memberMap = new Map(memberCounts.map((m) => [m.workspace_id, m._count.id]));
+      const ownerMap = new Map(ownerRows.map((o) => [o.workspace_id, o.user]));
+      const planMap = new Map(planRows.map((p) => [p.workspace_id, p.plan.slug]));
 
-      const data = rows.map(w => ({
-        id: w.id, name: w.name, code: w.code,
+      const data = rows.map((w) => ({
+        id: w.id,
+        name: w.name,
+        code: w.code,
         plan_slug: planMap.get(w.id) ?? 'free',
         created_at: w.created_at,
         member_count: memberMap.get(w.id) ?? 0,
@@ -319,8 +343,10 @@ export class AdminService {
         },
       });
 
-      return rows.map(p => ({
-        id: p.id, name: p.name, slug: p.slug,
+      return rows.map((p) => ({
+        id: p.id,
+        name: p.name,
+        slug: p.slug,
         monthly_price: Number(p.monthly_price),
         yearly_price: Number(p.yearly_price),
         features: p.features,
@@ -333,10 +359,16 @@ export class AdminService {
     }
   }
 
-  async updatePlan(planId: string, data: Partial<{
-    name: string; monthlyPrice: number; yearlyPrice: number;
-    features: Record<string, any>; isActive: boolean;
-  }>) {
+  async updatePlan(
+    planId: string,
+    data: Partial<{
+      name: string;
+      monthlyPrice: number;
+      yearlyPrice: number;
+      features: Record<string, any>;
+      isActive: boolean;
+    }>,
+  ) {
     try {
       const updateData: any = { updated_at: new Date() };
       if (data.name !== undefined) updateData.name = data.name;
@@ -361,7 +393,10 @@ export class AdminService {
   // ═══════════════════════════════════════
 
   async sendBroadcastNotification(data: {
-    title: string; body: string; type: string; targetPlan?: string;
+    title: string;
+    body: string;
+    type: string;
+    targetPlan?: string;
   }) {
     try {
       let wsIds: string[];
@@ -372,10 +407,10 @@ export class AdminService {
           where: { plan_id: plan.id, status: 'active' },
           select: { workspace_id: true },
         });
-        wsIds = [...new Set(subs.map(s => s.workspace_id))];
+        wsIds = [...new Set(subs.map((s) => s.workspace_id))];
       } else {
         const workspaces = await prisma.workspaces.findMany({ select: { id: true } });
-        wsIds = workspaces.map(w => w.id);
+        wsIds = workspaces.map((w) => w.id);
       }
 
       if (wsIds.length === 0) return { success: true, sent: 0 };
@@ -387,7 +422,7 @@ export class AdminService {
       });
 
       const now = new Date();
-      const notifications = members.map(m => ({
+      const notifications = members.map((m) => ({
         id: randomUUID(),
         user_id: m.user_id,
         type: data.type,
@@ -437,7 +472,7 @@ export class AdminService {
         prisma.audit_logs.count({ where }),
       ]);
 
-      const data = rows.map(r => ({
+      const data = rows.map((r) => ({
         ...r,
         user_email: r.user?.email ?? null,
       }));
@@ -482,11 +517,21 @@ export class AdminService {
   // CONSULTATIONS (disabled — table not in Prisma schema)
   // ═══════════════════════════════════════
 
-  async getConsultations(_opts: { page: number; limit: number; status?: string; priority?: string }) {
+  async getConsultations(_opts: {
+    page: number;
+    limit: number;
+    status?: string;
+    priority?: string;
+  }) {
     return { data: [], total: 0 };
   }
 
-  async adminReply(_consultationId: string, _adminId: string, _adminName: string, _content: string) {
+  async adminReply(
+    _consultationId: string,
+    _adminId: string,
+    _adminName: string,
+    _content: string,
+  ) {
     return { success: true, replyId: '' };
   }
 
@@ -499,9 +544,16 @@ export class AdminService {
   // ═══════════════════════════════════════
 
   async adminCreateArticle(_data: {
-    title: string; titleEn?: string; summary: string; content: string;
-    category: string; tags: string[]; status: string;
-    readMinutes: number; authorId: string; authorName: string;
+    title: string;
+    titleEn?: string;
+    summary: string;
+    content: string;
+    category: string;
+    tags: string[];
+    status: string;
+    readMinutes: number;
+    authorId: string;
+    authorName: string;
   }) {
     return { id: '', slug: '', title: _data.title, status: _data.status, createdAt: new Date() };
   }
@@ -516,12 +568,12 @@ export class AdminService {
 
   private _mockStats() {
     return {
-      users:         { total: 0, new_30d: 0, active: 0, admins: 1 },
-      workspaces:    { total: 0, new_30d: 0 },
-      calculations:  { total: 0, new_30d: 0 },
+      users: { total: 0, new_30d: 0, active: 0, admins: 1 },
+      workspaces: { total: 0, new_30d: 0 },
+      calculations: { total: 0, new_30d: 0 },
       consultations: { total: 0, pending: 0, answered: 0 },
-      articles:      { total: 0 },
-      revenue:       { total: 0, monthly: 0 },
+      articles: { total: 0 },
+      revenue: { total: 0, monthly: 0 },
     };
   }
 
@@ -540,8 +592,14 @@ export class AdminService {
   private _mockUsers() {
     return [
       {
-        id: '1', email: 'admin@xennic.ir', first_name: 'ادمین', last_name: 'سیستم',
-        status: 'active', is_admin: true, created_at: new Date(), workspace_count: 0,
+        id: '1',
+        email: 'admin@xennic.ir',
+        first_name: 'ادمین',
+        last_name: 'سیستم',
+        status: 'active',
+        is_admin: true,
+        created_at: new Date(),
+        workspace_count: 0,
       },
     ];
   }
@@ -549,29 +607,71 @@ export class AdminService {
   private _mockWorkspaces() {
     return [
       {
-        id: '1', name: 'Workspace نمونه', code: 'sample', plan_slug: 'free',
-        member_count: 1, created_at: new Date(), owner_email: '', owner_name: '',
+        id: '1',
+        name: 'Workspace نمونه',
+        code: 'sample',
+        plan_slug: 'free',
+        member_count: 1,
+        created_at: new Date(),
+        owner_email: '',
+        owner_name: '',
       },
     ];
   }
 
   private _defaultPlans() {
     return [
-      { id: 'free',       slug: 'free',       name: 'رایگان',  monthly_price: 0,          yearly_price: 0,           is_active: true, features: { projects: 1,  calculations_month: 10,  ai_requests_month: 5,   storage_gb: 0.5 }, subscriber_count: 0 },
-      { id: 'starter',    slug: 'starter',    name: 'استارتر', monthly_price: 1_900_000,  yearly_price: 19_000_000,  is_active: true, features: { projects: 5,  calculations_month: 100, ai_requests_month: 50,  storage_gb: 5   }, subscriber_count: 0 },
-      { id: 'pro',        slug: 'pro',        name: 'حرفه‌ای', monthly_price: 4_900_000,  yearly_price: 49_000_000,  is_active: true, features: { projects: 20, calculations_month: 500, ai_requests_month: 200, storage_gb: 20  }, subscriber_count: 0 },
-      { id: 'enterprise', slug: 'enterprise', name: 'سازمانی', monthly_price: 14_900_000, yearly_price: 149_000_000, is_active: true, features: { projects: -1, calculations_month: -1,  ai_requests_month: -1,  storage_gb: 100 }, subscriber_count: 0 },
+      {
+        id: 'free',
+        slug: 'free',
+        name: 'رایگان',
+        monthly_price: 0,
+        yearly_price: 0,
+        is_active: true,
+        features: { projects: 1, calculations_month: 10, ai_requests_month: 5, storage_gb: 0.5 },
+        subscriber_count: 0,
+      },
+      {
+        id: 'starter',
+        slug: 'starter',
+        name: 'استارتر',
+        monthly_price: 1_900_000,
+        yearly_price: 19_000_000,
+        is_active: true,
+        features: { projects: 5, calculations_month: 100, ai_requests_month: 50, storage_gb: 5 },
+        subscriber_count: 0,
+      },
+      {
+        id: 'pro',
+        slug: 'pro',
+        name: 'حرفه‌ای',
+        monthly_price: 4_900_000,
+        yearly_price: 49_000_000,
+        is_active: true,
+        features: { projects: 20, calculations_month: 500, ai_requests_month: 200, storage_gb: 20 },
+        subscriber_count: 0,
+      },
+      {
+        id: 'enterprise',
+        slug: 'enterprise',
+        name: 'سازمانی',
+        monthly_price: 14_900_000,
+        yearly_price: 149_000_000,
+        is_active: true,
+        features: { projects: -1, calculations_month: -1, ai_requests_month: -1, storage_gb: 100 },
+        subscriber_count: 0,
+      },
     ];
   }
 
   private _defaultSettings() {
     return {
-      platform_name:         'Xennic',
-      support_email:         'support@xennic.ir',
-      max_file_size_mb:      '10',
-      registration_open:     'true',
-      maintenance_mode:      'false',
-      ai_model:              'gpt-4o-mini',
+      platform_name: 'Xennic',
+      support_email: 'support@xennic.ir',
+      max_file_size_mb: '10',
+      registration_open: 'true',
+      maintenance_mode: 'false',
+      ai_model: 'gpt-4o-mini',
       free_calculations_day: '5',
     };
   }

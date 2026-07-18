@@ -2,11 +2,11 @@ import * as React from 'react';
 import { cn } from '@/lib/utils';
 
 export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
-  error?:     string;
-  label?:     string;
-  hint?:      string;
+  error?: string;
+  label?: string;
+  hint?: string;
   startIcon?: React.ReactNode;
-  endIcon?:   React.ReactNode;
+  endIcon?: React.ReactNode;
 }
 
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
@@ -41,9 +41,10 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
               'transition-colors placeholder:text-[hsl(var(--muted-foreground)/0.6)]',
               'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:border-[hsl(var(--ring))]',
               'disabled:cursor-not-allowed disabled:opacity-50',
-              error && 'border-[hsl(var(--destructive))] focus-visible:ring-[hsl(var(--destructive)/0.3)]',
+              error &&
+                'border-[hsl(var(--destructive))] focus-visible:ring-[hsl(var(--destructive)/0.3)]',
               startIcon && 'ps-9',
-              endIcon   && 'pe-9',
+              endIcon && 'pe-9',
               className,
             )}
             ref={ref}
@@ -62,9 +63,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
             <span>⚠</span> {error}
           </p>
         )}
-        {hint && !error && (
-          <p className="text-xs text-[hsl(var(--muted-foreground))]">{hint}</p>
-        )}
+        {hint && !error && <p className="text-xs text-[hsl(var(--muted-foreground))]">{hint}</p>}
       </div>
     );
   },

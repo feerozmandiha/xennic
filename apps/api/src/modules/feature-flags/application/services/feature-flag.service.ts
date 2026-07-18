@@ -28,9 +28,15 @@ export class FeatureFlagService {
     if (!data.name || data.name.trim().length === 0) {
       throw new BadRequestException('Feature flag name is required');
     }
-    const slug = data.name.trim().toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
+    const slug = data.name
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, '_')
+      .replace(/[^a-z0-9_]/g, '');
     if (!slug) {
-      throw new BadRequestException('Feature flag name must contain at least one alphanumeric character');
+      throw new BadRequestException(
+        'Feature flag name must contain at least one alphanumeric character',
+      );
     }
 
     const existing = await this.repository.findByName(slug);
@@ -51,7 +57,10 @@ export class FeatureFlagService {
     return flag;
   }
 
-  async findAll(page = 1, limit = 50): Promise<{
+  async findAll(
+    page = 1,
+    limit = 50,
+  ): Promise<{
     data: FeatureFlagEntity[];
     meta: { page: number; limit: number; total: number; totalPages: number };
   }> {
@@ -76,7 +85,10 @@ export class FeatureFlagService {
     return flag;
   }
 
-  async update(id: string, data: { description?: string; planId?: string | null; workspaceId?: string | null }): Promise<FeatureFlagEntity> {
+  async update(
+    id: string,
+    data: { description?: string; planId?: string | null; workspaceId?: string | null },
+  ): Promise<FeatureFlagEntity> {
     const flag = await this._get(id);
     if (data.description !== undefined) flag.setDescription(data.description);
     if (data.planId !== undefined) Object.assign(flag, { planId: data.planId });
@@ -91,7 +103,10 @@ export class FeatureFlagService {
     this.logger.log(`Feature flag deleted: ${flag.name}`);
   }
 
-  async isEnabled(name: string, options?: { workspaceId?: string; planId?: string }): Promise<boolean> {
+  async isEnabled(
+    name: string,
+    options?: { workspaceId?: string; planId?: string },
+  ): Promise<boolean> {
     const flag = await this.repository.findByName(name);
     if (!flag) return false;
     if (!flag.enabled) return false;

@@ -13,6 +13,7 @@
 The `knowledge-factory` module provides automated document ingestion. The `knowledge` module provides manual article management. The `ai-runtime` module provides conversational agent execution. However, there is **no semantic reasoning layer** connecting these systems.
 
 Without a Knowledge Intelligence Layer, the AI Runtime must either:
+
 1. Access raw vector storage (forbidden by architecture directive)
 2. Re-implement semantic logic independently
 3. Operate without graph context, citations, or quality metrics
@@ -47,6 +48,7 @@ Implement the Knowledge Intelligence Layer as a **full DDD NestJS module** (`kno
 ## Consequences
 
 ### Benefits
+
 - Semantic brain of the platform enables Enterprise AI Agents
 - No new database infrastructure required
 - Existing Knowledge Factory and Knowledge CMS integrate via polymorphic node creation
@@ -54,12 +56,14 @@ Implement the Knowledge Intelligence Layer as a **full DDD NestJS module** (`kno
 - Quality metrics enable citation-grounded, confidence-weighted AI responses
 
 ### Tradeoffs
+
 - Recursive CTEs have depth limits (configurable `maxDepth`); deeply nested knowledge may need materialized path optimization
 - Polymorphic `entity_type`/`entity_id` prevents foreign key constraints at the DB level
 - Metrics recomputation is synchronous by default; for large workspaces, batch jobs are needed
 - No frontend graph visualization yet (out of scope for this directive)
 
 ### Risks
+
 - Large graphs (>100K nodes) may experience CTE performance degradation — mitigated by indexing on `(workspace_id, type, entity_type, entity_id)`
 - Concurrent metric updates may cause write conflicts — mitigated by `upsert` semantics in `GraphMetricsRepository`
 
@@ -144,4 +148,4 @@ model knowledge_clusters { ... }
 
 ---
 
-*End of ADR-012*
+_End of ADR-012_

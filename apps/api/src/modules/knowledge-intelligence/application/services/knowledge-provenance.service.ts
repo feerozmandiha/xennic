@@ -16,7 +16,13 @@ export class KnowledgeProvenanceService {
     private readonly edgeRepo: IGraphEdgeRepository,
   ) {}
 
-  async buildProvenanceChain(nodeId: string, maxDepth = 10): Promise<{ nodeId: string; provenance: { step: number; nodeId: string; source: string; evidence: string }[] }> {
+  async buildProvenanceChain(
+    nodeId: string,
+    maxDepth = 10,
+  ): Promise<{
+    nodeId: string;
+    provenance: { step: number; nodeId: string; source: string; evidence: string }[];
+  }> {
     const provenance: { step: number; nodeId: string; source: string; evidence: string }[] = [];
     const visited = new Set<string>();
     let step = 0;
@@ -69,7 +75,9 @@ export class KnowledgeProvenanceService {
     }
   }
 
-  async traceKnowledgeOrigin(nodeId: string): Promise<{ originId: string; path: string[]; hops: number } | null> {
+  async traceKnowledgeOrigin(
+    nodeId: string,
+  ): Promise<{ originId: string; path: string[]; hops: number } | null> {
     const ancestors = await this.edgeRepo.findAllByTarget(nodeId);
     if (ancestors.length === 0) return { originId: nodeId, path: [nodeId], hops: 0 };
 

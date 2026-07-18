@@ -2,12 +2,12 @@ import { randomUUID } from 'node:crypto';
 import type { Metadata } from '../../shared/types/index.js';
 
 export type DecisionType =
-  | 'tool_selection' 
-  | 'skill_selection' 
-  | 'routing' 
-  | 'policy' 
-  | 'approval' 
-  | 'retry' 
+  | 'tool_selection'
+  | 'skill_selection'
+  | 'routing'
+  | 'policy'
+  | 'approval'
+  | 'retry'
   | 'compensation';
 
 export interface DecisionLogOptions {

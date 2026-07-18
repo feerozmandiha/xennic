@@ -13,8 +13,16 @@ export class VendorsController {
 
   @Get()
   @ApiOperation({ summary: 'List all vendors' })
-  async findAll(@Query('q') q?: string, @Query('page') page?: string, @Query('limit') limit?: string) {
-    return this.vendorService.findAll(q, page ? parseInt(page, 10) : 1, limit ? parseInt(limit, 10) : 20);
+  async findAll(
+    @Query('q') q?: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ) {
+    return this.vendorService.findAll(
+      q,
+      page ? parseInt(page, 10) : 1,
+      limit ? parseInt(limit, 10) : 20,
+    );
   }
 
   @Get(':id')

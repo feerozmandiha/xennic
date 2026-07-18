@@ -14,13 +14,47 @@ export class UploadDocumentDto {
 }
 
 export class UpdateDocumentStatusDto {
-  @ApiProperty({ enum: ['uploaded', 'classified', 'parsing', 'extracted', 'chunking', 'embedding', 'publishing', 'published', 'failed'] })
-  @IsEnum(['uploaded', 'classified', 'parsing', 'extracted', 'chunking', 'embedding', 'publishing', 'published', 'failed'])
+  @ApiProperty({
+    enum: [
+      'uploaded',
+      'classified',
+      'parsing',
+      'extracted',
+      'chunking',
+      'embedding',
+      'publishing',
+      'published',
+      'failed',
+    ],
+  })
+  @IsEnum([
+    'uploaded',
+    'classified',
+    'parsing',
+    'extracted',
+    'chunking',
+    'embedding',
+    'publishing',
+    'published',
+    'failed',
+  ])
   status!: DocumentStatus;
 }
 
 export class ClassifyDocumentDto {
-  @ApiProperty({ enum: ['general', 'power', 'cable', 'transformer', 'protection', 'lighting', 'earthing', 'solar', 'power_quality'] })
+  @ApiProperty({
+    enum: [
+      'general',
+      'power',
+      'cable',
+      'transformer',
+      'protection',
+      'lighting',
+      'earthing',
+      'solar',
+      'power_quality',
+    ],
+  })
   @IsString()
   @IsNotEmpty()
   domain!: string;

@@ -12,15 +12,15 @@ export class InMemoryMemoryStore implements IMemoryStore {
     let results = [...this._entries];
 
     if (query.sessionId) {
-      results = results.filter(e => e.sessionId === query.sessionId);
+      results = results.filter((e) => e.sessionId === query.sessionId);
     }
 
     if (query.types && query.types.length > 0) {
-      results = results.filter(e => query.types!.includes(e.type));
+      results = results.filter((e) => query.types!.includes(e.type));
     }
 
     if (query.minScore !== undefined) {
-      results = results.filter(e => e.score >= query.minScore!);
+      results = results.filter((e) => e.score >= query.minScore!);
     }
 
     results.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
@@ -31,14 +31,14 @@ export class InMemoryMemoryStore implements IMemoryStore {
   }
 
   async delete(id: string): Promise<void> {
-    const idx = this._entries.findIndex(e => e.id === id);
+    const idx = this._entries.findIndex((e) => e.id === id);
     if (idx !== -1) {
       this._entries.splice(idx, 1);
     }
   }
 
   async clear(sessionId: string): Promise<void> {
-    const filtered = this._entries.filter(e => e.sessionId !== sessionId);
+    const filtered = this._entries.filter((e) => e.sessionId !== sessionId);
     this._entries.length = 0;
     this._entries.push(...filtered);
   }

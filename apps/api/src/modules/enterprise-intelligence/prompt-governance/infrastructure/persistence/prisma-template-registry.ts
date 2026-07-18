@@ -1,11 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { prisma } from '@xennic/database';
 import type { PaginatedResult, Metadata } from '../../../shared/types/index.js';
-import {
-  PromptTemplateEntity,
-  type VariableDef,
-} from '../../domain/prompt-template.entity.js';
-import type { ITemplateRegistry, TemplateFindOptions } from '../../domain/prompt-template-registry.interface.js';
+import { PromptTemplateEntity, type VariableDef } from '../../domain/prompt-template.entity.js';
+import type {
+  ITemplateRegistry,
+  TemplateFindOptions,
+} from '../../domain/prompt-template-registry.interface.js';
 
 @Injectable()
 export class PrismaTemplateRegistry implements ITemplateRegistry {
@@ -71,7 +71,7 @@ export class PrismaTemplateRegistry implements ITemplateRegistry {
       prisma.prompt_templates.count(),
     ]);
     return {
-      items: items.map(r => this.toEntity(r)),
+      items: items.map((r) => this.toEntity(r)),
       total,
       offset,
       limit,

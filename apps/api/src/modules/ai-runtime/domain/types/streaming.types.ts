@@ -1,10 +1,4 @@
-export type StreamEventType =
-  | 'start'
-  | 'token'
-  | 'tool_call'
-  | 'tool_result'
-  | 'error'
-  | 'done';
+export type StreamEventType = 'start' | 'token' | 'tool_call' | 'tool_result' | 'error' | 'done';
 
 export class StreamChunk {
   constructor(

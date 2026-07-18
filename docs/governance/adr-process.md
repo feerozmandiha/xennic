@@ -34,6 +34,7 @@ What tradeoffs were made? What becomes easier? What becomes harder? What risks r
 ## Compliance
 
 How to verify that implementations conform to this ADR:
+
 - Automated checks (lint rules, tests, type checks)
 - Manual review criteria
 - Enforcement tooling (if any)
@@ -107,13 +108,13 @@ tags: [ai, security, architecture]
 
 ### Stage descriptions
 
-| Stage | Description | Time limit | Exit criteria |
-|-------|-------------|------------|---------------|
-| **Draft** | Author is developing the proposal. May share informally for early feedback. | No limit | Author marks ready for review |
-| **Proposed** | Formally submitted to ARB. Review period begins. | 5 business days | All ARB members vote |
-| **Accepted** | Approved by ARB. Implementations must conform. | — | Majority approval + no veto |
-| **Deprecated** | Still valid but no longer recommended for new work. Existing implementations may remain. | — | ARB decision + replacement ADR exists |
-| **Superseded** | Replaced by a newer ADR. Existing implementations should migrate. | — | Superseding ADR accepted |
+| Stage          | Description                                                                              | Time limit      | Exit criteria                         |
+| -------------- | ---------------------------------------------------------------------------------------- | --------------- | ------------------------------------- |
+| **Draft**      | Author is developing the proposal. May share informally for early feedback.              | No limit        | Author marks ready for review         |
+| **Proposed**   | Formally submitted to ARB. Review period begins.                                         | 5 business days | All ARB members vote                  |
+| **Accepted**   | Approved by ARB. Implementations must conform.                                           | —               | Majority approval + no veto           |
+| **Deprecated** | Still valid but no longer recommended for new work. Existing implementations may remain. | —               | ARB decision + replacement ADR exists |
+| **Superseded** | Replaced by a newer ADR. Existing implementations should migrate.                        | —               | Superseding ADR accepted              |
 
 ---
 
@@ -143,11 +144,11 @@ The ARB is the body responsible for reviewing and accepting ADRs. Current member
 
 ### Voting rules
 
-| Vote | Requirement |
-|------|-------------|
-| **Approve** | Simple majority of ARB members |
-| **Veto** | Any single ARB member may veto with written justification |
-| **Abstain** | Recorded but counts toward quorum |
+| Vote        | Requirement                                               |
+| ----------- | --------------------------------------------------------- |
+| **Approve** | Simple majority of ARB members                            |
+| **Veto**    | Any single ARB member may veto with written justification |
+| **Abstain** | Recorded but counts toward quorum                         |
 
 - **Quorum:** 60% of ARB members must vote
 - **Voting period:** 5 business days from proposal
@@ -171,11 +172,11 @@ The ARB is the body responsible for reviewing and accepting ADRs. Current member
 
 ### Updating an existing ADR
 
-| Type of change | Method |
-|----------------|--------|
-| Clarification (typos, formatting, examples) | Direct edit to accepted ADR with `--- last revised: YYYY-MM-DD` added to header |
-| Substantive change (new options, changed rationale, different decision) | Supersede — create new ADR, old one marked `Superseded` |
-| Minor scope extension (compatible with original decision) | ADR amendment — create `ADR-NNN-A.md` with amendment notes |
+| Type of change                                                          | Method                                                                          |
+| ----------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| Clarification (typos, formatting, examples)                             | Direct edit to accepted ADR with `--- last revised: YYYY-MM-DD` added to header |
+| Substantive change (new options, changed rationale, different decision) | Supersede — create new ADR, old one marked `Superseded`                         |
+| Minor scope extension (compatible with original decision)               | ADR amendment — create `ADR-NNN-A.md` with amendment notes                      |
 
 ### Supersession rules
 
@@ -201,11 +202,11 @@ The ARB is the body responsible for reviewing and accepting ADRs. Current member
 
 ### Bidirectional linking
 
-| Artifact | Links to |
-|----------|----------|
-| ADR | `XEN-GAP-XXXX` gap IDs, `ADR-NNN` supersession |
-| Gap registry entry | `ADR-NNN` in resolution notes |
-| PR / commit | `ADR-NNN` in description |
+| Artifact              | Links to                                              |
+| --------------------- | ----------------------------------------------------- |
+| ADR                   | `XEN-GAP-XXXX` gap IDs, `ADR-NNN` supersession        |
+| Gap registry entry    | `ADR-NNN` in resolution notes                         |
+| PR / commit           | `ADR-NNN` in description                              |
 | Implementation (code) | `// ADR-NNN` inline comment for non-obvious decisions |
 
 ---
@@ -307,4 +308,4 @@ For security vulnerabilities or production emergencies requiring an immediate ar
 
 ---
 
-*This document is itself ADR-000 and was accepted on 2026-07-02.*
+_This document is itself ADR-000 and was accepted on 2026-07-02._

@@ -63,7 +63,9 @@ export class EmailEntity {
     );
   }
 
-  get status(): EmailStatus { return this._status; }
+  get status(): EmailStatus {
+    return this._status;
+  }
 
   markAsSent(): void {
     this._status = 'sent';

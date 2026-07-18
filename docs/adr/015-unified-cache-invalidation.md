@@ -1,12 +1,15 @@
 # ADR-015: Unified Enterprise Cache with Tag-Based Invalidation
 
 ## Status
+
 Accepted — Sprint E1
 
 ## Context
+
 The AI Runtime already uses in-memory caches (session, memory, prompt stores). The Semantic Integration module needs cache invalidation on events. Without a unified cache manager, each module implements its own caching, leading to inconsistency.
 
 ## Decision
+
 Create a unified enterprise cache manager:
 
 1. **Namespace isolation**: `semantic`, `prompt`, `embedding`, `session`, `memory`, `config`, `search`
@@ -18,6 +21,7 @@ Create a unified enterprise cache manager:
 The cache module is `@Global()` so any module can inject `CacheManagerService`.
 
 ## Consequences
+
 - Single cache interface replaces ad-hoc in-memory stores
 - Tag-based invalidation allows precise cache clearing
 - Namespace isolation prevents key collisions

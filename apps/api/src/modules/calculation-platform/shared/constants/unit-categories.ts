@@ -1,4 +1,7 @@
-export const UNIT_CONVERSION_MATRIX: Record<string, { base: string; units: Record<string, { factor: number; offset?: number }> }> = {
+export const UNIT_CONVERSION_MATRIX: Record<
+  string,
+  { base: string; units: Record<string, { factor: number; offset?: number }> }
+> = {
   voltage: {
     base: 'V',
     units: {
@@ -45,19 +48,19 @@ export const UNIT_CONVERSION_MATRIX: Record<string, { base: string; units: Recor
   resistance: {
     base: 'Ω',
     units: {
-      'Ω': { factor: 1 },
-      'mΩ': { factor: 0.001 },
-      'kΩ': { factor: 1000 },
-      'MΩ': { factor: 1000000 },
+      Ω: { factor: 1 },
+      mΩ: { factor: 0.001 },
+      kΩ: { factor: 1000 },
+      MΩ: { factor: 1000000 },
     },
   },
   impedance: {
     base: 'Ω',
     units: {
-      'Ω': { factor: 1 },
-      'mΩ': { factor: 0.001 },
-      'kΩ': { factor: 1000 },
-      'MΩ': { factor: 1000000 },
+      Ω: { factor: 1 },
+      mΩ: { factor: 0.001 },
+      kΩ: { factor: 1000 },
+      MΩ: { factor: 1000000 },
     },
   },
   temperature: {

@@ -14,7 +14,7 @@ export class SloTrackerService {
   }
 
   recordObservation(name: string, value: number): void {
-    const slo = SLO_TARGETS.find(s => s.name === name);
+    const slo = SLO_TARGETS.find((s) => s.name === name);
     if (!slo) return;
 
     const window = this.windows.get(name)!;
@@ -39,11 +39,9 @@ export class SloTrackerService {
   }
 
   getStatuses(): SloStatus[] {
-    return SLO_TARGETS.map(slo => {
+    return SLO_TARGETS.map((slo) => {
       const window = this.windows.get(slo.name) ?? [];
-      const current = window.length > 0
-        ? window.reduce((a, b) => a + b, 0) / window.length
-        : 0;
+      const current = window.length > 0 ? window.reduce((a, b) => a + b, 0) / window.length : 0;
 
       let normalized = current;
       if (slo.name === 'availability' || slo.name === 'error_rate') {
@@ -54,9 +52,12 @@ export class SloTrackerService {
         name: slo.name,
         current: Math.round(normalized * 100) / 100,
         target: slo.target,
-        met: slo.name === 'latency_p99' || slo.name === 'ai_response_time' || slo.name === 'workflow_execution'
-          ? normalized <= slo.target
-          : normalized >= slo.target,
+        met:
+          slo.name === 'latency_p99' ||
+          slo.name === 'ai_response_time' ||
+          slo.name === 'workflow_execution'
+            ? normalized <= slo.target
+            : normalized >= slo.target,
         window: slo.window,
       };
     });

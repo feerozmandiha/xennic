@@ -21,6 +21,6 @@ export class HealthResponseDto {
   }
 
   static fromEntities(entities: ProviderHealthEntity[]): HealthResponseDto[] {
-    return entities.map(e => HealthResponseDto.fromEntity(e));
+    return entities.map((e) => HealthResponseDto.fromEntity(e));
   }
 }

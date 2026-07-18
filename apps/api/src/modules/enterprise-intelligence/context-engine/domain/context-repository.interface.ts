@@ -15,16 +15,8 @@ export interface IContextRepository {
     scopeId: string,
     options?: FindByScopeOptions,
   ): Promise<PaginatedResult<ContextEntity>>;
-  findBySource(
-    scope: ContextScope,
-    scopeId: string,
-    source: string,
-  ): Promise<ContextEntity[]>;
-  findKeys(
-    scope: ContextScope,
-    scopeId: string,
-    keys: string[],
-  ): Promise<ContextEntity[]>;
+  findBySource(scope: ContextScope, scopeId: string, source: string): Promise<ContextEntity[]>;
+  findKeys(scope: ContextScope, scopeId: string, keys: string[]): Promise<ContextEntity[]>;
   delete(id: string): Promise<void>;
   deleteByScope(scope: ContextScope, scopeId: string): Promise<void>;
 }

@@ -3,7 +3,10 @@ import type { ISessionStore } from '../../domain/interfaces/session-store.interf
 import { I_SESSION_STORE } from '../../domain/interfaces/session-store.interface.js';
 import { AgentSession } from '../../domain/types/session.types.js';
 import type { SessionStatus } from '../../domain/types/session.types.js';
-import { SessionNotFoundException, SessionExpiredException } from '../../domain/exceptions/session.exception.js';
+import {
+  SessionNotFoundException,
+  SessionExpiredException,
+} from '../../domain/exceptions/session.exception.js';
 
 @Injectable()
 export class AgentSessionManagerService {

@@ -19,8 +19,8 @@ export class CorrelationIdMiddleware implements NestMiddleware<IncomingMessage, 
   use(req: IncomingMessage, res: ServerResponse, next: () => void): void {
     const incomingCorrelationId = req.headers[CORRELATION_ID_HEADER];
     const correlationId = Array.isArray(incomingCorrelationId)
-      ? incomingCorrelationId[0] ?? randomUUID()
-      : incomingCorrelationId ?? randomUUID();
+      ? (incomingCorrelationId[0] ?? randomUUID())
+      : (incomingCorrelationId ?? randomUUID());
     const requestId = randomUUID();
 
     req.headers[CORRELATION_ID_HEADER] = correlationId;
@@ -43,11 +43,7 @@ export class CorrelationIdMiddleware implements NestMiddleware<IncomingMessage, 
       return;
     }
 
-    if (
-      response.raw &&
-      typeof response.raw.setHeader === 'function' &&
-      !response.raw.headersSent
-    ) {
+    if (response.raw && typeof response.raw.setHeader === 'function' && !response.raw.headersSent) {
       response.raw.setHeader(name, value);
       return;
     }

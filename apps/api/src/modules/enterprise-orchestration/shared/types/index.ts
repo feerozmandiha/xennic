@@ -1,11 +1,22 @@
 export type WorkflowStatus =
-  | 'draft' | 'active' | 'paused' | 'completed' | 'failed' | 'cancelled' | 'archived';
+  | 'draft'
+  | 'active'
+  | 'paused'
+  | 'completed'
+  | 'failed'
+  | 'cancelled'
+  | 'archived';
 
 export type ExecutionStatus =
-  | 'pending' | 'running' | 'paused' | 'completed' | 'failed' | 'cancelled' | 'awaiting_approval';
+  | 'pending'
+  | 'running'
+  | 'paused'
+  | 'completed'
+  | 'failed'
+  | 'cancelled'
+  | 'awaiting_approval';
 
-export type StepType =
-  | 'task' | 'parallel' | 'conditional' | 'approval' | 'wait' | 'subworkflow';
+export type StepType = 'task' | 'parallel' | 'conditional' | 'approval' | 'wait' | 'subworkflow';
 
 export interface Metadata {
   createdAt: Date;

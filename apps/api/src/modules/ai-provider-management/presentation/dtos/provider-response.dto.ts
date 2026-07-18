@@ -39,6 +39,6 @@ export class ProviderResponseDto {
   }
 
   static fromEntities(entities: AIProviderEntity[]): ProviderResponseDto[] {
-    return entities.map(e => ProviderResponseDto.fromEntity(e));
+    return entities.map((e) => ProviderResponseDto.fromEntity(e));
   }
 }

@@ -1,5 +1,18 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsString, IsNotEmpty, IsOptional, IsBoolean, IsObject, IsArray, IsInt, IsNumber, Min, Max, MinLength, MaxLength } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  IsOptional,
+  IsBoolean,
+  IsObject,
+  IsArray,
+  IsInt,
+  IsNumber,
+  Min,
+  Max,
+  MinLength,
+  MaxLength,
+} from 'class-validator';
 
 export class CreateRoutingPolicyDto {
   @ApiProperty({ description: 'Policy name', example: 'production-routing' })
@@ -9,10 +22,21 @@ export class CreateRoutingPolicyDto {
   @MaxLength(100)
   name!: string;
 
-  @ApiProperty({ description: 'Routing policy type', enum: [
-    'manual', 'priority', 'round_robin', 'least_latency', 'lowest_cost',
-    'highest_quality', 'random', 'weighted', 'capability_based', 'fallback_chain',
-  ]})
+  @ApiProperty({
+    description: 'Routing policy type',
+    enum: [
+      'manual',
+      'priority',
+      'round_robin',
+      'least_latency',
+      'lowest_cost',
+      'highest_quality',
+      'random',
+      'weighted',
+      'capability_based',
+      'fallback_chain',
+    ],
+  })
   @IsString()
   @IsNotEmpty()
   policyType!: string;

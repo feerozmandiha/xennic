@@ -10,7 +10,6 @@ import {
 
 @Injectable()
 export class ProjectRepository implements IProjectRepository {
-
   // ══════════════════════════════════════════════════════════════════════════
   // PROJECT CRUD
   // ══════════════════════════════════════════════════════════════════════════
@@ -75,11 +74,7 @@ export class ProjectRepository implements IProjectRepository {
     }
   }
 
-  async findAll(
-    workspaceId: string,
-    offset = 0,
-    limit = 20,
-  ): Promise<ProjectEntity[]> {
+  async findAll(workspaceId: string, offset = 0, limit = 20): Promise<ProjectEntity[]> {
     try {
       const rows = await prisma.$queryRaw<any[]>`
         SELECT * FROM "projects"
@@ -174,10 +169,7 @@ export class ProjectRepository implements IProjectRepository {
     }
   }
 
-  async findMember(
-    projectId: string,
-    userId: string,
-  ): Promise<ProjectMember | null> {
+  async findMember(projectId: string, userId: string): Promise<ProjectMember | null> {
     try {
       const rows = await prisma.$queryRaw<any[]>`
         SELECT * FROM "project_members"
@@ -239,13 +231,9 @@ export class ProjectRepository implements IProjectRepository {
         WHERE project_id = ${projectId}
         ORDER BY created_at DESC
       `;
-      return rows.map((r) => new ProjectNote(
-        r.id,
-        r.project_id,
-        r.content,
-        r.created_by,
-        r.created_at,
-      ));
+      return rows.map(
+        (r) => new ProjectNote(r.id, r.project_id, r.content, r.created_by, r.created_at),
+      );
     } catch (err) {
       const error = err as Error;
       console.error('ProjectRepository.findNotes error:', error.message);
@@ -268,18 +256,18 @@ export class ProjectRepository implements IProjectRepository {
 
   private _mapProject(row: any): ProjectEntity {
     return ProjectEntity.reconstitute({
-      id:          row.id,
+      id: row.id,
       workspaceId: row.workspace_id,
-      name:        row.name,
+      name: row.name,
       description: row.description ?? null,
-      status:      row.status,
-      startDate:   row.start_date  ?? null,
-      endDate:     row.end_date    ?? null,
-      createdBy:   row.created_by,
-      updatedBy:   row.updated_by  ?? null,
-      createdAt:   row.created_at,
-      updatedAt:   row.updated_at,
-      deletedAt:   row.deleted_at  ?? null,
+      status: row.status,
+      startDate: row.start_date ?? null,
+      endDate: row.end_date ?? null,
+      createdBy: row.created_by,
+      updatedBy: row.updated_by ?? null,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+      deletedAt: row.deleted_at ?? null,
     });
   }
 

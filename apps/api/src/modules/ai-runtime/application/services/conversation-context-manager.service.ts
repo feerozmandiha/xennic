@@ -17,8 +17,8 @@ export class ConversationContextManagerService {
     history: ContextMessage[],
     maxTokens: number = DEFAULT_MAX_TOKENS,
   ): { messages: ContextMessage[]; totalTokens: number } {
-    const systemMessages = history.filter(m => m.role === 'system');
-    const nonSystemMessages = history.filter(m => m.role !== 'system');
+    const systemMessages = history.filter((m) => m.role === 'system');
+    const nonSystemMessages = history.filter((m) => m.role !== 'system');
 
     const systemTokenCount = this._estimateTokens(systemMessages);
     const inputTokens = this._estimateTokenCount(input);
@@ -38,8 +38,7 @@ export class ConversationContextManagerService {
     }
 
     const messages = [...systemMessages, ...selected];
-    const totalTokens =
-      this._estimateTokens(messages) + inputTokens;
+    const totalTokens = this._estimateTokens(messages) + inputTokens;
 
     return { messages, totalTokens };
   }

@@ -25,13 +25,7 @@ export class WorkspaceMemberEntity {
     userId: string,
     role: WorkspaceMemberRole = 'MEMBER',
   ): WorkspaceMemberEntity {
-    return new WorkspaceMemberEntity(
-      crypto.randomUUID(),
-      workspaceId,
-      userId,
-      role,
-      new Date(),
-    );
+    return new WorkspaceMemberEntity(crypto.randomUUID(), workspaceId, userId, role, new Date());
   }
 
   static reconstitute(data: {
@@ -52,7 +46,9 @@ export class WorkspaceMemberEntity {
 
   // ─── Getters ─────────────────────────────────────────────────────────────────
 
-  get role(): WorkspaceMemberRole { return this._role; }
+  get role(): WorkspaceMemberRole {
+    return this._role;
+  }
 
   // ─── Business Methods ────────────────────────────────────────────────────────
 
@@ -63,7 +59,13 @@ export class WorkspaceMemberEntity {
     this._role = newRole;
   }
 
-  isOwner(): boolean    { return this._role === 'OWNER'; }
-  isAdmin(): boolean    { return this._role === 'ADMIN' || this._role === 'OWNER'; }
-  canManage(): boolean  { return this._role === 'OWNER' || this._role === 'ADMIN'; }
+  isOwner(): boolean {
+    return this._role === 'OWNER';
+  }
+  isAdmin(): boolean {
+    return this._role === 'ADMIN' || this._role === 'OWNER';
+  }
+  canManage(): boolean {
+    return this._role === 'OWNER' || this._role === 'ADMIN';
+  }
 }

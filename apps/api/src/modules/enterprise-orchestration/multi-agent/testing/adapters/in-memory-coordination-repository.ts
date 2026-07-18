@@ -32,7 +32,7 @@ export class InMemoryCoordinationRepository implements ICoordinationRepository {
 
   async saveTask(task: CoordinationTask): Promise<void> {
     for (const plan of this.plans.values()) {
-      const idx = plan.tasks.findIndex(t => t.id === task.id);
+      const idx = plan.tasks.findIndex((t) => t.id === task.id);
       if (idx !== -1) {
         plan.tasks[idx] = task;
         return;
@@ -41,9 +41,12 @@ export class InMemoryCoordinationRepository implements ICoordinationRepository {
     this.logger.debug(`Task ${task.id} saved but not linked to any plan in memory`);
   }
 
-  async updateTask(taskId: string, updates: Partial<CoordinationTask>): Promise<CoordinationTask | null> {
+  async updateTask(
+    taskId: string,
+    updates: Partial<CoordinationTask>,
+  ): Promise<CoordinationTask | null> {
     for (const plan of this.plans.values()) {
-      const existing = plan.tasks.find(t => t.id === taskId);
+      const existing = plan.tasks.find((t) => t.id === taskId);
       if (!existing) {
         continue;
       }
@@ -84,7 +87,7 @@ export class InMemoryCoordinationRepository implements ICoordinationRepository {
     let items = Array.from(this.plans.values());
 
     if (options?.status) {
-      items = items.filter(p => p.status === options.status);
+      items = items.filter((p) => p.status === options.status);
     }
 
     const offset = options?.offset ?? 0;

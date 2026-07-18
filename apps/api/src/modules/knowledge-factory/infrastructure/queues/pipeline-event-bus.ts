@@ -154,11 +154,14 @@ export class PipelineEventBus implements OnModuleInit, OnModuleDestroy {
     if (!job) return;
     const dlq = this.queues.get(QUEUE_NAMES.DEAD_LETTER);
     if (!dlq) return;
-    await dlq.add('dlq', { ...job.data, deadLetterReason: reason, originalQueue: queueName, originalJobId: jobId }, {
-      jobId: `dlq:${queueName}:${jobId}`,
-      removeOnComplete: false,
-      removeOnFail: false,
-    });
+    await dlq.add(
+      'dlq',
+      { ...job.data, deadLetterReason: reason, originalQueue: queueName, originalJobId: jobId },
+      {
+        jobId: `dlq:${queueName}:${jobId}`,
+        removeOnComplete: false,
+        removeOnFail: false,
+      },
+    );
   }
-
-};
+}

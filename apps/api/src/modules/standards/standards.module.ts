@@ -8,10 +8,7 @@ import { RbacModule } from '../rbac/rbac.module.js';
 @Module({
   imports: [WorkspaceModule, RbacModule],
   controllers: [StandardController],
-  providers: [
-    StandardService,
-    { provide: 'IStandardRepository', useClass: StandardRepository },
-  ],
+  providers: [StandardService, { provide: 'IStandardRepository', useClass: StandardRepository }],
   exports: [StandardService],
 })
 export class StandardsModule {}

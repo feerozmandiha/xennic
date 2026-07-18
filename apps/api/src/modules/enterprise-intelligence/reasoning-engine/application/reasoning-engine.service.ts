@@ -15,9 +15,7 @@ interface CreatePlanInput {
 export class ReasoningEngineService {
   private readonly logger = new Logger(ReasoningEngineService.name);
 
-  constructor(
-    @Inject('IReasoningRepository') private readonly repo: IReasoningRepository,
-  ) {}
+  constructor(@Inject('IReasoningRepository') private readonly repo: IReasoningRepository) {}
 
   async createPlan(input: CreatePlanInput): Promise<ReasoningPlan> {
     const planSteps = input.steps.map((s, i) => ({
@@ -64,16 +62,20 @@ export class ReasoningEngineService {
     const executed = new Set<string>();
 
     while (executed.size < plan.steps.length) {
-      const readyNodes = graph.getReadyNodes().filter(n => !executed.has(n.stepId));
+      const readyNodes = graph.getReadyNodes().filter((n) => !executed.has(n.stepId));
 
       if (readyNodes.length === 0) {
-        const remaining = plan.steps.filter(s => !executed.has(s.id));
- if (remaining.length > 0) {
-   plan = plan.withStatus(PlanStatus.FAILED);
-   await this.repo.savePlan(plan);
-   this.logger.warn(`Plan ${planId} failed — blocked steps: ${remaining.map(s => s.id).join(', ')}`);
-   throw new Error(`Plan ${planId} execution blocked — ${remaining.length} steps cannot proceed`);
- }
+        const remaining = plan.steps.filter((s) => !executed.has(s.id));
+        if (remaining.length > 0) {
+          plan = plan.withStatus(PlanStatus.FAILED);
+          await this.repo.savePlan(plan);
+          this.logger.warn(
+            `Plan ${planId} failed — blocked steps: ${remaining.map((s) => s.id).join(', ')}`,
+          );
+          throw new Error(
+            `Plan ${planId} execution blocked — ${remaining.length} steps cannot proceed`,
+          );
+        }
         break;
       }
 
@@ -110,14 +112,20 @@ export class ReasoningEngineService {
     return plan;
   }
 
-  async getPlanStatus(id: string): Promise<{ id: string; status: PlanStatus; progress: number; completedSteps: number; totalSteps: number }> {
+  async getPlanStatus(id: string): Promise<{
+    id: string;
+    status: PlanStatus;
+    progress: number;
+    completedSteps: number;
+    totalSteps: number;
+  }> {
     const plan = await this.repo.getPlan(id);
     if (!plan) {
       throw new NotFoundException(`Plan ${id} not found`);
     }
 
     const completedSteps = plan.steps.filter(
-      s => s.status === PlanStepStatus.COMPLETED || s.status === PlanStepStatus.FAILED,
+      (s) => s.status === PlanStepStatus.COMPLETED || s.status === PlanStepStatus.FAILED,
     ).length;
 
     return {
@@ -141,7 +149,11 @@ export class ReasoningEngineService {
     return plan;
   }
 
-  async listPlans(options?: { offset?: number; limit?: number; status?: PlanStatus }): Promise<PaginatedResult<ReasoningPlan>> {
+  async listPlans(options?: {
+    offset?: number;
+    limit?: number;
+    status?: PlanStatus;
+  }): Promise<PaginatedResult<ReasoningPlan>> {
     return this.repo.listPlans(options);
   }
 }

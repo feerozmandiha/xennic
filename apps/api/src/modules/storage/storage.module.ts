@@ -19,7 +19,7 @@ import { RbacModule } from '../rbac/rbac.module.js';
     StorageService,
     MinioService,
     {
-      provide:  'IStorageRepository',
+      provide: 'IStorageRepository',
       useClass: StorageRepository,
     },
   ],

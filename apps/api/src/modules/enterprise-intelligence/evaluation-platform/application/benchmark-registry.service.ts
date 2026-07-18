@@ -1,5 +1,8 @@
 import { Injectable, Inject, Logger } from '@nestjs/common';
-import type { IEvaluationRepository, ListOptions } from '../domain/evaluation-repository.interface.js';
+import type {
+  IEvaluationRepository,
+  ListOptions,
+} from '../domain/evaluation-repository.interface.js';
 import { BenchmarkEntity, BenchmarkStatus } from '../domain/benchmark.entity.js';
 import type { BenchmarkData } from '../domain/benchmark.entity.js';
 import type { PaginatedResult } from '../../shared/types/index.js';
@@ -14,9 +17,7 @@ export interface BenchmarkStats {
 export class BenchmarkRegistryService {
   private readonly logger = new Logger(BenchmarkRegistryService.name);
 
-  constructor(
-    @Inject('IEvaluationRepository') private readonly repo: IEvaluationRepository,
-  ) {}
+  constructor(@Inject('IEvaluationRepository') private readonly repo: IEvaluationRepository) {}
 
   async register(data: BenchmarkData): Promise<BenchmarkEntity> {
     const entity = BenchmarkEntity.create(data);
@@ -35,12 +36,12 @@ export class BenchmarkRegistryService {
 
   async findByMetric(metric: string): Promise<BenchmarkEntity[]> {
     const result = await this.repo.listBenchmarks();
-    return result.items.filter(b => b.metrics.includes(metric));
+    return result.items.filter((b) => b.metrics.includes(metric));
   }
 
   async findByTag(tag: string): Promise<BenchmarkEntity[]> {
     const result = await this.repo.listBenchmarks();
-    return result.items.filter(b => b.tags.includes(tag));
+    return result.items.filter((b) => b.tags.includes(tag));
   }
 
   async activate(id: string): Promise<BenchmarkEntity | null> {

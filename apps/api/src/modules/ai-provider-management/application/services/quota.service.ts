@@ -19,7 +19,10 @@ export class QuotaService {
   private readonly requestCounters = new Map<string, { count: number; resetAt: number }>();
   private readonly tokenCounters = new Map<string, { count: number; resetAt: number }>();
 
-  async checkQuota(providerId: string, tokens: number): Promise<{ allowed: boolean; reason?: string }> {
+  async checkQuota(
+    providerId: string,
+    tokens: number,
+  ): Promise<{ allowed: boolean; reason?: string }> {
     const quota = await this.quotaRepo.findByProviderId(providerId);
     if (!quota) return { allowed: true };
 

@@ -49,14 +49,19 @@ export class MetricsController {
   @Get('metrics/workspace/completeness')
   @ApiOperation({ summary: 'Analyze workspace knowledge completeness' })
   async analyzeCompleteness(@Request() req: any) {
-    const analysis = await this.completenessService.analyzeWorkspaceCompleteness(req.user?.workspaceId);
+    const analysis = await this.completenessService.analyzeWorkspaceCompleteness(
+      req.user?.workspaceId,
+    );
     return { success: true, data: analysis };
   }
 
   @Get('metrics/workspace/freshness')
   @ApiOperation({ summary: 'Refresh freshness scores for stale nodes' })
   async refreshFreshness(@Request() req: any, @Query('thresholdDays') thresholdDays = 30) {
-    const stale = await this.freshnessService.refreshStaleNodes(req.user?.workspaceId, thresholdDays);
+    const stale = await this.freshnessService.refreshStaleNodes(
+      req.user?.workspaceId,
+      thresholdDays,
+    );
     return { success: true, data: stale };
   }
 

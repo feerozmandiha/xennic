@@ -58,7 +58,14 @@ export class CalculationCategoryEntity {
     );
   }
 
-  update(data: Partial<{ name: string; description: string | null; icon: string | null; sortOrder: number }>): void {
+  update(
+    data: Partial<{
+      name: string;
+      description: string | null;
+      icon: string | null;
+      sortOrder: number;
+    }>,
+  ): void {
     if (data.name !== undefined) this.name = data.name;
     if (data.description !== undefined) this.description = data.description;
     if (data.icon !== undefined) this.icon = data.icon;

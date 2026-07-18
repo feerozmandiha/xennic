@@ -52,7 +52,13 @@ export class CircuitBreakerService {
   recordSuccess(providerId: string): void {
     let circuit = this.circuits.get(providerId);
     if (!circuit) {
-      circuit = { state: CircuitState.CLOSED, failureCount: 0, successCount: 0, lastFailureAt: null, halfOpenAttempts: 0 };
+      circuit = {
+        state: CircuitState.CLOSED,
+        failureCount: 0,
+        successCount: 0,
+        lastFailureAt: null,
+        halfOpenAttempts: 0,
+      };
       this.circuits.set(providerId, circuit);
     }
 
@@ -75,7 +81,13 @@ export class CircuitBreakerService {
   recordFailure(providerId: string): void {
     let circuit = this.circuits.get(providerId);
     if (!circuit) {
-      circuit = { state: CircuitState.CLOSED, failureCount: 0, successCount: 0, lastFailureAt: null, halfOpenAttempts: 0 };
+      circuit = {
+        state: CircuitState.CLOSED,
+        failureCount: 0,
+        successCount: 0,
+        lastFailureAt: null,
+        halfOpenAttempts: 0,
+      };
       this.circuits.set(providerId, circuit);
     }
 
@@ -102,7 +114,9 @@ export class CircuitBreakerService {
     this.logger.log(`Circuit ${providerId}: reset to CLOSED`);
   }
 
-  getMetrics(providerId: string): { state: string; failureCount: number; successCount: number } | null {
+  getMetrics(
+    providerId: string,
+  ): { state: string; failureCount: number; successCount: number } | null {
     const circuit = this.circuits.get(providerId);
     if (!circuit) return null;
     return {

@@ -24,9 +24,7 @@ export class SkillComposerService {
   private readonly logger = new Logger(SkillComposerService.name);
   private readonly compositions = new Map<string, SkillComposition>();
 
-  constructor(
-    @Inject('ISkillRegistry') private readonly registry: ISkillRegistry,
-  ) {}
+  constructor(@Inject('ISkillRegistry') private readonly registry: ISkillRegistry) {}
 
   async compose(
     skillIds: string[],
@@ -51,10 +49,7 @@ export class SkillComposerService {
     }
 
     const compositionName = name ?? `composition-${Date.now()}`;
-    const composition = SkillComposition.create(
-      compositionName,
-      steps,
-    );
+    const composition = SkillComposition.create(compositionName, steps);
     this.compositions.set(composition.id, composition);
     this.logger.log(`Created composition "${composition.id}" with ${steps.length} steps`);
     return composition;
@@ -88,8 +83,8 @@ export class SkillComposerService {
       const edges: string[] = [];
       for (let j = i + 1; j < composition.steps.length; j++) {
         const downstream = composition.steps[j]!;
-        const sharedInputs = Object.keys(downstream.inputMapping).filter(
-          key => Object.values(current.outputMapping).includes(key),
+        const sharedInputs = Object.keys(downstream.inputMapping).filter((key) =>
+          Object.values(current.outputMapping).includes(key),
         );
         if (sharedInputs.length > 0) {
           edges.push(downstream.skillId);
@@ -104,7 +99,10 @@ export class SkillComposerService {
   async validateComposition(compositionId: string): Promise<CompositionValidation> {
     const composition = this.compositions.get(compositionId);
     if (!composition) {
-      return { valid: false, errors: [{ step: -1, message: `Composition ${compositionId} not found` }] };
+      return {
+        valid: false,
+        errors: [{ step: -1, message: `Composition ${compositionId} not found` }],
+      };
     }
 
     const errors: ValidationError[] = [];
@@ -117,7 +115,7 @@ export class SkillComposerService {
       }
 
       for (const inputName of Object.keys(step.inputMapping)) {
-        const matchingInput = skill.inputs.find(i => i.name === inputName);
+        const matchingInput = skill.inputs.find((i) => i.name === inputName);
         if (inputName !== '*' && !matchingInput) {
           errors.push({
             step: step.order,
@@ -127,7 +125,7 @@ export class SkillComposerService {
       }
 
       for (const outputName of Object.keys(step.outputMapping)) {
-        const matchingOutput = skill.outputs.find(o => o.name === outputName);
+        const matchingOutput = skill.outputs.find((o) => o.name === outputName);
         if (outputName !== '*' && !matchingOutput) {
           errors.push({
             step: step.order,

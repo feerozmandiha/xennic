@@ -12,7 +12,9 @@ export class CompensationService {
   ) {}
 
   async compensate(executionId: string, failedStepId: string): Promise<void> {
-    this.logger.log(`Starting compensation for execution ${executionId} due to failure at step ${failedStepId}`);
+    this.logger.log(
+      `Starting compensation for execution ${executionId} due to failure at step ${failedStepId}`,
+    );
 
     const completedSteps = await this.getCompletedSteps(executionId);
     const reversed = completedSteps.reverse();
@@ -62,7 +64,7 @@ export class CompensationService {
     const execution = await this.repository.get(executionId);
     if (!execution) return [];
     return execution.steps
-      .filter(s => s.status === 'completed')
-      .map(s => ({ stepId: s.stepId }));
+      .filter((s) => s.status === 'completed')
+      .map((s) => ({ stepId: s.stepId }));
   }
 }

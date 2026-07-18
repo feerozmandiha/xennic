@@ -1,6 +1,9 @@
 import { Injectable, Logger, Inject } from '@nestjs/common';
 import { DecisionLog, type DecisionType } from '../domain/decision-log.entity.js';
-import type { IExplainabilityRepository, FindDecisionOptions } from '../domain/explainability-repository.interface.js';
+import type {
+  IExplainabilityRepository,
+  FindDecisionOptions,
+} from '../domain/explainability-repository.interface.js';
 
 export interface FullReport {
   executionId: string;

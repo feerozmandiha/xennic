@@ -72,7 +72,7 @@ export class ReasoningTelemetryService {
     const totalSteps = allMetrics.reduce((sum, m) => sum + m.totalSteps, 0);
     const totalFailed = allMetrics.reduce((sum, m) => sum + m.failedSteps, 0);
 
-    const completedPlans = allMetrics.filter(m => m.endTime !== null).length;
+    const completedPlans = allMetrics.filter((m) => m.endTime !== null).length;
 
     return {
       totalPlans,

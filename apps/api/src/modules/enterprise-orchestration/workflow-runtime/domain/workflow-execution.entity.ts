@@ -1,6 +1,9 @@
 import { randomUUID } from 'node:crypto';
 import type { ExecutionStatus, StepType, Metadata } from '../../shared/types/index.js';
-import type { WorkflowDefinition, WorkflowStep } from '../../workflow-engine/domain/workflow-definition.entity.js';
+import type {
+  WorkflowDefinition,
+  WorkflowStep,
+} from '../../workflow-engine/domain/workflow-definition.entity.js';
 
 export interface ExecutionStep {
   stepId: string;

@@ -11,9 +11,7 @@ import { ToolExecutionVO } from '../domain/tool-execution.vo.js';
 export class ToolExecutorService implements IToolExecutor {
   private readonly logger = new Logger(ToolExecutorService.name);
 
-  constructor(
-    @Inject('IToolRegistry') private readonly registry: IToolRegistry,
-  ) {}
+  constructor(@Inject('IToolRegistry') private readonly registry: IToolRegistry) {}
 
   async execute(
     toolId: string,
@@ -49,10 +47,7 @@ export class ToolExecutorService implements IToolExecutor {
     }
   }
 
-  async validate(
-    toolId: string,
-    input: Record<string, unknown>,
-  ): Promise<ValidationResult> {
+  async validate(toolId: string, input: Record<string, unknown>): Promise<ValidationResult> {
     const tool = await this.registry.get(toolId);
     if (!tool) {
       return { valid: false, errors: [`Tool ${toolId} not found`] };
@@ -94,9 +89,7 @@ export class ToolExecutorService implements IToolExecutor {
     for (const [key, value] of Object.entries(input)) {
       const propSchema = properties[key] as Record<string, unknown> | undefined;
       if (propSchema?.type && typeof value !== propSchema.type) {
-        errors.push(
-          `Field "${key}" expected type ${String(propSchema.type)}, got ${typeof value}`,
-        );
+        errors.push(`Field "${key}" expected type ${String(propSchema.type)}, got ${typeof value}`);
       }
     }
 

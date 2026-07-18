@@ -1,10 +1,10 @@
 export interface PlanFeatures {
-  projects: number;              // -1 = unlimited
-  calculations_month: number;    // -1 = unlimited
-  ai_requests_month: number;     // -1 = unlimited
-  storage_gb: number;            // -1 = unlimited
+  projects: number; // -1 = unlimited
+  calculations_month: number; // -1 = unlimited
+  ai_requests_month: number; // -1 = unlimited
+  storage_gb: number; // -1 = unlimited
   api_access: boolean;
-  api_level?: number;            // 0=none, 1=read, 2=read+write, 3=partner
+  api_level?: number; // 0=none, 1=read, 2=read+write, 3=partner
   report_formats: string[];
   sso?: boolean;
   custom_agents?: boolean;
@@ -36,18 +36,29 @@ export class PlanEntity {
     updatedAt: Date;
   }): PlanEntity {
     return new PlanEntity(
-      data.id, data.name, data.slug,
-      data.monthlyPrice, data.yearlyPrice,
-      data.features, data.isActive,
-      data.createdAt, data.updatedAt,
+      data.id,
+      data.name,
+      data.slug,
+      data.monthlyPrice,
+      data.yearlyPrice,
+      data.features,
+      data.isActive,
+      data.createdAt,
+      data.updatedAt,
     );
   }
 
   // ── helpers ─────────────────────────────────────────────────────────────
 
-  isFree(): boolean       { return this.slug === 'free'; }
-  isPro(): boolean        { return this.slug === 'pro'; }
-  isEnterprise(): boolean { return this.slug === 'enterprise'; }
+  isFree(): boolean {
+    return this.slug === 'free';
+  }
+  isPro(): boolean {
+    return this.slug === 'pro';
+  }
+  isEnterprise(): boolean {
+    return this.slug === 'enterprise';
+  }
 
   /** آیا تعداد projects محدود است */
   hasProjectLimit(): boolean {

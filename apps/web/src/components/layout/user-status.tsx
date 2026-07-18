@@ -15,21 +15,27 @@ interface UserStatusProps {
 }
 
 export function UserStatus({ theme = 'light', variant = 'header' }: UserStatusProps) {
-  const router   = useRouter();
-  const params   = useParams();
-  const locale   = (params?.locale as string) ?? 'fa';
+  const router = useRouter();
+  const params = useParams();
+  const locale = (params?.locale as string) ?? 'fa';
   const { user, isAuthenticated, clearAuth } = useAuthStore();
-  const t        = useTranslations('nav');
-  const isDark   = theme === 'dark';
+  const t = useTranslations('nav');
+  const isDark = theme === 'dark';
 
   if (!isAuthenticated || !user) {
     if (variant === 'mobile') {
       return (
         <div className="flex flex-col gap-2 pt-3 border-t border-white/5">
-          <Link href={`/${locale}/login`}    className="block px-4 py-2.5 text-sm text-center text-white/70 border border-white/10 rounded-lg hover:bg-white/5 transition-all">
+          <Link
+            href={`/${locale}/login`}
+            className="block px-4 py-2.5 text-sm text-center text-white/70 border border-white/10 rounded-lg hover:bg-white/5 transition-all"
+          >
             ورود
           </Link>
-          <Link href={`/${locale}/register`} className="block px-4 py-2.5 text-sm font-semibold text-center rounded-lg bg-gradient-to-r from-[#3b82f6] to-[#6366f1] text-white">
+          <Link
+            href={`/${locale}/register`}
+            className="block px-4 py-2.5 text-sm font-semibold text-center rounded-lg bg-gradient-to-r from-[#3b82f6] to-[#6366f1] text-white"
+          >
             شروع رایگان
           </Link>
         </div>
@@ -64,10 +70,8 @@ export function UserStatus({ theme = 'light', variant = 'header' }: UserStatusPr
     );
   }
 
-  const initials = [user.firstName?.[0], user.lastName?.[0]]
-    .filter(Boolean)
-    .join('')
-    .toUpperCase() || 'U';
+  const initials =
+    [user.firstName?.[0], user.lastName?.[0]].filter(Boolean).join('').toUpperCase() || 'U';
 
   if (variant === 'mobile') {
     return (
@@ -77,18 +81,29 @@ export function UserStatus({ theme = 'light', variant = 'header' }: UserStatusPr
             <span className="text-xs font-bold text-white">{initials}</span>
           </div>
           <div className="min-w-0">
-            <p className="text-sm font-medium text-white truncate">{user.firstName} {user.lastName}</p>
+            <p className="text-sm font-medium text-white truncate">
+              {user.firstName} {user.lastName}
+            </p>
             <p className="text-xs text-white/50 truncate">{user.email}</p>
           </div>
         </div>
-        <Link href={`/${locale}/dashboard`} className="block px-4 py-2.5 text-sm text-white/70 rounded-lg hover:bg-white/5 transition-all">
+        <Link
+          href={`/${locale}/dashboard`}
+          className="block px-4 py-2.5 text-sm text-white/70 rounded-lg hover:bg-white/5 transition-all"
+        >
           داشبورد
         </Link>
-        <Link href={`/${locale}/settings`} className="block px-4 py-2.5 text-sm text-white/70 rounded-lg hover:bg-white/5 transition-all">
+        <Link
+          href={`/${locale}/settings`}
+          className="block px-4 py-2.5 text-sm text-white/70 rounded-lg hover:bg-white/5 transition-all"
+        >
           تنظیمات
         </Link>
         <button
-          onClick={() => { clearAuth(); router.push(`/${locale}`); }}
+          onClick={() => {
+            clearAuth();
+            router.push(`/${locale}`);
+          }}
           className="w-full text-right px-4 py-2.5 text-sm text-red-400 rounded-lg hover:bg-white/5 transition-all"
         >
           خروج از سیستم
@@ -100,21 +115,23 @@ export function UserStatus({ theme = 'light', variant = 'header' }: UserStatusPr
   return (
     <DropdownMenu.Root>
       <DropdownMenu.Trigger asChild>
-        <button className={cn(
-          'flex items-center gap-2 rounded-[var(--radius)] px-2 py-1.5',
-          'text-sm transition-colors',
-          isDark
-            ? 'text-white/70 hover:text-white hover:bg-white/5'
-            : 'hover:bg-[hsl(var(--secondary))]',
-          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))]',
-        )}>
-          <div className={cn(
-            'w-7 h-7 rounded-full flex items-center justify-center shrink-0',
-            'bg-[hsl(var(--primary)/0.15)] border border-[hsl(var(--primary)/0.2)]',
-          )}>
-            <span className="text-[11px] font-bold text-[hsl(var(--primary))]">
-              {initials}
-            </span>
+        <button
+          className={cn(
+            'flex items-center gap-2 rounded-[var(--radius)] px-2 py-1.5',
+            'text-sm transition-colors',
+            isDark
+              ? 'text-white/70 hover:text-white hover:bg-white/5'
+              : 'hover:bg-[hsl(var(--secondary))]',
+            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))]',
+          )}
+        >
+          <div
+            className={cn(
+              'w-7 h-7 rounded-full flex items-center justify-center shrink-0',
+              'bg-[hsl(var(--primary)/0.15)] border border-[hsl(var(--primary)/0.2)]',
+            )}
+          >
+            <span className="text-[11px] font-bold text-[hsl(var(--primary))]">{initials}</span>
           </div>
           <span className="hidden sm:block max-w-[90px] truncate text-sm font-medium">
             {user.firstName}
@@ -134,8 +151,12 @@ export function UserStatus({ theme = 'light', variant = 'header' }: UserStatusPr
           sideOffset={8}
         >
           <div className="px-3 py-2.5 mb-1 rounded-[var(--radius)] bg-[hsl(var(--secondary)/0.5)]">
-            <p className="text-xs font-semibold truncate">{user.firstName} {user.lastName}</p>
-            <p className="text-[10px] text-[hsl(var(--muted-foreground))] truncate mt-0.5">{user.email}</p>
+            <p className="text-xs font-semibold truncate">
+              {user.firstName} {user.lastName}
+            </p>
+            <p className="text-[10px] text-[hsl(var(--muted-foreground))] truncate mt-0.5">
+              {user.email}
+            </p>
           </div>
 
           <DropdownMenu.Item
@@ -158,11 +179,18 @@ export function UserStatus({ theme = 'light', variant = 'header' }: UserStatusPr
 
           <DropdownMenu.Item
             onSelect={async () => {
-              try { await apiClient.post('/auth/logout'); } catch { /* ignore */ }
+              try {
+                await apiClient.post('/auth/logout');
+              } catch {
+                /* ignore */
+              }
               clearAuth();
               router.push(`/${locale}`);
             }}
-            className={cn(menuItem, 'text-[hsl(var(--destructive))] data-[highlighted]:bg-[hsl(var(--destructive)/0.08)]')}
+            className={cn(
+              menuItem,
+              'text-[hsl(var(--destructive))] data-[highlighted]:bg-[hsl(var(--destructive)/0.08)]',
+            )}
           >
             <LogOut className="h-3.5 w-3.5 shrink-0" />
             خروج از سیستم

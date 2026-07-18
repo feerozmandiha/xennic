@@ -3,11 +3,23 @@ jest.mock('@xennic/database', () => ({
     $queryRaw: jest.fn(),
     $queryRawUnsafe: jest.fn(),
     $executeRawUnsafe: jest.fn(),
-    knowledge_taxonomy: { findFirst: jest.fn(), findMany: jest.fn(), create: jest.fn(), createMany: jest.fn(), delete: jest.fn() },
+    knowledge_taxonomy: {
+      findFirst: jest.fn(),
+      findMany: jest.fn(),
+      create: jest.fn(),
+      createMany: jest.fn(),
+      delete: jest.fn(),
+    },
     knowledge_analytics: { upsert: jest.fn() },
     knowledge_versions: { create: jest.fn() },
     workspaces: { findUnique: jest.fn(), findMany: jest.fn(), upsert: jest.fn(), count: jest.fn() },
-    workspace_members: { findFirst: jest.fn(), findMany: jest.fn(), create: jest.fn(), delete: jest.fn(), count: jest.fn() },
+    workspace_members: {
+      findFirst: jest.fn(),
+      findMany: jest.fn(),
+      create: jest.fn(),
+      delete: jest.fn(),
+      count: jest.fn(),
+    },
     roles: { findUnique: jest.fn(), findMany: jest.fn() },
     role_permissions: { findMany: jest.fn(), deleteMany: jest.fn(), createMany: jest.fn() },
     users: { findUnique: jest.fn(), findMany: jest.fn(), count: jest.fn() },
@@ -21,7 +33,6 @@ import { KnowledgeEntity } from '../../domain/entities/knowledge.entity.js';
 import { JwtAuthGuard } from '../../../auth/infrastructure/guards/jwt-auth.guard.js';
 import { WorkspaceGuard } from '../../../rbac/infrastructure/guards/workspace.guard.js';
 import { PermissionsGuard } from '../../../rbac/infrastructure/guards/permissions.guard.js';
-
 
 const WS_ID = 'ws-123';
 const USER_ID = 'user-456';
@@ -92,7 +103,10 @@ describe('KnowledgeController', () => {
   describe('GET /knowledge', () => {
     it('should return paginated list', async () => {
       const entities = [makeEntity()];
-      knowledgeService.findAll.mockResolvedValue({ data: entities, meta: { page: 1, limit: 20, total: 1, totalPages: 1 } });
+      knowledgeService.findAll.mockResolvedValue({
+        data: entities,
+        meta: { page: 1, limit: 20, total: 1, totalPages: 1 },
+      });
 
       const result = await controller.findAll(makeReq(), '1', '20', undefined);
 
@@ -119,7 +133,10 @@ describe('KnowledgeController', () => {
   describe('GET /knowledge/search', () => {
     it('should return search results', async () => {
       const entities = [makeEntity()];
-      knowledgeService.search.mockResolvedValue({ data: entities, meta: { page: 1, limit: 20, total: 1, totalPages: 1 } });
+      knowledgeService.search.mockResolvedValue({
+        data: entities,
+        meta: { page: 1, limit: 20, total: 1, totalPages: 1 },
+      });
 
       const query = { q: 'test' };
       const result = await controller.search(makeReq(), query as any);
@@ -179,7 +196,11 @@ describe('KnowledgeController', () => {
       const entity = makeEntity();
       knowledgeService.requestReview.mockResolvedValue(entity);
 
-      const result = await controller.requestReview(ARTICLE_ID, { reviewerId: 'reviewer-id' }, makeReq());
+      const result = await controller.requestReview(
+        ARTICLE_ID,
+        { reviewerId: 'reviewer-id' },
+        makeReq(),
+      );
 
       expect(result.success).toBe(true);
       expect(knowledgeService.requestReview).toHaveBeenCalledWith(ARTICLE_ID, WS_ID, 'reviewer-id');
@@ -261,7 +282,11 @@ describe('KnowledgeController', () => {
     it('should remove taxonomy', async () => {
       await controller.removeTaxonomy(ARTICLE_ID, 'taxonomy-rel-1', makeReq());
 
-      expect(knowledgeService.removeTaxonomy).toHaveBeenCalledWith(ARTICLE_ID, WS_ID, 'taxonomy-rel-1');
+      expect(knowledgeService.removeTaxonomy).toHaveBeenCalledWith(
+        ARTICLE_ID,
+        WS_ID,
+        'taxonomy-rel-1',
+      );
     });
   });
 

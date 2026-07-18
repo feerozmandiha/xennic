@@ -7,9 +7,9 @@ export class Argon2Service {
     return argon2.hash(password, {
       // ✅ argon2id به صورت مستقیم استفاده می‌شود
       // نیازی به specifying type نیست
-      memoryCost: 65536,  // 64 MB
-      timeCost: 3,        // 3 iterations
-      parallelism: 4,     // 4 threads
+      memoryCost: 65536, // 64 MB
+      timeCost: 3, // 3 iterations
+      parallelism: 4, // 4 threads
     });
   }
 

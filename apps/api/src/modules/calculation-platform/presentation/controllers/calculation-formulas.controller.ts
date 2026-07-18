@@ -8,9 +8,7 @@ import { CalculationValidationService } from '../../application/services/calcula
 @UseGuards(JwtAuthGuard)
 @Controller('calculations/formulas')
 export class CalculationFormulasController {
-  constructor(
-    private readonly validation: CalculationValidationService,
-  ) {}
+  constructor(private readonly validation: CalculationValidationService) {}
 
   @Post('validate')
   @HttpCode(HttpStatus.OK)

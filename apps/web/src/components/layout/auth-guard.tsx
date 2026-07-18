@@ -5,11 +5,11 @@ import { useRouter, useParams } from 'next/navigation';
 import { useAuthStore } from '@/stores/auth.store';
 
 export function AuthGuard({ children }: { children: React.ReactNode }) {
-  const router          = useRouter();
-  const params          = useParams();
-  const locale          = (params?.locale as string) ?? 'fa';
-  const isAuthenticated = useAuthStore(s => s.isAuthenticated);
-  const token           = useAuthStore(s => s.token);
+  const router = useRouter();
+  const params = useParams();
+  const locale = (params?.locale as string) ?? 'fa';
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const token = useAuthStore((s) => s.token);
 
   // hydration guard — جلوگیری از flash بین SSR و client
   const [hydrated, setHydrated] = useState(false);
@@ -22,7 +22,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     if (!hydrated) return;
     if (!isAuthenticated || !token) {
       const currentPath = window.location.pathname + window.location.search;
-      const redirectTo  = encodeURIComponent(currentPath);
+      const redirectTo = encodeURIComponent(currentPath);
       router.replace(`/${locale}/login?redirectTo=${redirectTo}`);
     }
   }, [hydrated, isAuthenticated, token, router, locale]);

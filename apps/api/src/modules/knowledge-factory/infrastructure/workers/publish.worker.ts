@@ -6,7 +6,10 @@ import { PipelineEventBus, type PublishJobData } from '../queues/pipeline-event-
 import { BasePipelineWorker, type WorkerContext } from './base-pipeline.worker.js';
 import { QUEUE_NAMES } from '../queues/queue-names.js';
 import { DomainEventPublisher } from '../../../semantic-integration/application/services/domain-event-publisher.service.js';
-import { createDomainEvent, EventType } from '../../../semantic-integration/domain/events/domain-event.types.js';
+import {
+  createDomainEvent,
+  EventType,
+} from '../../../semantic-integration/domain/events/domain-event.types.js';
 
 @Injectable()
 export class PublishWorker extends BasePipelineWorker {
@@ -30,7 +33,9 @@ export class PublishWorker extends BasePipelineWorker {
     super(documentRepository, pipelineRunRepository, eventBus, QUEUE_NAMES.PUBLISH);
   }
 
-  protected async execute(context: WorkerContext): Promise<{ published: boolean; knowledgeId: string }> {
+  protected async execute(
+    context: WorkerContext,
+  ): Promise<{ published: boolean; knowledgeId: string }> {
     const { documentId } = context;
     const job = context.job as any;
     const payload = job.data as PublishJobData;

@@ -49,10 +49,10 @@ export class RoutingEngineService {
 
     // Specific provider requested
     if (request.preferredProviderId) {
-      const provider = providers.find(p => p.id === request.preferredProviderId);
+      const provider = providers.find((p) => p.id === request.preferredProviderId);
       if (provider) {
         const model = request.preferredModelId
-          ? (await this.modelRepo.findByModelId(provider.id, request.preferredModelId)) ?? null
+          ? ((await this.modelRepo.findByModelId(provider.id, request.preferredModelId)) ?? null)
           : null;
         return { provider, model, score: 1.0 };
       }
@@ -60,8 +60,10 @@ export class RoutingEngineService {
 
     // Filter by capability
     if (request.capability) {
-      const models = await this.modelRepo.findByType(request.capability as ModelType, { enabledOnly: true });
-      const capableProviders = providers.filter(p => models.some(m => m.providerId === p.id));
+      const models = await this.modelRepo.findByType(request.capability as ModelType, {
+        enabledOnly: true,
+      });
+      const capableProviders = providers.filter((p) => models.some((m) => m.providerId === p.id));
       if (capableProviders.length > 0) {
         return this.selectBest(capableProviders, request);
       }
@@ -82,9 +84,13 @@ export class RoutingEngineService {
     return fallback;
   }
 
-  private async fallback(excludeProviderId: string, request: RoutingRequest): Promise<RoutingTarget> {
-    const providers = (await this.getAvailableProviders())
-      .filter(p => p.id !== excludeProviderId && this.circuitBreaker.isAvailable(p.id));
+  private async fallback(
+    excludeProviderId: string,
+    request: RoutingRequest,
+  ): Promise<RoutingTarget> {
+    const providers = (await this.getAvailableProviders()).filter(
+      (p) => p.id !== excludeProviderId && this.circuitBreaker.isAvailable(p.id),
+    );
 
     if (providers.length === 0) {
       throw new Error('No fallback providers available');
@@ -93,7 +99,10 @@ export class RoutingEngineService {
     return this.selectBest(providers, request);
   }
 
-  private async selectBest(providers: AIProviderEntity[], _request: RoutingRequest): Promise<RoutingTarget> {
+  private async selectBest(
+    providers: AIProviderEntity[],
+    _request: RoutingRequest,
+  ): Promise<RoutingTarget> {
     const scored: RoutingTarget[] = [];
 
     for (const provider of providers) {
@@ -102,8 +111,8 @@ export class RoutingEngineService {
       const isHealthy = health?.status === 'healthy' || !health;
 
       let score = provider.defaultWeight * (isHealthy ? 1.0 : 0.3);
-      score *= Math.max(0.1, 1 - (latency / 5000));
-      score *= (1 / (provider.priority + 1));
+      score *= Math.max(0.1, 1 - latency / 5000);
+      score *= 1 / (provider.priority + 1);
 
       scored.push({ provider, model: null, score });
     }
@@ -114,15 +123,17 @@ export class RoutingEngineService {
 
   private async getAvailableProviders(): Promise<AIProviderEntity[]> {
     const providers = await this.providerRepo.findAll({ enabled: true });
-    return providers.filter(p => this.circuitBreaker.isAvailable(p.id));
+    return providers.filter((p) => this.circuitBreaker.isAvailable(p.id));
   }
 
   async getRoutingMetrics(): Promise<{
-    total: number; available: number; circuitOpen: number;
+    total: number;
+    available: number;
+    circuitOpen: number;
   }> {
     const all = await this.providerRepo.findAll();
-    const available = all.filter(p => this.circuitBreaker.isAvailable(p.id)).length;
-    const circuitOpen = all.filter(p => !this.circuitBreaker.isAvailable(p.id)).length;
+    const available = all.filter((p) => this.circuitBreaker.isAvailable(p.id)).length;
+    const circuitOpen = all.filter((p) => !this.circuitBreaker.isAvailable(p.id)).length;
     return { total: all.length, available, circuitOpen };
   }
 }

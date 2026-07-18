@@ -65,8 +65,12 @@ export class KnowledgeGraphEdge {
     );
   }
 
-  get weight(): number { return this._weight; }
-  get properties(): GraphEdgeProperties { return this._properties; }
+  get weight(): number {
+    return this._weight;
+  }
+  get properties(): GraphEdgeProperties {
+    return this._properties;
+  }
 
   updateWeight(weight: number): void {
     this._weight = weight;

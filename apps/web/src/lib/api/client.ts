@@ -10,9 +10,9 @@ const API_BASE =
     : `${process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000'}/api/v1`;
 
 // ── Keys ثابت برای localStorage ───────────────────────────────────────────────
-const TOKEN_KEY    = 'xennic_token';
-const WS_KEY       = 'xennic_workspace_id';
-const ZUSTAND_KEY  = 'xennic-auth';
+const TOKEN_KEY = 'xennic_token';
+const WS_KEY = 'xennic_workspace_id';
+const ZUSTAND_KEY = 'xennic-auth';
 
 // ── خواندن token ──────────────────────────────────────────────────────────────
 function getToken(): string | null {
@@ -27,14 +27,16 @@ function getToken(): string | null {
     const raw = localStorage.getItem(ZUSTAND_KEY);
     if (raw) {
       const parsed = JSON.parse(raw);
-      const token  = parsed?.state?.token as string | null;
+      const token = parsed?.state?.token as string | null;
       if (token) {
         // sync back
         localStorage.setItem(TOKEN_KEY, token);
         return token;
       }
     }
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
 
   return null;
 }
@@ -52,14 +54,16 @@ function getWorkspaceId(): string | null {
     const raw = localStorage.getItem(ZUSTAND_KEY);
     if (raw) {
       const parsed = JSON.parse(raw);
-      const wsId   = parsed?.state?.workspaceId as string | null;
+      const wsId = parsed?.state?.workspaceId as string | null;
       if (wsId) {
         // sync back
         localStorage.setItem(WS_KEY, wsId);
         return wsId;
       }
     }
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
 
   return null;
 }
@@ -107,14 +111,18 @@ async function request<T>(
     const res = await fetch(`${API_BASE}${path}`, {
       method,
       headers,
-      body: body !== undefined ? (isFormData ? body as FormData : JSON.stringify(body)) : undefined,
+      body:
+        body !== undefined ? (isFormData ? (body as FormData) : JSON.stringify(body)) : undefined,
     });
 
     const text = await res.text();
 
     let json: any;
-    try { json = JSON.parse(text); }
-    catch { throw new ApiError('PARSE_ERROR', 'Invalid JSON response', res.status); }
+    try {
+      json = JSON.parse(text);
+    } catch {
+      throw new ApiError('PARSE_ERROR', 'Invalid JSON response', res.status);
+    }
 
     // 401 — پاک کردن auth و redirect
     if (res.status === 401) {
@@ -146,11 +154,14 @@ async function request<T>(
 
 // ── Public API ────────────────────────────────────────────────────────────────
 export const apiClient = {
-  get:    <T>(path: string)                                    => request<T>('GET',    path),
-  post:   <T>(path: string, body?: unknown, extraHeaders?: Record<string, string>) => request<T>('POST',   path, body, extraHeaders),
-  put:    <T>(path: string, body?: unknown, extraHeaders?: Record<string, string>) => request<T>('PUT',    path, body, extraHeaders),
-  patch:  <T>(path: string, body?: unknown, extraHeaders?: Record<string, string>) => request<T>('PATCH',  path, body, extraHeaders),
-  delete: <T>(path: string)                                    => request<T>('DELETE', path),
+  get: <T>(path: string) => request<T>('GET', path),
+  post: <T>(path: string, body?: unknown, extraHeaders?: Record<string, string>) =>
+    request<T>('POST', path, body, extraHeaders),
+  put: <T>(path: string, body?: unknown, extraHeaders?: Record<string, string>) =>
+    request<T>('PUT', path, body, extraHeaders),
+  patch: <T>(path: string, body?: unknown, extraHeaders?: Record<string, string>) =>
+    request<T>('PATCH', path, body, extraHeaders),
+  delete: <T>(path: string) => request<T>('DELETE', path),
 };
 
 export { ApiError, getToken, getWorkspaceId };

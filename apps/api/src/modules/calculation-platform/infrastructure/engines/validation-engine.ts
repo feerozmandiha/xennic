@@ -1,5 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
-import type { DslInput, DslValidation } from '../../domain/value-objects/dsl-definition.value-object.js';
+import type {
+  DslInput,
+  DslValidation,
+} from '../../domain/value-objects/dsl-definition.value-object.js';
 import { ValidationResult } from '../../domain/value-objects/validation-result.value-object.js';
 import type { ValidationError } from '../../domain/value-objects/validation-result.value-object.js';
 import { FormulaEngine } from './formula-engine.js';
@@ -153,8 +156,8 @@ export class ValidationEngine {
       }
     }
 
-    const warnings = errors.filter(e => e.severity === 'warning');
-    const errs = errors.filter(e => e.severity === 'error');
+    const warnings = errors.filter((e) => e.severity === 'warning');
+    const errs = errors.filter((e) => e.severity === 'error');
     return ValidationResult.create(errs, warnings);
   }
 
@@ -165,7 +168,7 @@ export class ValidationEngine {
       const variables = this.formulaEngine.extractVariables(formula.expression);
       const deps = new Set<string>();
       for (const v of variables) {
-        if (formulas.some(f => f.name === v)) {
+        if (formulas.some((f) => f.name === v)) {
           deps.add(v);
         }
       }

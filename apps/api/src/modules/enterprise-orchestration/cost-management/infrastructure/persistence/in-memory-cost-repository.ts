@@ -34,7 +34,7 @@ export class InMemoryCostRepository implements ICostRepository {
     options?: FindByExecutionOptions,
   ): Promise<PaginatedResult<CostEntry>> {
     const ids = this.executionIndex.get(executionId) ?? new Set();
-    const items = [...ids].map(id => this.entries.get(id)!).filter(Boolean);
+    const items = [...ids].map((id) => this.entries.get(id)!).filter(Boolean);
 
     const offset = options?.offset ?? 0;
     const limit = options?.limit ?? items.length;
@@ -53,7 +53,7 @@ export class InMemoryCostRepository implements ICostRepository {
     options?: FindBySourceOptions,
   ): Promise<PaginatedResult<CostEntry>> {
     const items = [...this.entries.values()].filter(
-      e => e.sourceType === sourceType && e.sourceId === sourceId,
+      (e) => e.sourceType === sourceType && e.sourceId === sourceId,
     );
 
     const offset = options?.offset ?? 0;
@@ -69,36 +69,34 @@ export class InMemoryCostRepository implements ICostRepository {
 
   async getAggregates(executionId: string): Promise<ResourceUsage> {
     const ids = this.executionIndex.get(executionId) ?? new Set();
-    const entries = [...ids].map(id => this.entries.get(id)!).filter(Boolean);
+    const entries = [...ids].map((id) => this.entries.get(id)!).filter(Boolean);
 
     return this.computeAggregates(entries);
   }
 
   async getAggregatesByWorkflow(workflowId: string): Promise<ResourceUsage> {
-    const entries = [...this.entries.values()].filter(
-      e => e.workflowExecutionId.startsWith(workflowId),
+    const entries = [...this.entries.values()].filter((e) =>
+      e.workflowExecutionId.startsWith(workflowId),
     );
 
     return this.computeAggregates(entries);
   }
 
   async getTopCosts(limit: number): Promise<CostEntry[]> {
-    return [...this.entries.values()]
-      .sort((a, b) => b.amount - a.amount)
-      .slice(0, limit);
+    return [...this.entries.values()].sort((a, b) => b.amount - a.amount).slice(0, limit);
   }
 
   async list(options?: ListCostOptions): Promise<PaginatedResult<CostEntry>> {
     let items = [...this.entries.values()];
 
     if (options?.sourceType) {
-      items = items.filter(e => e.sourceType === options.sourceType);
+      items = items.filter((e) => e.sourceType === options.sourceType);
     }
     if (options?.from) {
-      items = items.filter(e => e.timestamp >= options.from!);
+      items = items.filter((e) => e.timestamp >= options.from!);
     }
     if (options?.to) {
-      items = items.filter(e => e.timestamp <= options.to!);
+      items = items.filter((e) => e.timestamp <= options.to!);
     }
 
     const offset = options?.offset ?? 0;

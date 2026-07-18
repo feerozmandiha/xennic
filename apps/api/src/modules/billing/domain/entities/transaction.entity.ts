@@ -43,15 +43,20 @@ export class TransactionEntity {
     createdAt: Date;
   }): TransactionEntity {
     return new TransactionEntity(
-      data.id, data.workspaceId, data.paymentId,
+      data.id,
+      data.workspaceId,
+      data.paymentId,
       data.type as TransactionType,
       data.amount,
       data.status as TransactionStatus,
-      data.metadata, data.createdAt,
+      data.metadata,
+      data.createdAt,
     );
   }
 
-  get status(): TransactionStatus { return this._status; }
+  get status(): TransactionStatus {
+    return this._status;
+  }
 
   complete(): void {
     if (this._status !== 'pending') throw new Error('Only pending transactions can be completed');
@@ -63,5 +68,7 @@ export class TransactionEntity {
     this._status = 'failed';
   }
 
-  isCompleted(): boolean { return this._status === 'completed'; }
+  isCompleted(): boolean {
+    return this._status === 'completed';
+  }
 }

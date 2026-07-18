@@ -39,30 +39,31 @@ export class NotificationController {
     summary: 'Get my notifications',
     description: 'Returns in-app notifications for the authenticated user.',
   })
-  @ApiQuery({ name: 'page',   required: false, type: Number, example: 1 })
-  @ApiQuery({ name: 'limit',  required: false, type: Number, example: 20 })
+  @ApiQuery({ name: 'page', required: false, type: Number, example: 1 })
+  @ApiQuery({ name: 'limit', required: false, type: Number, example: 20 })
   @ApiQuery({
-    name: 'status', required: false,
+    name: 'status',
+    required: false,
     enum: ['pending', 'sent', 'read', 'failed'],
     description: 'Filter by status',
   })
   @ApiResponse({ status: 200, description: 'Notifications retrieved' })
   async getMyNotifications(
     @Req() req: any,
-    @Query('page')   page?: string,
-    @Query('limit')  limit?: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
     @Query('status') status?: string,
   ) {
     const result = await this.notificationService.getMyNotifications(
       req.user.userId,
-      page  ? parseInt(page,  10) : 1,
+      page ? parseInt(page, 10) : 1,
       limit ? parseInt(limit, 10) : 20,
       status,
     );
     return {
       success: true,
-      data:    result.data.map(n => NotificationResponseDto.fromEntity(n)),
-      meta:    result.meta,
+      data: result.data.map((n) => NotificationResponseDto.fromEntity(n)),
+      meta: result.meta,
     };
   }
 
@@ -123,10 +124,10 @@ export class NotificationController {
   @ApiResponse({ status: 201, description: 'Notification sent', type: NotificationResponseDto })
   async sendToSelf(@Body() dto: SendNotificationDto, @Req() req: any) {
     const notification = await this.notificationService.send({
-      userId:  req.user.userId,
-      type:    dto.type,
+      userId: req.user.userId,
+      type: dto.type,
       channel: dto.channel,
-      title:   dto.title,
+      title: dto.title,
       content: dto.content,
     });
     return { success: true, data: NotificationResponseDto.fromEntity(notification) };

@@ -23,14 +23,22 @@ import { NotFoundException, ForbiddenException, ConflictException } from '@nestj
 import { KnowledgeService } from './knowledge.service.js';
 import { KnowledgeEntity } from '../../domain/entities/knowledge.entity.js';
 import type { IKnowledgeRepository } from '../../domain/interfaces/knowledge.repository.interface.js';
-import type { CreateKnowledgeDto, UpdateKnowledgeDto, AddTaxonomyDto } from '../../presentation/dtos/knowledge.dto.js';
+import type {
+  CreateKnowledgeDto,
+  UpdateKnowledgeDto,
+  AddTaxonomyDto,
+} from '../../presentation/dtos/knowledge.dto.js';
 
 const WS_ID = 'ws-123';
 const USER_ID = 'user-456';
 const ARTICLE_ID = 'article-789';
 
 function makeEntity(_overrides?: Partial<KnowledgeEntity>): KnowledgeEntity {
-  const entity = KnowledgeEntity.create({ workspaceId: WS_ID, slug: 'test-article', authorId: USER_ID });
+  const entity = KnowledgeEntity.create({
+    workspaceId: WS_ID,
+    slug: 'test-article',
+    authorId: USER_ID,
+  });
   Object.defineProperty(entity, 'id', { value: ARTICLE_ID });
   return entity;
 }
@@ -331,9 +339,14 @@ describe('KnowledgeService', () => {
 
       expect(result.data).toEqual(entities);
       expect(result.meta.total).toBe(1);
-      expect(repo.search).toHaveBeenCalledWith(WS_ID, expect.objectContaining({
-        query: 'test', offset: 0, limit: 10,
-      }));
+      expect(repo.search).toHaveBeenCalledWith(
+        WS_ID,
+        expect.objectContaining({
+          query: 'test',
+          offset: 0,
+          limit: 10,
+        }),
+      );
     });
 
     it('should default page and limit', async () => {
@@ -341,9 +354,13 @@ describe('KnowledgeService', () => {
 
       await service.search(WS_ID, {});
 
-      expect(repo.search).toHaveBeenCalledWith(WS_ID, expect.objectContaining({
-        offset: 0, limit: 20,
-      }));
+      expect(repo.search).toHaveBeenCalledWith(
+        WS_ID,
+        expect.objectContaining({
+          offset: 0,
+          limit: 20,
+        }),
+      );
     });
   });
 
@@ -385,7 +402,9 @@ describe('KnowledgeService', () => {
 
       await service.removeTaxonomy(ARTICLE_ID, WS_ID, 'taxonomy-rel-1');
 
-      expect(prisma.knowledge_taxonomy.delete).toHaveBeenCalledWith({ where: { id: 'taxonomy-rel-1' } });
+      expect(prisma.knowledge_taxonomy.delete).toHaveBeenCalledWith({
+        where: { id: 'taxonomy-rel-1' },
+      });
     });
 
     it('should throw NotFoundException when not found', async () => {
@@ -393,7 +412,9 @@ describe('KnowledgeService', () => {
       repo.findById.mockResolvedValue(entity);
       prisma.knowledge_taxonomy.findFirst.mockResolvedValue(null);
 
-      await expect(service.removeTaxonomy(ARTICLE_ID, WS_ID, 'unknown')).rejects.toThrow(NotFoundException);
+      await expect(service.removeTaxonomy(ARTICLE_ID, WS_ID, 'unknown')).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 

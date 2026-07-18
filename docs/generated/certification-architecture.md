@@ -10,13 +10,13 @@
 
 The Engineering Module follows strict **Domain-Driven Design** with 5 layers:
 
-| Layer | Directory | Responsibility | Dependencies |
-|-------|-----------|----------------|--------------|
-| **Domain** | `domain/` | Entities, Value Objects, Domain Events, Repository Interfaces, Domain Services | None (internal only) |
-| **Application** | `application/` | Commands, Queries, DTOs, Application Services, Use Case Orchestration | Domain |
-| **Infrastructure** | `infrastructure/` | Prisma Repositories, HTTP Clients, Cache, Metrics, Plugin Engine | Domain, Application |
-| **Presentation** | `presentation/` | Controllers, Request/Response DTOs, Exception Filters, Swagger | Application |
-| **Shared** | `shared/` | Base Classes, Constants, Types, Utilities, Guards, Decorators | None (cross-cutting) |
+| Layer              | Directory         | Responsibility                                                                 | Dependencies         |
+| ------------------ | ----------------- | ------------------------------------------------------------------------------ | -------------------- |
+| **Domain**         | `domain/`         | Entities, Value Objects, Domain Events, Repository Interfaces, Domain Services | None (internal only) |
+| **Application**    | `application/`    | Commands, Queries, DTOs, Application Services, Use Case Orchestration          | Domain               |
+| **Infrastructure** | `infrastructure/` | Prisma Repositories, HTTP Clients, Cache, Metrics, Plugin Engine               | Domain, Application  |
+| **Presentation**   | `presentation/`   | Controllers, Request/Response DTOs, Exception Filters, Swagger                 | Application          |
+| **Shared**         | `shared/`         | Base Classes, Constants, Types, Utilities, Guards, Decorators                  | None (cross-cutting) |
 
 ```
  ┌──────────────┐
@@ -39,16 +39,17 @@ The Engineering Module follows strict **Domain-Driven Design** with 5 layers:
 
 **6 repository interfaces** defined in domain, with Prisma implementations in infrastructure:
 
-| Interface | Domain | Infrastructure Implementation | Methods |
-|-----------|--------|-------------------------------|---------|
+| Interface                | Domain                 | Infrastructure Implementation | Methods                                   |
+| ------------------------ | ---------------------- | ----------------------------- | ----------------------------------------- |
 | `ICalculationRepository` | `domain/repositories/` | `PrismaCalculationRepository` | save, findById, findByProject, findRecent |
-| `IProjectRepository` | `domain/repositories/` | `PrismaProjectRepository` | save, findById, findAll, update, delete |
-| `ITemplateRepository` | `domain/repositories/` | `PrismaTemplateRepository` | save, findById, findAll, update, delete |
-| `IReportRepository` | `domain/repositories/` | `PrismaReportRepository` | save, findById, findByProject, delete |
-| `ICertificateRepository` | `domain/repositories/` | `PrismaCertificateRepository` | save, findById, findByCalcId, revoke |
-| `IScheduleRepository` | `domain/repositories/` | `PrismaScheduleRepository` | save, findById, findByProject, update |
+| `IProjectRepository`     | `domain/repositories/` | `PrismaProjectRepository`     | save, findById, findAll, update, delete   |
+| `ITemplateRepository`    | `domain/repositories/` | `PrismaTemplateRepository`    | save, findById, findAll, update, delete   |
+| `IReportRepository`      | `domain/repositories/` | `PrismaReportRepository`      | save, findById, findByProject, delete     |
+| `ICertificateRepository` | `domain/repositories/` | `PrismaCertificateRepository` | save, findById, findByCalcId, revoke      |
+| `IScheduleRepository`    | `domain/repositories/` | `PrismaScheduleRepository`    | save, findById, findByProject, update     |
 
 All repositories:
+
 - Accept domain entities and return domain entities (no leaky abstractions)
 - Use Prisma transactions for atomic operations
 - Include proper error handling with domain-specific exceptions
@@ -63,24 +64,28 @@ All repositories:
 **4 core engines** power engineering calculations:
 
 ### Formula Engine (`infrastructure/engines/formula-engine.ts`)
+
 - Parses and evaluates mathematical expressions
 - Supports variables, functions, and constants
 - Caches compiled formulas for repeated use
 - Validates expression safety before evaluation
 
 ### Unit Conversion Engine (`infrastructure/engines/unit-conversion.ts`)
+
 - SI, Imperial, and mixed-unit conversions
 - 40+ unit categories (length, current, voltage, power, etc.)
 - Dimensional analysis validation
 - Bidirectional conversion with precision tracking
 
 ### DSL Runtime Engine (`infrastructure/engines/dsl-runtime.ts`)
+
 - Executes engineering DSL scripts for complex workflows
 - Supports conditional logic, loops, and output mapping
 - Sandboxed execution with resource limits
 - Step-by-step execution tracing
 
 ### Validation Engine (`infrastructure/engines/validation-engine.ts`)
+
 - Schema-based input validation (JSON Schema)
 - Range checking, required fields, type coercion
 - Cross-field validation (e.g., voltage class ↔ cable type)
@@ -94,12 +99,13 @@ All repositories:
 
 Application services strictly separate commands (mutations) from queries (reads):
 
-| Category | Services | Pattern |
-|----------|----------|---------|
+| Category     | Services                                               | Pattern                                        |
+| ------------ | ------------------------------------------------------ | ---------------------------------------------- |
 | **Commands** | `CreateCalculationCommand`, `DeleteCalculationCommand` | POST/PUT/DELETE → mutate state → return result |
-| **Queries** | `GetCalculationQuery`, `ListCalculationsQuery` | GET → read state → return DTO |
+| **Queries**  | `GetCalculationQuery`, `ListCalculationsQuery`         | GET → read state → return DTO                  |
 
 CQRS rules enforced:
+
 - Commands never return domain entities (return DTOs or IDs)
 - Queries never mutate state
 - Each method is either a command or a query, never both
@@ -111,16 +117,16 @@ CQRS rules enforced:
 
 ## 5. TypeScript Quality
 
-| Check | Standard | Status |
-|-------|----------|--------|
-| Strict Mode | `strict: true` | ✅ |
-| Explicit Return Types | All functions | ✅ |
-| No `any` Types | `no-explicit-any` enforced | ✅ |
-| Null Safety | `strictNullChecks: true` | ✅ |
-| No Implicit `any` | `noImplicitAny: true` | ✅ |
-| No Unused Locals | `noUnusedLocals: true` | ✅ |
-| No Unused Parameters | `noUnusedParameters: true` | ✅ |
-| Exhaustive Switch | `switch` exhaustiveness enforced | ✅ |
+| Check                 | Standard                         | Status |
+| --------------------- | -------------------------------- | ------ |
+| Strict Mode           | `strict: true`                   | ✅     |
+| Explicit Return Types | All functions                    | ✅     |
+| No `any` Types        | `no-explicit-any` enforced       | ✅     |
+| Null Safety           | `strictNullChecks: true`         | ✅     |
+| No Implicit `any`     | `noImplicitAny: true`            | ✅     |
+| No Unused Locals      | `noUnusedLocals: true`           | ✅     |
+| No Unused Parameters  | `noUnusedParameters: true`       | ✅     |
+| Exhaustive Switch     | `switch` exhaustiveness enforced | ✅     |
 
 **TypeScript Quality: PASSED** ✅
 
@@ -130,22 +136,22 @@ CQRS rules enforced:
 
 Full architecture scan results:
 
-| Severity | Count | Details |
-|----------|-------|---------|
-| Critical | 0 | No circular dependencies, no layer violations |
-| High | 0 | No cross-module leaks, no infrastructure in domain |
-| Medium | 0 | No improper imports, no missing interfaces |
-| Low | 0 | All naming conventions followed |
-| **Total** | **0** | **Perfect score across 87 rules** |
+| Severity  | Count | Details                                            |
+| --------- | ----- | -------------------------------------------------- |
+| Critical  | 0     | No circular dependencies, no layer violations      |
+| High      | 0     | No cross-module leaks, no infrastructure in domain |
+| Medium    | 0     | No improper imports, no missing interfaces         |
+| Low       | 0     | All naming conventions followed                    |
+| **Total** | **0** | **Perfect score across 87 rules**                  |
 
 ### Validation Scopes
 
-| Scope | Modules | Files | Rules |
-|-------|---------|-------|-------|
-| Engineering Module | 12 | 237 | 38 |
-| Enterprise Intelligence | 43 | 350 | 22 |
-| Core Platform | 8 | 350 | 27 |
-| **Total** | **43** | **937** | **87** |
+| Scope                   | Modules | Files   | Rules  |
+| ----------------------- | ------- | ------- | ------ |
+| Engineering Module      | 12      | 237     | 38     |
+| Enterprise Intelligence | 43      | 350     | 22     |
+| Core Platform           | 8       | 350     | 27     |
+| **Total**               | **43**  | **937** | **87** |
 
 ### Verified Constraints
 
@@ -196,10 +202,12 @@ All dependency directions verified with automated architecture rule enforcement.
 ### Cross-Module Access (Prohibited)
 
 The following patterns are **enforced as violations**:
+
 - ❌ `src/modules/engineering/application/` importing from `src/modules/enterprise-intelligence/`
 - ❌ `src/modules/enterprise-intelligence/domain/` importing from `src/modules/engineering/infrastructure/`
 
 ### Allowed Cross-Module Communication
+
 - ✅ **Shared Kernel**: Common types in `src/shared/` available to all modules
 - ✅ **Domain Events**: `DomainEventPublisher` (Global module) enables inter-module events
 - ✅ **Plugin Registry**: Central registry in engineering module, accessible via public API
@@ -207,6 +215,7 @@ The following patterns are **enforced as violations**:
 ### Plugin System Isolation
 
 Each plugin is an isolated unit:
+
 - No plugin imports another plugin
 - Plugins communicate only through the Plugin Registry
 - Plugin sandbox prevents runtime cross-plugin access

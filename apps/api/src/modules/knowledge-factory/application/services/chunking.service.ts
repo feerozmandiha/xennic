@@ -52,7 +52,13 @@ export class ChunkingService {
         documentId,
         chunks: [],
         processingTimeMs: 0,
-        stats: { totalChunks: 0, totalTokens: 0, averageChunkSize: 0, largestChunk: 0, smallestChunk: 0 },
+        stats: {
+          totalChunks: 0,
+          totalTokens: 0,
+          averageChunkSize: 0,
+          largestChunk: 0,
+          smallestChunk: 0,
+        },
       };
     }
 

@@ -16,11 +16,7 @@ import { PrismaExecutionRepository } from './infrastructure/persistence/prisma-e
     LifecycleService,
     { provide: 'IExecutionRepository', useClass: PrismaExecutionRepository },
   ],
-  exports: [
-    WorkflowExecutorService,
-    LifecycleService,
-    CompensationService,
-  ],
+  exports: [WorkflowExecutorService, LifecycleService, CompensationService],
 })
 export class WorkflowRuntimeModule implements OnModuleInit {
   private readonly logger = new Logger(WorkflowRuntimeModule.name);

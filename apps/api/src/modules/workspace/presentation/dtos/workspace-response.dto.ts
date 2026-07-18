@@ -2,10 +2,16 @@ import { ApiProperty } from '@nestjs/swagger';
 import { WorkspaceEntity } from '../../domain/entities/workspace.entity.js';
 
 export class WorkspaceResponseDto {
-  @ApiProperty({ description: 'Workspace unique identifier (UUIDv7)', example: '464e54bb-5e81-426f-ab75-39226f6f8980' })
+  @ApiProperty({
+    description: 'Workspace unique identifier (UUIDv7)',
+    example: '464e54bb-5e81-426f-ab75-39226f6f8980',
+  })
   id: string;
 
-  @ApiProperty({ description: 'Unique workspace code (auto-generated)', example: 'ENGINEERING_WORKSPACE1_7LGG' })
+  @ApiProperty({
+    description: 'Unique workspace code (auto-generated)',
+    example: 'ENGINEERING_WORKSPACE1_7LGG',
+  })
   code: string;
 
   @ApiProperty({ description: 'Workspace display name', example: 'Engineering Workspace' })
@@ -14,7 +20,11 @@ export class WorkspaceResponseDto {
   @ApiProperty({ description: 'ID of user who created the workspace', example: 'user-123' })
   createdBy: string;
 
-  @ApiProperty({ description: 'ID of last user who updated the workspace', nullable: true, example: 'user-456' })
+  @ApiProperty({
+    description: 'ID of last user who updated the workspace',
+    nullable: true,
+    example: 'user-456',
+  })
   updatedBy: string | null;
 
   @ApiProperty({ description: 'Creation timestamp', example: '2026-06-03T02:59:44.524Z' })

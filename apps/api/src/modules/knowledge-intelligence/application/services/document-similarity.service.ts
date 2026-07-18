@@ -16,7 +16,11 @@ export class DocumentSimilarityService {
     private readonly edgeRepo: IGraphEdgeRepository,
   ) {}
 
-  async computeSimilarity(sourceId: string, targetId: string, workspaceId: string): Promise<{ similarity: number; method: string }> {
+  async computeSimilarity(
+    sourceId: string,
+    targetId: string,
+    workspaceId: string,
+  ): Promise<{ similarity: number; method: string }> {
     const sourceNode = await this.nodeRepo.findById(sourceId);
     const targetNode = await this.nodeRepo.findById(targetId);
     if (!sourceNode || !targetNode) return { similarity: 0, method: 'unknown' };
@@ -34,7 +38,12 @@ export class DocumentSimilarityService {
     const union = new Set([...sourceTargets, ...targetTargets]).size;
     const jaccard = union === 0 ? 0 : intersection / union;
 
-    const existing = await this.similarityRepo.findByPair(workspaceId, sourceId, targetId, 'graph_overlap');
+    const existing = await this.similarityRepo.findByPair(
+      workspaceId,
+      sourceId,
+      targetId,
+      'graph_overlap',
+    );
     if (existing) {
       await this.similarityRepo.create({
         workspaceId,

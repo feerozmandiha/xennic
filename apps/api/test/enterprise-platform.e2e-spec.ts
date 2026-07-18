@@ -18,9 +18,18 @@ import { ApiDiscoveryService } from '../src/modules/enterprise-api-platform/appl
 import { TokenBucketRateLimiter } from '../src/modules/enterprise-api-platform/infrastructure/rate-limit/token-bucket-rate-limiter.js';
 import { FederatedSearchService } from '../src/modules/enterprise-search-federation/application/services/federated-search.service.js';
 import { RankingStrategyService } from '../src/modules/enterprise-search-federation/application/services/ranking-strategy.service.js';
-import type { ICommand, ICommandHandler } from '../src/modules/enterprise-messaging/domain/interfaces/command-bus.interface.js';
-import type { IQuery, IQueryHandler } from '../src/modules/enterprise-messaging/domain/interfaces/query-bus.interface.js';
-import type { SagaStep, SagaDefinition } from '../src/modules/enterprise-saga/domain/interfaces/saga.interface.js';
+import type {
+  ICommand,
+  ICommandHandler,
+} from '../src/modules/enterprise-messaging/domain/interfaces/command-bus.interface.js';
+import type {
+  IQuery,
+  IQueryHandler,
+} from '../src/modules/enterprise-messaging/domain/interfaces/query-bus.interface.js';
+import type {
+  SagaStep,
+  SagaDefinition,
+} from '../src/modules/enterprise-saga/domain/interfaces/saga.interface.js';
 import type { ISearchSource } from '../src/modules/enterprise-search-federation/domain/interfaces/search-source.interface.js';
 
 describe('Enterprise Platform (Sprint E1)', () => {
@@ -133,7 +142,9 @@ describe('Enterprise Platform (Sprint E1)', () => {
         causationId: 'cause-x',
         workspaceId: 'ws-1',
       };
-      await expect(commandBus.execute(cmd)).rejects.toThrow('No handler registered for command: Nonexistent');
+      await expect(commandBus.execute(cmd)).rejects.toThrow(
+        'No handler registered for command: Nonexistent',
+      );
     });
 
     it('should execute a query and return result', async () => {
@@ -161,7 +172,9 @@ describe('Enterprise Platform (Sprint E1)', () => {
         timestamp: new Date().toISOString(),
         correlationId: 'corr-x',
       };
-      await expect(queryBus.ask(query)).rejects.toThrow('No handler registered for query: Nonexistent');
+      await expect(queryBus.ask(query)).rejects.toThrow(
+        'No handler registered for query: Nonexistent',
+      );
     });
 
     it('should publish and handle messages via message queue', async () => {
@@ -183,7 +196,7 @@ describe('Enterprise Platform (Sprint E1)', () => {
         maxRetries: 3,
       });
 
-      await new Promise(r => setTimeout(r, 50));
+      await new Promise((r) => setTimeout(r, 50));
       expect(handled).toContain('msg-1');
     });
 
@@ -208,7 +221,9 @@ describe('Enterprise Platform (Sprint E1)', () => {
     it('should dead-letter messages that exceed max retries', async () => {
       const failingHandler = {
         handledMessageType: 'FailingMessage',
-        handle: async () => { throw new Error('always fails'); },
+        handle: async () => {
+          throw new Error('always fails');
+        },
       };
       messageQueue.subscribe(failingHandler);
 
@@ -222,16 +237,18 @@ describe('Enterprise Platform (Sprint E1)', () => {
         maxRetries: 1,
       });
 
-      await new Promise(r => setTimeout(r, 100));
+      await new Promise((r) => setTimeout(r, 100));
       const dlqItems = await messageQueue.list();
-      expect(dlqItems.some(d => d.messageId === 'dlq-1')).toBe(true);
+      expect(dlqItems.some((d) => d.messageId === 'dlq-1')).toBe(true);
     });
 
     it('should replay dead-lettered messages', async () => {
       const replayHandled: string[] = [];
       messageQueue.subscribe({
         handledMessageType: 'ReplayMessage',
-        handle: async (env) => { replayHandled.push(env.messageId); },
+        handle: async (env) => {
+          replayHandled.push(env.messageId);
+        },
       });
 
       await messageQueue.send({
@@ -244,7 +261,7 @@ describe('Enterprise Platform (Sprint E1)', () => {
       });
 
       await messageQueue.replay('replay-dlq-1');
-      await new Promise(r => setTimeout(r, 50));
+      await new Promise((r) => setTimeout(r, 50));
       expect(replayHandled).toContain('replay-dlq-1');
     });
   });
@@ -275,54 +292,68 @@ describe('Enterprise Platform (Sprint E1)', () => {
     });
 
     it('should reject duplicate or older versions', async () => {
-      await expect(schemaRegistry.register('DocumentProcessed', {
-        eventType: 'DocumentProcessed',
-        version: 1,
-        properties: {},
-        required: [],
-      })).rejects.toThrow('not newer');
+      await expect(
+        schemaRegistry.register('DocumentProcessed', {
+          eventType: 'DocumentProcessed',
+          version: 1,
+          properties: {},
+          required: [],
+        }),
+      ).rejects.toThrow('not newer');
     });
 
     it('should check backward compatibility', async () => {
-      const compatible = await schemaRegistry.checkCompatibility('DocumentProcessed', {
-        eventType: 'DocumentProcessed',
-        version: 2,
-        properties: {
-          documentId: { type: 'string' },
-          workspaceId: { type: 'string' },
-          newField: { type: 'string', optional: true },
+      const compatible = await schemaRegistry.checkCompatibility(
+        'DocumentProcessed',
+        {
+          eventType: 'DocumentProcessed',
+          version: 2,
+          properties: {
+            documentId: { type: 'string' },
+            workspaceId: { type: 'string' },
+            newField: { type: 'string', optional: true },
+          },
+          required: ['documentId', 'workspaceId'],
         },
-        required: ['documentId', 'workspaceId'],
-      }, 'BACKWARD');
+        'BACKWARD',
+      );
 
       expect(compatible.compatible).toBe(true);
     });
 
     it('should detect backward incompatibility when required field removed', async () => {
-      const result = await schemaRegistry.checkCompatibility('DocumentProcessed', {
-        eventType: 'DocumentProcessed',
-        version: 2,
-        properties: {
-          workspaceId: { type: 'string' },
+      const result = await schemaRegistry.checkCompatibility(
+        'DocumentProcessed',
+        {
+          eventType: 'DocumentProcessed',
+          version: 2,
+          properties: {
+            workspaceId: { type: 'string' },
+          },
+          required: ['workspaceId'],
         },
-        required: ['workspaceId'],
-      }, 'BACKWARD');
+        'BACKWARD',
+      );
 
       expect(result.compatible).toBe(false);
       expect(result.errors.length).toBeGreaterThan(0);
     });
 
     it('should detect forward incompatibility', async () => {
-      const result = await schemaRegistry.checkCompatibility('DocumentProcessed', {
-        eventType: 'DocumentProcessed',
-        version: 2,
-        properties: {
-          documentId: { type: 'string' },
-          workspaceId: { type: 'string' },
-          newRequired: { type: 'string' },
+      const result = await schemaRegistry.checkCompatibility(
+        'DocumentProcessed',
+        {
+          eventType: 'DocumentProcessed',
+          version: 2,
+          properties: {
+            documentId: { type: 'string' },
+            workspaceId: { type: 'string' },
+            newRequired: { type: 'string' },
+          },
+          required: ['documentId', 'workspaceId', 'newRequired'],
         },
-        required: ['documentId', 'workspaceId', 'newRequired'],
-      }, 'FORWARD');
+        'FORWARD',
+      );
 
       expect(result.compatible).toBe(false);
     });
@@ -354,13 +385,21 @@ describe('Enterprise Platform (Sprint E1)', () => {
 
       const step1: SagaStep = {
         name: 'step1',
-        execute: async () => { executionOrder.push('step1'); },
-        compensate: async () => { executionOrder.push('comp-step1'); },
+        execute: async () => {
+          executionOrder.push('step1');
+        },
+        compensate: async () => {
+          executionOrder.push('comp-step1');
+        },
       };
       const step2: SagaStep = {
         name: 'step2',
-        execute: async () => { executionOrder.push('step2'); },
-        compensate: async () => { executionOrder.push('comp-step2'); },
+        execute: async () => {
+          executionOrder.push('step2');
+        },
+        compensate: async () => {
+          executionOrder.push('comp-step2');
+        },
       };
 
       const sagaDef: SagaDefinition = {
@@ -374,7 +413,7 @@ describe('Enterprise Platform (Sprint E1)', () => {
       const sagaId = await orchestrator.start('TestSaga', {});
       expect(sagaId).toBeDefined();
 
-      await new Promise(r => setTimeout(r, 100));
+      await new Promise((r) => setTimeout(r, 100));
       const status = await orchestrator.getStatus(sagaId);
       expect(status).not.toBeNull();
       expect(status!.status).toBe('COMPLETED');
@@ -386,13 +425,22 @@ describe('Enterprise Platform (Sprint E1)', () => {
 
       const step1: SagaStep = {
         name: 'step1',
-        execute: async () => { executionOrder.push('step1'); },
-        compensate: async () => { executionOrder.push('comp-step1'); },
+        execute: async () => {
+          executionOrder.push('step1');
+        },
+        compensate: async () => {
+          executionOrder.push('comp-step1');
+        },
       };
       const step2: SagaStep = {
         name: 'step2',
-        execute: async () => { executionOrder.push('step2'); throw new Error('step2 failed'); },
-        compensate: async () => { executionOrder.push('comp-step2'); },
+        execute: async () => {
+          executionOrder.push('step2');
+          throw new Error('step2 failed');
+        },
+        compensate: async () => {
+          executionOrder.push('comp-step2');
+        },
       };
 
       const sagaDef: SagaDefinition = {
@@ -405,7 +453,7 @@ describe('Enterprise Platform (Sprint E1)', () => {
       orchestrator.registerSaga(sagaDef);
       const sagaId = await orchestrator.start('CompensableSaga', {});
 
-      await new Promise(r => setTimeout(r, 100));
+      await new Promise((r) => setTimeout(r, 100));
       const status = await orchestrator.getStatus(sagaId);
       expect(status!.status).toBe('COMPENSATED');
       expect(executionOrder).toContain('step1');
@@ -416,18 +464,20 @@ describe('Enterprise Platform (Sprint E1)', () => {
     it('should list saga instances', async () => {
       const sagaDef: SagaDefinition = {
         sagaName: 'ListTestSaga',
-        steps: [{
-          name: 'only',
-          execute: async () => {},
-          compensate: async () => {},
-        }],
+        steps: [
+          {
+            name: 'only',
+            execute: async () => {},
+            compensate: async () => {},
+          },
+        ],
         timeoutMs: 5000,
         compensable: false,
       };
 
       orchestrator.registerSaga(sagaDef);
       await orchestrator.start('ListTestSaga', {});
-      await new Promise(r => setTimeout(r, 50));
+      await new Promise((r) => setTimeout(r, 50));
 
       const instances = await orchestrator.list();
       expect(instances.length).toBeGreaterThan(0);
@@ -453,7 +503,7 @@ describe('Enterprise Platform (Sprint E1)', () => {
       let result = await cacheManager.get('semantic', 'ttl-key');
       expect(result).toBe('value');
 
-      await new Promise(r => setTimeout(r, 20));
+      await new Promise((r) => setTimeout(r, 20));
       result = await cacheManager.get('semantic', 'ttl-key');
       expect(result).toBeNull();
     });
@@ -628,19 +678,23 @@ describe('Enterprise Platform (Sprint E1)', () => {
 
     it('should filter endpoints by module', () => {
       const filtered = apiDiscovery.getEndpoints(undefined, 'knowledge');
-      expect(filtered.every(e => e.module === 'knowledge')).toBe(true);
+      expect(filtered.every((e) => e.module === 'knowledge')).toBe(true);
     });
 
     it('should track API versions', () => {
       const versions = apiDiscovery.getActiveVersions();
       expect(versions.length).toBeGreaterThan(0);
-      expect(versions.some(v => v.version === 'v1')).toBe(true);
+      expect(versions.some((v) => v.version === 'v1')).toBe(true);
     });
 
     it('should deprecate endpoints', () => {
-      apiDiscovery.deprecateEndpoint('/api/v1/knowledge', 'Use /api/v2/knowledge instead', '2026-12-31T00:00:00Z');
+      apiDiscovery.deprecateEndpoint(
+        '/api/v1/knowledge',
+        'Use /api/v2/knowledge instead',
+        '2026-12-31T00:00:00Z',
+      );
       const endpoints = apiDiscovery.getEndpoints('v1');
-      const deprecated = endpoints.find(e => e.deprecated);
+      const deprecated = endpoints.find((e) => e.deprecated);
       expect(deprecated).toBeDefined();
       expect(deprecated!.deprecationMessage).toContain('Use /api/v2');
     });
@@ -700,14 +754,34 @@ describe('Enterprise Platform (Sprint E1)', () => {
         sourceName: 'source-a',
         priority: 1,
         search: async () => [
-          { id: 'a1', source: 'source-a', type: 'article', title: 'Alpha Result', description: 'From source A', url: '/a/1', workspaceId: 'ws-1', score: 0.8, createdAt: new Date().toISOString() },
+          {
+            id: 'a1',
+            source: 'source-a',
+            type: 'article',
+            title: 'Alpha Result',
+            description: 'From source A',
+            url: '/a/1',
+            workspaceId: 'ws-1',
+            score: 0.8,
+            createdAt: new Date().toISOString(),
+          },
         ],
       };
       const sourceB: ISearchSource = {
         sourceName: 'source-b',
         priority: 2,
         search: async () => [
-          { id: 'b1', source: 'source-b', type: 'standard', title: 'Beta Standard', description: 'From source B', url: '/b/1', workspaceId: 'ws-1', score: 0.9, createdAt: new Date().toISOString() },
+          {
+            id: 'b1',
+            source: 'source-b',
+            type: 'standard',
+            title: 'Beta Standard',
+            description: 'From source B',
+            url: '/b/1',
+            workspaceId: 'ws-1',
+            score: 0.9,
+            createdAt: new Date().toISOString(),
+          },
         ],
       };
 
@@ -721,8 +795,12 @@ describe('Enterprise Platform (Sprint E1)', () => {
     });
 
     it('should filter sources by name', async () => {
-      const result = await federatedSearch.search({ query: 'test', sources: ['source-a'], limit: 10 });
-      expect(result.items.every(i => i.source === 'source-a')).toBe(true);
+      const result = await federatedSearch.search({
+        query: 'test',
+        sources: ['source-a'],
+        limit: 10,
+      });
+      expect(result.items.every((i) => i.source === 'source-a')).toBe(true);
     });
 
     it('should deduplicate results from multiple sources', async () => {
@@ -730,14 +808,34 @@ describe('Enterprise Platform (Sprint E1)', () => {
         sourceName: 'dedup-a',
         priority: 1,
         search: async () => [
-          { id: 'd1', source: 'dedup-a', type: 'article', title: 'Dedup Result', description: 'First', url: '/d/1', workspaceId: 'ws-1', score: 0.9, createdAt: new Date().toISOString() },
+          {
+            id: 'd1',
+            source: 'dedup-a',
+            type: 'article',
+            title: 'Dedup Result',
+            description: 'First',
+            url: '/d/1',
+            workspaceId: 'ws-1',
+            score: 0.9,
+            createdAt: new Date().toISOString(),
+          },
         ],
       };
       const dedupB: ISearchSource = {
         sourceName: 'dedup-b',
         priority: 2,
         search: async () => [
-          { id: 'd1', source: 'dedup-b', type: 'article', title: 'Dedup Result', description: 'Duplicate ID', url: '/d/1', workspaceId: 'ws-1', score: 0.8, createdAt: new Date().toISOString() },
+          {
+            id: 'd1',
+            source: 'dedup-b',
+            type: 'article',
+            title: 'Dedup Result',
+            description: 'Duplicate ID',
+            url: '/d/1',
+            workspaceId: 'ws-1',
+            score: 0.8,
+            createdAt: new Date().toISOString(),
+          },
         ],
       };
 
@@ -745,7 +843,7 @@ describe('Enterprise Platform (Sprint E1)', () => {
       federatedSearch.registerSource(dedupB);
 
       const result = await federatedSearch.search({ query: 'dedup', limit: 10 });
-      const dedupItems = result.items.filter(i => i.id === 'd1');
+      const dedupItems = result.items.filter((i) => i.id === 'd1');
       expect(dedupItems.length).toBe(1);
     });
   });
@@ -754,7 +852,9 @@ describe('Enterprise Platform (Sprint E1)', () => {
 
   describe('Cross-Phase Integration', () => {
     it('should use command bus to invalidate cache', async () => {
-      await cacheManager.set('semantic', 'invalidate-me', 'cached-value', { tags: ['command-tag'] });
+      await cacheManager.set('semantic', 'invalidate-me', 'cached-value', {
+        tags: ['command-tag'],
+      });
 
       const invalidateHandler: ICommandHandler<ICommand, number> = {
         handledCommand: 'InvalidateCacheCommand',
@@ -832,8 +932,13 @@ describe('Enterprise Platform (Sprint E1)', () => {
       };
       const failingStep: SagaStep = {
         name: 'failing-step',
-        execute: async () => { order.push('fail'); throw new Error('intentional'); },
-        compensate: async () => { order.push('comp-fail'); },
+        execute: async () => {
+          order.push('fail');
+          throw new Error('intentional');
+        },
+        compensate: async () => {
+          order.push('comp-fail');
+        },
       };
 
       const sagaDef: SagaDefinition = {
@@ -845,7 +950,7 @@ describe('Enterprise Platform (Sprint E1)', () => {
 
       orchestrator.registerSaga(sagaDef);
       const sagaId = await orchestrator.start('CacheAndFailSaga', {});
-      await new Promise(r => setTimeout(r, 100));
+      await new Promise((r) => setTimeout(r, 100));
 
       const status = await orchestrator.getStatus(sagaId);
       expect(status!.status).toBe('COMPENSATED');

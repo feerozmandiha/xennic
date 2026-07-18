@@ -3,7 +3,6 @@ import { createCipheriv, createDecipheriv, randomBytes, scryptSync } from 'crypt
 
 const ALGORITHM = 'aes-256-gcm';
 const IV_LENGTH = 16;
-const SALT = 'xennic-aes-salt-2026';
 
 @Injectable()
 export class AesEncryptionService {
@@ -12,12 +11,14 @@ export class AesEncryptionService {
 
   constructor() {
     const key = process.env['AI_MASTER_KEY'];
+    const salt = process.env['AI_MASTER_KEY_SALT'] || '';
     if (!key || key.length < 16) {
-      this.logger.warn('AI_MASTER_KEY not set or too short — using development fallback');
-      this.masterKey = scryptSync('xennic-dev-fallback-key-2026!!', SALT, 32);
-    } else {
-      this.masterKey = scryptSync(key, SALT, 32);
+      throw new Error(
+        'AI_MASTER_KEY is not set or too short (minimum 16 chars). ' +
+          'Set it in your .env file — see .env.example for reference.',
+      );
     }
+    this.masterKey = scryptSync(key, salt, 32);
   }
 
   encrypt(plaintext: string): string {

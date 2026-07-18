@@ -19,7 +19,9 @@ export class OntologyRegistryService {
   }): Promise<any> {
     const existing = await this.ontologyRepo.findBySlug(data.workspaceId, data.slug, data.version);
     if (existing) {
-      this.logger.warn(`Ontology ${data.slug}@${data.version} already exists for workspace ${data.workspaceId}`);
+      this.logger.warn(
+        `Ontology ${data.slug}@${data.version} already exists for workspace ${data.workspaceId}`,
+      );
       return existing;
     }
     return this.ontologyRepo.create(data);

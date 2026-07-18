@@ -1,6 +1,6 @@
 import { Injectable, Inject, NotFoundException } from '@nestjs/common';
 import type { IWorkspaceSettingsRepository } from '../../domain/interfaces/workspace-settings.repository.interface.js';
-import { WorkspaceSettingsEntity} from '../../domain/entities/workspace-settings.entity.js';
+import { WorkspaceSettingsEntity } from '../../domain/entities/workspace-settings.entity.js';
 import type { WorkspaceSettingsData } from '../../domain/entities/workspace-settings.entity.js';
 import type { UpdateWorkspaceSettingsDto } from '../../presentation/dtos/workspace-settings.dto.js';
 
@@ -27,7 +27,10 @@ export class WorkspaceSettingsService {
     const entity = await this.repo.findByWorkspaceId(workspaceId);
 
     if (!entity) {
-      const created = WorkspaceSettingsEntity.create(workspaceId, dto as Partial<WorkspaceSettingsData>);
+      const created = WorkspaceSettingsEntity.create(
+        workspaceId,
+        dto as Partial<WorkspaceSettingsData>,
+      );
       await this.repo.save(created);
       return created;
     }

@@ -5,7 +5,6 @@ import { AuditLogEntity } from '../../domain/entities/audit-log.entity.js';
 
 @Injectable()
 export class AuditLogRepository implements IAuditLogRepository {
-
   // ─── save ───────────────────────────────────────────────────────────────────
 
   async save(log: AuditLogEntity): Promise<void> {
@@ -25,7 +24,7 @@ export class AuditLogRepository implements IAuditLogRepository {
           ${log.entityId},
           ${log.oldValues ? JSON.stringify(log.oldValues) : null}::jsonb,
           ${log.newValues ? JSON.stringify(log.newValues) : null}::jsonb,
-          ${log.metadata  ? JSON.stringify(log.metadata)  : null}::jsonb,
+          ${log.metadata ? JSON.stringify(log.metadata) : null}::jsonb,
           ${log.createdAt}
         )
       `;
@@ -48,7 +47,7 @@ export class AuditLogRepository implements IAuditLogRepository {
     limit?: number;
   }): Promise<AuditLogEntity[]> {
     const offset = filters?.offset ?? 0;
-    const limit  = filters?.limit  ?? 50;
+    const limit = filters?.limit ?? 50;
 
     try {
       // ساخت پویای کوئری بر اساس فیلترها
@@ -187,18 +186,18 @@ export class AuditLogRepository implements IAuditLogRepository {
 
   private _map(row: any): AuditLogEntity {
     return AuditLogEntity.reconstitute({
-      id:          row.id,
+      id: row.id,
       workspaceId: row.workspace_id ?? null,
-      userId:      row.user_id      ?? null,
-      ipAddress:   row.ip_address   ?? null,
-      userAgent:   row.user_agent   ?? null,
-      action:      row.action,
-      entity:      row.entity       ?? null,
-      entityId:    row.entity_id    ?? null,
-      oldValues:   row.old_values   ?? null,
-      newValues:   row.new_values   ?? null,
-      metadata:    row.metadata     ?? null,
-      createdAt:   row.created_at,
+      userId: row.user_id ?? null,
+      ipAddress: row.ip_address ?? null,
+      userAgent: row.user_agent ?? null,
+      action: row.action,
+      entity: row.entity ?? null,
+      entityId: row.entity_id ?? null,
+      oldValues: row.old_values ?? null,
+      newValues: row.new_values ?? null,
+      metadata: row.metadata ?? null,
+      createdAt: row.created_at,
     });
   }
 }

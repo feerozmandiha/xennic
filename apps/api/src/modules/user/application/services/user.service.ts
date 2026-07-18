@@ -49,7 +49,10 @@ export class UserService {
     return user;
   }
 
-  async findAll(page = 1, limit = 20): Promise<{
+  async findAll(
+    page = 1,
+    limit = 20,
+  ): Promise<{
     data: UserEntity[];
     meta: {
       page: number;

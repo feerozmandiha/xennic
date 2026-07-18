@@ -1,6 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import type { FederatedSearchResult } from '../../domain/interfaces/search-source.interface.js';
-import type { IRankingStrategy, RankingScore } from '../../domain/interfaces/search-ranking.interface.js';
+import type {
+  IRankingStrategy,
+  RankingScore,
+} from '../../domain/interfaces/search-ranking.interface.js';
 
 @Injectable()
 export class RankingStrategyService implements IRankingStrategy {
@@ -13,13 +16,13 @@ export class RankingStrategyService implements IRankingStrategy {
     if (titleLower === q) relevance = 1.0;
     else if (titleLower.includes(q)) relevance = 0.8;
     else if (descLower.includes(q)) relevance = 0.5;
-    else if (q.split(/\s+/).some(w => titleLower.includes(w))) relevance = 0.3;
+    else if (q.split(/\s+/).some((w) => titleLower.includes(w))) relevance = 0.3;
 
     const age = item.createdAt ? Date.now() - new Date(item.createdAt).getTime() : Infinity;
     const recency = Math.max(0, 1 - age / (365 * 24 * 60 * 60 * 1000));
 
-    const authority = item.metadata?.authorityScore as number ?? 0.5;
-    const completeness = item.metadata?.completenessScore as number ?? 0.5;
+    const authority = (item.metadata?.authorityScore as number) ?? 0.5;
+    const completeness = (item.metadata?.completenessScore as number) ?? 0.5;
 
     const finalScore = relevance * 0.5 + recency * 0.15 + authority * 0.2 + completeness * 0.15;
 

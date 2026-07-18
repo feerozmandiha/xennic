@@ -53,12 +53,25 @@ export class KnowledgeCluster {
     );
   }
 
-  get name(): string { return this._name; }
-  get description(): string | null { return this._description; }
-  get nodeIds(): string[] { return this._nodeIds; }
-  get properties(): Record<string, unknown> { return this._properties; }
+  get name(): string {
+    return this._name;
+  }
+  get description(): string | null {
+    return this._description;
+  }
+  get nodeIds(): string[] {
+    return this._nodeIds;
+  }
+  get properties(): Record<string, unknown> {
+    return this._properties;
+  }
 
-  update(data: { name?: string; description?: string | null; nodeIds?: string[]; properties?: Record<string, unknown> }): void {
+  update(data: {
+    name?: string;
+    description?: string | null;
+    nodeIds?: string[];
+    properties?: Record<string, unknown>;
+  }): void {
     if (data.name !== undefined) this._name = data.name;
     if (data.description !== undefined) this._description = data.description;
     if (data.nodeIds !== undefined) this._nodeIds = data.nodeIds;

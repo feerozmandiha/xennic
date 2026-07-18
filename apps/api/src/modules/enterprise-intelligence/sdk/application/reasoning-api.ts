@@ -12,9 +12,7 @@ export interface PlanStepInput {
 export class ReasoningApi {
   private readonly logger = new Logger(ReasoningApi.name);
 
-  constructor(
-    private readonly engine: ReasoningEngineService,
-  ) {}
+  constructor(private readonly engine: ReasoningEngineService) {}
 
   async plan(
     goal: string,

@@ -23,7 +23,10 @@ export class RabbitMQService implements OnModuleDestroy {
       await this.channel?.close();
       await this.model?.close();
     } catch (error) {
-      this.logger.error('Error closing RabbitMQ connection', error instanceof Error ? error.message : '');
+      this.logger.error(
+        'Error closing RabbitMQ connection',
+        error instanceof Error ? error.message : '',
+      );
     }
   }
 
@@ -54,7 +57,11 @@ export class RabbitMQService implements OnModuleDestroy {
     this.channel.sendToQueue(queue, buffer);
   }
 
-  async assertExchange(name: string, type: string, options?: amqp.Options.AssertExchange): Promise<void> {
+  async assertExchange(
+    name: string,
+    type: string,
+    options?: amqp.Options.AssertExchange,
+  ): Promise<void> {
     if (!this.channel) throw new Error('RabbitMQ channel not initialized');
     await this.channel.assertExchange(name, type, options);
   }

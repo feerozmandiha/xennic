@@ -1,13 +1,32 @@
 import {
-  Controller, Get, Post, Patch, Delete, Param, Query, Body,
-  UseGuards, HttpCode, HttpStatus,
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Delete,
+  Param,
+  Query,
+  Body,
+  UseGuards,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiParam, ApiQuery } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+  ApiParam,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { AdminGuard } from '../../../admin/infrastructure/guards/admin.guard.js';
 import { JwtAuthGuard } from '../../../auth/infrastructure/guards/jwt-auth.guard.js';
 import { FeatureFlagService } from '../../application/services/feature-flag.service.js';
 import {
-  CreateFeatureFlagDto, UpdateFeatureFlagDto, ToggleFeatureFlagDto, FeatureFlagResponseDto,
+  CreateFeatureFlagDto,
+  UpdateFeatureFlagDto,
+  ToggleFeatureFlagDto,
+  FeatureFlagResponseDto,
 } from '../dtos/feature-flag.dto.js';
 
 @ApiTags('admin / feature-flags')
@@ -38,7 +57,7 @@ export class FeatureFlagAdminController {
     );
     return {
       success: true,
-      data: result.data.map(f => FeatureFlagResponseDto.fromEntity(f)),
+      data: result.data.map((f) => FeatureFlagResponseDto.fromEntity(f)),
       meta: result.meta,
     };
   }

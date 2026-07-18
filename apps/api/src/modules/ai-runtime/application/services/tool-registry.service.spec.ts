@@ -32,7 +32,11 @@ describe('ToolRegistryService', () => {
     service.register(tool);
     service.registerHandler('echo', async (params) => params);
 
-    const result = await service.dispatch({ toolName: 'echo', parameters: { msg: 'hi' }, callId: '1' });
+    const result = await service.dispatch({
+      toolName: 'echo',
+      parameters: { msg: 'hi' },
+      callId: '1',
+    });
     expect(result.status).toBe('success');
     expect(result.output).toEqual({ msg: 'hi' });
   });
@@ -46,7 +50,9 @@ describe('ToolRegistryService', () => {
   it('should return error result when handler fails', async () => {
     const tool = new ToolDefinition('failing', 'Fails', [], 'fail-handler');
     service.register(tool);
-    service.registerHandler('failing', async () => { throw new Error('handler error'); });
+    service.registerHandler('failing', async () => {
+      throw new Error('handler error');
+    });
 
     const result = await service.dispatch({ toolName: 'failing', parameters: {}, callId: '1' });
     expect(result.status).toBe('error');

@@ -48,7 +48,13 @@ describe('Golden IEC Reference Certification (SI/Metric)', () => {
       inputs: [
         { name: 'S_kVA', label: 'Transformer Rating', type: 'number', unit: 'kVA', required: true },
         { name: 'V_LL', label: 'Secondary Voltage', type: 'number', unit: 'V', required: true },
-        { name: 'u_kr_pct', label: 'Short-Circuit Voltage', type: 'number', unit: '%', required: true },
+        {
+          name: 'u_kr_pct',
+          label: 'Short-Circuit Voltage',
+          type: 'number',
+          unit: '%',
+          required: true,
+        },
         { name: 'c', label: 'Voltage Factor c', type: 'number', required: true },
       ],
       outputs: [
@@ -62,12 +68,18 @@ describe('Golden IEC Reference Certification (SI/Metric)', () => {
     });
 
     // Maximum SC: c = c_max = 1.05 (IEC 60909-0 Table 1, LV)
-    const maxResult = await runtime.execute(dsl, ctx({ S_kVA: 1000, V_LL: 400, u_kr_pct: 6, c: 1.05 }));
+    const maxResult = await runtime.execute(
+      dsl,
+      ctx({ S_kVA: 1000, V_LL: 400, u_kr_pct: 6, c: 1.05 }),
+    );
     expect(maxResult.errors).toHaveLength(0);
     expectRelative(maxResult.outputs.I_k as number, REFERENCE_IK_MAX_A);
 
     // Minimum SC: c = c_min = 0.95
-    const minResult = await runtime.execute(dsl, ctx({ S_kVA: 1000, V_LL: 400, u_kr_pct: 6, c: 0.95 }));
+    const minResult = await runtime.execute(
+      dsl,
+      ctx({ S_kVA: 1000, V_LL: 400, u_kr_pct: 6, c: 0.95 }),
+    );
     expect(minResult.errors).toHaveLength(0);
     expectRelative(minResult.outputs.I_k as number, REFERENCE_IK_MIN_A);
   });
@@ -95,15 +107,14 @@ describe('Golden IEC Reference Certification (SI/Metric)', () => {
         { name: 'k_depth', label: 'Burial Depth Factor', type: 'number', required: true },
         { name: 'k_group', label: 'Grouping Factor', type: 'number', required: true },
       ],
-      outputs: [
-        { name: 'I_rated', label: 'Corrected Current Rating', type: 'number', unit: 'A' },
-      ],
-      formulas: [
-        { name: 'I_rated', expression: 'I_base * k_soil * k_depth * k_group' },
-      ],
+      outputs: [{ name: 'I_rated', label: 'Corrected Current Rating', type: 'number', unit: 'A' }],
+      formulas: [{ name: 'I_rated', expression: 'I_base * k_soil * k_depth * k_group' }],
     });
 
-    const result = await runtime.execute(dsl, ctx({ I_base: 245, k_soil: 0.80, k_depth: 0.96, k_group: 0.85 }));
+    const result = await runtime.execute(
+      dsl,
+      ctx({ I_base: 245, k_soil: 0.8, k_depth: 0.96, k_group: 0.85 }),
+    );
     expect(result.errors).toHaveLength(0);
     expectRelative(result.outputs.I_rated as number, REFERENCE_CORRECTED_A);
   });
@@ -169,10 +180,34 @@ describe('Golden IEC Reference Certification (SI/Metric)', () => {
       version: '1.0.0',
       standard: 'IEC 61439',
       inputs: [
-        { name: 'P_loss', label: 'Total Power Dissipation', type: 'number', unit: 'W', required: true },
-        { name: 'A_e', label: 'Effective Cooling Surface', type: 'number', unit: 'm2', required: true },
-        { name: 'k_factor', label: 'Heat Transfer Coefficient', type: 'number', unit: 'W/(m2·K)', required: true },
-        { name: 'limit_K', label: 'Temperature Rise Limit', type: 'number', unit: 'K', required: true },
+        {
+          name: 'P_loss',
+          label: 'Total Power Dissipation',
+          type: 'number',
+          unit: 'W',
+          required: true,
+        },
+        {
+          name: 'A_e',
+          label: 'Effective Cooling Surface',
+          type: 'number',
+          unit: 'm2',
+          required: true,
+        },
+        {
+          name: 'k_factor',
+          label: 'Heat Transfer Coefficient',
+          type: 'number',
+          unit: 'W/(m2·K)',
+          required: true,
+        },
+        {
+          name: 'limit_K',
+          label: 'Temperature Rise Limit',
+          type: 'number',
+          unit: 'K',
+          required: true,
+        },
       ],
       outputs: [
         { name: 'delta_T', label: 'Calculated Temperature Rise', type: 'number', unit: 'K' },
@@ -186,7 +221,10 @@ describe('Golden IEC Reference Certification (SI/Metric)', () => {
       ],
     });
 
-    const result = await runtime.execute(dsl, ctx({ P_loss: 1500, A_e: 5.0, k_factor: 12, limit_K: 65 }));
+    const result = await runtime.execute(
+      dsl,
+      ctx({ P_loss: 1500, A_e: 5.0, k_factor: 12, limit_K: 65 }),
+    );
     expect(result.errors).toHaveLength(0);
     expectRelative(result.outputs.delta_T as number, REFERENCE_TEMP_RISE_K, 0.015);
     expect(result.outputs.pass_check).toBe(1);
@@ -212,7 +250,13 @@ describe('Golden IEC Reference Certification (SI/Metric)', () => {
       inputs: [
         { name: 'S_kVA', label: 'Transformer Rating', type: 'number', unit: 'kVA', required: true },
         { name: 'P_k_W', label: 'Load Loss (P_k)', type: 'number', unit: 'W', required: true },
-        { name: 'u_kr_pct', label: 'Short-Circuit Voltage', type: 'number', unit: '%', required: true },
+        {
+          name: 'u_kr_pct',
+          label: 'Short-Circuit Voltage',
+          type: 'number',
+          unit: '%',
+          required: true,
+        },
         { name: 'cos_phi', label: 'Load Power Factor', type: 'number', required: true },
       ],
       outputs: [
@@ -229,7 +273,10 @@ describe('Golden IEC Reference Certification (SI/Metric)', () => {
       ],
     });
 
-    const result = await runtime.execute(dsl, ctx({ S_kVA: 1000, P_k_W: 8500, u_kr_pct: 6, cos_phi: 0.8 }));
+    const result = await runtime.execute(
+      dsl,
+      ctx({ S_kVA: 1000, P_k_W: 8500, u_kr_pct: 6, cos_phi: 0.8 }),
+    );
     expect(result.errors).toHaveLength(0);
     expectRelative(result.outputs.u_R_pct as number, 0.85);
     expectRelative(result.outputs.delta_u_pct as number, REFERENCE_REGULATION_PCT);
@@ -294,7 +341,13 @@ describe('Golden IEC Reference Certification (SI/Metric)', () => {
       version: '1.0.0',
       standard: 'IEC 62271',
       inputs: [
-        { name: 'I_k_RMS', label: 'Rated Short-Time Current', type: 'number', unit: 'kA', required: true },
+        {
+          name: 'I_k_RMS',
+          label: 'Rated Short-Time Current',
+          type: 'number',
+          unit: 'kA',
+          required: true,
+        },
         { name: 'n_factor', label: 'Peak Factor (n)', type: 'number', required: true },
       ],
       outputs: [
@@ -333,8 +386,19 @@ describe('Golden IEC Reference Certification (SI/Metric)', () => {
       standard: 'IEC 62305',
       inputs: [
         { name: 'h_rod', label: 'Air Terminal Height', type: 'number', unit: 'm', required: true },
-        { name: 'r_sphere', label: 'Rolling Sphere Radius', type: 'number', unit: 'm', required: true },
-        { name: 'protection_level', label: 'Protection Level (I-IV)', type: 'number', required: true },
+        {
+          name: 'r_sphere',
+          label: 'Rolling Sphere Radius',
+          type: 'number',
+          unit: 'm',
+          required: true,
+        },
+        {
+          name: 'protection_level',
+          label: 'Protection Level (I-IV)',
+          type: 'number',
+          required: true,
+        },
       ],
       outputs: [
         { name: 'r_0', label: 'Protection Radius at Ground', type: 'number', unit: 'm' },
@@ -348,7 +412,10 @@ describe('Golden IEC Reference Certification (SI/Metric)', () => {
       ],
     });
 
-    const result = await runtime.execute(dsl, ctx({ h_rod: 25, r_sphere: 30, protection_level: 2 }));
+    const result = await runtime.execute(
+      dsl,
+      ctx({ h_rod: 25, r_sphere: 30, protection_level: 2 }),
+    );
     expect(result.errors).toHaveLength(0);
     expectRelative(result.outputs.r_0 as number, REFERENCE_RADIUS_M);
   });
@@ -372,7 +439,13 @@ describe('Golden IEC Reference Certification (SI/Metric)', () => {
       version: '1.0.0',
       standard: 'IEC 60947',
       inputs: [
-        { name: 'I_e', label: 'Rated Operational Current', type: 'number', unit: 'A', required: true },
+        {
+          name: 'I_e',
+          label: 'Rated Operational Current',
+          type: 'number',
+          unit: 'A',
+          required: true,
+        },
         { name: 'k_make', label: 'Making Capacity Multiplier', type: 'number', required: true },
         { name: 'k_break', label: 'Breaking Capacity Multiplier', type: 'number', required: true },
       ],

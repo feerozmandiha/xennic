@@ -27,7 +27,9 @@ export class ZarinpalGateway implements IPaymentGateway {
       sandbox: process.env.ZARINPAL_SANDBOX === 'true',
     };
     this.merchantId = config.merchantId;
-    this.isTestMode = config.merchantId === 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx' || process.env.BILLING_TEST_MODE === 'true';
+    this.isTestMode =
+      config.merchantId === 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx' ||
+      process.env.BILLING_TEST_MODE === 'true';
     this.baseUrl = config.sandbox
       ? 'https://sandbox.zarinpal.com/pg/v4/payment'
       : 'https://api.zarinpal.com/pg/v4/payment';
@@ -59,7 +61,7 @@ export class ZarinpalGateway implements IPaymentGateway {
         body: JSON.stringify(body),
       });
 
-      const data = await response.json() as any;
+      const data = (await response.json()) as any;
 
       if (data.data && data.data.code === 100) {
         const authority = data.data.authority;
@@ -103,7 +105,7 @@ export class ZarinpalGateway implements IPaymentGateway {
         body: JSON.stringify(body),
       });
 
-      const data = await response.json() as any;
+      const data = (await response.json()) as any;
 
       if (data.data && data.data.code === 100) {
         return {

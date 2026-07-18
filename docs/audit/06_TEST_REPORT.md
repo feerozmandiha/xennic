@@ -6,15 +6,16 @@
 
 ## 6.1 TypeScript/Jest Tests — Unit
 
-| Metric | Result |
-|--------|--------|
-| Test suites | **9 passed** (9 total) |
-| Tests | **96 passed** (96 total) |
-| Failed | **0** |
-| Skipped | **0** |
-| Total time | 31.36s |
+| Metric      | Result                   |
+| ----------- | ------------------------ |
+| Test suites | **9 passed** (9 total)   |
+| Tests       | **96 passed** (96 total) |
+| Failed      | **0**                    |
+| Skipped     | **0**                    |
+| Total time  | 31.36s                   |
 
 **Spec files executed:**
+
 1. `api.controller.spec.ts`
 2. `admin.guard.spec.ts`
 3. `health.controller.spec.ts`
@@ -38,24 +39,24 @@
 
 ## 6.2 Coverage Report
 
-| Metric | Value |
-|--------|-------|
+| Metric     | Value     |
+| ---------- | --------- |
 | Statements | **8.72%** |
-| Branches | **6.36%** |
-| Functions | **6.29%** |
-| Lines | **8.94%** |
+| Branches   | **6.36%** |
+| Functions  | **6.29%** |
+| Lines      | **8.94%** |
 
 **Highest coverage files:**
 
-| File | Stmts | Branch | Funcs | Lines |
-|------|-------|--------|-------|-------|
-| workspace-settings.service.ts | **100%** | 100% | 100% | 100% |
-| permissions.decorator.ts | **100%** | 100% | 100% | 100% |
-| workspace-settings.controller.ts | **100%** | 75% | 100% | 100% |
-| knowledge.entity.ts | 96.34% | 89.47% | 96.77% | 98.68% |
-| workspace-settings.entity.ts | 94.44% | 91.66% | 80% | 94.44% |
-| health.controller.ts | 87.5% | 75% | 50% | 83.33% |
-| knowledge.controller.ts | 70.87% | 72.91% | 53.12% | 70.29% |
+| File                             | Stmts    | Branch | Funcs  | Lines  |
+| -------------------------------- | -------- | ------ | ------ | ------ |
+| workspace-settings.service.ts    | **100%** | 100%   | 100%   | 100%   |
+| permissions.decorator.ts         | **100%** | 100%   | 100%   | 100%   |
+| workspace-settings.controller.ts | **100%** | 75%    | 100%   | 100%   |
+| knowledge.entity.ts              | 96.34%   | 89.47% | 96.77% | 98.68% |
+| workspace-settings.entity.ts     | 94.44%   | 91.66% | 80%    | 94.44% |
+| health.controller.ts             | 87.5%    | 75%    | 50%    | 83.33% |
+| knowledge.controller.ts          | 70.87%   | 72.91% | 53.12% | 70.29% |
 
 **Modules with 0% coverage:**
 consultations, email, engineering, feature-flags, marketplace, notification, project, rbac (most), search, standards, storage, subscription, user, vision, webhooks, workspace (repositories), shared/filters
@@ -64,14 +65,15 @@ consultations, email, engineering, feature-flags, marketplace, notification, pro
 
 ## 6.3 TypeScript/Jest Tests — E2E
 
-| Metric | Result |
-|--------|--------|
+| Metric      | Result                 |
+| ----------- | ---------------------- |
 | Test suites | **2 passed** (2 total) |
-| Tests | **7 passed** (7 total) |
-| Failed | **0** |
-| Total time | 61.35s |
+| Tests       | **7 passed** (7 total) |
+| Failed      | **0**                  |
+| Total time  | 61.35s                 |
 
 **E2E tests:**
+
 - `GET /` — health root (519 ms)
 - `GET /api/v1/workspace/settings` — 200 with data (1641 ms)
 - `GET /api/v1/workspace/settings` — 401 without auth (691 ms)
@@ -86,11 +88,11 @@ consultations, email, engineering, feature-flags, marketplace, notification, pro
 
 ### engineering-service (port 8001)
 
-| Metric | Result |
-|--------|--------|
-| Tests | **419 passed**, **15 failed** |
-| Warnings | 215 |
-| Time | 142.01s |
+| Metric   | Result                        |
+| -------- | ----------------------------- |
+| Tests    | **419 passed**, **15 failed** |
+| Warnings | 215                           |
+| Time     | 142.01s                       |
 
 **Failed tests (15):**
 | Test | Issue |
@@ -115,20 +117,20 @@ consultations, email, engineering, feature-flags, marketplace, notification, pro
 
 ### ai-service (port 8002)
 
-| Metric | Result |
-|--------|--------|
-| Tests collected | 15 |
-| **Errors** | **1 (collection failed)** |
-| **Root cause** | Missing `openai` module in venv |
+| Metric          | Result                          |
+| --------------- | ------------------------------- |
+| Tests collected | 15                              |
+| **Errors**      | **1 (collection failed)**       |
+| **Root cause**  | Missing `openai` module in venv |
 
 **Tests could not run** — `ModuleNotFoundError: No module named 'openai'` in `app/core/model_router.py`.
 
 ### vision-service (port 8003)
 
-| Metric | Result |
-|--------|--------|
-| Tests | **16 passed**, **0 failed** |
-| Time | 11.83s |
+| Metric | Result                      |
+| ------ | --------------------------- |
+| Tests  | **16 passed**, **0 failed** |
+| Time   | 11.83s                      |
 
 **All 16 tests passed** — extractors, pipeline, preprocessing, validation.
 
@@ -136,28 +138,28 @@ consultations, email, engineering, feature-flags, marketplace, notification, pro
 
 ## 6.5 Test Summary
 
-| Service | Total | Passed | Failed | Errors |
-|---------|-------|--------|--------|--------|
-| API unit | 96 | 96 | 0 | 0 |
-| API e2e | 7 | 7 | 0 | 0 |
-| engineering-service | 434 | 419 | 15 | 0 |
-| ai-service | 15 | 0 | 0 | 1 (collection) |
-| vision-service | 16 | 16 | 0 | 0 |
-| **Total** | **568** | **538** | **15** | **1** |
+| Service             | Total   | Passed  | Failed | Errors         |
+| ------------------- | ------- | ------- | ------ | -------------- |
+| API unit            | 96      | 96      | 0      | 0              |
+| API e2e             | 7       | 7       | 0      | 0              |
+| engineering-service | 434     | 419     | 15     | 0              |
+| ai-service          | 15      | 0       | 0      | 1 (collection) |
+| vision-service      | 16      | 16      | 0      | 0              |
+| **Total**           | **568** | **538** | **15** | **1**          |
 
 ---
 
 ## 6.6 Test File Counts
 
-| Location | Files |
-|----------|-------|
-| `apps/api/src/**/*.spec.ts` | 9 |
-| `apps/api/test/*.e2e-spec.ts` | 2 |
-| `apps/api/test/*.spec.ts` | 1 (CORS) |
-| `workspace/services/engineering-service/tests/` | 57 |
-| `workspace/services/ai-service/tests/` | 3 |
-| `workspace/services/vision-service/tests/` | 6 |
-| **Total** | **78** |
+| Location                                        | Files    |
+| ----------------------------------------------- | -------- |
+| `apps/api/src/**/*.spec.ts`                     | 9        |
+| `apps/api/test/*.e2e-spec.ts`                   | 2        |
+| `apps/api/test/*.spec.ts`                       | 1 (CORS) |
+| `workspace/services/engineering-service/tests/` | 57       |
+| `workspace/services/ai-service/tests/`          | 3        |
+| `workspace/services/vision-service/tests/`      | 6        |
+| **Total**                                       | **78**   |
 
 ---
 

@@ -1,9 +1,4 @@
-import {
-  Injectable,
-  Inject,
-  NotFoundException,
-  ConflictException,
-} from '@nestjs/common';
+import { Injectable, Inject, NotFoundException, ConflictException } from '@nestjs/common';
 import type { IPermissionRepository } from '../../domain/interfaces/permission.repository.interface.js';
 import { PermissionEntity } from '../../domain/entities/permission.entity.js';
 
@@ -42,9 +37,7 @@ export class PermissionService {
   async create(input: CreatePermissionInput): Promise<PermissionEntity> {
     const existing = await this.permissionRepository.findBySlug(input.slug);
     if (existing) {
-      throw new ConflictException(
-        `Permission with slug "${input.slug}" already exists`,
-      );
+      throw new ConflictException(`Permission with slug "${input.slug}" already exists`);
     }
 
     const permission = PermissionEntity.create(

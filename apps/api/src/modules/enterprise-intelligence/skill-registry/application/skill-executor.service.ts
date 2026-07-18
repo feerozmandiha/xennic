@@ -7,9 +7,7 @@ import type { SkillIO, SkillEntity } from '../domain/skill.entity.js';
 export class SkillExecutorService implements ISkillExecutor {
   private readonly logger = new Logger(SkillExecutorService.name);
 
-  constructor(
-    @Inject('ISkillRegistry') private readonly registry: ISkillRegistry,
-  ) {}
+  constructor(@Inject('ISkillRegistry') private readonly registry: ISkillRegistry) {}
 
   async execute(
     skillId: string,

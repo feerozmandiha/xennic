@@ -1,4 +1,7 @@
-import { type PipelineStageStatus, PIPELINE_STAGE_STATUSES } from '../value-objects/pipeline-stage-status.vo.js';
+import {
+  type PipelineStageStatus,
+  PIPELINE_STAGE_STATUSES,
+} from '../value-objects/pipeline-stage-status.vo.js';
 
 export class KnowledgePipelineRun {
   constructor(
@@ -14,11 +17,7 @@ export class KnowledgePipelineRun {
     public durationMs: number | null,
   ) {}
 
-  static create(data: {
-    documentId: string;
-    stage: string;
-    input: unknown;
-  }): KnowledgePipelineRun {
+  static create(data: { documentId: string; stage: string; input: unknown }): KnowledgePipelineRun {
     const now = new Date();
     return new KnowledgePipelineRun(
       crypto.randomUUID(),
@@ -74,10 +73,20 @@ export class KnowledgePipelineRun {
     this.durationMs = this.finishedAt.getTime() - this.startedAt.getTime();
   }
 
-  get status(): PipelineStageStatus { return this._status; }
-  get error(): string | null { return this._error; }
+  get status(): PipelineStageStatus {
+    return this._status;
+  }
+  get error(): string | null {
+    return this._error;
+  }
 
-  isRunning(): boolean { return this._status === PIPELINE_STAGE_STATUSES.RUNNING; }
-  isSuccess(): boolean { return this._status === PIPELINE_STAGE_STATUSES.SUCCESS; }
-  isFailed(): boolean { return this._status === PIPELINE_STAGE_STATUSES.FAILED; }
+  isRunning(): boolean {
+    return this._status === PIPELINE_STAGE_STATUSES.RUNNING;
+  }
+  isSuccess(): boolean {
+    return this._status === PIPELINE_STAGE_STATUSES.SUCCESS;
+  }
+  isFailed(): boolean {
+    return this._status === PIPELINE_STAGE_STATUSES.FAILED;
+  }
 }

@@ -24,7 +24,7 @@ export class WorkspaceInvitationEntity {
     invitedBy: string,
     ttlHours = 72,
   ): WorkspaceInvitationEntity {
-    const token     = crypto.randomUUID().replace(/-/g, '') + crypto.randomUUID().replace(/-/g, '');
+    const token = crypto.randomUUID().replace(/-/g, '') + crypto.randomUUID().replace(/-/g, '');
     const expiresAt = new Date(Date.now() + ttlHours * 60 * 60 * 1000);
 
     return new WorkspaceInvitationEntity(
@@ -66,7 +66,9 @@ export class WorkspaceInvitationEntity {
 
   // ─── Getters ─────────────────────────────────────────────────────────────────
 
-  get status(): InvitationStatus { return this._status; }
+  get status(): InvitationStatus {
+    return this._status;
+  }
 
   // ─── Business Methods ────────────────────────────────────────────────────────
 
@@ -80,7 +82,13 @@ export class WorkspaceInvitationEntity {
     this._status = 'cancelled';
   }
 
-  isPending(): boolean  { return this._status === 'pending' && !this.isExpired(); }
-  isExpired(): boolean  { return this.expiresAt < new Date(); }
-  isAccepted(): boolean { return this._status === 'accepted'; }
+  isPending(): boolean {
+    return this._status === 'pending' && !this.isExpired();
+  }
+  isExpired(): boolean {
+    return this.expiresAt < new Date();
+  }
+  isAccepted(): boolean {
+    return this._status === 'accepted';
+  }
 }

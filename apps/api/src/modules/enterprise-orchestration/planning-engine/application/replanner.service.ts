@@ -29,9 +29,9 @@ export class ReplannerService {
     const failedSet = new Set(failedTaskIds);
 
     const updatedTasks = plan.tasks
-      .filter(t => !failedSet.has(t.id))
-      .map(t => {
-        const updatedDeps = t.dependsOn.filter(d => !failedSet.has(d));
+      .filter((t) => !failedSet.has(t.id))
+      .map((t) => {
+        const updatedDeps = t.dependsOn.filter((d) => !failedSet.has(d));
         return { ...t, dependsOn: updatedDeps };
       });
 
@@ -45,7 +45,9 @@ export class ReplannerService {
     }
 
     const now = new Date();
-    const dependencies = plan.dependencies.filter(d => !failedSet.has(d.from) && !failedSet.has(d.to));
+    const dependencies = plan.dependencies.filter(
+      (d) => !failedSet.has(d.from) && !failedSet.has(d.to),
+    );
 
     const updated = PlanEntity.reconstitute(
       plan.id,
@@ -71,7 +73,7 @@ export class ReplannerService {
 
   async adjustForChanges(planId: string, changes: PlanChange[]): Promise<PlanEntity> {
     const plan = await this.getPlanOrThrow(planId);
-    const taskMap = new Map(plan.tasks.map(t => [t.id, { ...t }]));
+    const taskMap = new Map(plan.tasks.map((t) => [t.id, { ...t }]));
 
     for (const change of changes) {
       const task = taskMap.get(change.taskId);
@@ -126,10 +128,10 @@ export class ReplannerService {
 
     const orderedIds = graph.nodes
       .sort((a, b) => a.level - b.level || a.order - b.order)
-      .map(n => n.taskId);
+      .map((n) => n.taskId);
 
-    const taskMap = new Map(plan.tasks.map(t => [t.id, t]));
-    const reorderedTasks = orderedIds.map(id => taskMap.get(id)!).filter(Boolean);
+    const taskMap = new Map(plan.tasks.map((t) => [t.id, t]));
+    const reorderedTasks = orderedIds.map((id) => taskMap.get(id)!).filter(Boolean);
 
     const now = new Date();
     const updated = PlanEntity.reconstitute(
@@ -160,16 +162,16 @@ export class ReplannerService {
       this.getPlanOrThrow(secondaryId),
     ]);
 
-    const existingIds = new Set(primary.tasks.map(t => t.id));
+    const existingIds = new Set(primary.tasks.map((t) => t.id));
     const mergedTasks = [
       ...primary.tasks,
-      ...secondary.tasks.filter(t => !existingIds.has(t.id)),
+      ...secondary.tasks.filter((t) => !existingIds.has(t.id)),
     ];
 
     const mergedDeps = [
       ...primary.dependencies,
       ...secondary.dependencies.filter(
-        d => !primary.dependencies.some(pd => pd.from === d.from && pd.to === d.to),
+        (d) => !primary.dependencies.some((pd) => pd.from === d.from && pd.to === d.to),
       ),
     ];
 

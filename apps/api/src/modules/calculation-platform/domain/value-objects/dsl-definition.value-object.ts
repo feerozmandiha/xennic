@@ -115,7 +115,13 @@ export class DslDefinition {
     };
   }
 
-  getInputNames(): string[] { return this.inputs.map(i => i.name); }
-  getOutputNames(): string[] { return this.outputs.map(o => o.name); }
-  getFormulaNames(): string[] { return this.formulas.map(f => f.name); }
+  getInputNames(): string[] {
+    return this.inputs.map((i) => i.name);
+  }
+  getOutputNames(): string[] {
+    return this.outputs.map((o) => o.name);
+  }
+  getFormulaNames(): string[] {
+    return this.formulas.map((f) => f.name);
+  }
 }

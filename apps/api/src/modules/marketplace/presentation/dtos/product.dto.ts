@@ -16,7 +16,9 @@ export class CreateProductDto {
   @IsString()
   category?: string;
 
-  @ApiPropertyOptional({ example: { cable_size_mm2: 35, current_rating_a: 150, voltage_rating_v: 1000 } })
+  @ApiPropertyOptional({
+    example: { cable_size_mm2: 35, current_rating_a: 150, voltage_rating_v: 1000 },
+  })
   @IsOptional()
   @IsObject()
   specifications?: Record<string, any>;

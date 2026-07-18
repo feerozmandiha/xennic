@@ -36,7 +36,9 @@ export class PromptEvaluationService {
       timestamp: new Date(),
     };
     this.evaluations.push(entry);
-    this.logger.debug(`Recorded evaluation ${entry.id} for prompt ${promptId} v${version}: ${score}`);
+    this.logger.debug(
+      `Recorded evaluation ${entry.id} for prompt ${promptId} v${version}: ${score}`,
+    );
     return entry;
   }
 
@@ -44,7 +46,7 @@ export class PromptEvaluationService {
     promptId: string,
     options?: EvaluationFindOptions,
   ): Promise<PaginatedResult<EvaluationEntry>> {
-    const filtered = this.evaluations.filter(e => e.promptId === promptId);
+    const filtered = this.evaluations.filter((e) => e.promptId === promptId);
     const offset = options?.offset ?? 0;
     const limit = options?.limit ?? filtered.length;
     return {
@@ -56,7 +58,7 @@ export class PromptEvaluationService {
   }
 
   async getAverageScore(promptId: string): Promise<number | null> {
-    const entries = this.evaluations.filter(e => e.promptId === promptId);
+    const entries = this.evaluations.filter((e) => e.promptId === promptId);
     if (entries.length === 0) return null;
     const sum = entries.reduce((acc, e) => acc + e.score, 0);
     return sum / entries.length;

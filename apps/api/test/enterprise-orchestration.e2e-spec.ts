@@ -84,33 +84,47 @@ describe('Enterprise Orchestration Platform (Sprint O1)', () => {
   beforeAll(async () => {
     module = await Test.createTestingModule({
       providers: [
-        WorkflowDefinitionService, WorkflowValidatorService, WorkflowTemplateService,
+        WorkflowDefinitionService,
+        WorkflowValidatorService,
+        WorkflowTemplateService,
         { provide: 'IWorkflowRepository', useClass: InMemoryWorkflowRepository },
         { provide: 'IWorkflowValidator', useClass: WorkflowValidatorService },
 
-        PlannerService, ReplannerService, DecompositionService,
+        PlannerService,
+        ReplannerService,
+        DecompositionService,
         { provide: 'IPlannerRepository', useClass: InMemoryPlannerRepository },
 
-        WorkflowExecutorService, RetryHandlerService, TimeoutHandlerService,
-        CompensationService, LifecycleService,
+        WorkflowExecutorService,
+        RetryHandlerService,
+        TimeoutHandlerService,
+        CompensationService,
+        LifecycleService,
         { provide: 'IExecutionRepository', useClass: InMemoryExecutionRepository },
 
-        ApprovalService, ReviewService,
+        ApprovalService,
+        ReviewService,
         { provide: 'IHitlRepository', useClass: InMemoryHitlRepository },
 
-        CoordinatorService, SupervisorService,
+        CoordinatorService,
+        SupervisorService,
         { provide: 'ICoordinationRepository', useClass: InMemoryCoordinationRepository },
 
-        ContextVariablesService, ArtifactService, SharedMemoryService,
+        ContextVariablesService,
+        ArtifactService,
+        SharedMemoryService,
         { provide: 'IContextRepository', useClass: InMemoryContextRepository },
 
-        ConversationService, HistoryService,
+        ConversationService,
+        HistoryService,
         { provide: 'IConversationRepository', useClass: InMemoryConversationRepository },
 
-        CostTrackingService, CostAnalysisService,
+        CostTrackingService,
+        CostAnalysisService,
         { provide: 'ICostRepository', useClass: InMemoryCostRepository },
 
-        ExplainabilityService, DecisionLoggerService,
+        ExplainabilityService,
+        DecisionLoggerService,
         { provide: 'IExplainabilityRepository', useClass: InMemoryExplainabilityRepository },
       ],
     }).compile();
@@ -148,7 +162,8 @@ describe('Enterprise Orchestration Platform (Sprint O1)', () => {
   describe('Phase 1: Workflow Definition Engine', () => {
     it('should create a workflow definition', async () => {
       const wf = await workflowDef.create({
-        name: 'test-workflow', description: 'A test workflow',
+        name: 'test-workflow',
+        description: 'A test workflow',
         steps: [
           { id: 'step-1', type: 'task', name: 'Step 1', config: {} },
           { id: 'step-2', type: 'task', name: 'Step 2', config: {}, next: ['step-1'] },
@@ -168,16 +183,15 @@ describe('Enterprise Orchestration Platform (Sprint O1)', () => {
     it('should create a new version', async () => {
       const wf = await workflowDef.getByName('test-workflow');
       const v2 = await workflowDef.createVersion(wf!.id, {
-        steps: [
-          { id: 'step-1', type: 'task', name: 'Step 1 v2', config: {} },
-        ],
+        steps: [{ id: 'step-1', type: 'task', name: 'Step 1 v2', config: {} }],
       });
       expect(v2.version).toBe(2);
     });
 
     it('should activate and archive workflow', async () => {
       const wf = await workflowDef.create({
-        name: 'lifecycle-test', description: 'Lifecycle',
+        name: 'lifecycle-test',
+        description: 'Lifecycle',
         steps: [{ id: 's1', type: 'task', name: 'S1', config: {} }],
       });
       const active = await workflowDef.activate(wf.id);
@@ -188,10 +202,12 @@ describe('Enterprise Orchestration Platform (Sprint O1)', () => {
 
     it('should create workflow from template', async () => {
       const tmpl = await workflowTemplate.createTemplate(
-        'basic-flow', 'A basic flow template',
+        'basic-flow',
+        'A basic flow template',
         { steps: [{ id: 'step-1', type: 'task', name: '{{name}}', config: {} }] },
         [{ name: 'name', type: 'string', required: true }],
-        'general', ['test'],
+        'general',
+        ['test'],
       );
       const instance = await workflowTemplate.instantiate(tmpl.id, { name: 'MyStep' });
       expect(instance.steps[0].name).toBe('MyStep');
@@ -206,10 +222,25 @@ describe('Enterprise Orchestration Platform (Sprint O1)', () => {
         goal: 'Build feature',
         tasks: [
           { id: 'task-1', description: 'Design', type: 'task', status: 'pending', dependsOn: [] },
-          { id: 'task-2', description: 'Implement', type: 'task', status: 'pending', dependsOn: ['task-1'] },
-          { id: 'task-3', description: 'Test', type: 'task', status: 'pending', dependsOn: ['task-2'] },
+          {
+            id: 'task-2',
+            description: 'Implement',
+            type: 'task',
+            status: 'pending',
+            dependsOn: ['task-1'],
+          },
+          {
+            id: 'task-3',
+            description: 'Test',
+            type: 'task',
+            status: 'pending',
+            dependsOn: ['task-2'],
+          },
         ],
-        dependencies: [{ from: 'task-1', to: 'task-2', type: 'hard' }, { from: 'task-2', to: 'task-3', type: 'hard' }],
+        dependencies: [
+          { from: 'task-1', to: 'task-2', type: 'hard' },
+          { from: 'task-2', to: 'task-3', type: 'hard' },
+        ],
         createdBy: 'test',
       });
       expect(result.plan.id).toBeDefined();
@@ -221,7 +252,13 @@ describe('Enterprise Orchestration Platform (Sprint O1)', () => {
         goal: 'Ordered tasks',
         tasks: [
           { id: 'task-1', description: 'First', type: 'task', status: 'pending', dependsOn: [] },
-          { id: 'task-2', description: 'Second', type: 'task', status: 'pending', dependsOn: ['task-1'] },
+          {
+            id: 'task-2',
+            description: 'Second',
+            type: 'task',
+            status: 'pending',
+            dependsOn: ['task-1'],
+          },
         ],
         dependencies: [{ from: 'task-1', to: 'task-2', type: 'hard' }],
         createdBy: 'test',
@@ -236,7 +273,13 @@ describe('Enterprise Orchestration Platform (Sprint O1)', () => {
         goal: 'Replan test',
         tasks: [
           { id: 'task-1', description: 'A', type: 'task', status: 'pending', dependsOn: [] },
-          { id: 'task-2', description: 'B', type: 'task', status: 'pending', dependsOn: ['task-1'] },
+          {
+            id: 'task-2',
+            description: 'B',
+            type: 'task',
+            status: 'pending',
+            dependsOn: ['task-1'],
+          },
         ],
         dependencies: [{ from: 'task-1', to: 'task-2', type: 'hard' }],
         createdBy: 'test',
@@ -251,7 +294,8 @@ describe('Enterprise Orchestration Platform (Sprint O1)', () => {
   describe('Phase 3: Workflow Runtime', () => {
     it('should execute sequential steps', async () => {
       const wf = await workflowDef.create({
-        name: 'seq-run', description: 'Sequential',
+        name: 'seq-run',
+        description: 'Sequential',
         steps: [
           { id: 's1', type: 'task', name: 'S1', config: { value: 1 }, next: ['s2'] },
           { id: 's2', type: 'task', name: 'S2', config: { value: 2 } },
@@ -266,9 +310,31 @@ describe('Enterprise Orchestration Platform (Sprint O1)', () => {
       const exec = WorkflowExecution.create({
         workflowId: 'wf-pause',
         workflowVersion: 1,
-        definition: { name: 'pause-test', description: '', version: 1, steps: [], triggers: [], timeout: null, metadata: { createdAt: new Date(), updatedAt: new Date(), createdBy: 'test', updatedBy: null }, createdAt: new Date(), updatedAt: new Date(), id: 'wf-pause', status: 'draft' },
+        definition: {
+          name: 'pause-test',
+          description: '',
+          version: 1,
+          steps: [],
+          triggers: [],
+          timeout: null,
+          metadata: {
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            createdBy: 'test',
+            updatedBy: null,
+          },
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          id: 'wf-pause',
+          status: 'draft',
+        },
         context: {},
-        metadata: { createdAt: new Date(), updatedAt: new Date(), createdBy: 'test', updatedBy: null },
+        metadata: {
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          createdBy: 'test',
+          updatedBy: null,
+        },
       });
       exec.status = 'running';
       await execRepo.save(exec);
@@ -284,9 +350,31 @@ describe('Enterprise Orchestration Platform (Sprint O1)', () => {
       const exec = WorkflowExecution.create({
         workflowId: 'wf-cancel',
         workflowVersion: 1,
-        definition: { name: 'cancel-test', description: '', version: 1, steps: [], triggers: [], timeout: null, metadata: { createdAt: new Date(), updatedAt: new Date(), createdBy: 'test', updatedBy: null }, createdAt: new Date(), updatedAt: new Date(), id: 'wf-cancel', status: 'draft' },
+        definition: {
+          name: 'cancel-test',
+          description: '',
+          version: 1,
+          steps: [],
+          triggers: [],
+          timeout: null,
+          metadata: {
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            createdBy: 'test',
+            updatedBy: null,
+          },
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          id: 'wf-cancel',
+          status: 'draft',
+        },
         context: {},
-        metadata: { createdAt: new Date(), updatedAt: new Date(), createdBy: 'test', updatedBy: null },
+        metadata: {
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          createdBy: 'test',
+          updatedBy: null,
+        },
       });
       exec.status = 'running';
       await execRepo.save(exec);
@@ -301,9 +389,12 @@ describe('Enterprise Orchestration Platform (Sprint O1)', () => {
   describe('Phase 4: Human-in-the-Loop', () => {
     it('should create and approve a request', async () => {
       const req = await approval.request({
-        executionId: 'exec-1', stepId: 'step-1',
-        requestedBy: 'system', assignedTo: ['user-1'],
-        title: 'Approve step', description: 'Please approve',
+        executionId: 'exec-1',
+        stepId: 'step-1',
+        requestedBy: 'system',
+        assignedTo: ['user-1'],
+        title: 'Approve step',
+        description: 'Please approve',
       });
       expect(req.status).toBe('pending');
       const approved = await approval.approve(req.id, 'user-1', 'Looks good');
@@ -312,9 +403,12 @@ describe('Enterprise Orchestration Platform (Sprint O1)', () => {
 
     it('should reject a request', async () => {
       const req = await approval.request({
-        executionId: 'exec-2', stepId: 'step-2',
-        requestedBy: 'system', assignedTo: ['admin'],
-        title: 'Reject test', description: 'Should reject',
+        executionId: 'exec-2',
+        stepId: 'step-2',
+        requestedBy: 'system',
+        assignedTo: ['admin'],
+        title: 'Reject test',
+        description: 'Should reject',
       });
       const rejected = await approval.reject(req.id, 'admin', 'Not ready');
       expect(rejected.status).toBe('rejected');
@@ -335,11 +429,21 @@ describe('Enterprise Orchestration Platform (Sprint O1)', () => {
       const coordPlan = CoordinationPlan.create({
         workflowExecutionId: 'exec-coord-1',
         goal: 'Test coordination',
-        metadata: { createdAt: new Date(), updatedAt: new Date(), createdBy: 'test', updatedBy: null },
+        metadata: {
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          createdBy: 'test',
+          updatedBy: null,
+        },
       });
       await coordRepo.savePlan(coordPlan);
       const plan = await coordinator.assignTask(
-        coordPlan.id, 'Task 1', 'agent-1', 'worker', {}, [],
+        coordPlan.id,
+        'Task 1',
+        'agent-1',
+        'worker',
+        {},
+        [],
       );
       expect(plan).toBeDefined();
       expect(plan.tasks.length).toBe(1);
@@ -351,12 +455,28 @@ describe('Enterprise Orchestration Platform (Sprint O1)', () => {
       const coordPlan = CoordinationPlan.create({
         workflowExecutionId: 'exec-supervise-1',
         goal: 'Test supervision',
-        metadata: { createdAt: new Date(), updatedAt: new Date(), createdBy: 'test', updatedBy: null },
+        metadata: {
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          createdBy: 'test',
+          updatedBy: null,
+        },
       });
       await coordRepo.savePlan(coordPlan);
-      const plan = await coordinator.assignTask(coordPlan.id, 'Supervise me', 'agent-2', 'worker', {}, []);
+      const plan = await coordinator.assignTask(
+        coordPlan.id,
+        'Supervise me',
+        'agent-2',
+        'worker',
+        {},
+        [],
+      );
       const task = plan.tasks[0];
-      const result = await supervisor.makeDecision(task.id, { status: 'completed', output: { done: true }, hasError: false });
+      const result = await supervisor.makeDecision(task.id, {
+        status: 'completed',
+        output: { done: true },
+        hasError: false,
+      });
       expect(result.decision).toBe('approved');
       expect(result.taskId).toBe(task.id);
     });
@@ -429,8 +549,16 @@ describe('Enterprise Orchestration Platform (Sprint O1)', () => {
 
   describe('Phase 9: Explainability & Audit', () => {
     it('should log decisions and generate report', async () => {
-      await decisionLogger.log('exec-explain-1', 'step-1', 'tool_selection', 'Selected tool A',
-        'Best match for intent', ['Tool B', 'Tool C'], 0.95, 'system');
+      await decisionLogger.log(
+        'exec-explain-1',
+        'step-1',
+        'tool_selection',
+        'Selected tool A',
+        'Best match for intent',
+        ['Tool B', 'Tool C'],
+        0.95,
+        'system',
+      );
       const report = await explain.generateReport('exec-explain-1');
       expect(report.decisions.length).toBe(1);
       expect(report.decisions[0].decision).toBe('Selected tool A');

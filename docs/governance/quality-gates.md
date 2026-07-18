@@ -31,14 +31,14 @@ Quality gates are mandatory, phase-gated checkpoints that every deliverable must
 
 ### 1.2 Governing Principles
 
-| Principle | Description |
-|---|---|
-| **Gate before phase** | No phase begins until its preceding gate passes. Exceptions require Architecture Board override (see §11.4). |
-| **Evidence-based** | Every check requires objective evidence (tool output, scan report, peer-reviewed document). Self-attestation is not sufficient. |
-| **No retroactive waiver** | A failing criterion cannot be waived because "it will be fixed later." The gate fails; the fix must happen now. |
-| **Single source of truth** | All gate results are recorded in the Gate Passport (§10). No parallel tracking. |
-| **Audit trail** | Every gate produces an immutable artifact stored in `docs/governance/gates/<gate-name>/<date>-result.md`. |
-| **Escalation path** | Blocked teams escalate via the appeal process (§11.4), not by bypassing the gate. |
+| Principle                  | Description                                                                                                                     |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| **Gate before phase**      | No phase begins until its preceding gate passes. Exceptions require Architecture Board override (see §11.4).                    |
+| **Evidence-based**         | Every check requires objective evidence (tool output, scan report, peer-reviewed document). Self-attestation is not sufficient. |
+| **No retroactive waiver**  | A failing criterion cannot be waived because "it will be fixed later." The gate fails; the fix must happen now.                 |
+| **Single source of truth** | All gate results are recorded in the Gate Passport (§10). No parallel tracking.                                                 |
+| **Audit trail**            | Every gate produces an immutable artifact stored in `docs/governance/gates/<gate-name>/<date>-result.md`.                       |
+| **Escalation path**        | Blocked teams escalate via the appeal process (§11.4), not by bypassing the gate.                                               |
 
 ### 1.3 Gate Lifecycle
 
@@ -50,15 +50,15 @@ Planned → In Review → Passed / Failed → (if Failed) Remediation → Re-che
 
 ## 2. Gate Overview
 
-| # | Gate | Checked Before | Threshold | Review Board |
-|---|------|----------------|-----------|--------------|
-| 1 | Architecture Gate | Phase 1 Start, Phase 5 AI Start | ≥70% architecture score | Architecture Board |
-| 2 | Security Gate | Phase 2 Security Sprint, Phase 3 Data Layer | ZERO open CRITICAL issues | Security Review Board |
-| 3 | Performance Gate | Phase 3 Data Layer, Phase 6 Testing | ≥60% performance score | Performance Review Board |
-| 4 | AI Gate | Phase 5 AI Implementation | AI pipeline end-to-end verified | AI Review Board |
-| 5 | Testing Gate | Phase 6 Testing Sprint, Phase 8 Release | ≥60% module coverage, 100% pass rate | QA Review Board |
-| 6 | Documentation Gate | Phase 8 Release | No gaps in required documentation | Documentation Review Board |
-| 7 | Release Gate (Final) | RC1 | 100% of gates pass | Program Architecture Board |
+| #   | Gate                 | Checked Before                              | Threshold                            | Review Board               |
+| --- | -------------------- | ------------------------------------------- | ------------------------------------ | -------------------------- |
+| 1   | Architecture Gate    | Phase 1 Start, Phase 5 AI Start             | ≥70% architecture score              | Architecture Board         |
+| 2   | Security Gate        | Phase 2 Security Sprint, Phase 3 Data Layer | ZERO open CRITICAL issues            | Security Review Board      |
+| 3   | Performance Gate     | Phase 3 Data Layer, Phase 6 Testing         | ≥60% performance score               | Performance Review Board   |
+| 4   | AI Gate              | Phase 5 AI Implementation                   | AI pipeline end-to-end verified      | AI Review Board            |
+| 5   | Testing Gate         | Phase 6 Testing Sprint, Phase 8 Release     | ≥60% module coverage, 100% pass rate | QA Review Board            |
+| 6   | Documentation Gate   | Phase 8 Release                             | No gaps in required documentation    | Documentation Review Board |
+| 7   | Release Gate (Final) | RC1                                         | 100% of gates pass                   | Program Architecture Board |
 
 ### 2.1 Phase-to-Gate Map
 
@@ -104,15 +104,15 @@ RC1
 
 ### 3.1 Identification
 
-| Field | Value |
-|---|---|
-| **Gate ID** | GATE-ARCH-001 |
-| **Gate Name** | Architecture Gate |
-| **Checked Before** | Phase 1 Implementation Start, Phase 5 AI Implementation Start |
-| **Review Board** | Architecture Board (see §3.6) |
-| **Passing Threshold** | ≥70% architecture score |
-| **Re-check Timing** | 5 working days after remediation submission |
-| **Max Re-check Attempts** | 3 |
+| Field                     | Value                                                         |
+| ------------------------- | ------------------------------------------------------------- |
+| **Gate ID**               | GATE-ARCH-001                                                 |
+| **Gate Name**             | Architecture Gate                                             |
+| **Checked Before**        | Phase 1 Implementation Start, Phase 5 AI Implementation Start |
+| **Review Board**          | Architecture Board (see §3.6)                                 |
+| **Passing Threshold**     | ≥70% architecture score                                       |
+| **Re-check Timing**       | 5 working days after remediation submission                   |
+| **Max Re-check Attempts** | 3                                                             |
 
 ### 3.2 Detailed Checklist (25 items)
 
@@ -158,34 +158,34 @@ RC1
 
 ### 3.3 Scoring Methodology
 
-| Dimension | Weight | Items | Score Calculation |
-|---|---|---|---|
-| DDD Compliance | 30% | 6 | `(passed / 6) × 30` |
-| Module Isolation | 25% | 5 | `(passed / 5) × 25` |
-| Dependency Direction | 20% | 4 | `(passed / 4) × 20` |
-| Infrastructure Leakage | 15% | 5 | `(passed / 5) × 15` |
-| Interface Purity | 10% | 5 | `(passed / 5) × 10` |
-| **Total** | **100%** | **25** | **Sum of dimension scores** |
+| Dimension              | Weight   | Items  | Score Calculation           |
+| ---------------------- | -------- | ------ | --------------------------- |
+| DDD Compliance         | 30%      | 6      | `(passed / 6) × 30`         |
+| Module Isolation       | 25%      | 5      | `(passed / 5) × 25`         |
+| Dependency Direction   | 20%      | 4      | `(passed / 4) × 20`         |
+| Infrastructure Leakage | 15%      | 5      | `(passed / 5) × 15`         |
+| Interface Purity       | 10%      | 5      | `(passed / 5) × 10`         |
+| **Total**              | **100%** | **25** | **Sum of dimension scores** |
 
 **Partial credit per item:** 0 or 1. No half points. An item passes only when all sub-requirements are met.
 
 **Tool-assisted verification:**
 
-| Check | Tool / Method |
-|---|---|
-| Cyclic dependencies | `depcruise` or `madge` |
-| Layer violations | `dependency-cruiser` with custom rules |
-| Framework leakage | Manual code review + `ts-morph` AST scan |
-| Module isolation | Compilation test: remove module, rebuild |
-| Interface purity | Manual review with Architecture Board |
+| Check               | Tool / Method                            |
+| ------------------- | ---------------------------------------- |
+| Cyclic dependencies | `depcruise` or `madge`                   |
+| Layer violations    | `dependency-cruiser` with custom rules   |
+| Framework leakage   | Manual code review + `ts-morph` AST scan |
+| Module isolation    | Compilation test: remove module, rebuild |
+| Interface purity    | Manual review with Architecture Board    |
 
 ### 3.4 Pass / Fail Rules
 
-| Score | Result |
-|---|---|
-| ≥70% | **PASS** — proceed to next phase |
+| Score  | Result                                                                         |
+| ------ | ------------------------------------------------------------------------------ |
+| ≥70%   | **PASS** — proceed to next phase                                               |
 | 50–69% | **CONDITIONAL PASS** — pass with corrective action plan; re-check at next gate |
-| <50% | **FAIL** — stop; remediation plan required; re-check in 5 working days |
+| <50%   | **FAIL** — stop; remediation plan required; re-check in 5 working days         |
 
 ### 3.5 Consequences of Failure
 
@@ -196,13 +196,13 @@ RC1
 
 ### 3.6 Review Board Composition
 
-| Role | Person / Team | Vote Weight |
-|---|---|---|
-| Chief Architect (Chair) | TBD | 2 |
-| Domain Architect (per module) | TBD | 1 |
-| Senior Engineer (peer, non-module) | TBD | 1 |
-| Quality Assurance Representative | TBD | 1 |
-| **Minimum quorum** | 3 members including Chair | — |
+| Role                               | Person / Team             | Vote Weight |
+| ---------------------------------- | ------------------------- | ----------- |
+| Chief Architect (Chair)            | TBD                       | 2           |
+| Domain Architect (per module)      | TBD                       | 1           |
+| Senior Engineer (peer, non-module) | TBD                       | 1           |
+| Quality Assurance Representative   | TBD                       | 1           |
+| **Minimum quorum**                 | 3 members including Chair | —           |
 
 ### 3.7 How to Document Gate Results
 
@@ -224,25 +224,25 @@ docs/governance/gates/architecture/<YYYY-MM-DD>-result.md
 
 ## Score Summary
 
-| Dimension | Items Passed | Total Items | Weight | Score |
-|---|---|---|---|---|
-| DDD Compliance | | /6 | 30% | |
-| Module Isolation | | /5 | 25% | |
-| Dependency Direction | | /4 | 20% | |
-| Infrastructure Leakage | | /5 | 15% | |
-| Interface Purity | | /5 | 10% | |
-| **Total** | | **/25** | **100%** | **%** |
+| Dimension              | Items Passed | Total Items | Weight   | Score |
+| ---------------------- | ------------ | ----------- | -------- | ----- |
+| DDD Compliance         |              | /6          | 30%      |       |
+| Module Isolation       |              | /5          | 25%      |       |
+| Dependency Direction   |              | /4          | 20%      |       |
+| Infrastructure Leakage |              | /5          | 15%      |       |
+| Interface Purity       |              | /5          | 10%      |       |
+| **Total**              |              | **/25**     | **100%** | **%** |
 
 ## Item Detail
 
 - [x] ARCH-01: passed
 - [ ] ARCH-02: FAILED — domain layer imports from @nestjs/common
-...
+      ...
 
 ## Issues Found
 
-| ID | Item | Severity | Owner | Due |
-|---|---|---|---|---|
+| ID      | Item                     | Severity | Owner | Due        |
+| ------- | ------------------------ | -------- | ----- | ---------- |
 | ARCH-02 | Domain imports framework | CRITICAL | @user | YYYY-MM-DD |
 
 ## Remediation Plan (if failed)
@@ -260,15 +260,15 @@ See §11.4 (Appendices — Appeal Process).
 
 ### 4.1 Identification
 
-| Field | Value |
-|---|---|
-| **Gate ID** | GATE-SEC-001 |
-| **Gate Name** | Security Gate |
-| **Checked Before** | Phase 2 Security Sprint, Phase 3 Data Layer Sprint |
-| **Review Board** | Security Review Board (see §4.6) |
-| **Passing Threshold** | ZERO open CRITICAL issues |
-| **Re-check Timing** | 3 working days after remediation submission |
-| **Max Re-check Attempts** | 3 |
+| Field                     | Value                                              |
+| ------------------------- | -------------------------------------------------- |
+| **Gate ID**               | GATE-SEC-001                                       |
+| **Gate Name**             | Security Gate                                      |
+| **Checked Before**        | Phase 2 Security Sprint, Phase 3 Data Layer Sprint |
+| **Review Board**          | Security Review Board (see §4.6)                   |
+| **Passing Threshold**     | ZERO open CRITICAL issues                          |
+| **Re-check Timing**       | 3 working days after remediation submission        |
+| **Max Re-check Attempts** | 3                                                  |
 
 ### 4.2 Detailed Checklist (25 items)
 
@@ -316,24 +316,24 @@ See §11.4 (Appendices — Appeal Process).
 
 **Binary gate — all items must pass.** This is not a scored gate.
 
-| Criterion | Result |
-|---|---|
-| All CRITICAL issues resolved | Mandatory |
-| All HIGH issues resolved | Mandatory |
-| Zero secrets in codebase | Mandatory |
-| No fail-open guards | Mandatory |
-| **Any item failing** | **GATE FAILED** |
+| Criterion                    | Result          |
+| ---------------------------- | --------------- |
+| All CRITICAL issues resolved | Mandatory       |
+| All HIGH issues resolved     | Mandatory       |
+| Zero secrets in codebase     | Mandatory       |
+| No fail-open guards          | Mandatory       |
+| **Any item failing**         | **GATE FAILED** |
 
 For MEDIUM/LOW issues: logged in Technical Debt Register but do not block the gate.
 
 ### 4.4 Pass / Fail Rules
 
-| Result | Action |
-|---|---|
-| ZERO open CRITICAL items, ZERO open HIGH items | **PASS** |
-| Any open CRITICAL item | **FAIL** — stop immediately |
-| Any open HIGH item | **FAIL** — stop immediately |
-| ZERO CRITICAL/HIGH but any fail-open guard | **FAIL** — security architecture violation |
+| Result                                         | Action                                     |
+| ---------------------------------------------- | ------------------------------------------ |
+| ZERO open CRITICAL items, ZERO open HIGH items | **PASS**                                   |
+| Any open CRITICAL item                         | **FAIL** — stop immediately                |
+| Any open HIGH item                             | **FAIL** — stop immediately                |
+| ZERO CRITICAL/HIGH but any fail-open guard     | **FAIL** — security architecture violation |
 
 ### 4.5 Consequences of Failure
 
@@ -344,13 +344,13 @@ For MEDIUM/LOW issues: logged in Technical Debt Register but do not block the ga
 
 ### 4.6 Review Board Composition
 
-| Role | Person / Team | Vote Weight |
-|---|---|---|
-| Security Lead (Chair) | TBD | 2 |
-| Infrastructure Engineer | TBD | 1 |
-| Application Security Engineer | TBD | 1 |
-| Module Lead (affected module) | TBD | 1 (advisory, no vote) |
-| **Minimum quorum** | 3 members including Chair | — |
+| Role                          | Person / Team             | Vote Weight           |
+| ----------------------------- | ------------------------- | --------------------- |
+| Security Lead (Chair)         | TBD                       | 2                     |
+| Infrastructure Engineer       | TBD                       | 1                     |
+| Application Security Engineer | TBD                       | 1                     |
+| Module Lead (affected module) | TBD                       | 1 (advisory, no vote) |
+| **Minimum quorum**            | 3 members including Chair | —                     |
 
 ### 4.7 How to Document Gate Results
 
@@ -370,15 +370,15 @@ See §11.4. Security appeals have expedited handling — response within 24 hour
 
 ### 5.1 Identification
 
-| Field | Value |
-|---|---|
-| **Gate ID** | GATE-PERF-001 |
-| **Gate Name** | Performance Gate |
-| **Checked Before** | Phase 3 Data Layer, Phase 6 Testing |
-| **Review Board** | Performance Review Board (see §5.6) |
-| **Passing Threshold** | ≥60% performance score |
-| **Re-check Timing** | 5 working days after remediation submission |
-| **Max Re-check Attempts** | 3 |
+| Field                     | Value                                       |
+| ------------------------- | ------------------------------------------- |
+| **Gate ID**               | GATE-PERF-001                               |
+| **Gate Name**             | Performance Gate                            |
+| **Checked Before**        | Phase 3 Data Layer, Phase 6 Testing         |
+| **Review Board**          | Performance Review Board (see §5.6)         |
+| **Passing Threshold**     | ≥60% performance score                      |
+| **Re-check Timing**       | 5 working days after remediation submission |
+| **Max Re-check Attempts** | 3                                           |
 
 ### 5.2 Detailed Checklist (20 items)
 
@@ -419,32 +419,32 @@ See §11.4. Security appeals have expedited handling — response within 24 hour
 
 ### 5.3 Scoring Methodology
 
-| Dimension | Weight | Items | Score Calculation |
-|---|---|---|---|
-| Query Optimization | 30% | 5 | `(passed / 5) × 30` |
-| Data Access Patterns | 25% | 4 | `(passed / 4) × 25` |
-| Streaming & Real-Time | 20% | 4 | `(passed / 4) × 20` |
-| Memory & Resource Mgmt | 15% | 4 | `(passed / 4) × 15` |
-| Tooling & Benchmarks | 10% | 3 | `(passed / 3) × 10` |
-| **Total** | **100%** | **20** | **Sum of dimension scores** |
+| Dimension              | Weight   | Items  | Score Calculation           |
+| ---------------------- | -------- | ------ | --------------------------- |
+| Query Optimization     | 30%      | 5      | `(passed / 5) × 30`         |
+| Data Access Patterns   | 25%      | 4      | `(passed / 4) × 25`         |
+| Streaming & Real-Time  | 20%      | 4      | `(passed / 4) × 20`         |
+| Memory & Resource Mgmt | 15%      | 4      | `(passed / 4) × 15`         |
+| Tooling & Benchmarks   | 10%      | 3      | `(passed / 3) × 10`         |
+| **Total**              | **100%** | **20** | **Sum of dimension scores** |
 
 **Tool-assisted verification:**
 
-| Check | Tool / Method |
-|---|---|
-| N+1 detection | Prisma `log: ['query']` + manual review of query count per request |
-| Index analysis | `EXPLAIN ANALYZE` on top 10 slow queries |
-| Memory profiling | `clinic.js`, `--inspect` heap snapshots |
-| Streaming verification | Code review: no `setTimeout` per-word simulation patterns |
-| Caching audit | Redis `MONITOR` or cache hit-rate metrics |
+| Check                  | Tool / Method                                                      |
+| ---------------------- | ------------------------------------------------------------------ |
+| N+1 detection          | Prisma `log: ['query']` + manual review of query count per request |
+| Index analysis         | `EXPLAIN ANALYZE` on top 10 slow queries                           |
+| Memory profiling       | `clinic.js`, `--inspect` heap snapshots                            |
+| Streaming verification | Code review: no `setTimeout` per-word simulation patterns          |
+| Caching audit          | Redis `MONITOR` or cache hit-rate metrics                          |
 
 ### 5.4 Pass / Fail Rules
 
-| Score | Result |
-|---|---|
-| ≥60% | **PASS** |
+| Score  | Result                                                              |
+| ------ | ------------------------------------------------------------------- |
+| ≥60%   | **PASS**                                                            |
 | 40–59% | **CONDITIONAL PASS** — must address each failed item in next sprint |
-| <40% | **FAIL** — performance architecture review required |
+| <40%   | **FAIL** — performance architecture review required                 |
 
 ### 5.5 Consequences of Failure
 
@@ -455,13 +455,13 @@ See §11.4. Security appeals have expedited handling — response within 24 hour
 
 ### 5.6 Review Board Composition
 
-| Role | Person / Team | Vote Weight |
-|---|---|---|
-| Performance Architect (Chair) | TBD | 2 |
-| Senior Backend Engineer | TBD | 1 |
-| Database Administrator / DBA | TBD | 1 |
-| SRE / Infrastructure Engineer | TBD | 1 |
-| **Minimum quorum** | 3 members including Chair | — |
+| Role                          | Person / Team             | Vote Weight |
+| ----------------------------- | ------------------------- | ----------- |
+| Performance Architect (Chair) | TBD                       | 2           |
+| Senior Backend Engineer       | TBD                       | 1           |
+| Database Administrator / DBA  | TBD                       | 1           |
+| SRE / Infrastructure Engineer | TBD                       | 1           |
+| **Minimum quorum**            | 3 members including Chair | —           |
 
 ### 5.7 How to Document Gate Results
 
@@ -481,15 +481,15 @@ See §11.4.
 
 ### 6.1 Identification
 
-| Field | Value |
-|---|---|
-| **Gate ID** | GATE-AI-001 |
-| **Gate Name** | AI Gate |
-| **Checked Before** | Phase 5 AI Implementation |
-| **Review Board** | AI Review Board (see §6.6) |
-| **Passing Threshold** | AI pipeline end-to-end verified with production-like data |
-| **Re-check Timing** | 5 working days after remediation submission |
-| **Max Re-check Attempts** | 3 |
+| Field                     | Value                                                     |
+| ------------------------- | --------------------------------------------------------- |
+| **Gate ID**               | GATE-AI-001                                               |
+| **Gate Name**             | AI Gate                                                   |
+| **Checked Before**        | Phase 5 AI Implementation                                 |
+| **Review Board**          | AI Review Board (see §6.6)                                |
+| **Passing Threshold**     | AI pipeline end-to-end verified with production-like data |
+| **Re-check Timing**       | 5 working days after remediation submission               |
+| **Max Re-check Attempts** | 3                                                         |
 
 ### 6.2 Detailed Checklist (22 items)
 
@@ -534,23 +534,23 @@ See §11.4.
 
 **Binary / end-to-end verification.** The AI gate is evaluated holistically, not as a point score.
 
-| Criterion | Method | Result |
-|---|---|---|
-| Real LLM call confirmed | Network capture + code review | Pass/Fail |
-| Real SSE streaming confirmed | Wire-level inspection | Pass/Fail |
-| Real embeddings confirmed | Cosine similarity test | Pass/Fail |
-| RAG returns accurate results | Test queries against indexed docs | Pass/Fail |
-| No simulated/placeholder code | Full codebase scan | Pass/Fail |
+| Criterion                     | Method                            | Result    |
+| ----------------------------- | --------------------------------- | --------- |
+| Real LLM call confirmed       | Network capture + code review     | Pass/Fail |
+| Real SSE streaming confirmed  | Wire-level inspection             | Pass/Fail |
+| Real embeddings confirmed     | Cosine similarity test            | Pass/Fail |
+| RAG returns accurate results  | Test queries against indexed docs | Pass/Fail |
+| No simulated/placeholder code | Full codebase scan                | Pass/Fail |
 
 **Threshold:** All five criteria must pass. No partial credit.
 
 ### 6.4 Pass / Fail Rules
 
-| Result | Action |
-|---|---|
-| All 5 criteria pass + all 22 items ≥90% | **PASS** |
+| Result                                       | Action                                                    |
+| -------------------------------------------- | --------------------------------------------------------- |
+| All 5 criteria pass + all 22 items ≥90%      | **PASS**                                                  |
 | All 5 criteria pass but checklist items <90% | **CONDITIONAL PASS** — items tracked in AI Technical Debt |
-| Any of 5 criteria fails | **FAIL** — AI pipeline incomplete |
+| Any of 5 criteria fails                      | **FAIL** — AI pipeline incomplete                         |
 
 ### 6.5 Consequences of Failure
 
@@ -561,13 +561,13 @@ See §11.4.
 
 ### 6.6 Review Board Composition
 
-| Role | Person / Team | Vote Weight |
-|---|---|---|
-| AI Architect / ML Lead (Chair) | TBD | 2 |
-| Senior AI Engineer | TBD | 1 |
-| Backend Engineer (AI module) | TBD | 1 |
-| QA Engineer (AI testing) | TBD | 1 |
-| **Minimum quorum** | 3 members including Chair | — |
+| Role                           | Person / Team             | Vote Weight |
+| ------------------------------ | ------------------------- | ----------- |
+| AI Architect / ML Lead (Chair) | TBD                       | 2           |
+| Senior AI Engineer             | TBD                       | 1           |
+| Backend Engineer (AI module)   | TBD                       | 1           |
+| QA Engineer (AI testing)       | TBD                       | 1           |
+| **Minimum quorum**             | 3 members including Chair | —           |
 
 ### 6.7 How to Document Gate Results
 
@@ -576,6 +576,7 @@ docs/governance/gates/ai/<YYYY-MM-DD>-result.md
 ```
 
 Must include:
+
 - Network trace showing real LLM call + real streaming
 - Embedding cosine similarity test results
 - RAG test queries with source-attributed responses
@@ -591,15 +592,15 @@ See §11.4.
 
 ### 7.1 Identification
 
-| Field | Value |
-|---|---|
-| **Gate ID** | GATE-TEST-001 |
-| **Gate Name** | Testing Gate |
-| **Checked Before** | Phase 6 Testing Sprint, Phase 8 Release |
-| **Review Board** | QA Review Board (see §7.6) |
-| **Passing Threshold** | ≥60% module coverage, 100% pass rate |
-| **Re-check Timing** | 3 working days after remediation submission |
-| **Max Re-check Attempts** | 3 |
+| Field                     | Value                                       |
+| ------------------------- | ------------------------------------------- |
+| **Gate ID**               | GATE-TEST-001                               |
+| **Gate Name**             | Testing Gate                                |
+| **Checked Before**        | Phase 6 Testing Sprint, Phase 8 Release     |
+| **Review Board**          | QA Review Board (see §7.6)                  |
+| **Passing Threshold**     | ≥60% module coverage, 100% pass rate        |
+| **Re-check Timing**       | 3 working days after remediation submission |
+| **Max Re-check Attempts** | 3                                           |
 
 ### 7.2 Detailed Checklist (22 items)
 
@@ -642,25 +643,25 @@ See §11.4.
 
 ### 7.3 Scoring Methodology
 
-| Dimension | Weight | Items | Score Calculation |
-|---|---|---|---|
-| Coverage Requirements | 30% | 5 | `(passed / 5) × 30` |
-| Test Quality | 30% | 5 | `(passed / 5) × 30` |
-| Test Infrastructure | 20% | 4 | `(passed / 4) × 20` |
-| Python Microservice Tests | 10% | 4 | `(passed / 4) × 10` |
-| AI Module Tests | 10% | 4 | `(passed / 4) × 10` |
-| **Total** | **100%** | **22** | **Sum of dimension scores** |
+| Dimension                 | Weight   | Items  | Score Calculation           |
+| ------------------------- | -------- | ------ | --------------------------- |
+| Coverage Requirements     | 30%      | 5      | `(passed / 5) × 30`         |
+| Test Quality              | 30%      | 5      | `(passed / 5) × 30`         |
+| Test Infrastructure       | 20%      | 4      | `(passed / 4) × 20`         |
+| Python Microservice Tests | 10%      | 4      | `(passed / 4) × 10`         |
+| AI Module Tests           | 10%      | 4      | `(passed / 4) × 10`         |
+| **Total**                 | **100%** | **22** | **Sum of dimension scores** |
 
 **Override:** If pass rate is below 100%, gate fails regardless of score.
 
 ### 7.4 Pass / Fail Rules
 
-| Result | Action |
-|---|---|
-| ≥60% module coverage AND 100% pass rate | **PASS** |
-| <60% coverage | **FAIL** — increase coverage |
-| <100% pass rate | **FAIL** — fix failing tests first |
-| >10 flaky tests identified | **FAIL** — flakiness is a quality defect |
+| Result                                  | Action                                   |
+| --------------------------------------- | ---------------------------------------- |
+| ≥60% module coverage AND 100% pass rate | **PASS**                                 |
+| <60% coverage                           | **FAIL** — increase coverage             |
+| <100% pass rate                         | **FAIL** — fix failing tests first       |
+| >10 flaky tests identified              | **FAIL** — flakiness is a quality defect |
 
 ### 7.5 Consequences of Failure
 
@@ -671,13 +672,13 @@ See §11.4.
 
 ### 7.6 Review Board Composition
 
-| Role | Person / Team | Vote Weight |
-|---|---|---|
-| QA Lead (Chair) | TBD | 2 |
-| Test Automation Engineer | TBD | 1 |
-| Module Lead (module under review) | TBD | 1 (advisory) |
-| Release Manager | TBD | 1 |
-| **Minimum quorum** | 3 members including Chair | — |
+| Role                              | Person / Team             | Vote Weight  |
+| --------------------------------- | ------------------------- | ------------ |
+| QA Lead (Chair)                   | TBD                       | 2            |
+| Test Automation Engineer          | TBD                       | 1            |
+| Module Lead (module under review) | TBD                       | 1 (advisory) |
+| Release Manager                   | TBD                       | 1            |
+| **Minimum quorum**                | 3 members including Chair | —            |
 
 ### 7.7 How to Document Gate Results
 
@@ -697,15 +698,15 @@ See §11.4.
 
 ### 8.1 Identification
 
-| Field | Value |
-|---|---|
-| **Gate ID** | GATE-DOC-001 |
-| **Gate Name** | Documentation Gate |
-| **Checked Before** | Phase 8 Release |
-| **Review Board** | Documentation Review Board (see §8.6) |
-| **Passing Threshold** | No gaps in required documentation |
-| **Re-check Timing** | 3 working days after remediation submission |
-| **Max Re-check Attempts** | 2 |
+| Field                     | Value                                       |
+| ------------------------- | ------------------------------------------- |
+| **Gate ID**               | GATE-DOC-001                                |
+| **Gate Name**             | Documentation Gate                          |
+| **Checked Before**        | Phase 8 Release                             |
+| **Review Board**          | Documentation Review Board (see §8.6)       |
+| **Passing Threshold**     | No gaps in required documentation           |
+| **Re-check Timing**       | 3 working days after remediation submission |
+| **Max Re-check Attempts** | 2                                           |
 
 ### 8.2 Detailed Checklist (20 items)
 
@@ -746,22 +747,22 @@ See §11.4.
 
 ### 8.3 Scoring Methodology
 
-| Dimension | Weight | Items | Score Calculation |
-|---|---|---|---|
-| API Documentation | 30% | 5 | `(passed / 5) × 30` |
-| Architecture Decision Records | 25% | 4 | `(passed / 4) × 25` |
-| Deployment & Operations | 25% | 5 | `(passed / 5) × 25` |
-| Code & Module Documentation | 15% | 4 | `(passed / 4) × 15` |
-| Program Documentation | 5% | 2 | `(passed / 2) × 5` |
-| **Total** | **100%** | **20** | **Sum of dimension scores** |
+| Dimension                     | Weight   | Items  | Score Calculation           |
+| ----------------------------- | -------- | ------ | --------------------------- |
+| API Documentation             | 30%      | 5      | `(passed / 5) × 30`         |
+| Architecture Decision Records | 25%      | 4      | `(passed / 4) × 25`         |
+| Deployment & Operations       | 25%      | 5      | `(passed / 5) × 25`         |
+| Code & Module Documentation   | 15%      | 4      | `(passed / 4) × 15`         |
+| Program Documentation         | 5%       | 2      | `(passed / 2) × 5`          |
+| **Total**                     | **100%** | **20** | **Sum of dimension scores** |
 
 ### 8.4 Pass / Fail Rules
 
-| Score | Result |
-|---|---|
-| ≥90% | **PASS** |
+| Score  | Result                                                                    |
+| ------ | ------------------------------------------------------------------------- |
+| ≥90%   | **PASS**                                                                  |
 | 70–89% | **CONDITIONAL PASS** — missing docs must be delivered before Release Gate |
-| <70% | **FAIL** — documentation debt blocks release |
+| <70%   | **FAIL** — documentation debt blocks release                              |
 
 ### 8.5 Consequences of Failure
 
@@ -772,13 +773,13 @@ See §11.4.
 
 ### 8.6 Review Board Composition
 
-| Role | Person / Team | Vote Weight |
-|---|---|---|
-| Technical Writer / Doc Lead (Chair) | TBD | 2 |
-| Senior Engineer (documentation quality) | TBD | 1 |
-| Release Manager | TBD | 1 |
-| Product Owner (user-facing docs) | TBD | 1 (advisory) |
-| **Minimum quorum** | 3 members including Chair | — |
+| Role                                    | Person / Team             | Vote Weight  |
+| --------------------------------------- | ------------------------- | ------------ |
+| Technical Writer / Doc Lead (Chair)     | TBD                       | 2            |
+| Senior Engineer (documentation quality) | TBD                       | 1            |
+| Release Manager                         | TBD                       | 1            |
+| Product Owner (user-facing docs)        | TBD                       | 1 (advisory) |
+| **Minimum quorum**                      | 3 members including Chair | —            |
 
 ### 8.7 How to Document Gate Results
 
@@ -798,15 +799,15 @@ See §11.4.
 
 ### 9.1 Identification
 
-| Field | Value |
-|---|---|
-| **Gate ID** | GATE-REL-001 |
-| **Gate Name** | Release Gate (Final) |
-| **Checked Before** | RC1 (Release Candidate 1) |
-| **Review Board** | Program Architecture Board (see §9.6) |
-| **Passing Threshold** | 100% of gates pass |
-| **Re-check Timing** | 5 working days after remediation submission |
-| **Max Re-check Attempts** | 2 |
+| Field                     | Value                                       |
+| ------------------------- | ------------------------------------------- |
+| **Gate ID**               | GATE-REL-001                                |
+| **Gate Name**             | Release Gate (Final)                        |
+| **Checked Before**        | RC1 (Release Candidate 1)                   |
+| **Review Board**          | Program Architecture Board (see §9.6)       |
+| **Passing Threshold**     | 100% of gates pass                          |
+| **Re-check Timing**       | 5 working days after remediation submission |
+| **Max Re-check Attempts** | 2                                           |
 
 ### 9.2 Detailed Checklist (22 items)
 
@@ -851,22 +852,22 @@ See §11.4.
 
 **Binary gate — all sub-gates must pass individually.** No composite score.
 
-| Criterion | Source | Result |
-|---|---|---|
-| All quality gates passed | Gate Passport (§10) | Mandatory |
-| Release checklist signed | Sign-off document | Mandatory |
-| Security scans passed | Scan reports | Mandatory |
-| Performance benchmarks passed | Benchmark report | Mandatory |
-| Operational readiness confirmed | Ops checklist | Mandatory |
+| Criterion                       | Source              | Result    |
+| ------------------------------- | ------------------- | --------- |
+| All quality gates passed        | Gate Passport (§10) | Mandatory |
+| Release checklist signed        | Sign-off document   | Mandatory |
+| Security scans passed           | Scan reports        | Mandatory |
+| Performance benchmarks passed   | Benchmark report    | Mandatory |
+| Operational readiness confirmed | Ops checklist       | Mandatory |
 
 **Threshold:** 100% of items passed. One failure = gate failed.
 
 ### 9.4 Pass / Fail Rules
 
-| Result | Action |
-|---|---|
-| All 22 items checked and passed | **PASS** — RC1 approved |
-| Any item fails | **FAIL** — no release |
+| Result                           | Action                             |
+| -------------------------------- | ---------------------------------- |
+| All 22 items checked and passed  | **PASS** — RC1 approved            |
+| Any item fails                   | **FAIL** — no release              |
 | Any previous gate in FAIL status | **FAIL** — cannot bypass sub-gates |
 
 ### 9.5 Consequences of Failure
@@ -878,14 +879,14 @@ See §11.4.
 
 ### 9.6 Review Board Composition
 
-| Role | Person / Team | Vote Weight |
-|---|---|---|
-| Program Architect / CTO (Chair) | TBD | 2 |
-| Security Lead | TBD | 1 |
-| QA Lead | TBD | 1 |
-| Ops / SRE Lead | TBD | 1 |
-| Release Manager (secretary) | TBD | 1 (no vote) |
-| **Minimum quorum** | 4 members including Chair | — |
+| Role                            | Person / Team             | Vote Weight |
+| ------------------------------- | ------------------------- | ----------- |
+| Program Architect / CTO (Chair) | TBD                       | 2           |
+| Security Lead                   | TBD                       | 1           |
+| QA Lead                         | TBD                       | 1           |
+| Ops / SRE Lead                  | TBD                       | 1           |
+| Release Manager (secretary)     | TBD                       | 1 (no vote) |
+| **Minimum quorum**              | 4 members including Chair | —           |
 
 ### 9.7 How to Document Gate Results
 
@@ -894,6 +895,7 @@ docs/governance/gates/release/<YYYY-MM-DD>-result.md
 ```
 
 Must include:
+
 - Summary table referencing all 7 gate results with links to individual gate artifacts
 - Release checklist signed PDF or equivalent
 - Security scan summary
@@ -930,18 +932,18 @@ docs/governance/gate-passport.md
 
 ## Program Overview
 
-| Phase | Gate Dependency | Status | Date |
-|---|---|---|---|
-| Phase 0 — Foundation | — | ✅ COMPLETE | <date> |
-| Phase 1 — Core Implementation | GATE-ARCH-001 | ⏳ PENDING | |
-| Phase 2 — Security Sprint | GATE-SEC-001 | ⏳ PENDING | |
-| Phase 3 — Data Layer | GATE-PERF-001, GATE-SEC-001 (re-check) | ⏳ PENDING | |
-| Phase 4 — Engineering & Refinement | — | ⏳ PENDING | |
-| Phase 5 — AI Implementation | GATE-ARCH-001 (re-check), GATE-AI-001 | ⏳ PENDING | |
-| Phase 6 — Testing Sprint | GATE-TEST-001, GATE-PERF-001 (re-check) | ⏳ PENDING | |
-| Phase 7 — Hardening | — | ⏳ PENDING | |
-| Phase 8 — Release Preparation | GATE-DOC-001, GATE-TEST-001 (re-check) | ⏳ PENDING | |
-| RC1 | GATE-REL-001 | ⏳ PENDING | |
+| Phase                              | Gate Dependency                         | Status      | Date   |
+| ---------------------------------- | --------------------------------------- | ----------- | ------ |
+| Phase 0 — Foundation               | —                                       | ✅ COMPLETE | <date> |
+| Phase 1 — Core Implementation      | GATE-ARCH-001                           | ⏳ PENDING  |        |
+| Phase 2 — Security Sprint          | GATE-SEC-001                            | ⏳ PENDING  |        |
+| Phase 3 — Data Layer               | GATE-PERF-001, GATE-SEC-001 (re-check)  | ⏳ PENDING  |        |
+| Phase 4 — Engineering & Refinement | —                                       | ⏳ PENDING  |        |
+| Phase 5 — AI Implementation        | GATE-ARCH-001 (re-check), GATE-AI-001   | ⏳ PENDING  |        |
+| Phase 6 — Testing Sprint           | GATE-TEST-001, GATE-PERF-001 (re-check) | ⏳ PENDING  |        |
+| Phase 7 — Hardening                | —                                       | ⏳ PENDING  |        |
+| Phase 8 — Release Preparation      | GATE-DOC-001, GATE-TEST-001 (re-check)  | ⏳ PENDING  |        |
+| RC1                                | GATE-REL-001                            | ⏳ PENDING  |        |
 
 ---
 
@@ -949,10 +951,10 @@ docs/governance/gate-passport.md
 
 ### Gate 1 — Architecture Gate
 
-| Attempt | Date | Score | Verdict | Artifact |
-|---|---|---|---|---|
-| 1 (Phase 1 pre-check) | | | | |
-| 2 (Phase 5 pre-check) | | | | |
+| Attempt               | Date | Score | Verdict | Artifact |
+| --------------------- | ---- | ----- | ------- | -------- |
+| 1 (Phase 1 pre-check) |      |       |         |          |
+| 2 (Phase 5 pre-check) |      |       |         |          |
 
 **Master checklist:**
 
@@ -991,10 +993,10 @@ docs/governance/gate-passport.md
 
 ### Gate 2 — Security Gate
 
-| Attempt | Date | Verdict | Artifact |
-|---|---|---|---|
-| 1 (Phase 2 pre-check) | | | |
-| 2 (Phase 3 pre-check) | | | |
+| Attempt               | Date | Verdict | Artifact |
+| --------------------- | ---- | ------- | -------- |
+| 1 (Phase 2 pre-check) |      |         |          |
+| 2 (Phase 3 pre-check) |      |         |          |
 
 **Master checklist:**
 
@@ -1032,16 +1034,16 @@ docs/governance/gate-passport.md
 
 ### Gate 3 — Performance Gate
 
-| Attempt | Date | Score | Verdict | Artifact |
-|---|---|---|---|---|
-| 1 (Phase 3 pre-check) | | | | |
-| 2 (Phase 6 pre-check) | | | | |
+| Attempt               | Date | Score | Verdict | Artifact |
+| --------------------- | ---- | ----- | ------- | -------- |
+| 1 (Phase 3 pre-check) |      |       |         |          |
+| 2 (Phase 6 pre-check) |      |       |         |          |
 
 **Master checklist:**
 
 - [ ] PERF-01: No N+1 queries
 - [ ] PERF-02: Indexes on filtered/sorted columns
-- [ ] PERF-03: No SELECT *
+- [ ] PERF-03: No SELECT \*
 - [ ] PERF-04: Pagination on list endpoints
 - [ ] PERF-05: Eager loading managed
 - [ ] PERF-06: Redis caching on read-heavy endpoints
@@ -1069,8 +1071,8 @@ docs/governance/gate-passport.md
 ### Gate 4 — AI Gate
 
 | Attempt | Date | Verdict | Artifact |
-|---|---|---|---|
-| 1 | | | |
+| ------- | ---- | ------- | -------- |
+| 1       |      |         |          |
 
 **Master checklist:**
 
@@ -1105,10 +1107,10 @@ docs/governance/gate-passport.md
 
 ### Gate 5 — Testing Gate
 
-| Attempt | Date | Score | Verdict | Artifact |
-|---|---|---|---|---|
-| 1 (Phase 6 pre-check) | | | | |
-| 2 (Phase 8 pre-check) | | | | |
+| Attempt               | Date | Score | Verdict | Artifact |
+| --------------------- | ---- | ----- | ------- | -------- |
+| 1 (Phase 6 pre-check) |      |       |         |          |
+| 2 (Phase 8 pre-check) |      |       |         |          |
 
 **Master checklist:**
 
@@ -1144,8 +1146,8 @@ docs/governance/gate-passport.md
 ### Gate 6 — Documentation Gate
 
 | Attempt | Date | Score | Verdict | Artifact |
-|---|---|---|---|---|
-| 1 | | | | |
+| ------- | ---- | ----- | ------- | -------- |
+| 1       |      |       |         |          |
 
 **Master checklist:**
 
@@ -1179,8 +1181,8 @@ docs/governance/gate-passport.md
 ### Gate 7 — Release Gate (Final)
 
 | Attempt | Date | Verdict | Artifact |
-|---|---|---|---|
-| 1 | | | |
+| ------- | ---- | ------- | -------- |
+| 1       |      |         |          |
 
 **Master checklist:**
 
@@ -1212,18 +1214,18 @@ docs/governance/gate-passport.md
 ## Escalations & Appeals Log
 
 | Date | Gate | Appellant | Grounds | Decision | Resolution |
-|---|---|---|---|---|---|
-| | | | | | |
+| ---- | ---- | --------- | ------- | -------- | ---------- |
+|      |      |           |         |          |            |
 
 ---
 
 ## Sign-off
 
-| Role | Name | Date |
-|---|---|---|
-| Program Architect | | |
-| CTO | | |
-| Release Manager | | |
+| Role              | Name | Date |
+| ----------------- | ---- | ---- |
+| Program Architect |      |      |
+| CTO               |      |      |
+| Release Manager   |      |      |
 ```
 
 ---
@@ -1232,24 +1234,24 @@ docs/governance/gate-passport.md
 
 ### 11.1 Definition of Severity Levels
 
-| Severity | Definition | Response Time | Fix Time |
-|---|---|---|---|
-| CRITICAL | System crash, data loss, authentication bypass, remote code execution | Immediate | ≤48 hours |
-| HIGH | Significant functionality broken, sensitive data exposed to wrong role, severe performance degradation | ≤4 hours | ≤5 working days |
-| MEDIUM | Non-critical functionality broken, minor data exposure, moderate performance issue | ≤24 hours | ≤10 working days |
-| LOW | Cosmetic issue, non-functional improvement, documentation gap | ≤5 working days | Next release |
+| Severity | Definition                                                                                             | Response Time   | Fix Time         |
+| -------- | ------------------------------------------------------------------------------------------------------ | --------------- | ---------------- |
+| CRITICAL | System crash, data loss, authentication bypass, remote code execution                                  | Immediate       | ≤48 hours        |
+| HIGH     | Significant functionality broken, sensitive data exposed to wrong role, severe performance degradation | ≤4 hours        | ≤5 working days  |
+| MEDIUM   | Non-critical functionality broken, minor data exposure, moderate performance issue                     | ≤24 hours       | ≤10 working days |
+| LOW      | Cosmetic issue, non-functional improvement, documentation gap                                          | ≤5 working days | Next release     |
 
 ### 11.2 Score Summary Quick Reference
 
-| Gate | Type | Passing Threshold | Scoring Dimensions |
-|---|---|---|---|
-| Architecture | Scored (0–100) | ≥70% | DDD 30%, Isolation 25%, Dependency 20%, Leakage 15%, Purity 10% |
-| Security | Binary | ZERO CRITICAL/HIGH | All items mandatory |
-| Performance | Scored (0–100) | ≥60% | Query 30%, Data Access 25%, Streaming 20%, Memory 15%, Tooling 10% |
-| AI | Binary | Pipeline verified | 5 criteria all mandatory |
-| Testing | Scored (0–100) | ≥60% coverage, 100% pass | Coverage 30%, Quality 30%, Infra 20%, Python 10%, AI 10% |
-| Documentation | Scored (0–100) | ≥90% | API Docs 30%, ADR 25%, Deploy 25%, Code 15%, Program 5% |
-| Release | Binary | 100% of gates | All sub-gates must pass |
+| Gate          | Type           | Passing Threshold        | Scoring Dimensions                                                 |
+| ------------- | -------------- | ------------------------ | ------------------------------------------------------------------ |
+| Architecture  | Scored (0–100) | ≥70%                     | DDD 30%, Isolation 25%, Dependency 20%, Leakage 15%, Purity 10%    |
+| Security      | Binary         | ZERO CRITICAL/HIGH       | All items mandatory                                                |
+| Performance   | Scored (0–100) | ≥60%                     | Query 30%, Data Access 25%, Streaming 20%, Memory 15%, Tooling 10% |
+| AI            | Binary         | Pipeline verified        | 5 criteria all mandatory                                           |
+| Testing       | Scored (0–100) | ≥60% coverage, 100% pass | Coverage 30%, Quality 30%, Infra 20%, Python 10%, AI 10%           |
+| Documentation | Scored (0–100) | ≥90%                     | API Docs 30%, ADR 25%, Deploy 25%, Code 15%, Program 5%            |
+| Release       | Binary         | 100% of gates            | All sub-gates must pass                                            |
 
 ### 11.3 Artifact Directory Structure
 
@@ -1286,12 +1288,14 @@ docs/governance/
 Any team whose deliverable fails a gate may appeal the decision.
 
 **Grounds for appeal:**
+
 1. The gate was evaluated against incorrect criteria (outdated checklist version).
 2. The scoring was miscalculated (arithmetic error or wrong weight applied).
 3. New evidence exists that was not available during the review.
 4. The item in question is not applicable to the specific deliverable (scope mismatch).
 
 **Not grounds for appeal:**
+
 1. "We will fix it later."
 2. "The threshold is too high."
 3. "Other modules have the same issue and passed."
@@ -1321,19 +1325,19 @@ Any team whose deliverable fails a gate may appeal the decision.
 
 ### 11.5 Glossary
 
-| Term | Definition |
-|---|---|
-| Architecture Board | Cross-functional body that oversees architectural quality and compliance |
-| ARO / SRO / PRO / AIRO / TRO / DRO | Remediation Orders issued by respective review boards |
-| CRITICAL / HIGH / MEDIUM / LOW | Severity levels as defined in §11.1 |
-| CONDITIONAL PASS | Gate passes but with tracked remediation items; must be resolved before next gate |
-| Gate Passport | Living document tracking all gate results across the program |
-| RBN | Release Block Notice — issued when Release Gate fails |
-| RC1 | Release Candidate 1 — first deployable candidate for production |
-| Remediation Plan | Documented set of actions to address failed gate items, with owners and deadlines |
-| Review Board | Panel that evaluates gate criteria and renders a pass/fail decision |
-| SAST / DAST | Static / Dynamic Application Security Testing |
+| Term                               | Definition                                                                        |
+| ---------------------------------- | --------------------------------------------------------------------------------- |
+| Architecture Board                 | Cross-functional body that oversees architectural quality and compliance          |
+| ARO / SRO / PRO / AIRO / TRO / DRO | Remediation Orders issued by respective review boards                             |
+| CRITICAL / HIGH / MEDIUM / LOW     | Severity levels as defined in §11.1                                               |
+| CONDITIONAL PASS                   | Gate passes but with tracked remediation items; must be resolved before next gate |
+| Gate Passport                      | Living document tracking all gate results across the program                      |
+| RBN                                | Release Block Notice — issued when Release Gate fails                             |
+| RC1                                | Release Candidate 1 — first deployable candidate for production                   |
+| Remediation Plan                   | Documented set of actions to address failed gate items, with owners and deadlines |
+| Review Board                       | Panel that evaluates gate criteria and renders a pass/fail decision               |
+| SAST / DAST                        | Static / Dynamic Application Security Testing                                     |
 
 ---
 
-*This document is controlled by the Program Architecture Board. Updates require Architecture Board approval.*
+_This document is controlled by the Program Architecture Board. Updates require Architecture Board approval._

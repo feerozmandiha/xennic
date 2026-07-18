@@ -36,14 +36,74 @@ const FORBIDDEN_PATTERNS = [
 const MAX_EXPRESSION_LENGTH = 10000;
 const MAX_NESTING_DEPTH = 50;
 const ALLOWED_FUNCTIONS = new Set([
-  'abs', 'acos', 'acosh', 'acot', 'acoth', 'acsc', 'acsch', 'asec', 'asech',
-  'asin', 'asinh', 'atan', 'atan2', 'atanh', 'ceil', 'combinations', 'cos',
-  'cosh', 'cot', 'coth', 'csc', 'csch', 'exp', 'factorial', 'floor', 'gcd',
-  'hypot', 'lcm', 'log', 'log10', 'log2', 'max', 'min', 'mod', 'multinomial',
-  'permutations', 'pow', 'random', 'round', 'sec', 'sech', 'sign', 'sin',
-  'sinh', 'sqrt', 'sum', 'tan', 'tanh', 'add', 'subtract', 'multiply', 'divide',
-  'dot', 'cross', 'norm', 'transpose', 'det', 'inv', 'eye', 'zeros', 'ones',
-  'pi', 'e', 'i', 'Infinity', 'true', 'false', 'null',
+  'abs',
+  'acos',
+  'acosh',
+  'acot',
+  'acoth',
+  'acsc',
+  'acsch',
+  'asec',
+  'asech',
+  'asin',
+  'asinh',
+  'atan',
+  'atan2',
+  'atanh',
+  'ceil',
+  'combinations',
+  'cos',
+  'cosh',
+  'cot',
+  'coth',
+  'csc',
+  'csch',
+  'exp',
+  'factorial',
+  'floor',
+  'gcd',
+  'hypot',
+  'lcm',
+  'log',
+  'log10',
+  'log2',
+  'max',
+  'min',
+  'mod',
+  'multinomial',
+  'permutations',
+  'pow',
+  'random',
+  'round',
+  'sec',
+  'sech',
+  'sign',
+  'sin',
+  'sinh',
+  'sqrt',
+  'sum',
+  'tan',
+  'tanh',
+  'add',
+  'subtract',
+  'multiply',
+  'divide',
+  'dot',
+  'cross',
+  'norm',
+  'transpose',
+  'det',
+  'inv',
+  'eye',
+  'zeros',
+  'ones',
+  'pi',
+  'e',
+  'i',
+  'Infinity',
+  'true',
+  'false',
+  'null',
 ]);
 
 @Injectable()
@@ -54,12 +114,18 @@ export class FormulaSanitizer {
     }
 
     if (expression.length > MAX_EXPRESSION_LENGTH) {
-      return { safe: false, error: `Expression exceeds maximum length of ${MAX_EXPRESSION_LENGTH}` };
+      return {
+        safe: false,
+        error: `Expression exceeds maximum length of ${MAX_EXPRESSION_LENGTH}`,
+      };
     }
 
     const nestingDepth = this.calculateNestingDepth(expression);
     if (nestingDepth > MAX_NESTING_DEPTH) {
-      return { safe: false, error: `Expression nesting depth ${nestingDepth} exceeds maximum of ${MAX_NESTING_DEPTH}` };
+      return {
+        safe: false,
+        error: `Expression nesting depth ${nestingDepth} exceeds maximum of ${MAX_NESTING_DEPTH}`,
+      };
     }
 
     for (const pattern of FORBIDDEN_PATTERNS) {

@@ -48,7 +48,10 @@ export class PrismaPlannerRepository implements IPlannerRepository {
     ) as import('../../domain/plan.entity.js').PlanEntity;
   }
 
-  async updatePlan(id: string, updates: Partial<import('../../domain/plan.entity.js').PlanEntity>): Promise<import('../../domain/plan.entity.js').PlanEntity | null> {
+  async updatePlan(
+    id: string,
+    updates: Partial<import('../../domain/plan.entity.js').PlanEntity>,
+  ): Promise<import('../../domain/plan.entity.js').PlanEntity | null> {
     const existing = await this.getPlan(id);
     if (!existing) return null;
 
@@ -69,7 +72,9 @@ export class PrismaPlannerRepository implements IPlannerRepository {
     return updated;
   }
 
-  async listPlans(options?: ListPlanOptions): Promise<PaginatedResult<import('../../domain/plan.entity.js').PlanEntity>> {
+  async listPlans(
+    options?: ListPlanOptions,
+  ): Promise<PaginatedResult<import('../../domain/plan.entity.js').PlanEntity>> {
     const where: Record<string, unknown> = {};
     if (options?.status) {
       where.status = options.status;
@@ -89,7 +94,7 @@ export class PrismaPlannerRepository implements IPlannerRepository {
     ]);
 
     const { PlanEntity } = await import('../../domain/plan.entity.js');
-    const items = rows.map(row => {
+    const items = rows.map((row) => {
       const steps = row.steps as Record<string, unknown> | null;
       return PlanEntity.reconstitute(
         row.id,

@@ -1,5 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
-import type { ApiEndpoint, ApiVersion, IApiContractRegistry } from '../../domain/interfaces/api-contract.interface.js';
+import type {
+  ApiEndpoint,
+  ApiVersion,
+  IApiContractRegistry,
+} from '../../domain/interfaces/api-contract.interface.js';
 
 @Injectable()
 export class ApiDiscoveryService implements IApiContractRegistry {
@@ -18,13 +22,15 @@ export class ApiDiscoveryService implements IApiContractRegistry {
 
   registerEndpoint(endpoint: ApiEndpoint): void {
     this.endpoints.push(endpoint);
-    this.logger.log(`Registered endpoint: ${endpoint.method} ${endpoint.path} (${endpoint.version})`);
+    this.logger.log(
+      `Registered endpoint: ${endpoint.method} ${endpoint.path} (${endpoint.version})`,
+    );
   }
 
   getEndpoints(version?: string, module?: string): ApiEndpoint[] {
     let filtered = this.endpoints;
-    if (version) filtered = filtered.filter(e => e.version === version);
-    if (module) filtered = filtered.filter(e => e.module === module);
+    if (version) filtered = filtered.filter((e) => e.version === version);
+    if (module) filtered = filtered.filter((e) => e.module === module);
     return filtered;
   }
 
@@ -33,11 +39,11 @@ export class ApiDiscoveryService implements IApiContractRegistry {
   }
 
   getActiveVersions(): ApiVersion[] {
-    return Array.from(this.versions.values()).filter(v => v.status === 'active');
+    return Array.from(this.versions.values()).filter((v) => v.status === 'active');
   }
 
   deprecateEndpoint(path: string, message: string, sunsetAt: string): void {
-    const endpoint = this.endpoints.find(e => e.path === path);
+    const endpoint = this.endpoints.find((e) => e.path === path);
     if (endpoint) {
       endpoint.deprecated = true;
       endpoint.deprecationMessage = message;

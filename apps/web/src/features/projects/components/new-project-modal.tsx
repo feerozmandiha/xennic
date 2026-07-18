@@ -6,28 +6,27 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import * as Dialog from '@radix-ui/react-dialog';
 import { X, FolderPlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input }  from '@/components/ui/input';
+import { Input } from '@/components/ui/input';
 import { useAuthStore } from '@/stores/auth.store';
-import { apiClient }    from '@/lib/api/client';
+import { apiClient } from '@/lib/api/client';
 
 interface Props {
-  open:    boolean;
+  open: boolean;
   onClose: () => void;
 }
 
 export function NewProjectModal({ open, onClose }: Props) {
-  const t           = useTranslations('projects');
-  const tCommon     = useTranslations('common');
-  const wsId        = useAuthStore(s => s.workspaceId);
+  const t = useTranslations('projects');
+  const tCommon = useTranslations('common');
+  const wsId = useAuthStore((s) => s.workspaceId);
   const queryClient = useQueryClient();
 
-  const [name, setName]           = useState('');
-  const [description, setDesc]    = useState('');
-  const [error, setError]         = useState('');
+  const [name, setName] = useState('');
+  const [description, setDesc] = useState('');
+  const [error, setError] = useState('');
 
   const mutation = useMutation({
-    mutationFn: (body: any) =>
-      apiClient.post('/projects', body),
+    mutationFn: (body: any) => apiClient.post('/projects', body),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['projects'] });
       queryClient.invalidateQueries({ queryKey: ['projects', wsId] });
@@ -39,18 +38,23 @@ export function NewProjectModal({ open, onClose }: Props) {
   });
 
   function handleClose() {
-    setName(''); setDesc(''); setError('');
+    setName('');
+    setDesc('');
+    setError('');
     onClose();
   }
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!name.trim()) { setError('نام پروژه الزامی است'); return; }
+    if (!name.trim()) {
+      setError('نام پروژه الزامی است');
+      return;
+    }
     mutation.mutate({ name: name.trim(), description: description.trim() || undefined });
   }
 
   return (
-    <Dialog.Root open={open} onOpenChange={v => !v && handleClose()}>
+    <Dialog.Root open={open} onOpenChange={(v) => !v && handleClose()}>
       <Dialog.Portal>
         {/* Overlay */}
         <Dialog.Overlay className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm animate-fade-in" />
@@ -68,9 +72,7 @@ export function NewProjectModal({ open, onClose }: Props) {
               <div className="w-9 h-9 rounded-[var(--radius-lg)] bg-[hsl(var(--primary)/0.1)] flex items-center justify-center">
                 <FolderPlus className="h-4 w-4 text-[hsl(var(--primary))]" />
               </div>
-              <Dialog.Title className="font-semibold text-base">
-                {t('newProject')}
-              </Dialog.Title>
+              <Dialog.Title className="font-semibold text-base">{t('newProject')}</Dialog.Title>
             </div>
             <Dialog.Close asChild>
               <button
@@ -93,7 +95,7 @@ export function NewProjectModal({ open, onClose }: Props) {
             <Input
               label={t('projectName')}
               value={name}
-              onChange={e => setName(e.target.value)}
+              onChange={(e) => setName(e.target.value)}
               placeholder="مثال: پروژه برق‌رسانی کارخانه"
               required
               autoFocus
@@ -109,7 +111,7 @@ export function NewProjectModal({ open, onClose }: Props) {
               </label>
               <textarea
                 value={description}
-                onChange={e => setDesc(e.target.value)}
+                onChange={(e) => setDesc(e.target.value)}
                 placeholder="توضیحات پروژه..."
                 disabled={mutation.isPending}
                 rows={3}
@@ -131,11 +133,7 @@ export function NewProjectModal({ open, onClose }: Props) {
               >
                 {tCommon('cancel')}
               </Button>
-              <Button
-                type="submit"
-                className="flex-1"
-                loading={mutation.isPending}
-              >
+              <Button type="submit" className="flex-1" loading={mutation.isPending}>
                 {tCommon('save')}
               </Button>
             </div>

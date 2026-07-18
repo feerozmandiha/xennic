@@ -20,7 +20,9 @@ export class ApiKeyService {
     name: string;
     expiresAt?: Date;
   }): Promise<{ apiKey: ApiKeyEntity; rawKey: string }> {
-    const existing = await this.apiKeyRepository.findAllByWorkspace(data.workspaceId, { limit: 100 });
+    const existing = await this.apiKeyRepository.findAllByWorkspace(data.workspaceId, {
+      limit: 100,
+    });
     if (existing.length >= 50) {
       throw new BadRequestException('Maximum number of API keys (50) reached for this workspace');
     }

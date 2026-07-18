@@ -41,9 +41,7 @@ describe('CORS Security (e2e)', () => {
         .set('Origin', 'http://localhost:3001')
         .set('Access-Control-Request-Method', 'GET');
 
-      expect(response.headers['access-control-allow-origin']).toBe(
-        'http://localhost:3001',
-      );
+      expect(response.headers['access-control-allow-origin']).toBe('http://localhost:3001');
     });
 
     it('should accept requests from xennic.ir', async () => {
@@ -52,9 +50,7 @@ describe('CORS Security (e2e)', () => {
         .set('Origin', 'https://xennic.ir')
         .set('Access-Control-Request-Method', 'GET');
 
-      expect(response.headers['access-control-allow-origin']).toBe(
-        'https://xennic.ir',
-      );
+      expect(response.headers['access-control-allow-origin']).toBe('https://xennic.ir');
     });
   });
 
@@ -122,9 +118,7 @@ describe('CORS Security (e2e)', () => {
         .set('Access-Control-Request-Method', 'GET')
         .set('Access-Control-Request-Headers', 'Content-Type');
 
-      expect(response.headers['access-control-allow-headers']).toContain(
-        'Content-Type',
-      );
+      expect(response.headers['access-control-allow-headers']).toContain('Content-Type');
     });
 
     it('should allow Authorization header', async () => {
@@ -134,9 +128,7 @@ describe('CORS Security (e2e)', () => {
         .set('Access-Control-Request-Method', 'GET')
         .set('Access-Control-Request-Headers', 'Authorization');
 
-      expect(response.headers['access-control-allow-headers']).toContain(
-        'Authorization',
-      );
+      expect(response.headers['access-control-allow-headers']).toContain('Authorization');
     });
   });
 });

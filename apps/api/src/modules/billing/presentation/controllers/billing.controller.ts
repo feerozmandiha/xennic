@@ -55,14 +55,14 @@ export class BillingController {
   @ApiQuery({ name: 'page', required: false, type: Number, example: 1 })
   @ApiQuery({ name: 'limit', required: false, type: Number, example: 20 })
   @ApiResponse({ status: 200, description: 'Invoices retrieved', type: [InvoiceResponseDto] })
-  async getInvoices(
-    @Req() req: any,
-    @Query('page') page?: string,
-    @Query('limit') limit?: string,
-  ) {
+  async getInvoices(@Req() req: any, @Query('page') page?: string, @Query('limit') limit?: string) {
     const pageNum = page ? parseInt(page, 10) : 1;
     const limitNum = limit ? parseInt(limit, 10) : 20;
-    const result = await this.billingService.getInvoicesByWorkspace(req.workspaceId, pageNum, limitNum);
+    const result = await this.billingService.getInvoicesByWorkspace(
+      req.workspaceId,
+      pageNum,
+      limitNum,
+    );
     return {
       success: true,
       data: InvoiceResponseDto.fromEntities(result.data),
@@ -82,7 +82,10 @@ export class BillingController {
 
   @Post('invoices')
   @HttpCode(HttpStatus.CREATED)
-  @ApiOperation({ summary: 'Create invoice', description: 'Creates a new invoice for the workspace.' })
+  @ApiOperation({
+    summary: 'Create invoice',
+    description: 'Creates a new invoice for the workspace.',
+  })
   @ApiBody({ type: CreateInvoiceDto })
   @ApiResponse({ status: 201, description: 'Invoice created', type: InvoiceResponseDto })
   async createInvoice(@Body() dto: CreateInvoiceDto, @Req() req: any) {
@@ -102,14 +105,14 @@ export class BillingController {
   @ApiQuery({ name: 'page', required: false, type: Number, example: 1 })
   @ApiQuery({ name: 'limit', required: false, type: Number, example: 20 })
   @ApiResponse({ status: 200, description: 'Payments retrieved', type: [PaymentResponseDto] })
-  async getPayments(
-    @Req() req: any,
-    @Query('page') page?: string,
-    @Query('limit') limit?: string,
-  ) {
+  async getPayments(@Req() req: any, @Query('page') page?: string, @Query('limit') limit?: string) {
     const pageNum = page ? parseInt(page, 10) : 1;
     const limitNum = limit ? parseInt(limit, 10) : 20;
-    const result = await this.billingService.getPaymentsByWorkspace(req.workspaceId, pageNum, limitNum);
+    const result = await this.billingService.getPaymentsByWorkspace(
+      req.workspaceId,
+      pageNum,
+      limitNum,
+    );
     return {
       success: true,
       data: PaymentResponseDto.fromEntities(result.data),
@@ -119,7 +122,10 @@ export class BillingController {
 
   @Post('payments')
   @HttpCode(HttpStatus.CREATED)
-  @ApiOperation({ summary: 'Create payment', description: 'Creates a payment record for an invoice.' })
+  @ApiOperation({
+    summary: 'Create payment',
+    description: 'Creates a payment record for an invoice.',
+  })
   @ApiBody({ type: CreatePaymentDto })
   @ApiResponse({ status: 201, description: 'Payment created', type: PaymentResponseDto })
   async createPayment(@Body() dto: CreatePaymentDto, @Req() req: any) {
@@ -134,7 +140,10 @@ export class BillingController {
 
   @Post('payments/request')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Request gateway payment', description: 'Redirects to Zarinpal payment page.' })
+  @ApiOperation({
+    summary: 'Request gateway payment',
+    description: 'Redirects to Zarinpal payment page.',
+  })
   @ApiBody({ type: RequestPaymentDto })
   @ApiResponse({ status: 200, description: 'Payment URL generated' })
   async requestPayment(@Body() dto: RequestPaymentDto, @Req() req: any) {
@@ -148,11 +157,12 @@ export class BillingController {
 
   @Post('payments/verify')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Verify gateway payment', description: 'Verifies payment after gateway callback.' })
+  @ApiOperation({
+    summary: 'Verify gateway payment',
+    description: 'Verifies payment after gateway callback.',
+  })
   @ApiResponse({ status: 200, description: 'Payment verified' })
-  async verifyPayment(
-    @Body() body: { authority: string; amount: number },
-  ) {
+  async verifyPayment(@Body() body: { authority: string; amount: number }) {
     const payment = await this.billingService.verifyGatewayPayment(body.authority, body.amount);
     return { success: true, data: PaymentResponseDto.fromEntity(payment) };
   }
@@ -162,10 +172,17 @@ export class BillingController {
   // ══════════════════════════════════════════════════════════════════════════
 
   @Get('transactions')
-  @ApiOperation({ summary: 'List transactions', description: 'Paginated list of workspace transactions.' })
+  @ApiOperation({
+    summary: 'List transactions',
+    description: 'Paginated list of workspace transactions.',
+  })
   @ApiQuery({ name: 'page', required: false, type: Number, example: 1 })
   @ApiQuery({ name: 'limit', required: false, type: Number, example: 20 })
-  @ApiResponse({ status: 200, description: 'Transactions retrieved', type: [TransactionResponseDto] })
+  @ApiResponse({
+    status: 200,
+    description: 'Transactions retrieved',
+    type: [TransactionResponseDto],
+  })
   async getTransactions(
     @Req() req: any,
     @Query('page') page?: string,
@@ -173,7 +190,11 @@ export class BillingController {
   ) {
     const pageNum = page ? parseInt(page, 10) : 1;
     const limitNum = limit ? parseInt(limit, 10) : 20;
-    const result = await this.billingService.getTransactionsByWorkspace(req.workspaceId, pageNum, limitNum);
+    const result = await this.billingService.getTransactionsByWorkspace(
+      req.workspaceId,
+      pageNum,
+      limitNum,
+    );
     return {
       success: true,
       data: TransactionResponseDto.fromEntities(result.data),
@@ -186,7 +207,10 @@ export class BillingController {
   // ══════════════════════════════════════════════════════════════════════════
 
   @Get('payment-methods')
-  @ApiOperation({ summary: 'List payment methods', description: 'Saved payment methods for workspace.' })
+  @ApiOperation({
+    summary: 'List payment methods',
+    description: 'Saved payment methods for workspace.',
+  })
   @ApiResponse({ status: 200, type: [PaymentMethodResponseDto] })
   async getPaymentMethods(@Req() req: any) {
     const methods = await this.billingService.getPaymentMethods(req.workspaceId);
@@ -235,10 +259,15 @@ export class BillingController {
   // ══════════════════════════════════════════════════════════════════════════
 
   @Get('subscription-payments')
-  @ApiOperation({ summary: 'Subscription payment history', description: 'History of subscription payments.' })
+  @ApiOperation({
+    summary: 'Subscription payment history',
+    description: 'History of subscription payments.',
+  })
   @ApiResponse({ status: 200, description: 'History retrieved' })
   async getSubscriptionPayments(@Req() req: any) {
-    const history = await this.subscriptionBillingService.getSubscriptionPaymentHistory(req.workspaceId);
+    const history = await this.subscriptionBillingService.getSubscriptionPaymentHistory(
+      req.workspaceId,
+    );
     return { success: true, data: history };
   }
 

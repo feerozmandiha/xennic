@@ -3,14 +3,8 @@ import { FederatedSearchService } from './application/services/federated-search.
 import { RankingStrategyService } from './application/services/ranking-strategy.service.js';
 
 @Module({
-  providers: [
-    FederatedSearchService,
-    RankingStrategyService,
-  ],
-  exports: [
-    FederatedSearchService,
-    RankingStrategyService,
-  ],
+  providers: [FederatedSearchService, RankingStrategyService],
+  exports: [FederatedSearchService, RankingStrategyService],
 })
 export class EnterpriseSearchFederationModule implements OnModuleInit {
   private readonly logger = new Logger(EnterpriseSearchFederationModule.name);

@@ -67,7 +67,10 @@ export class DocumentIntakeService {
     return this.documentRepository.create(document);
   }
 
-  async classifyDocument(documentId: string, result: ClassificationResult): Promise<KnowledgeDocument> {
+  async classifyDocument(
+    documentId: string,
+    result: ClassificationResult,
+  ): Promise<KnowledgeDocument> {
     const classification: Record<string, unknown> = {
       domain: result.domain,
       standard: result.standard,
@@ -113,7 +116,12 @@ export class DocumentIntakeService {
 
   async chunkAndEmbed(
     documentId: string,
-    chunks: Array<{ text: string; tokenCount: number; pageNumber?: number | null; section?: string | null }>,
+    chunks: Array<{
+      text: string;
+      tokenCount: number;
+      pageNumber?: number | null;
+      section?: string | null;
+    }>,
   ): Promise<ChunkResult> {
     const document = await this.documentRepository.findById(documentId);
     if (!document) throw new Error(`Document ${documentId} not found`);
@@ -146,7 +154,10 @@ export class DocumentIntakeService {
 
     for (let i = 0; i < savedChunks.length; i++) {
       if (savedChunks[i]) {
-        await this.chunkRepository.linkEmbedding(savedChunks[i]!.id, String(embeddings[i]?.length ?? 'unknown'));
+        await this.chunkRepository.linkEmbedding(
+          savedChunks[i]!.id,
+          String(embeddings[i]?.length ?? 'unknown'),
+        );
       }
     }
 
@@ -175,6 +186,9 @@ export class DocumentIntakeService {
     await this.documentRepository.softDelete(documentId);
   }
 
-  private recordPipelineRun(_documentId: string, _stage: string, _input: Record<string, unknown>): void {
-  }
+  private recordPipelineRun(
+    _documentId: string,
+    _stage: string,
+    _input: Record<string, unknown>,
+  ): void {}
 }

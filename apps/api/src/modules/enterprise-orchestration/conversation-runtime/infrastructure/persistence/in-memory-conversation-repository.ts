@@ -1,6 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
 import type { IConversationRepository } from '../../domain/conversation-repository.interface.js';
-import type { Conversation, Message, ConversationStatus } from '../../domain/conversation.entity.js';
+import type {
+  Conversation,
+  Message,
+  ConversationStatus,
+} from '../../domain/conversation.entity.js';
 import type { ExecutionHistory, HistoryEvent } from '../../domain/execution-history.entity.js';
 
 @Injectable()
@@ -31,7 +35,7 @@ export class InMemoryConversationRepository implements IConversationRepository {
   async findByExecution(executionId: string): Promise<Conversation[]> {
     const ids = this.executionIndex.get(executionId) ?? [];
     return ids
-      .map(id => this.conversations.get(id))
+      .map((id) => this.conversations.get(id))
       .filter((c): c is Conversation => c !== undefined);
   }
 
@@ -81,7 +85,7 @@ export class InMemoryConversationRepository implements IConversationRepository {
       const execIds = this.executionIndex.get(conversation.workflowExecutionId) ?? [];
       this.executionIndex.set(
         conversation.workflowExecutionId,
-        execIds.filter(eid => eid !== id),
+        execIds.filter((eid) => eid !== id),
       );
       this.sessionIndex.delete(conversation.sessionId);
       this.logger.debug(`Deleted conversation ${id}`);
