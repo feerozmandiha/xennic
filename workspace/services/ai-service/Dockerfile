@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1.7
 # Stage 1: Builder
 FROM python:3.12-slim AS builder
 
@@ -8,9 +9,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt .
-RUN python -m venv /opt/venv \
-    && /opt/venv/bin/pip install --upgrade pip \
-    && /opt/venv/bin/pip install --no-cache-dir --retries 5 --timeout 120 -r requirements.txt
+RUN --mount=type=cache,target=/root/.cache/pip \
+    python -m venv /opt/venv \
+    && /opt/venv/bin/pip --disable-pip-version-check install --retries 10 --timeout 600 -r requirements.txt
 
 # Stage 2: Runtime
 FROM python:3.12-slim
