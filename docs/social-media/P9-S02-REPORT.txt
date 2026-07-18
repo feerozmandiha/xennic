@@ -1,0 +1,139 @@
+================================================================================
+SMOS SPRINT REPORT — P9.S02
+معماری اجرای زمان اجرای سازمانی (Enterprise Runtime Execution Architecture)
+================================================================================
+شناسه سند: RT-002
+فایل: docs/90-RUNTIME/002-enterprise-runtime-execution-architecture.md
+وضعیت: Draft (v1.0.0-draft)
+تاریخ: 2026-07-09
+================================================================================
+
+خلاصه اجرایی
+--------------------------------------------------------------------------------
+این اسپرینت دومین سند از خانواده RT (Runtime Architecture) را تولید کرد:
+RT-002 — معماری اجرای زمان اجرای سازمانی SMOS.
+این سند مرز اجرا، بافت اجرا، مالکیت، هویت، ایزولاسیون، هماهنگی،
+چرخه حیات، مشاهده‌پذیری، سازگاری، ردیابی و حکمرانی را تعریف می‌کند.
+
+نتایج
+--------------------------------------------------------------------------------
+✓ فایل docs/90-RUNTIME/002-enterprise-runtime-execution-architecture.md ایجاد شد
+  ~۹۸۰+ خط, ۳۰ بخش کانونیکال, ۶ بلوک JSON, ۳ Schema Draft-07
+
+محتوای فنی سند
+--------------------------------------------------------------------------------
+- ۲۰ مفهوم اجرا (REC-001..020):
+  REC-001 Execution, REC-002 Execution Context, REC-003 Execution Boundary,
+  REC-004 Execution Identity, REC-005 Execution Ownership,
+  REC-006 Execution State, REC-007 Execution Lifecycle,
+  REC-008 Execution Isolation, REC-009 Execution Coordination,
+  REC-010 Execution Observation, REC-011 Execution Consistency,
+  REC-012 Execution Tracking, REC-013 Execution Governance,
+  REC-014 Execution Pipeline, REC-015 Execution Stage,
+  REC-016 Execution Transition, REC-017 Execution Metric,
+  REC-018 Execution Policy, REC-019 Execution Recovery,
+  REC-020 Execution Profile
+- ۱۲ موجودیت (REE-001..012):
+  REE-001 ExecutionPipeline, REE-002 ExecutionStage,
+  REE-003 ExecutionTransition, REE-004 ExecutionContext,
+  REE-005 ExecutionState, REE-006 ExecutionIdentity,
+  REE-007 ExecutionOwner, REE-008 ExecutionMetric,
+  REE-009 ExecutionPolicy, REE-010 ExecutionProfile,
+  REE-011 ExecutionRecord, REE-012 ExecutionObserver
+- ۱۴ قابلیت (RECAP-001..014):
+  RECAP-001 Pipeline Definition, RECAP-002 Pipeline Composition,
+  RECAP-003 Context Provisioning, RECAP-004 State Management,
+  RECAP-005 Lifecycle Management, RECAP-006 Transition Management,
+  RECAP-007 Isolation Provisioning, RECAP-008 Coordination Provisioning,
+  RECAP-009 Observation Provisioning, RECAP-010 Tracking Provisioning,
+  RECAP-011 Consistency Management, RECAP-012 Governance Enforcement,
+  RECAP-013 Recovery Provisioning, RECAP-014 Profile Management
+- ۱۴ کارکرد (REF-01..14):
+  REF-01 Pipeline Execution, REF-02 Stage Execution,
+  REF-03 Context Resolution, REF-04 State Management,
+  REF-05 Transition Validation, REF-06 Isolation Enforcement,
+  REF-07 Coordination Execution, REF-08 Observation Execution,
+  REF-09 Metric Collection, REF-10 Policy Enforcement,
+  REF-11 Consistency Validation, REF-12 Governance Enforcement,
+  REF-13 Recovery Execution, REF-14 Profile Resolution
+- ۸ دامنه (RED-01..08):
+  RED-01 Pipeline, RED-02 Context, RED-03 State,
+  RED-04 Scheduling, RED-05 Isolation, RED-06 Monitoring,
+  RED-07 Recovery, RED-08 Governance
+- ۸ وضعیت (RES-01..08) با ۲۰ انتقال مجاز:
+  RES-01 Created, RES-02 Prepared, RES-03 Queued,
+  RES-04 Executing, RES-05 Waiting, RES-06 Recovering,
+  RES-07 Completed, RES-08 Cancelled
+- ۸ مرحله (REST-01..08):
+  REST-01 Receive, REST-02 Validate, REST-03 Prepare,
+  REST-04 Allocate, REST-05 Execute, REST-06 Observe,
+  REST-07 Finalize, REST-08 Close
+- ۸ مدل (REDM-01..08):
+  REDM-01 Pipeline Model, REDM-02 Context Model,
+  REDM-03 State Model, REDM-04 Scheduling Model,
+  REDM-05 Isolation Model, REDM-06 Recovery Model,
+  REDM-07 Observation Model, REDM-08 Governance Model
+- ۱۰ رابطه (RER-01..10):
+  RER-01 Pipeline→Stage, RER-02 Stage→State,
+  RER-03 State→Transition, RER-04 Pipeline→Context,
+  RER-05 Pipeline→Identity, RER-06 Pipeline→Owner,
+  RER-07 Pipeline→Metric, RER-08 Pipeline→Policy,
+  RER-09 Pipeline→Profile, RER-10 Pipeline→Observer
+- ۱۵ معیار (REM-001..015):
+  REM-001 Pipeline Definition Coverage, REM-002 Transition Completeness,
+  REM-003 State Coverage, REM-004 Isolation Effectiveness,
+  REM-005 Recovery Completeness, REM-006 Metric Coverage,
+  REM-007 Policy Coverage, REM-008 Context Completeness,
+  REM-009 Profile Completeness, REM-010 Observation Coverage,
+  REM-011 Consistency Score, REM-012 Governance Score,
+  REM-013 Tracking Precision, REM-014 Coordination Efficiency,
+  REM-015 Lifecycle Completeness
+- ۸ اصل (REP-01..08)
+- ۸ محدودیت (RECST-01..08)
+- ۷ گیت کیفیت (REQG-01..07)
+
+به‌روزرسانی‌های upstream
+--------------------------------------------------------------------------------
+✓ KNW-001 (v2.28.0-draft → v2.28.1-draft):
+  - RT-002 ثبت شده در رجیستری (RT: ۱→۲ سند)
+  - §۴ (Knowledge Families): RT row → ۲ active docs
+  - §۶ (Identifier Allocation): ID-R12 به‌روزرسانی شد
+  - §۱۰ (Lifecycle Status): RT-002 فعال شده
+  - §۱۱ (Ownership Matrix): RT-002 به معمار سیستم منصوب شد
+  - §۱۳ (Dependency Matrix): RT-002 وابسته به RT-001
+  - §۱۴ (Cross Reference Registry): RT-002 ثبت شد
+  - §۱۵ (Knowledge Registry): RT-002 ثبت شد
+  - §۱۶ (Reserved Identifiers): RT-002→Active, RT-003..RT-010→Reserved
+  - Block 1: ۳۸→۳۹ سند, ۳۶→۳۷ draft
+  - Block 5: RT ۱→۲ سند
+  - §۲۳ آمار: ۳۸→۳۹ سند, ۳۸→۳۹ draft
+  - §۲۴ نقشه راه: P9.S01→done, P9.S02→current
+  - Block 6 Roadmap: P9.S01→done, P9.S02→current
+  - Change Log: v2.28.1-draft افزوده شد
+
+✓ AGENTS.md:
+  - فاز فعلی: P9.S01 → P9.S02
+  - دایرکتوری: RT-002 به ساختار docs/90-RUNTIME/ اضافه شد
+  - Done: P9.S01 و P9.S02 ثبت شدند
+  - Next Steps: P9.S03→planned
+  - Relevant Files: RT-002 اضافه شد
+
+آمار پروژه
+--------------------------------------------------------------------------------
+- کل اسناد معماری: ۳۹ سند
+- کل خطوط سند: ~۵۵,۰۰۰+ خط
+- زمان اجرا (RT): ۱/۱۰ سند
+- دانش (KNW): ۳۲/۹۹ سند (KNW-000..206, 301..308, 401..405, 501..510, 701, 801)
+- پرامپت (PRM): ۱۱۷ سند (تکمیل)
+- عامل هوش (AI): ۱۴ سند (AI-000..014, تکمیل)
+- خودکارسازی (AUT): ۲ سند (AUT-000..001)
+- استقرار (DEPLOY): ۱ سند (DEPLOY-001)
+- ارتباطات (COM): ۵ سند (COM-001..005, تکمیل)
+- معماری اجرا (SMOS-701..738): ۳۸ سند (تکمیل)
+
+مرحله بعد
+--------------------------------------------------------------------------------
+P9.S03 — Enterprise Runtime Context Architecture (RT-003):
+معماری بافت زمان اجرا — تعریف بافت، انواع بافت، چرخه حیات بافت،
+و مدل‌های زمینه‌ای اجرا.
+================================================================================

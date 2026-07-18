@@ -1,0 +1,66 @@
+SMOS SPRINT REPORT — P3.S3
+================================================================================
+SPRINT: P3.S3 — AI-002 Content Planning Agent
+STATUS: COMPLETED
+DATE: 2026-06-27
+================================================================================
+
+DELIVERABLE
+--------------------------------------------------------------------------------
+AI-002 Content Planning Agent
+File: docs/40-AI-AGENTS/20-content-planning-agent.md
+Lines: ~470
+Version: 1.0.0-draft
+
+IDENTITY
+--------------------------------------------------------------------------------
+Agent ID:       AI-002
+Canonical Name: Content Planning Agent
+Type:           Specialist (AT-01)
+Family:         Content (FAM-02)
+Authority:      A-3 (Autonomous, Limited)
+Layer:          Strategic (LYR-01)
+Version:        1.0.0-draft
+
+STRUCTURE (18 Sections)
+--------------------------------------------------------------------------------
+1.  Identity
+2.  Mission
+3.  Responsibilities (8 Primary, 3 Secondary, 8 Non-Responsibility)
+4.  Capabilities (1 Core, 4 Supporting, 2 Collaborative, 1 Reflexive)
+5.  Inputs (6 inputs: IN-01 to IN-06)
+6.  Outputs (7 outputs: OUT-01 to OUT-07)
+7.  Context Requirements (Global + Session)
+8.  Knowledge Requirements (6 sources)
+9.  Decision Authority (A-3, 5 permitted, 4 forbidden)
+10. Communication Interfaces (5 outbound, 3 inbound events)
+11. Collaboration Matrix (4 consumers, 2 suppliers, 2 peers)
+12. Delegation Rules
+13. Escalation Rules (6 rules: ESC-01 to ESC-06)
+14. Human Override (3 types: OVR-01 to OVR-03)
+15. KPIs (10 metrics: KPI-01 to KPI-10)
+16. Validation Rules (15 rules: VR-01 to VR-15)
+17. Quality Gates (5 gates: GATE-1 to GATE-5)
+18. Machine Readable JSON Blocks (6 blocks)
+
+UPSTREAM UPDATES
+--------------------------------------------------------------------------------
+AI-000 §6 taxonomy: AI-002 updated from A-1/LYR-02 to A-3/LYR-01
+AI-000 §10 authority matrix updated
+AI-000 §30 cross-references updated
+
+DOWNSTREAM RELEVANCE
+--------------------------------------------------------------------------------
+AI-003 (Content Production) — main consumer of Content Plan
+AI-008 (Publishing) — consumer of Publishing Queue
+AUT-* — consumer of Publishing Queue for automated publishing
+Human — Editorial Calendar and Resource Allocation Sheet
+
+NOTES
+--------------------------------------------------------------------------------
+- Derived from AI-000, consumes AI-001 output
+- No prompts, no code, no API, no workflow
+- 6 JSON Machine Readable blocks included
+- Total system: 35 documents
+================================================================================
+END OF REPORT

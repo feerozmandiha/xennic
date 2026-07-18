@@ -1,0 +1,160 @@
+================================================================================
+                        SMOS SPRINT REPORT
+================================================================================
+                        P11.S01 — Content Operations Playbooks
+                        راهنماهای عملیات محتوا
+================================================================================
+
+Date:       2026-07-12
+Phase:      P11 (Content Operations)
+Sprint:     S01
+Status:     ✅ Completed
+Author:     سیستم معمار
+
+================================================================================
+1. SUMMARY
+================================================================================
+
+Objective: Transition from enterprise architecture to daily operations.
+Create 10 operational playbooks for the Xennic content team.
+
+Result: 10 documents created in docs/95-CONTENT-OPERATIONS/ family (OPS-000
+through OPS-018). No architecture, no code, no API. All playbooks are
+daily-actionable, platform-neutral, and vendor-neutral.
+
+================================================================================
+2. DOCUMENTS CREATED
+================================================================================
+
+  ID        | File                                        | Sections
+------------+---------------------------------------------+---------
+  OPS-000   | 000-content-operations-foundation.md        | 19
+  OPS-002   | 002-social-media-operations-playbook.md     | 20 (8 platforms)
+  OPS-004   | 004-editorial-calendar-playbook.md          | 20
+  OPS-006   | 006-content-production-playbook.md          | 20 (brief→final)
+  OPS-008   | 008-visual-design-system-playbook.md        | 25
+  OPS-010   | 010-brand-voice-playbook.md                 | 23
+  OPS-012   | 012-community-management-playbook.md        | 24
+  OPS-014   | 014-content-quality-checklist.md            | 29 (6 quality gates)
+  OPS-016   | 016-publishing-checklist.md                 | 28 (6 platforms)
+  OPS-018   | 018-kpi-review-playbook.md                  | 29 (3 dashboard levels)
+
+================================================================================
+3. KEY FEATURES PER PLAYBOOK
+================================================================================
+
+OPS-000 — Foundation
+  - Purpose & scope, team roles & RACI, operating principles (10 principles)
+  - Content lifecycle: brief → production → review → publish → analyze → improve
+  - Daily/weekly/monthly cadences with decision tables
+  - Inputs/outputs, success criteria, failure conditions
+  - Review cycle, continuous improvement, document ownership
+
+OPS-002 — Social Media Operations
+  - 8 platform profiles with content roles & limits
+  - Daily publishing workflow with checklists and decision tables
+  - Cross-platform coordination (Hub → Platform mirror strategy)
+  - Crisis communication protocol
+  - Tool stack: n8n, Figma, designer handoff
+
+OPS-004 — Editorial Calendar
+  - Calendar structure: quarterly themes, monthly campaigns, weekly schedule
+  - Priority assignment (P0-P3), status tracking (7 states)
+  - Capacity planning formula, theme/campaign tracking
+  - Publishing schedule templates, content pillars
+
+OPS-006 — Content Production
+  - Brief-to-final 5-stage workflow with quality gates
+  - Research & sourcing standards
+  - File naming conventions, revision management
+  - AI tool integration guidelines
+  - Production exit criteria checklist
+
+OPS-008 — Visual Design System
+  - Design request intake process with forms & SLAs
+  - File naming conventions, brand colors operational guide
+  - Template management, export/delivery specs, tool integrations
+  - Quality checklist: brand compliance, typography, color accuracy, etc.
+
+OPS-010 — Brand Voice
+  - Writing style checklist (14 items), tone matrix per platform (10 combos)
+  - Vocabulary: allowed words, forbidden words, ambiguous terms
+  - CTA library with tone variants, common mistakes section
+  - Voice compliance review, monthly brand voice audit
+
+OPS-012 — Community Management
+  - Response SLAs (P0-P3), comment triage process
+  - Escalation protocols, crisis response decision tree
+  - Moderation guidelines: delete, hide, reply, escalate
+  - Sentiment monitoring, weekly report structure
+
+OPS-014 — Content Quality Checklist
+  - 6 quality gates with weighted scoring (0-100)
+  - Detailed checklists: structural, grammar, brand, accuracy, visual,
+    platform, SEO, accessibility, link, legal
+  - Quality gate decision table (pass/conditional/fail)
+  - Continuous improvement cycle
+
+OPS-016 — Publishing Checklist
+  - Pre-publishing, platform-specific, post-publishing checks
+  - 6 platform-specific checks (Instagram, LinkedIn, Telegram/Bale,
+    X/Twitter, YouTube/Aparat, Website)
+  - Formatting, media attachment, URL/hashtag/mention verification
+  - Timezone cop (Tehran UTC+3:30), rollback procedure
+  - Publishing log template
+
+OPS-018 — KPI Review Playbook
+  - 3-level dashboard: tactical (daily), operational (weekly), strategic (monthly)
+  - Anomaly detection framework, cross-platform comparison
+  - Audience growth analysis, sentiment review, competitor benchmarking
+  - Alert thresholds for all metrics
+  - Quarterly KPI review meeting structure
+
+================================================================================
+4. KNW-001 UPDATES (v2.28.6 → v2.30.0-draft)
+================================================================================
+
+  - Family OPS-CONTENT added to §4
+  - Domain DOM-OPS-001 added to §5
+  - ID-R13 for OPS-NNN identifiers in §6
+  - 10 OPS documents registered in §15
+  - All OPS identifiers allocated (active + reserved range) in §16
+  - Statistics: total 44 → 54 documents, 11 → 12 families, 38 → 39 domains
+  - Roadmap: P11.S01 entry in §24
+  - Blocks 1-6 updated across document
+
+================================================================================
+5. AGENTS.md UPDATES
+================================================================================
+
+  - Phase marker: P11.S01 ✅
+  - Directory structure: 95-CONTENT-OPERATIONS/ added with all 10 files
+  - Done section: P11.S01 entry updated with all 10 playbooks
+  - Next Steps: P11.S01 ✓, P11.S02 planned
+  - Relevant Files: all 10 OPS documents registered
+
+================================================================================
+6. QUALITY ASSESSMENT
+================================================================================
+
+  Criteria              | Status | Notes
+  ----------------------+--------+------------------------------
+  No architecture       | ✅     | All playbooks operational
+  No implementation     | ✅     | Playbooks only (no code/API)
+  Vendor neutral        | ✅     | No vendor lock-in
+  Daily actionable      | ✅     | Checklists, decision tables
+  Platform neutral      | ✅     | 8 platforms via single playbook
+  Persian documentation | ✅     | Persian titles + content
+  Consistency check     | ✅     | Cross-references verified
+  Roles & RACI          | ✅     | OPS-000 defines all roles
+
+================================================================================
+7. NEXT STEPS
+================================================================================
+
+  Planned:
+  - P11.S02 — Content Operations Refinement & Automation (post-team-feedback)
+
+================================================================================
+                        END OF SPRINT REPORT
+================================================================================

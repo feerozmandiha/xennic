@@ -1,0 +1,161 @@
+================================================================================
+SPRINT REPORT — P2.S7
+PLAT-006 — Aparat Playbook
+SMOS Platform Playbook
+================================================================================
+
+IDENTIFICATION
+--------------------------------------------------------------------------------
+  Document ID:       P2-S7-REPORT
+  Sprint:            P2.S7
+  Deliverable:       PLAT-006 (Aparat Playbook)
+  Version:           1.0.0-draft
+  Date:              2026-06-27
+  Author:            OpenCode Agent (System Architect)
+
+EXECUTIVE SUMMARY
+--------------------------------------------------------------------------------
+  PLAT-006 — Aparat Playbook was successfully created following the
+  PLAT-000 34-section template. Aparat is defined with the new strategic
+  role "Video Backup" (P2), serving as the domestic mirror and archive
+  for YouTube video content, ensuring accessibility for Iranian audiences
+  without VPN.
+
+COVERAGE
+--------------------------------------------------------------------------------
+  Sections:            34 / 34 (100%)
+  Platform Identity:   PLAT-006, Aparat, Third-Party, Video Backup, P2
+  Role Definition:     Video Backup — new role in ARCH-020 §6
+  KPIs:                10 (Views, Watch Time, Retention, Subs Growth,
+                        Engagement Rate, Mirror Completeness, Mirror Delay,
+                        SEO Score, Audience Insights, Iran Accessibility)
+  Compatible CT-IDs:   13 (CT-002, 006, 007, 009, 011, 013, 014, 015,
+                        025, 031, 033, 034, 042)
+  AI Agents:           9 (AI-001, 003, 004, 008, 009, 010, 011, 013, 014)
+  Workflows:           6 (PUB, MON, RPT, EXT, ENG, MD)
+  Quality Gates:       5 (Mirror Completeness, Metadata Localization,
+                        Iran Compliance, Technical Quality, Accessibility)
+  Validation Rules:    15 (VAL-AP-01 through VAL-AP-15)
+  Compliance Items:    14 (C-AP-01 through C-AP-14)
+  Decision Tables:     4 (Mirror, Publishing, Engagement, Moderation)
+
+STATISTICS
+--------------------------------------------------------------------------------
+  Total Lines:        ~1,450
+  JSON Blocks:        12 (identity, audience, kpis, constraints, strategy,
+                        publishing, ai_collaboration, automation, metadata,
+                        workflow_ids, agent_ids, automation_ids, object_ids,
+                        prompt_ids, decision_ids, kpi_ids, event_ids, state_ids)
+  Machine IDs:        70+ (workflows, agents, prompts, decisions, KPIs,
+                        events, states)
+  Persian Content:    100% (professional Persian language)
+
+CROSS-REFERENCE VALIDATION
+--------------------------------------------------------------------------------
+  Upstream Dependencies:
+    - PLAT-000:  Derived from (template compliance)
+    - ARCH-020:  Classification, role, priority verified
+    - PLAT-005:  Mirror source (YouTube → Aparat)
+    - BRD-001:   Brand identity inherited (no duplication)
+    - BRD-002:   Voice guidelines inherited (no duplication)
+    - EDT-001:   Content lifecycle inherited (no duplication)
+    - EDT-002:   CT-ID mapping added (no definition duplication)
+    - GOV-001:   Documentation standards followed
+    - GOV-003:   Naming conventions followed
+    - GOV-004:   Cross-reference DAG preserved
+
+  Downstream Dependencies:
+    - AUT-006-*:  6 workflow interfaces defined
+    - AI-*:       9 agent mappings defined
+    - PRM-006-*:  6 prompt IDs reserved
+    - MET-*:      10 KPI definitions provided
+
+  SSOT Integrity:
+    - No duplicate strategic content from ARCH-020
+    - No duplicate brand content from BRD-001/BRD-002
+    - No duplicate content taxonomy from EDT-002
+    - No duplicate video strategy from PLAT-005
+    - Only Aparat-specific operational interpretation
+
+KEY DIFFERENCES FROM PLAT-005 (YouTube)
+--------------------------------------------------------------------------------
+  - Role: Video Backup vs Video (mirror, not primary)
+  - Mirror Pipeline: Aparat mirrors YouTube long-form videos
+  - Shorts: Not supported in Aparat (exclusive to YouTube)
+  - SEO: Persian-only keyword strategy vs global SEO
+  - API: Limited REST API vs full YouTube Data API
+  - Automation: 6 workflows vs 7 (no Shorts workflow)
+  - AI Agents: 9 vs 13 (no Video Agent, Graphic Agent, Fact Check, Planning)
+  - Moderation: Iran-specific content compliance added
+  - Priority: Same P2 but different strategic value (Iran coverage)
+
+RISKS
+--------------------------------------------------------------------------------
+  R-01  API Limitation: Aparat REST API has limited capabilities.
+        Manual or semi-automated upload may be required.
+        Mitigation: Hybrid pipeline (API + manual fallback).
+
+  R-02  Platform Stability: Aparat is a domestic platform with
+        potential service interruptions or policy changes.
+        Mitigation: YouTube remains primary source.
+
+  R-03  Engagement Low: Iranian audience engagement on Aparat
+        is typically lower than YouTube.
+        Mitigation: Focus on accessibility, not engagement metrics.
+
+  R-04  Content Compliance: Iranian content regulations may
+        require filtering or modification.
+        Mitigation: Compliance Gate (Iran) in Quality Gates.
+
+RECOMMENDATIONS
+--------------------------------------------------------------------------------
+  1. Prioritize Mirror Completeness (KPI-PLAT-006-06) as the
+     primary success metric for the first 3 months.
+
+  2. Establish Mirror Pipeline (AUT-006-PUB) before manual uploads.
+
+  3. Invest in Persian SEO keyword research — Aparat's search
+     algorithm differs significantly from YouTube.
+
+  4. Monitor Iran-specific analytics monthly — Aparat's analytics
+     capabilities are limited, manual sampling may be needed.
+
+  5. Keep Iran-exclusive content as a secondary priority —
+     mirror completeness is the core value proposition.
+
+DEFINITION OF DONE
+--------------------------------------------------------------------------------
+  [x] 34 sections following PLAT-000 structure
+  [x] All metadata fields populated
+  [x] All JSON blocks machine-readable
+  [x] SSOT integrity verified (no upstream duplication)
+  [x] CT-ID mapping defined (13 compatible IDs)
+  [x] AI Agent mapping complete (9 agents)
+  [x] Workflow interfaces defined (6 workflows)
+  [x] KPI system with 10 metrics
+  [x] Decision tables for 4 domains
+  [x] Validation rules (15 platform-specific)
+  [x] Quality gates (5 platform-specific + 7 generic)
+  [x] Compliance checklist (14 platform-specific + 23 generic)
+  [x] Cross-reference DAG preserved
+
+APPROVAL ITEMS
+--------------------------------------------------------------------------------
+  Item                           Status
+  ────────────────────────────── ───────
+  Architecture Review            Pending
+  Brand Review                   Pending
+  Editorial Review               Pending
+  Governance Review              Pending
+  Automation Review              Pending
+  AI Review                      Pending
+  Compliance Review              Pending
+
+FINAL STATUS
+--------------------------------------------------------------------------------
+  PLAT-006:   Draft (1.0.0-draft)
+  Status:     Awaiting review gates
+  Next:       Proceed to PLAT-007 (Website/Blog Playbook) or
+              AUT-001 (Automation Index) per roadmap priority.
+
+================================================================================

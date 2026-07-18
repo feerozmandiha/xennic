@@ -1,0 +1,93 @@
+================================================================================
+SMOS SPRINT REPORT — P6.S16
+================================================================================
+Title       : Enterprise Operations Governance Architecture
+Document    : KNW-402 — معماری حکمرانی عملیات سازمانی
+File        : docs/70-KNOWLEDGE/402-operations-governance-architecture.md
+Phase       : P6 — Enterprise Operations Knowledge Architecture
+Date        : 2026-06-30
+Version     : v1.0.0-draft
+Status      : Complete ✓
+Responsible : معمار عملیات سازمانی
+
+================================================================================
+DELIVERABLES
+================================================================================
+
+1. KNW-402 — Enterprise Operations Governance Architecture (1005 lines)
+   - 30 canonical sections
+   - 8 governance domains (GOV-OP to GOV-OPA)
+   - 8 governance principles (OPG-01 to OPG-08)
+   - 7 governance objectives (OGO-01 to OGO-07)
+   - 5 decision types (OPDCT-01 to OPDCT-05)
+   - 5 authority levels (A-0 to A-4)
+   - 5 approval levels (APL-01 to APL-05)
+   - 5 compliance levels (OPCMP-00 to OPCMP-04)
+   - 12 governance rules (OPG-R01 to OPG-R12)
+   - 8 governance constraints (OPG-CST-01 to OPG-CST-08)
+   - 7 quality gates (OPGQG-01 to OPGQG-07)
+   - 15 governance metrics (OPGM-01 to OPGM-15)
+   - 5 exception types (OPEXC-01 to OPEXC-05)
+   - 4 escalation paths (OPG-ESC-01 to OPG-ESC-04)
+   - 6 lifecycle stages
+   - 5 maturity levels
+   - 7 policy types
+   - 5 validation types
+   - 6 Machine Readable JSON blocks
+   - 3 JSON Schema (Draft-07)
+   - Vendor Neutral, Platform Neutral, Technology Neutral, Implementation Free
+   - SSOT for governance of all operational entities defined in KNW-401
+   - No new operational entities defined — only governance framework
+
+2. KNW-001 — Enterprise Knowledge Index updated to v2.4.0-draft
+   - Added KNW-402 in all registry tables
+   - Updated statistics: 15→16 documents, 1→2 in KNW-OPS family
+   - Updated Roadmap: P6.S16→current, P6.S17→planned
+   - Updated Agent mappings for KNW-402
+   - Updated changelog
+
+3. AGENTS.md updated for P6.S16
+
+================================================================================
+MODELS DEFINED
+================================================================================
+
+- Governance Domains Model: ۸ دامنه (GOV-OP تا GOV-OPA)
+- Decision Authority Model: ۵ نوع تصمیم (OPDCT-01..05)
+- Authority Levels Model: ۵ سطح (A-0 تا A-4)
+- Approval Chain Model: ۵ سطح (APL-01 تا APL-05)
+- Compliance Levels Model: ۵ سطح (OPCMP-00 تا OPCMP-04)
+- Governance Rules Model: ۱۲ قاعده در ۴ دسته
+- Constraint Model: ۸ محدودیت در ۴ دسته
+- Quality Gate Model: ۷ گیت در ۵ مرحله
+- Metrics Model: ۱۵ شاخص در ۶ دسته
+- Exception Model: ۵ نوع استثنا (OPEXC-01..05)
+- Escalation Model: ۴ مسیر ارجاع
+- Lifecycle Model: ۶ مرحله (OPG-EVO-01..06)
+- Maturity Model: ۵ سطح بلوغ حکمرانی
+- Policy Model: ۷ نوع سیاست
+- Validation Model: ۵ نوع اعتبارسنجی
+
+================================================================================
+UPSTREAM DEPENDENCIES
+================================================================================
+
+KNW-402 depends on:
+- KNW-401 (Operations Foundation) — مفاهیم و موجودیت‌های عملیاتی
+- KNW-000 (Knowledge Architecture) — چارچوب معماری دانش
+- KNW-001 (Knowledge Index) — نمایه دانش
+- KNW-101 (Business Foundation) — مفاهیم کسب‌وکار
+- KNW-102 (Rules & Policies) — قواعد و سیاست‌ها
+- KNW-103 (Process Architecture) — فرآیندهای کسب‌وکار
+- KNW-301 (Platform Foundation) — مفاهیم پلتفرم
+- KNW-304 (Platform Governance) — الگوی معماری حکمرانی
+- CON-000 (SMOS Constitution) — قانون اساسی
+
+================================================================================
+NEXT STEPS
+================================================================================
+
+- P6.S17 — Operations Lifecycle Architecture (KNW-403)
+- P6.S18 — Operations Reporting Knowledge (KNW-404)
+- P6.S19 — Operations Continuity Knowledge (KNW-405)
+================================================================================

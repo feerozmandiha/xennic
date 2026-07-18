@@ -1,0 +1,86 @@
+================================================================================
+SMOS SPRINT REPORT — P6.S15
+================================================================================
+Title       : Enterprise Operations Knowledge Foundation
+Document    : KNW-401 — پایه دانش عملیات سازمانی
+File        : docs/70-KNOWLEDGE/400-operations-knowledge-foundation.md
+Phase       : P6 — Enterprise Operations Knowledge Architecture
+Date        : 2026-06-30
+Version     : v1.0.0-draft
+Status      : Complete ✓
+Responsible : معمار عملیات سازمانی
+
+================================================================================
+DELIVERABLES
+================================================================================
+
+1. KNW-401 — Enterprise Operations Knowledge Foundation (1018 lines)
+   - 30 canonical sections
+   - 20 operational concepts (OPC-01 to OPC-20)
+   - 12 operational entities (OPE-01 to OPE-12)
+   - 14 operational capabilities (OPCAP-001 to OPCAP-014)
+   - 14 operational functions (OPF-01 to OPF-14)
+   - 8 operational domains (OPD-01 to OPD-08)
+   - 8 operational states (OPS-01 to OPS-08)
+   - 10 operational relationships (OPREL-01 to OPREL-10)
+   - 8 operational constraints
+   - 10 key metrics
+   - 8 operational principles
+   - 8 operational goals
+   - 5 maturity levels
+   - 6 stakeholders
+   - 5 authority levels
+   - 6 Machine Readable JSON blocks
+   - 3 JSON Schema (Draft-07)
+   - Vendor Neutral, Platform Neutral, Technology Neutral, Implementation Free
+   - SSOT for all operational concepts and entities in SMOS
+   - First document of KNW-OPS family
+
+2. KNW-001 — Enterprise Knowledge Index updated to v2.3.0-draft
+   - Added KNW-401 in all registry tables
+   - Updated statistics: 14→15 documents
+   - Updated KNW-OPS family: 0→1 documents
+   - Added KNW-401 to Agent mappings for AI-004, AI-008, AI-009, AI-010, AI-011, AI-012, AI-014
+   - Updated Roadmap: P6.S15→current
+   - Updated changelog
+
+3. AGENTS.md updated for P6.S15
+
+================================================================================
+MODELS DEFINED
+================================================================================
+
+- Operational Concept Model: ۲۰ مفهوم بنیادین عملیات
+- Operational Entity Model: ۱۲ موجودیت عملیاتی با شناسه OPE-*
+- Operational Capability Model: ۱۴ قابلیت با شناسه OPCAP-*
+- Operational Function Model: ۱۴ کارکرد با شناسه OPF-*
+- Operational Domain Model: ۸ دامنه با شناسه OPD-*
+- Operational State Machine: ۸ وضعیت با ۱۳ انتقال مجاز
+- Operational Relationship Model: ۱۰ رابطه با شناسه OPREL-*
+- Operational Constraint Model: ۸ محدودیت
+- Maturity Model: ۵ سطح بلوغ عملیاتی
+- Authority Model: ۵ سطح اختیار (A-0 تا A-4)
+
+================================================================================
+UPSTREAM DEPENDENCIES
+================================================================================
+
+KNW-401 depends on:
+- KNW-000 (Knowledge Architecture) — چارچوب معماری دانش
+- KNW-001 (Knowledge Index) — نمایه دانش
+- KNW-101 (Business Foundation) — مفاهیم کسب‌وکار
+- KNW-102 (Rules & Policies) — قواعد و سیاست‌ها
+- KNW-103 (Process Architecture) — فرآیندهای کسب‌وکار
+- KNW-301 (Platform Foundation) — مفاهیم پلتفرم
+- KNW-302 (Capability & Service) — قابلیت‌های پلتفرم
+- KNW-304 (Platform Governance) — حکمرانی پلتفرم
+
+================================================================================
+NEXT STEPS
+================================================================================
+
+- P6.S16 — Operations Governance Architecture (KNW-402)
+- P6.S17 — Operations Lifecycle Architecture (KNW-403)
+- P6.S18 — Operations Reporting Knowledge (KNW-404)
+- P6.S19 — Operations Continuity Knowledge (KNW-405)
+================================================================================

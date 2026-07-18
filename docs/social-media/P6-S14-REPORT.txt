@@ -1,0 +1,79 @@
+================================================================================
+SMOS SPRINT REPORT — P6.S14
+================================================================================
+Title       : Enterprise Platform Security Architecture
+Document    : KNW-308 — معماری امنیت پلتفرم سازمانی
+File        : docs/70-KNOWLEDGE/314-platform-security-architecture.md
+Phase       : P6 — Enterprise Platform Knowledge Architecture
+Date        : 2026-06-30
+Version     : v1.0.0-draft
+Status      : Complete ✓
+Responsible : معمار امنیت سازمانی
+
+================================================================================
+DELIVERABLES
+================================================================================
+
+1. KNW-308 — Enterprise Platform Security Architecture (1025 lines)
+   - 30 canonical sections
+   - 10 security domains (SEC-ARC to SEC-EVO)
+   - 7 security layers (LYR-SEC-01 to LYR-SEC-07)
+   - 5 trust levels (TRL-01 to TRL-05)
+   - 5 identity levels (IDL-01 to IDL-05)
+   - 5 access levels (ACL-01 to ACL-05)
+   - 10 threat categories (THR-01 to THR-10)
+   - 5 risk levels (RSL-01 to RSL-05)
+   - 15 security metrics (SEM-01 to SEM-15)
+   - 10 constraints (CST-SEC-01 to CST-SEC-10)
+   - 7 quality gates (QG-SEC-01 to QG-SEC-07)
+   - CIA Triad model: confidentiality (CNF-01..05), integrity (INT-01..05), availability (AVL-01..05)
+   - 6 Machine Readable JSON blocks
+   - 3 JSON Schema (Draft-07)
+   - Vendor Neutral, Platform Neutral, Technology Neutral, Implementation Free
+   - SSOT for security of all platform entities defined in KNW-301..KNW-307
+
+2. KNW-001 — Enterprise Knowledge Index updated to v2.2.0-draft
+   - Added KNW-308 in all registry tables
+   - Added DOM-PLT-008 (Platform Security) domain
+   - Updated statistics: 13→14 documents, 27→28 domains
+   - Updated KNW-PLT family: 7→8 documents
+   - Added KNW-308 to Agent mappings for AI-004, AI-008, AI-010, AI-011, AI-012, AI-014
+   - Updated Roadmap: P6.S14→current
+   - Updated changelog
+
+3. AGENTS.md updated for P6.S14
+
+================================================================================
+MODELS DEFINED
+================================================================================
+
+- CIA Triad Model: محرمانگی | یکپارچگی | در دسترس بودن
+- Zero Trust Model: هر دسترسی باید احراز, مجوز, رمزنگاری, حسابرسی شود
+- Defense in Depth Model: ۷ لایه دفاعی هم‌پوشان
+- Threat Modeling: ۱۰ دسته تهدید, ۵ سطح ریسک
+- Security Governance: ۱۴ اصل, ۶ هدف, ۸ ریسک, ۸ محدودیت
+- Security Lifecycle: ۸ وضعیت, ۱۵ انتقال مجاز
+- Security Quality: ۷ گیت کیفیت, ۱۵ معیار, ۱۰ نشانگر
+- CRUD Security Matrix: دسترسی به تفکیک سطح (A-0 تا A-4)
+
+================================================================================
+UPSTREAM DEPENDENCIES
+================================================================================
+
+KNW-308 depends on:
+- KNW-301 (Platform Foundation) — موجودیت‌ها و مفاهیم بنیادین پلتفرم
+- KNW-302 (Capability & Service) — قابلیت‌ها و سرویس‌های پلتفرم
+- KNW-303 (Relationships) — روابط بین موجودیت‌ها
+- KNW-304 (Governance) — حکمرانی و اختیار
+- KNW-305 (Lifecycle) — چرخه حیات موجودیت‌ها
+- KNW-306 (Quality) — کیفیت و معیارها
+- KNW-307 (Evolution) — تکامل و بلوغ
+- KNW-102 (Rules & Policies) — قوانین کسب‌وکار
+
+================================================================================
+NEXT STEPS
+================================================================================
+
+- P6.S15 — Brand & Reference Knowledge (KNW-701+, KNW-801+)
+- P6.S16 — AI & Automation Knowledge (KNW-501+, KNW-601+)
+================================================================================

@@ -1,0 +1,82 @@
+SMOS SPRINT REPORT — P3.S10
+================================================================================
+SPRINT: P3.S10 — AI-012 Continuous Improvement & Optimization Agent
+STATUS: COMPLETED
+DATE: 2026-06-27
+================================================================================
+
+DELIVERABLE
+--------------------------------------------------------------------------------
+AI-012 Continuous Improvement & Optimization Agent
+File: docs/40-AI-AGENTS/90-continuous-improvement-agent.md
+Lines: ~500
+Version: 1.0.0-draft
+
+IDENTITY
+--------------------------------------------------------------------------------
+Agent ID:       AI-012
+Canonical Name: Continuous Improvement & Optimization Agent
+Type:           Specialist (AT-01)
+Family:         Knowledge (FAM-04)
+Authority:      A-3 (Autonomous, Limited) — ▲ از A-1
+Layer:          Strategic (LYR-01) — ▲ از LYR-02
+Version:        1.0.0-draft
+
+STRUCTURE (18 Sections)
+--------------------------------------------------------------------------------
+1.  Identity
+2.  Mission
+3.  Responsibilities (13 Primary, 2 Secondary, 10 Non-Responsibility)
+4.  Capabilities (1 Core, 6 Supporting, 2 Collaborative, 1 Reflexive)
+5.  Inputs (8 inputs: IN-01 to IN-08)
+6.  Outputs (10 outputs: OUT-01 to OUT-10)
+7.  Context Requirements (Global + Session)
+8.  Knowledge Requirements (4 sources)
+9.  Decision Authority (A-3, 5 permitted acts, 5 forbidden)
+10. Communication Interfaces (5 outbound, 3 inbound events)
+11. Collaboration Matrix (3 consumers, 3 suppliers, 1 peer)
+12. Delegation Rules (3 rules: DLG-01 to DLG-03)
+13. Escalation Rules (5 rules: ESC-01 to ESC-05)
+14. Human Override (3 types: OVR-01 to OVR-03)
+15. KPIs (10 metrics: KPI-01 to KPI-10)
+16. Validation Rules (15 rules: VR-01 to VR-15)
+17. Quality Gates (5 gates: GATE-1 to GATE-5)
+18. Machine Readable JSON Blocks (6 blocks)
+
+KEY CHARACTERISTICS
+--------------------------------------------------------------------------------
+- Last agent in the enterprise learning cycle
+- Closes the organizational feedback loop: AI-001 → ... → AI-012 → AI-001
+- Strategic layer (LYR-01) — only agent in Knowledge family at this level
+- Converts analytics into organizational learning
+- Never creates, edits, or publishes content
+
+ENTERPRISE FEEDBACK LOOP (SMOS Canonical Learning Cycle)
+--------------------------------------------------------------------------------
+AI-001 → AI-002 → AI-003 → AI-004 → AI-005 → AI-006 → AI-008 → AI-010 → AI-012
+                                                                              │
+                                                                              └──→ AI-001
+
+UPSTREAM UPDATES (AI-000)
+--------------------------------------------------------------------------------
+§6 taxonomy: AI-012 upgraded from A-1/LYR-02 to A-3/LYR-01
+§10 authority matrix: "پیشنهاد بهبود" → "اولویت‌بندی و تدوین پیشنهادات بهبود"
+§26 registry: "Improvement Agent" → "Continuous Improvement & Optimization Agent"
+§30 cross-refs: updated name, file path, description
+
+DOWNSTREAM RELEVANCE
+--------------------------------------------------------------------------------
+AI-001 (Strategy) — consumer of Improvement Proposal, Roadmap, Backlog, Recommendation
+Governance (Human) — consumer of Roadmap, Risk Assessment
+KNW-* — consumer of Lessons Learned, Improvement Manifest
+Architecture — consumer of Optimization Report, Improvement Manifest
+
+NOTES
+--------------------------------------------------------------------------------
+- Derived from AI-000, consumes AI-010 output
+- Closes the enterprise feedback loop — architectural milestone
+- No prompts, no code, no API, no workflow
+- 6 JSON Machine Readable blocks included
+- Total system: 42 documents
+================================================================================
+END OF REPORT

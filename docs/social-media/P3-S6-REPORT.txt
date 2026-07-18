@@ -1,0 +1,76 @@
+SMOS SPRINT REPORT — P3.S6
+================================================================================
+SPRINT: P3.S6 — AI-005 Search Optimization & Discoverability Agent
+STATUS: COMPLETED
+DATE: 2026-06-27
+================================================================================
+
+DELIVERABLE
+--------------------------------------------------------------------------------
+AI-005 Search Optimization & Discoverability Agent
+File: docs/40-AI-AGENTS/50-search-discoverability-agent.md
+Lines: ~480
+Version: 1.0.0-draft
+
+IDENTITY
+--------------------------------------------------------------------------------
+Agent ID:       AI-005
+Canonical Name: Search Optimization & Discoverability Agent
+Type:           Specialist (AT-01)
+Family:         Content (FAM-02) — ▲ from FAM-01 (Fact Check)
+Authority:      A-3 (Autonomous, Limited) — ▲ from A-2
+Layer:          Execution (LYR-03)
+Version:        1.0.0-draft
+
+STRUCTURE (18 Sections)
+--------------------------------------------------------------------------------
+1.  Identity
+2.  Mission
+3.  Responsibilities (12 Primary, 2 Secondary, 10 Non-Responsibility)
+4.  Capabilities (1 Core, 6 Supporting, 2 Collaborative, 1 Reflexive)
+5.  Inputs (8 inputs: IN-01 to IN-08)
+6.  Outputs (8 outputs: OUT-01 to OUT-08)
+7.  Context Requirements (Global + Session)
+8.  Knowledge Requirements (4 sources)
+9.  Decision Authority (A-3, 5 permitted acts, 5 forbidden)
+10. Communication Interfaces (5 outbound, 3 inbound events)
+11. Collaboration Matrix (4 consumers, 2 suppliers, 1 peer)
+12. Delegation Rules (3 rules: DLG-01 to DLG-03)
+13. Escalation Rules (5 rules: ESC-01 to ESC-05)
+14. Human Override (3 types: OVR-01 to OVR-03)
+15. KPIs (10 metrics: KPI-01 to KPI-10)
+16. Validation Rules (15 rules: VR-01 to VR-15)
+17. Quality Gates (5 gates: GATE-1 to GATE-5)
+18. Machine Readable JSON Blocks (6 blocks)
+
+ARCHITECTURAL REDEFINITION
+--------------------------------------------------------------------------------
+AI-005 بازتعریف شد: از Fact Check (FAM-01, A-2) به Search Optimization &
+Discoverability (FAM-02, A-3). مسئولیت راستی‌آزمایی به AI-004 (Review) منتقل شد.
+
+UPSTREAM UPDATES (AI-000)
+--------------------------------------------------------------------------------
+§1 diagram: "AI-005 FactCheck" → "AI-005 Discovery"
+§6 taxonomy: FAM-01 → FAM-02, A-2 → A-3
+§10 authority matrix: تأیید یا رد ادعا → بهینه‌سازی قابلیت کشف
+§14 pipeline: AI-005 moved from قبل از AI-004 به بعد از AI-004
+§26 registry: "Fact Check" → "Search Optimization & Discoverability"
+§30 cross-refs: updated name, file path, description
+
+DOWNSTREAM RELEVANCE
+--------------------------------------------------------------------------------
+AI-006 (Graphic) — consumer of Optimized Content Asset
+AI-008 (Publishing) — consumer of Optimized Content Asset + Enhanced Metadata
+AI-010 (Analytics) — consumer of Reports + Readiness Score
+AI-012 (Improvement) — consumer of Optimization Report
+KNW-* — consumer of Semantic Graph Fragment + Linking Suggestions
+
+NOTES
+--------------------------------------------------------------------------------
+- Derived from AI-000, consumes AI-004 output
+- Broader mission than SEO: semantic, knowledge graph, retrieval readiness
+- No prompts, no code, no API, no workflow
+- 6 JSON Machine Readable blocks included
+- Total system: 38 documents
+================================================================================
+END OF REPORT

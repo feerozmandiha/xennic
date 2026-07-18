@@ -1,0 +1,84 @@
+SMOS SPRINT REPORT — P3.S13
+================================================================================
+SPRINT: P3.S13 — AI-011 Enterprise Knowledge Management Agent
+STATUS: COMPLETED
+DATE: 2026-06-27
+================================================================================
+
+DELIVERABLE
+--------------------------------------------------------------------------------
+AI-011 Enterprise Knowledge Management Agent
+File: docs/40-AI-AGENTS/85-enterprise-knowledge-management-agent.md
+Lines: ~600
+Version: 1.0.0-draft
+
+IDENTITY
+--------------------------------------------------------------------------------
+Agent ID:       AI-011
+Canonical Name: Enterprise Knowledge Management Agent
+Type:           Specialist (AT-01)
+Family:         Knowledge (FAM-04)
+Authority:      A-3 (Autonomous, Limited) — ▲ از A-2
+Layer:          LYR-03 (Execution) — ▲ از LYR-02
+Version:        1.0.0-draft
+
+STRUCTURE (18 Sections)
+--------------------------------------------------------------------------------
+1.  Identity
+2.  Mission
+3.  Responsibilities (13 Primary, 2 Secondary, 10 Non-Responsibility)
+4.  Capabilities (1 Core, 6 Supporting, 3 Collaborative, 1 Reflexive)
+5.  Inputs (8 inputs: IN-01 to IN-08 from AI-003..AI-010)
+6.  Outputs (10 outputs: OUT-01 to OUT-10)
+7.  Context Requirements (Global + Session)
+8.  Knowledge Requirements (4 sources)
+9.  Decision Authority (A-3, 5 permitted acts, 5 forbidden)
+10. Communication Interfaces (5 outbound, 3 inbound events)
+11. Collaboration Matrix (4 consumers, 8 suppliers, 2 peers)
+12. Delegation Rules (4 rules: DLG-01 to DLG-04)
+13. Escalation Rules (5 rules: ESC-01 to ESC-05)
+14. Human Override (3 types: OVR-01 to OVR-03)
+15. KPIs (10 metrics: KPI-01 to KPI-10)
+16. Validation Rules (15 rules: VR-01 to VR-15)
+17. Quality Gates (5 gates: GATE-1 to GATE-5)
+18. Machine Readable JSON Blocks (6 blocks)
+
+KEY CHARACTERISTICS
+--------------------------------------------------------------------------------
+- Knowledge hub — collects from ALL producing agents (AI-003 through AI-010)
+- Supplies AI-001 (Strategy), AI-002 (Planning), AI-012 (Improvement)
+- Manages complete knowledge lifecycle: ingest → validate → normalize → index → catalog → archive
+- Never creates strategy, edits content, performs analytics, or publishes
+- Enterprise Knowledge Repository (KNW) is the persistent store
+- Knowledge Graph readiness maintained for enterprise discovery
+
+PIPELINE POSITION (Knowledge Hub Model)
+--------------------------------------------------------------------------------
+All Producers (AI-003..AI-010) → AI-011 → KNW (Repository)
+                                           ↓
+                              AI-001, AI-002, AI-012 (Consumers)
+
+UPSTREAM UPDATES (AI-000)
+--------------------------------------------------------------------------------
+§6 taxonomy: LYR-02 → LYR-03, A-2 → A-3
+§10 authority matrix: "پیشنهاد دانش جدید / حذف دانش موجود" → full description
+§17 delegation pipeline: added AI-011 node (Broadcast from all producers)
+§26 registry: "Knowledge Agent Architecture" → "Enterprise Knowledge Management Agent Architecture"
+§30 cross-refs: updated name, file path (85-enterprise-knowledge-management-agent.md)
+
+DOWNSTREAM UPDATES
+--------------------------------------------------------------------------------
+AGENTS.md: Added to directory tree, Done section, pipeline description
+AGENTS.md: Updated Next Steps (only AI-014 remaining)
+
+NOTES
+--------------------------------------------------------------------------------
+- Upgraded from A-2/LYR-02 to A-3/LYR-03
+- Redefined from "Knowledge Agent" to "Enterprise Knowledge Management Agent"
+- 10 outputs (highest count among all agents alongside AI-008 and AI-012)
+- Broadcast ingestion model (not sequential pipeline)
+- 6 JSON Machine Readable blocks included
+- Total system: 44 documents, 13 AI-NNN agents
+- AI-014 (Reserve) remains as the final agent specification
+================================================================================
+END OF REPORT

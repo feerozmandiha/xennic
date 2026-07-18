@@ -1,0 +1,85 @@
+SMOS SPRINT REPORT — P3.S11
+================================================================================
+SPRINT: P3.S11 — AI-007 Video Production Agent
+STATUS: COMPLETED
+DATE: 2026-06-27
+================================================================================
+
+DELIVERABLE
+--------------------------------------------------------------------------------
+AI-007 Video Production Agent
+File: docs/40-AI-AGENTS/65-video-production-agent.md
+Lines: ~560
+Version: 1.0.0-draft
+
+IDENTITY
+--------------------------------------------------------------------------------
+Agent ID:       AI-007
+Canonical Name: Video Production Agent
+Type:           Specialist (AT-01)
+Family:         Content (FAM-02)
+Authority:      A-3 (Autonomous, Limited) — ▲ از A-2
+Layer:          LYR-03 (Execution)
+Version:        1.0.0-draft
+
+STRUCTURE (18 Sections)
+--------------------------------------------------------------------------------
+1.  Identity
+2.  Mission
+3.  Responsibilities (13 Primary, 2 Secondary, 10 Non-Responsibility)
+4.  Capabilities (1 Core, 6 Supporting, 3 Collaborative, 1 Reflexive)
+5.  Inputs (7 inputs: IN-01 to IN-07)
+6.  Outputs (8 outputs: OUT-01 to OUT-08)
+7.  Context Requirements (Global + Session)
+8.  Knowledge Requirements (4 sources)
+9.  Decision Authority (A-3, 5 permitted acts, 4 forbidden)
+10. Communication Interfaces (4 outbound, 3 inbound events)
+11. Collaboration Matrix (4 consumers, 2 suppliers, 2 peers)
+12. Delegation Rules (3 rules: DLG-01 to DLG-03)
+13. Escalation Rules (5 rules: ESC-01 to ESC-05)
+14. Human Override (3 types: OVR-01 to OVR-03)
+15. KPIs (10 metrics: KPI-01 to KPI-10)
+16. Validation Rules (15 rules: VR-01 to VR-15)
+17. Quality Gates (5 gates: GATE-1 to GATE-5)
+18. Machine Readable JSON Blocks (6 blocks)
+
+KEY CHARACTERISTICS
+--------------------------------------------------------------------------------
+- Consumes Content Blocks from AI-003 (via AI-004 → AI-005 → AI-006 chain)
+- Consumes Media Assets from AI-006 (images, graphics, infographics for video)
+- Produces Canonical Video Asset (master, platform-independent)
+- Produces 8 distinct outputs including platform-specific videos, metadata, captions
+- Quality gates: Script, Visual, Audio, Brand/Platform, Self-Assessment
+- Outputs delivered to AI-008 (Publishing) for distribution
+
+PIPELINE POSITION (Canonical Video Pipeline)
+--------------------------------------------------------------------------------
+AI-003 → AI-004 → AI-005 → AI-006 → AI-007 → AI-008
+
+For non-video content: AI-006 → AI-008 (skipping AI-007)
+
+UPSTREAM UPDATES (AI-000)
+--------------------------------------------------------------------------------
+§6 taxonomy: AI-007 upgraded from A-2/LYR-03 to A-3/LYR-03
+§10 authority matrix: expanded description with domain boundaries
+§17 delegation pipeline: updated branching diagram (video vs non-video paths)
+§26 registry: "Video Agent" → "Video Production Agent"
+§30 cross-refs: updated name, file path (70-video-agent.md → 65-video-production-agent.md)
+
+DOWNSTREAM UPDATES
+--------------------------------------------------------------------------------
+AI-006 NRS: Added "Video Production" → حوزه AI-007
+AI-008 NRS: Added "Video Production" → حوزه AI-007
+AGENTS.md: Added AI-007 to directory tree and Done section
+AGENTS.md: Removed AI-007 from Next Steps
+
+NOTES
+--------------------------------------------------------------------------------
+- Derived from AI-000, consumes AI-003 + AI-006 output
+- Upgraded from A-2 to A-3 — autonomous within domain boundaries
+- First formal architecture document for Video agent
+- Bridges the gap between Media Asset Production (AI-006) and Publishing (AI-008)
+- 6 JSON Machine Readable blocks included
+- Total system: 42 documents, 11 AI-NNN agents
+================================================================================
+END OF REPORT

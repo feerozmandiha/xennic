@@ -1,0 +1,75 @@
+SMOS SPRINT REPORT — P3.S7
+================================================================================
+SPRINT: P3.S7 — AI-006 Media Asset Production Agent
+STATUS: COMPLETED
+DATE: 2026-06-27
+================================================================================
+
+DELIVERABLE
+--------------------------------------------------------------------------------
+AI-006 Media Asset Production Agent
+File: docs/40-AI-AGENTS/60-media-asset-production-agent.md
+Lines: ~500
+Version: 1.0.0-draft
+
+IDENTITY
+--------------------------------------------------------------------------------
+Agent ID:       AI-006
+Canonical Name: Media Asset Production Agent
+Type:           Specialist (AT-01)
+Family:         Content (FAM-02)
+Authority:      A-3 (Autonomous, Limited) — ▲ from A-2
+Layer:          Execution (LYR-03)
+Version:        1.0.0-draft
+
+STRUCTURE (18 Sections)
+--------------------------------------------------------------------------------
+1.  Identity
+2.  Mission
+3.  Responsibilities (13 Primary, 10 Non-Responsibility)
+4.  Capabilities (1 Core, 6 Supporting, 2 Collaborative, 1 Reflexive)
+5.  Inputs (7 inputs: IN-01 to IN-07)
+6.  Outputs (8 outputs: OUT-01 to OUT-08)
+7.  Context Requirements (Global + Session)
+8.  Knowledge Requirements (5 sources)
+9.  Decision Authority (A-3, 5 permitted acts, 5 forbidden)
+10. Communication Interfaces (5 outbound, 3 inbound events)
+11. Collaboration Matrix (2 consumers, 2 suppliers, 1 peer)
+12. Delegation Rules (3 rules: DLG-01 to DLG-03)
+13. Escalation Rules (5 rules: ESC-01 to ESC-05)
+14. Human Override (3 types: OVR-01 to OVR-03)
+15. KPIs (10 metrics: KPI-01 to KPI-10)
+16. Validation Rules (15 rules: VR-01 to VR-15)
+17. Quality Gates (5 gates: GATE-1 to GATE-5)
+18. Machine Readable JSON Blocks (6 blocks)
+
+MEDIA TYPES SUPPORTED
+--------------------------------------------------------------------------------
+Image · Graphic · Diagram · Illustration · Infographic
+Presentation · Document · Animation · Video Asset · Audio Asset
+Future Media Types — بدون نیاز به بازطراحی معماری
+
+UPSTREAM UPDATES (AI-000)
+--------------------------------------------------------------------------------
+§1 diagram: "AI-006 Graphic" → "AI-006 Media"
+§6 taxonomy: A-2 → A-3
+§10 authority matrix: تولید تصویر → تولید دارایی‌های رسانه‌ای
+§14 pipeline: AI-006 (Graphic) → AI-006 (Media)
+§26 registry: "Graphic Agent" → "Media Asset Production Agent"
+§30 cross-refs: updated name, file path, description
+
+DOWNSTREAM RELEVANCE
+--------------------------------------------------------------------------------
+AI-008 (Publishing) — consumer of Media Asset, Media Package, Thumbnail, Accessibility
+Media Repository — consumer of Catalog Entry, Asset Metadata
+KNW-* — consumer of Asset Metadata, Accessibility Metadata, Quality Report
+
+NOTES
+--------------------------------------------------------------------------------
+- Derived from AI-000, consumes AI-005 output
+- Enterprise media production layer — NOT limited to graphics
+- No prompts, no code, no API, no workflow
+- 6 JSON Machine Readable blocks included
+- Total system: 39 documents
+================================================================================
+END OF REPORT

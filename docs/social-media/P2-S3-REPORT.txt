@@ -1,0 +1,60 @@
+SMOS SPRINT REPORT — P2.S3
+============================
+Title: PLAT-003 Telegram & Bale Playbook
+Date: 2026-06-27
+Status: SUCCESS
+
+Summary
+-------
+Third platform playbook implementation (PLAT-003) covering both Telegram (P1, primary)
+and Bale (P2, domestic backup) messaging platforms with Community role. Single playbook
+due to same-family nature per ARCH-020 §11 (XP-02) and shared strategic role.
+
+Deliverables
+------------
+1. docs/20-PLATFORMS/30-telegram/30-telegram-playbook.md — PLAT-003 (1418 lines, 88KB)
+   - 34 sections following PLAT-000 structure
+   - Dual-platform: Telegram primary + Bale secondary
+   - 11 KPIs (KPI-PLAT-003-01 through KPI-PLAT-003-11)
+   - 24 CT-IDs compatible for Telegram, 10 CT-IDs for Bale
+   - 8 Automation Workflows (AUT-TG-001 through AUT-TG-008)
+   - 11 AI Agents mapped
+   - 6 Decision Tables
+   - 13 Platform-specific Validation Rules
+   - 5 Quality Gates
+   - 12 Compliance Checklist items
+   - Full Machine Readable Blocks (JSON)
+
+Key Decisions
+-------------
+- MSG-01 to MSG-07: Core principles for messenger platforms
+- Telegram-Bale combined in single PLAT-003 due to same-family nature
+- Bale treated as sub-platform under PLAT-003 (resolves ARCH-020 PLAT-004 conflict)
+- Community-first, not visual-first (unlike Instagram) or professional-first (unlike LinkedIn)
+- Supergroup content strictly exclusive — never duplicated in channel
+- Bot API enables A-3 (independent) automation for publishing and monitoring
+- Bale sync workflow (AUT-TG-008) ensures complementary content per XP-02
+
+Content Architecture
+--------------------
+- 5 Content Pillars: Community Engagement (35%), Knowledge Distribution (30%),
+  News & Updates (20%), Exclusive Supergroup (10%), Crisis (5%)
+- 3 Community Layers: Public Channel (L1), Supergroup (L2), Bot Subscribers (L3)
+- 8 Post Types: Channel Post, Supergroup Post, Poll, Media Post, Story,
+  Pinned Post, Bot DM, Voice Chat, Comment
+- Dual audience: Telegram (general Persian, P1), Bale (Iran domestic, P2)
+
+Next Steps Available
+--------------------
+1. PLAT-004 (X/Twitter Playbook) — Role: News, P2
+2. PLAT-005 (YouTube Playbook) — Role: Video, P2
+3. PLAT-006 (Aparat Playbook) — Role: Video Backup (Iran), P2
+4. PLAT-007 (Website/Blog Playbook) — Role: Hub, P0
+5. BRD-002 (Brand Voice Guidelines)
+6. AUT-001 (Automation Index)
+
+Issues
+------
+- PLAT-004 conflict resolved: Bale moved under PLAT-003; X/Twitter keeps PLAT-004
+- ARCH-020 §22 lists Bale as PLAT-004 — needs minor update or ADR note
+- No supporting AUT-*, AI-*, PRM-* files exist yet — playbook references are forward-looking

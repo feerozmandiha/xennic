@@ -1,0 +1,101 @@
+SMOS SPRINT REPORT — P3.S14
+================================================================================
+SPRINT: P3.S14 — AI-014 Enterprise AI Orchestrator
+STATUS: COMPLETED — ENTERPRISE AI ARCHITECTURE COMPLETE
+DATE: 2026-06-27
+================================================================================
+
+DELIVERABLE
+--------------------------------------------------------------------------------
+AI-014 Enterprise AI Orchestrator
+File: docs/40-AI-AGENTS/99-enterprise-ai-orchestrator.md
+Lines: ~650
+Version: 1.0.0-draft
+
+IDENTITY
+--------------------------------------------------------------------------------
+Agent ID:       AI-014
+Canonical Name: Enterprise AI Orchestrator
+Type:           Orchestrator (AT-02) — تنها Agent از این نوع
+Family:         Orchestration (FAM-05)
+Authority:      A-4 (Autonomous, Enterprise) — بالاترین در SMOS
+Layer:          LYR-01 (Strategic)
+Version:        1.0.0-draft
+
+STRUCTURE (18 Sections)
+--------------------------------------------------------------------------------
+1.  Identity
+2.  Mission
+3.  Responsibilities (15 Primary, 0 Secondary, 10 Non-Responsibility)
+4.  Capabilities (1 Core, 6 Supporting, 3 Collaborative, 1 Reflexive)
+5.  Inputs (7 inputs: IN-01 to IN-07)
+6.  Outputs (10 outputs: OUT-01 to OUT-10)
+7.  Context Requirements (Global + Session)
+8.  Knowledge Requirements (4 sources)
+9.  Decision Authority (A-4, 7 permitted acts, 6 forbidden)
+10. Communication Interfaces (7 outbound, 4 inbound events)
+11. Collaboration Matrix (4 consumers, 3 suppliers, 2 peers)
+12. Delegation Rules (4 rules: DLG-01 to DLG-04)
+13. Escalation Rules (5 rules: ESC-01 to ESC-05)
+14. Human Override (3 types: OVR-01 to OVR-03)
+15. KPIs (10 metrics: KPI-01 to KPI-10)
+16. Validation Rules (15 rules: VR-01 to VR-15)
+17. Quality Gates (5 gates: GATE-1 to GATE-5)
+18. Machine Readable JSON Blocks (6 blocks)
+
+KEY CHARACTERISTICS
+--------------------------------------------------------------------------------
+- Highest authority level in SMOS (A-4)
+- Only Orchestrator type (AT-02) agent
+- 15 Primary Responsibilities — the most of any agent
+- Coordinates ALL agents (AI-001 through AI-013 + future)
+- Task decomposition: human request → atomic tasks
+- Agent selection based on capability matrix
+- Full error recovery with retry logic and alternative paths
+- Complete execution audit for governance
+- Three-tier human override (Soft/Hard/Emergency)
+
+PIPELINE POSITION
+--------------------------------------------------------------------------------
+Human → AI-014 → Task Decomposition → Agent Selection → Execution → Aggregation → Human
+
+UPSTREAM UPDATES (AI-000)
+--------------------------------------------------------------------------------
+§4 agent hierarchy: Added AI-014 entry to taxonomy (FAM-05, A-4, LYR-01)
+§6 taxonomy: Added AI-014 to classification matrix
+§10 authority matrix: Added AI-014 A-4 entry
+§17 delegation: "Orchestrator" → "AI-014 (Enterprise AI Orchestrator)"
+§26 registry: Added AI-014 entry
+§30 cross-refs: Added AI-014 entry
+
+AGENTS.md UPDATES
+--------------------------------------------------------------------------------
+- Added to directory tree (99-enterprise-ai-orchestrator.md)
+- Added to Progress section (P3.S14)
+- Updated Next Steps (removed AI-014, added PRM-* and KNW-*)
+- Updated summary stats
+
+ENTERPRISE AI ARCHITECTURE — COMPLETION SUMMARY
+================================================================================
+FAM-01 (Research):        AI-013  Research Agent
+FAM-02 (Content):         AI-001  Content Strategy Agent
+                          AI-002  Content Planning Agent
+                          AI-003  Content Production Agent
+                          AI-004  Content Review & QA Agent
+                          AI-005  Search Optimization Agent
+                          AI-006  Media Asset Production Agent
+                          AI-007  Video Production Agent
+FAM-03 (Operations):      AI-008  Enterprise Publishing Agent
+                          AI-009  Community Engagement Agent
+FAM-04 (Knowledge):       AI-010  Analytics & Performance Intelligence Agent
+                          AI-011  Enterprise Knowledge Management Agent
+                          AI-012  Continuous Improvement Agent
+FAM-05 (Orchestration):   AI-000  Enterprise AI Agent Architecture (SSOT)
+                          AI-014  Enterprise AI Orchestrator (Operational)
+
+TOTAL: 15 AI agents defined (AI-000 + 14 derived agents)
+================================================================================
+Total documents: 45
+Agent types: Specialist (AT-01) × 13, Orchestrator (AT-02) × 1, Reviewer (AT-03) × 1
+================================================================================
+END OF REPORT

@@ -1,0 +1,94 @@
+SMOS SPRINT REPORT — P3.S12
+================================================================================
+SPRINT: P3.S12 — AI-009 Community Engagement Agent
+STATUS: COMPLETED
+DATE: 2026-06-27
+================================================================================
+
+DELIVERABLE
+--------------------------------------------------------------------------------
+AI-009 Community Engagement Agent (redefined from Monitoring Agent)
+File: docs/40-AI-AGENTS/75-community-engagement-agent.md
+Lines: ~560
+Version: 1.0.0-draft
+
+IDENTITY
+--------------------------------------------------------------------------------
+Agent ID:       AI-009
+Canonical Name: Community Engagement Agent
+Type:           Specialist (AT-01)
+Family:         Operations (FAM-03)
+Authority:      A-3 (Autonomous, Limited)
+Layer:          LYR-03 (Execution) — LYR-04 قبلی
+Version:        1.0.0-draft
+
+REDEFINITION: Monitoring → Community Engagement
+--------------------------------------------------------------------------------
+Old definition: AI-009 = Monitoring Agent (FAM-03, LYR-04)
+  - ارسال هشدار بر اساس داده پلتفرم
+  - نظارت بر عملکرد فنی و محتوایی
+  - مسئولیت‌های پراکنده در KPIهای پلتفرم‌ها
+
+New definition: AI-009 = Community Engagement Agent (FAM-03, LYR-03)
+  - ONLY post-publication interaction
+  - Comment management, moderation, response orchestration
+  - Sentiment observation, escalation, human hand-off
+  - NEVER creates, edits, or publishes content
+
+STRUCTURE (18 Sections)
+--------------------------------------------------------------------------------
+1.  Identity
+2.  Mission
+3.  Responsibilities (13 Primary, 2 Secondary, 10 Non-Responsibility)
+4.  Capabilities (1 Core, 6 Supporting, 3 Collaborative, 1 Reflexive)
+5.  Inputs (7 inputs: IN-01 to IN-07)
+6.  Outputs (8 outputs: OUT-01 to OUT-08)
+7.  Context Requirements (Global + Session)
+8.  Knowledge Requirements (4 sources)
+9.  Decision Authority (A-3, 5 permitted acts, 5 forbidden)
+10. Communication Interfaces (4 outbound, 3 inbound events)
+11. Collaboration Matrix (3 consumers, 2 suppliers, 2 peers)
+12. Delegation Rules (4 rules: DLG-01 to DLG-04)
+13. Escalation Rules (5 rules: ESC-01 to ESC-05)
+14. Human Override (3 types: OVR-01 to OVR-03)
+15. KPIs (10 metrics: KPI-01 to KPI-10)
+16. Validation Rules (15 rules: VR-01 to VR-15)
+17. Quality Gates (5 gates: GATE-1 to GATE-5)
+18. Machine Readable JSON Blocks (6 blocks)
+
+KEY CHARACTERISTICS
+--------------------------------------------------------------------------------
+- Receives IN-01 (Published Content Log) from AI-008
+- Receives real-time comments/messages from Platform APIs
+- Produces 8 outputs including Community Log, Engagement Report, Escalation Package
+- Escalation: sentiment crises, legal requests, reputational threats → Human
+- Human override: soft (tone), hard (override response), emergency (disable interaction)
+- All interactions logged; all overrides recorded in Community Log
+
+PIPELINE POSITION
+--------------------------------------------------------------------------------
+AI-008 (Publishing) → AI-009 (Community) → AI-010 (Analytics) → AI-012 (Improvement)
+
+UPSTREAM UPDATES (AI-000)
+--------------------------------------------------------------------------------
+§6 taxonomy: LYR-04 → LYR-03
+§10 authority matrix: "ارسال هشدار / حذف محتوا" → "مدیریت تعاملات جامعه پس از انتشار"
+§17 pipeline: added AI-009 node between AI-008 and AI-010
+§26 registry: "Monitoring Agent Architecture" → "Community Engagement Agent Architecture"
+§30 cross-refs: updated name, file path (75-community-engagement-agent.md replaces 90-monitoring-agent.md)
+
+DOWNSTREAM UPDATES
+--------------------------------------------------------------------------------
+AGENTS.md: Added to directory tree, Done section, pipeline description
+AGENTS.md: Updated progress (12 agents complete from 14)
+
+NOTES
+--------------------------------------------------------------------------------
+- Redefined from Monitoring to Community Engagement (architectural shift)
+- Monitoring responsibilities distributed to AI-010 (Analytics) and platform playbooks
+- Derived from AI-000 following exact 18-section template
+- No prompts, no code, no API, no workflow
+- 6 JSON Machine Readable blocks included
+- Total system: 43 documents, 12 AI-NNN agents (AI-000 + AI-001..AI-013)
+================================================================================
+END OF REPORT

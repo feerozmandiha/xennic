@@ -1,0 +1,189 @@
+================================================================================
+SPRINT REPORT — P2.S8
+PLAT-007 — Website / Knowledge Hub Playbook
+SMOS Platform Playbook
+================================================================================
+
+IDENTIFICATION
+--------------------------------------------------------------------------------
+  Document ID:       P2-S8-REPORT
+  Sprint:            P2.S8
+  Deliverable:       PLAT-007 (Website / Knowledge Hub Playbook)
+  Version:           1.0.0-draft
+  Date:              2026-06-27
+  Author:            OpenCode Agent (System Architect)
+
+EXECUTIVE SUMMARY
+--------------------------------------------------------------------------------
+  PLAT-007 — Website / Knowledge Hub Playbook was successfully created
+  as the final platform playbook of the original SMOS roadmap.
+
+  Website is NOT a social network. It is the canonical publishing platform
+  with role Hub (P0) — the highest priority in SMOS.
+
+  Every external platform ultimately points to Website. Website is the
+  permanent knowledge repository of Xennic.
+
+  This is the most comprehensive playbook in SMOS with the widest AI
+  coverage (13 agents), most workflows (9), and most CT-ID mappings (33
+  compatible of 42 total).
+
+COVERAGE
+--------------------------------------------------------------------------------
+  Sections:            34 / 34 (100%)
+  Platform Identity:   PLAT-007, Website / Blog, Owned, Hub, P0
+  Role Definition:     Hub — defined in ARCH-020 §6
+  KPIs:                12 (Organic Traffic, Indexed Pages, CTR,
+                        Avg Time, Bounce Rate, Conversions,
+                        Knowledge Growth, Search Visibility,
+                        Internal Link Health, Content Freshness,
+                        Authority, Brand Trust)
+  Compatible CT-IDs:   33 of 42 (all except CT-004, 016, 017, 019,
+                        023, 027, 030 — social-native types)
+  AI Agents:           13 (AI-001 through AI-011, AI-013, AI-014)
+  Workflows:           9 (PUB, SEO, INK, RFR, BLK, KNW, ANL, SCH, DIST)
+  Page Types:          15 (Article, Knowledge Base, Product, Landing,
+                        Company, Case Study, Whitepaper, FAQ, Event,
+                        News, Career, Category, Tag, Search, Author)
+  Quality Gates:       9 (SEO, Editorial, Knowledge, Accessibility,
+                        Brand, Performance, Legal, Publication, Schema)
+  Validation Rules:    21 (VAL-WB-01 through VAL-WB-21)
+  Compliance Items:    23 (C-WB-01 through C-WB-23)
+  Decision Tables:     4 (Publishing, Content Refresh, Broken Links,
+                        Engagement)
+  Response Templates:  4 (Confirmation, FAQ Answer, Technical Referral,
+                        Download Notification)
+
+STATISTICS
+--------------------------------------------------------------------------------
+  Total Lines:        ~1,680
+  JSON Blocks:        11 (identity, audience, kpis, constraints, publishing,
+                        visual_guidelines, ai_collaboration, automation,
+                        metadata, workflow_ids, agent_ids, automation_ids,
+                        object_ids, prompt_ids, decision_ids, kpi_ids,
+                        event_ids, state_ids)
+  Machine IDs:        80+ (workflows, agents, prompts, decisions, KPIs,
+                        events, states)
+  Persian Content:    100% (professional Persian language)
+
+CROSS-REFERENCE VALIDATION
+--------------------------------------------------------------------------------
+  Upstream Dependencies:
+    - PLAT-000:  Derived from (template compliance)
+    - ARCH-020:  Classification, Hub role, P0 priority verified
+    - BRD-001:   Brand identity inherited (no duplication)
+    - BRD-002:   Voice guidelines inherited (no duplication)
+    - EDT-001:   Content lifecycle inherited (no duplication)
+    - EDT-002:   CT-ID mapping added (33 compatible, 7 excluded)
+    - CON-000:   Constitutional principles followed
+    - ARCH-011:  Object model referenced
+    - ARCH-013:  AI agent model referenced
+    - ARCH-030:  Governance and RACI followed
+    - GOV-001:   Documentation standards followed
+    - GOV-003:   Naming conventions followed
+    - GOV-004:   Cross-reference DAG preserved
+
+  Downstream Dependencies:
+    - AUT-007-*:  9 workflow interfaces defined
+    - AI-*:       13 agent mappings defined
+    - PRM-007-*:  6 prompt IDs reserved
+    - MET-*:      12 KPI definitions provided
+
+  SSOT Integrity:
+    - No duplicate strategic content from ARCH-020
+    - No duplicate brand content from BRD-001/BRD-002
+    - No duplicate content taxonomy from EDT-002
+    - Only Website-specific operational interpretation
+
+KEY DIFFERENCES FROM SOCIAL PLATFORM PLAYBOOKS
+--------------------------------------------------------------------------------
+  - Role Hub (P0): Highest priority in SMOS — all platforms serve it
+  - Owned Platform: Full organizational control, no third-party dependency
+  - No Social Engagement: No comments/likes/shares — focus on knowledge
+  - Hashtag Strategy → Category/Tag System: Hierarchical organization
+  - Caption Guidelines → Page Writing Guidelines: Title, Meta, H1-H6, Alt
+  - Post Types → Page Types: 15 distinct page archetypes
+  - Community Model → Readership Model: Public, no membership required
+  - Engagement Model → Conversion Model: Focus on CTA and conversion
+  - Widest AI Coverage: 13 of 14 SMOS agents interact with Website
+  - Most Workflows: 9 workflows covering entire content lifecycle
+  - 12 KPIs: Comprehensive measurement across SEO, content, knowledge
+  - 33 CT-IDs: Almost all content types appear on Website
+  - 9 Quality Gates: Most rigorous verification pipeline
+  - Schema.org: Unique to Website — structured data for search engines
+  - Core Web Vitals: Performance gate unique to owned platform
+
+RISKS
+--------------------------------------------------------------------------------
+  R-01  Content Volume: Website requires highest content volume.
+        Mitigation: AI-generated content (60%) with human oversight.
+
+  R-02  SEO Competition: Ranking in competitive keywords is difficult.
+        Mitigation: Long-tail strategy, content quality focus.
+
+  R-03  Content Decay: Old content loses relevance and ranking.
+        Mitigation: AUT-007-RFR (weekly refresh workflow).
+
+  R-04  Technical Debt: Core Web Vitals degrade over time with changes.
+        Mitigation: AUT-007-MON (daily monitoring).
+
+  R-05  Brand Consistency: Large volume may dilute brand voice.
+        Mitigation: AI-004 (Review) + Brand Gate for all content.
+
+RECOMMENDATIONS
+--------------------------------------------------------------------------------
+  1. Prioritize SEO infrastructure (Schema.org, Core Web Vitals,
+     Sitemap) before mass content production.
+
+  2. Implement AUT-007-PUB workflow first — all other workflows
+     depend on the publishing pipeline.
+
+  3. Start with CT-001 (Educational Article) and CT-032 (Documentation)
+     as initial content types — highest value-to-effort ratio.
+
+  4. Set up Google Analytics + Search Console from day 0 — all 12 KPIs
+     depend on measurement infrastructure.
+
+  5. Establish Content Calendar for first 3 months before scaling to
+     full automation.
+
+DEFINITION OF DONE
+--------------------------------------------------------------------------------
+  [x] 34 sections following PLAT-000 structure
+  [x] All metadata fields populated
+  [x] All JSON blocks machine-readable
+  [x] SSOT integrity verified (no upstream duplication)
+  [x] CT-ID mapping defined (33 compatible, 7 excluded with reasons)
+  [x] AI Agent mapping complete (13 agents — widest in SMOS)
+  [x] Workflow interfaces defined (9 workflows)
+  [x] KPI system with 12 metrics
+  [x] Decision tables for 4 domains
+  [x] Validation rules (21 platform-specific)
+  [x] Quality gates (9 platform-specific)
+  [x] Compliance checklist (23 platform-specific)
+  [x] Cross-reference DAG preserved
+
+APPROVAL ITEMS
+--------------------------------------------------------------------------------
+  Item                           Status
+  ────────────────────────────── ───────
+  Architecture Review            Pending
+  Brand Review                   Pending
+  Editorial Review               Pending
+  Governance Review              Pending
+  Automation Review              Pending
+  AI Review                      Pending
+  Compliance Review              Pending
+  SEO Review                     Pending
+  Legal Review                   Pending
+
+FINAL STATUS
+--------------------------------------------------------------------------------
+  PLAT-007:   Draft (1.0.0-draft)
+  Status:     Awaiting review gates
+  ROADMAP:    All 7 PLAT-* playbooks complete (PLAT-001 through PLAT-007)
+  Next:       Proceed to AUT-001 (Automation Index) or
+              AI-001 through AI-014 (Agent Specifications) or
+              DEPLOY-001 (Deployment Strategy) per roadmap priority.
+
+================================================================================
