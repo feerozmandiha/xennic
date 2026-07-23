@@ -47,6 +47,7 @@ model users {
   project_notes    project_notes[]
   calculations     calculations[]
   files            files[]
+  avatar_file      files?             @relation("UserAvatar", fields: [avatar_file_id], references: [id])
   notifications    notifications[]
   audit_logs       audit_logs[]
   ai_usage         ai_usage[]
@@ -476,6 +477,7 @@ model project_reports {
   created_at DateTime @default(now())
 
   project    projects @relation(fields: [project_id], references: [id], onDelete: Cascade)
+  file        files?   @relation(fields: [file_id], references: [id])
 
   @@index([project_id])
 }
@@ -952,6 +954,7 @@ model knowledge_documents {
   mime_type             String
   size_bytes            Int
   storage_path          String?
+  storage_file_id       String?
   document_type         String    @default("pdf")
   status                String    @default("uploaded")
   classification        Json      @default("{}")
@@ -967,11 +970,13 @@ model knowledge_documents {
   workspace             workspaces                   @relation(fields: [workspace_id], references: [id])
   creator               users?                       @relation("KnowledgeDocumentCreator", fields: [created_by], references: [id])
   published_knowledge   knowledge?                   @relation("FactoryPublishedKnowledge", fields: [published_knowledge_id], references: [id])
+  storage_file          files?                       @relation(fields: [storage_file_id], references: [id])
   chunks                knowledge_document_chunks[]
   pipeline_runs         knowledge_pipeline_runs[]
   extractions           knowledge_extractions[]
 
   @@index([workspace_id])
+  @@index([storage_file_id])
   @@index([status])
   @@index([document_type])
   @@index([created_at])
@@ -1139,7 +1144,10 @@ model files {
 
   workspace     workspaces     @relation(fields: [workspace_id], references: [id])
   uploader      users          @relation(fields: [uploaded_by], references: [id])
+  avatar_user   users[]          @relation("UserAvatar")
   versions      file_versions[]
+  knowledge_documents  knowledge_documents[]
+  project_reports  project_reports[]
 
   @@index([workspace_id])
   @@index([uploaded_by])
