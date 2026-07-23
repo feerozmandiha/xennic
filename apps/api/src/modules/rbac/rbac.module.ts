@@ -22,6 +22,9 @@ import { AuditLogRepository } from './infrastructure/repositories/audit-log.repo
     PermissionService,
     AuthorizationService,
 
+    // ── Direct class registration (needed for class-based export) ────────────
+    AuditLogRepository,
+
     // ── Repository Bindings ───────────────────────────────────────────────────
     {
       provide: 'IRoleRepository',
@@ -36,6 +39,6 @@ import { AuditLogRepository } from './infrastructure/repositories/audit-log.repo
       useClass: AuditLogRepository,
     },
   ],
-  exports: [AuthorizationService, RoleService, PermissionService],
+  exports: [AuthorizationService, RoleService, PermissionService, AuditLogRepository],
 })
 export class RbacModule {}

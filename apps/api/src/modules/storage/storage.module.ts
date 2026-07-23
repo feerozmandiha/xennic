@@ -23,6 +23,6 @@ import { RbacModule } from '../rbac/rbac.module.js';
       useClass: StorageRepository,
     },
   ],
-  exports: [StorageService, MinioService],
+  exports: [StorageService, MinioService, 'IStorageRepository'],
 })
 export class StorageModule {}
