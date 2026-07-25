@@ -1,35 +1,32 @@
 import { Injectable } from '@nestjs/common';
+import type { IStorageService } from '../../domain/interfaces/storage-service.interface.js';
+import { MinioService } from '../../../storage/infrastructure/minio/minio.service.js';
 
 @Injectable()
-export class MinioStorageService {
-  private readonly bucket: string;
+export class KfStorageAdapter implements IStorageService {
+  private readonly bucket = 'knowledge-factory';
 
-  constructor(
-    private readonly storageService: {
-      upload(bucket: string, path: string, buffer: Buffer, contentType: string): Promise<string>;
-      download(bucket: string, path: string): Promise<Buffer>;
-      delete(bucket: string, path: string): Promise<void>;
-      exists(bucket: string, path: string): Promise<boolean>;
-    },
-    private readonly configService: { get<T>(key: string, defaultValue?: T): T },
-  ) {
-    this.bucket = this.configService.get<string>('MINIO_BUCKET', 'knowledge-factory');
-  }
+  constructor(private readonly minioService: MinioService) {}
 
   async upload(buffer: Buffer, path: string, contentType: string): Promise<string> {
-    await this.storageService.upload(this.bucket, path, buffer, contentType);
+    await this.minioService.uploadBuffer(this.bucket, path, buffer, contentType, buffer.length);
     return path;
   }
 
   async download(path: string): Promise<Buffer> {
-    return this.storageService.download(this.bucket, path);
+    return this.minioService.getObject(this.bucket, path);
   }
 
   async delete(path: string): Promise<void> {
-    await this.storageService.delete(this.bucket, path);
+    await this.minioService.deleteObject(this.bucket, path);
   }
 
   async exists(path: string): Promise<boolean> {
-    return this.storageService.exists(this.bucket, path);
+    try {
+      await this.minioService.getObject(this.bucket, path);
+      return true;
+    } catch {
+      return false;
+    }
   }
 }
