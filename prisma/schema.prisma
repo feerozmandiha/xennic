@@ -54,6 +54,7 @@ model users {
   ai_usage         ai_usage[]
   orders           orders[]
   payment_methods  payment_methods[]
+  file_versions_created file_versions[]
 
   // Knowledge Management System — relation names match knowledge model side
   knowledge_author               knowledge[]                @relation("KnowledgeAuthor")
@@ -1174,16 +1175,24 @@ model files {
 }
 
 model file_versions {
-  id         String   @id @default(uuid())
-  file_id    String
-  version    Int      @default(1)
-  path       String
-  checksum   String?
-  created_at DateTime @default(now())
+  id            String    @id @default(uuid())
+  file_id       String
+  version       Int       @default(1)
+  path          String
+  size          BigInt
+  mime_type     String
+  original_name String
+  checksum      String?
+  change_reason String?
+  created_by    String?
+  created_at    DateTime  @default(now())
 
-  file       files    @relation(fields: [file_id], references: [id], onDelete: Cascade)
+  file files  @relation(fields: [file_id], references: [id], onDelete: Cascade)
+  user users? @relation(fields: [created_by], references: [id], onDelete: SetNull)
 
+  @@unique([file_id, version])
   @@index([file_id])
+  @@index([file_id, created_at])
 }
 
 // ============================================================

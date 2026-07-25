@@ -7,7 +7,6 @@
 -- PostgreSQL database dump
 --
 
-\restrict qJn009LB8bK62AiNrCgv9fdh00ZcFAZxe458WXyouQeYx7le4HLZZ5fWoqgv9Pr
 
 -- Dumped from database version 17.10
 -- Dumped by pg_dump version 17.10 (Ubuntu 17.10-0ubuntu0.25.10.1)
@@ -562,5 +561,3 @@ ALTER TABLE ONLY public.unit_conversions
 --
 -- PostgreSQL database dump complete
 --
-
-\unrestrict qJn009LB8bK62AiNrCgv9fdh00ZcFAZxe458WXyouQeYx7le4HLZZ5fWoqgv9Pr
