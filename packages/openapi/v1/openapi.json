@@ -9413,7 +9413,7 @@
     },
     {
       "name": "workspaces",
-      "description": "Workspace management (multi-tenant isolation)"
+      "description": "Workspace management and tenant isolation"
     },
     {
       "name": "auth",
@@ -9434,6 +9434,10 @@
     {
       "name": "projects",
       "description": "Project management"
+    },
+    {
+      "name": "storage",
+      "description": "File and document storage"
     },
     {
       "name": "engineering",

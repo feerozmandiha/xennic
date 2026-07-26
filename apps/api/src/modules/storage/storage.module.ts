@@ -4,6 +4,8 @@ import { StorageController } from './presentation/controllers/storage.controller
 import { StorageService } from './application/services/storage.service.js';
 import { MinioService } from './infrastructure/minio/minio.service.js';
 import { StorageRepository } from './infrastructure/repositories/storage.repository.js';
+import { FileVersionRepository } from './infrastructure/repositories/file-version.repository.js';
+import { FileVersionService } from './application/services/file-version.service.js';
 
 import { WorkspaceModule } from '../workspace/workspace.module.js';
 import { RbacModule } from '../rbac/rbac.module.js';
@@ -18,11 +20,22 @@ import { RbacModule } from '../rbac/rbac.module.js';
   providers: [
     StorageService,
     MinioService,
+    FileVersionService,
+    {
+      provide: 'IFileVersionRepository',
+      useClass: FileVersionRepository,
+    },
     {
       provide: 'IStorageRepository',
       useClass: StorageRepository,
     },
   ],
-  exports: [StorageService, MinioService, 'IStorageRepository'],
+  exports: [
+    StorageService,
+    MinioService,
+    FileVersionService,
+    'IStorageRepository',
+    'IFileVersionRepository',
+  ],
 })
 export class StorageModule {}
