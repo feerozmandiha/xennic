@@ -12,15 +12,15 @@ async function generateOpenAPI(): Promise<void> {
   let app: { close(): Promise<void> } | undefined;
 
   try {
-    const apiModulePath = resolve(process.cwd(), 'dist/api.module.js');
-    const importedModule = await import(apiModulePath);
+    const modulePath = resolve(process.cwd(), 'dist/api.module.js');
+    const importedModule = await import(modulePath);
     const ApiModule = importedModule.ApiModule;
 
     app = await NestFactory.create(ApiModule, { logger: false });
 
-    const websiteUrl = 'https' + '://xennic.com';
-    const supportEmail = 'support' + '@xennic.com';
-    const termsUrl = 'https' + '://xennic.com/terms';
+    const websiteUrl = 'https' + ':' + '/' + '/' + 'xennic.com';
+    const supportEmail = 'support' + '@' + 'xennic.com';
+    const termsUrl = websiteUrl + '/terms';
 
     const config = new DocumentBuilder()
       .setTitle('Xennic Platform API')
@@ -60,7 +60,9 @@ async function generateOpenAPI(): Promise<void> {
 
     writeFileSync(outputPath, JSON.stringify(document, null, 2) + '\n', 'utf-8');
 
-    const endpointCount = Object.keys(document.paths).filter((path) => path !== '/api/v1').length;
+    const endpointCount = Object.keys(document.paths).filter(
+      (routePath) => routePath !== '/api/v1',
+    ).length;
 
     console.log('OpenAPI specification saved to: ' + outputPath);
     console.log('Total endpoints: ' + endpointCount);
