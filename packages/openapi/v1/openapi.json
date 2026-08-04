@@ -2475,6 +2475,310 @@
         "tags": ["storage"]
       }
     },
+    "/storage/files/{fileId}/versions": {
+      "post": {
+        "description": "Uploads a new version of an existing file using multipart/form-data.\n\nMax size: 100MB. Send `Content-Type: multipart/form-data` with field name `file`. Optional text field `changeReason` describes why this version was created.",
+        "operationId": "FileVersionController_create",
+        "parameters": [
+          {
+            "name": "fileId",
+            "required": true,
+            "in": "path",
+            "description": "File UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "New file content"
+                  },
+                  "changeReason": {
+                    "type": "string",
+                    "maxLength": 500,
+                    "description": "Optional reason for this version"
+                  }
+                },
+                "required": ["file"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Version created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FileVersionResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid file, file too large or bad changeReason"
+          },
+          "404": {
+            "description": "File not found"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Create a new file version",
+        "tags": ["storage"]
+      },
+      "get": {
+        "description": "Paginated versions, newest first.",
+        "operationId": "FileVersionController_findAll",
+        "parameters": [
+          {
+            "name": "fileId",
+            "required": true,
+            "in": "path",
+            "description": "File UUID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": 20,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Versions retrieved"
+          },
+          "404": {
+            "description": "File not found"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "List file versions",
+        "tags": ["storage"]
+      }
+    },
+    "/storage/files/{fileId}/versions/{version}": {
+      "get": {
+        "operationId": "FileVersionController_findOne",
+        "parameters": [
+          {
+            "name": "fileId",
+            "required": true,
+            "in": "path",
+            "description": "File UUID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "version",
+            "required": true,
+            "in": "path",
+            "description": "Version number (positive integer)",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Version found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FileVersionResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Version not found"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get version info + presigned download URL",
+        "tags": ["storage"]
+      },
+      "delete": {
+        "description": "Deletes a non-initial, non-latest version (DB row + its MinIO object). The initial version (v1) and the latest active version cannot be deleted.",
+        "operationId": "FileVersionController_remove",
+        "parameters": [
+          {
+            "name": "fileId",
+            "required": true,
+            "in": "path",
+            "description": "File UUID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "version",
+            "required": true,
+            "in": "path",
+            "description": "Version number (positive integer)",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Version deleted"
+          },
+          "400": {
+            "description": "Cannot delete the initial version"
+          },
+          "404": {
+            "description": "Version not found"
+          },
+          "409": {
+            "description": "Cannot delete the latest active version"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Delete a file version",
+        "tags": ["storage"]
+      }
+    },
+    "/storage/files/{fileId}/versions/{version}/download": {
+      "get": {
+        "description": "Streams the version content directly as binary.",
+        "operationId": "FileVersionController_download",
+        "parameters": [
+          {
+            "name": "fileId",
+            "required": true,
+            "in": "path",
+            "description": "File UUID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "version",
+            "required": true,
+            "in": "path",
+            "description": "Version number (positive integer)",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Binary file content"
+          },
+          "404": {
+            "description": "Version not found"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Download a file version",
+        "tags": ["storage"]
+      }
+    },
+    "/storage/files/{fileId}/versions/{version}/revert": {
+      "post": {
+        "description": "Creates a NEW version whose content is copied from the given version. The new version gets its own object in MinIO; the source version is left untouched.",
+        "operationId": "FileVersionController_revert",
+        "parameters": [
+          {
+            "name": "fileId",
+            "required": true,
+            "in": "path",
+            "description": "File UUID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "version",
+            "required": true,
+            "in": "path",
+            "description": "Source version number (positive integer)",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RevertFileVersionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "New version created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FileVersionResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Version not found"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Revert to a previous version",
+        "tags": ["storage"]
+      }
+    },
     "/engineering/calculations": {
       "get": {
         "description": "Returns paginated list of calculations in the workspace.",
@@ -10515,6 +10819,89 @@
           }
         },
         "required": ["totalFiles", "totalSizeBytes", "totalSizeHuman"]
+      },
+      "FileVersionResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "fileId": {
+            "type": "string"
+          },
+          "version": {
+            "type": "number"
+          },
+          "path": {
+            "type": "string",
+            "description": "Object key inside MinIO (without workspace prefix)"
+          },
+          "size": {
+            "type": "number"
+          },
+          "sizeHuman": {
+            "type": "string"
+          },
+          "mimeType": {
+            "type": "string"
+          },
+          "originalName": {
+            "type": "string"
+          },
+          "checksum": {
+            "type": "object",
+            "nullable": true
+          },
+          "changeReason": {
+            "type": "object",
+            "nullable": true
+          },
+          "createdBy": {
+            "type": "object",
+            "nullable": true
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "isInitialVersion": {
+            "type": "boolean"
+          },
+          "isLatest": {
+            "type": "boolean"
+          },
+          "downloadUrl": {
+            "type": "string",
+            "description": "Presigned download URL (only on detail endpoints)"
+          }
+        },
+        "required": [
+          "id",
+          "fileId",
+          "version",
+          "path",
+          "size",
+          "sizeHuman",
+          "mimeType",
+          "originalName",
+          "checksum",
+          "changeReason",
+          "createdBy",
+          "createdAt",
+          "isInitialVersion",
+          "isLatest"
+        ]
+      },
+      "RevertFileVersionDto": {
+        "type": "object",
+        "properties": {
+          "changeReason": {
+            "type": "string",
+            "description": "Reason for reverting (max 500 chars)",
+            "example": "Rolling back to the approved version",
+            "maxLength": 500
+          }
+        }
       },
       "EngineeringRunCalculationDto": {
         "type": "object",

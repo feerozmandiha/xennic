@@ -1,3 +1,7 @@
+process.env.MINIO_ENDPOINT ??= 'localhost:9000';
+process.env.MINIO_ACCESS_KEY ??= 'xennic-test-access';
+process.env.MINIO_SECRET_KEY ??= 'xennic-test-secret-1234';
+
 import { Test, TestingModule } from '@nestjs/testing';
 import { KfStorageAdapter } from '../src/modules/knowledge-factory/infrastructure/storage/minio-storage.service.js';
 import { MinioService } from '../src/modules/storage/infrastructure/minio/minio.service.js';

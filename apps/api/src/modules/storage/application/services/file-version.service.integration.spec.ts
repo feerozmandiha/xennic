@@ -1,18 +1,31 @@
+process.env.MINIO_ENDPOINT ??= 'localhost:9000';
+process.env.MINIO_ACCESS_KEY ??= 'xennic-test-access';
+process.env.MINIO_SECRET_KEY ??= 'xennic-test-secret-1234';
+
 jest.mock('@xennic/database', () => {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const { PrismaClient } = require('@prisma/client');
   return { prisma: new PrismaClient() };
 });
 
-import { BadRequestException, ForbiddenException, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  ForbiddenException,
+  NotFoundException,
+} from '@nestjs/common';
 import { prisma } from '@xennic/database';
 import { FileVersionRepository } from '../../infrastructure/repositories/file-version.repository.js';
 import { FileVersionService } from './file-version.service.js';
 import { FileEntity } from '../../domain/entities/file.entity.js';
+import { MinioService } from '../../infrastructure/minio/minio.service.js';
+import { AuditLogRepository } from '../../../rbac/infrastructure/repositories/audit-log.repository.js';
 
 describe('FileVersionService (integration)', () => {
   const fileVersionRepo = new FileVersionRepository();
-  const service = new FileVersionService(fileVersionRepo, {} as any);
+  const minioService = new MinioService();
+  const auditLogRepo = new AuditLogRepository();
+  const service = new FileVersionService(fileVersionRepo, {} as any, minioService, auditLogRepo);
 
   const testWorkspaceCode = `test-ws-svc-${crypto.randomUUID().slice(0, 8)}`;
   const testWorkspaceId = `test-ws-svc-${crypto.randomUUID()}`;
@@ -80,6 +93,25 @@ describe('FileVersionService (integration)', () => {
     }),
   };
 
+  // object های ساخته‌شده در MinIO — برای cleanup در afterAll
+  const createdObjects: string[] = [];
+
+  const create = (
+    fileId: string,
+    wsId: string,
+    buffer: Buffer,
+    overrides: Record<string, unknown> = {},
+  ) =>
+    service.createVersion({
+      fileId,
+      workspaceId: wsId,
+      buffer,
+      originalName: 'svc.pdf',
+      mimeType: 'application/pdf',
+      createdBy: testUserId,
+      ...(overrides as any),
+    });
+
   beforeAll(async () => {
     (service as any).storageRepository = storageRepoMock;
 
@@ -134,6 +166,10 @@ describe('FileVersionService (integration)', () => {
   });
 
   afterAll(async () => {
+    for (const key of createdObjects) {
+      await minioService.deleteObject('documents', key).catch(() => {});
+    }
+
     await (prisma as any).$executeRawUnsafe(
       `DELETE FROM file_versions WHERE file_id IN ($1, $2, $3)`,
       testFileId,
@@ -154,53 +190,57 @@ describe('FileVersionService (integration)', () => {
       `DELETE FROM workspaces WHERE id IN ($1, 'other-workspace')`,
       testWorkspaceId,
     );
+    await (prisma as any).$executeRawUnsafe(
+      `DELETE FROM audit_logs WHERE entity = 'file_version' AND workspace_id = $1`,
+      testWorkspaceId,
+    );
   });
 
   describe('createVersion', () => {
-    it('should create version 1 for a new file', async () => {
-      const version = await service.createVersion({
-        fileId: testFileId,
-        workspaceId: testWorkspaceId,
-        path: '2026/07/svc-v1.pdf',
-        size: 100,
-        mimeType: 'application/pdf',
-        originalName: 'svc.pdf',
-        checksum: 'chk-1',
+    it('should upload the object to MinIO and create version 1 for a new file', async () => {
+      const version = await create(testFileId, testWorkspaceId, Buffer.from('v1-content'), {
         changeReason: 'First version',
-        createdBy: testUserId,
       });
+
+      createdObjects.push(`${testWorkspaceId}/${version.path}`);
 
       expect(version).toBeDefined();
       expect(version.version).toBe(1);
       expect(version.fileId).toBe(testFileId);
+      expect(version.changeReason).toBe('First version');
+
+      const content = await minioService.getObject(
+        'documents',
+        `${testWorkspaceId}/${version.path}`,
+      );
+      expect(content.toString()).toBe('v1-content');
     });
 
     it('should create version 2 on second call', async () => {
-      const version = await service.createVersion({
-        fileId: testFileId,
-        workspaceId: testWorkspaceId,
-        path: '2026/07/svc-v2.pdf',
-        size: 200,
-        mimeType: 'application/pdf',
-        originalName: 'svc.pdf',
-        createdBy: testUserId,
-      });
+      const version = await create(testFileId, testWorkspaceId, Buffer.from('v2-content'));
+      createdObjects.push(`${testWorkspaceId}/${version.path}`);
 
       expect(version.version).toBe(2);
+    });
+
+    it('should reject a disallowed MIME type', async () => {
+      await expect(
+        service.createVersion({
+          fileId: testFileId,
+          workspaceId: testWorkspaceId,
+          buffer: Buffer.from('exe'),
+          originalName: 'malware.exe',
+          mimeType: 'application/x-executable',
+          createdBy: testUserId,
+        }),
+      ).rejects.toThrow(BadRequestException);
     });
   });
 
   describe('workspace authorization', () => {
     it('should reject cross-workspace access', async () => {
       await expect(
-        service.createVersion({
-          fileId: otherWorkspaceFileId,
-          workspaceId: testWorkspaceId,
-          path: '2026/07/hack.pdf',
-          size: 100,
-          mimeType: 'application/pdf',
-          originalName: 'hack.pdf',
-        }),
+        create(otherWorkspaceFileId, testWorkspaceId, Buffer.from('hack')),
       ).rejects.toThrow(ForbiddenException);
     });
   });
@@ -208,45 +248,16 @@ describe('FileVersionService (integration)', () => {
   describe('missing file rejection', () => {
     it('should throw NotFoundException for non-existent file', async () => {
       await expect(
-        service.createVersion({
-          fileId: crypto.randomUUID(),
-          workspaceId: testWorkspaceId,
-          path: '2026/07/ghost.pdf',
-          size: 100,
-          mimeType: 'application/pdf',
-          originalName: 'ghost.pdf',
-        }),
+        create(crypto.randomUUID(), testWorkspaceId, Buffer.from('ghost')),
       ).rejects.toThrow(NotFoundException);
     });
   });
 
   describe('deleted file rejection', () => {
     it('should throw NotFoundException for deleted file', async () => {
-      await expect(
-        service.createVersion({
-          fileId: deletedFileId,
-          workspaceId: testWorkspaceId,
-          path: '2026/07/dead.pdf',
-          size: 100,
-          mimeType: 'application/pdf',
-          originalName: 'dead.pdf',
-        }),
-      ).rejects.toThrow(NotFoundException);
-    });
-  });
-
-  describe('negative size rejection', () => {
-    it('should throw BadRequestException for negative size', async () => {
-      await expect(
-        service.createVersion({
-          fileId: testFileId,
-          workspaceId: testWorkspaceId,
-          path: '2026/07/neg.pdf',
-          size: -1,
-          mimeType: 'application/pdf',
-          originalName: 'neg.pdf',
-        }),
-      ).rejects.toThrow(BadRequestException);
+      await expect(create(deletedFileId, testWorkspaceId, Buffer.from('dead'))).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
@@ -288,8 +299,24 @@ describe('FileVersionService (integration)', () => {
     });
   });
 
+  describe('getVersionContent', () => {
+    it('should return the version content from MinIO', async () => {
+      const { buffer, version } = await service.getVersionContent(testFileId, 1, testWorkspaceId);
+
+      expect(version.version).toBe(1);
+      expect(buffer).toBeInstanceOf(Buffer);
+      expect(buffer.toString()).toBe('v1-content');
+    });
+
+    it('should reject content download for a deleted file', async () => {
+      await expect(service.getVersionContent(deletedFileId, 1, testWorkspaceId)).rejects.toThrow(
+        NotFoundException,
+      );
+    });
+  });
+
   describe('revertVersion', () => {
-    it('should create a new version from an existing one', async () => {
+    it('should create a NEW object and a new version from an existing one', async () => {
       const reverted = await service.revertVersion(
         testFileId,
         1,
@@ -298,23 +325,38 @@ describe('FileVersionService (integration)', () => {
         'Reverting to v1',
       );
 
+      createdObjects.push(`${testWorkspaceId}/${reverted.path}`);
+
       expect(reverted).toBeDefined();
       expect(reverted.version).toBeGreaterThanOrEqual(3);
-      expect(reverted.path).toBe('2026/07/svc-v1.pdf');
+      expect(reverted.path).not.toBe('2026/07/svc-v1.pdf');
       expect(reverted.changeReason).toBe('Reverting to v1');
+
+      // content باید با نسخه مبدأ یکی باشد (server-side copy)
+      const revertedContent = await minioService.getObject(
+        'documents',
+        `${testWorkspaceId}/${reverted.path}`,
+      );
+      expect(revertedContent.toString()).toBe('v1-content');
     });
   });
 
   describe('deleteVersion', () => {
-    it('should delete a non-initial version', async () => {
+    it('should delete an intermediate version and its MinIO object', async () => {
       const versions = await service.listVersions(testFileId, testWorkspaceId, 1, 100);
-      const nonInitial = versions.data.find((v) => v.version > 1);
-      if (!nonInitial) return;
+      const intermediate = versions.data.find(
+        (v) => v.version > 1 && v.version < versions.data[0].version,
+      );
+      if (!intermediate) return;
 
-      await service.deleteVersion(testFileId, nonInitial.version, testWorkspaceId);
+      await service.deleteVersion(testFileId, intermediate.version, testWorkspaceId);
 
-      const found = await fileVersionRepo.findById(nonInitial.id);
+      const found = await fileVersionRepo.findById(intermediate.id);
       expect(found).toBeNull();
+
+      await expect(
+        minioService.getObject('documents', `${testWorkspaceId}/${intermediate.path}`),
+      ).rejects.toThrow();
     });
 
     it('should reject deleting the initial version', async () => {
@@ -344,15 +386,8 @@ describe('FileVersionService (integration)', () => {
       });
       dynamicFiles.set(singleFileId, singleFile);
 
-      await service.createVersion({
-        fileId: singleFileId,
-        workspaceId: testWorkspaceId,
-        path: '2026/07/single-v1.pdf',
-        size: 500,
-        mimeType: 'application/pdf',
-        originalName: 'single.pdf',
-        createdBy: testUserId,
-      });
+      const created = await create(singleFileId, testWorkspaceId, Buffer.from('single-v1'));
+      createdObjects.push(`${testWorkspaceId}/${created.path}`);
 
       await expect(service.deleteVersion(singleFileId, 1, testWorkspaceId)).rejects.toThrow(
         BadRequestException,
@@ -365,23 +400,26 @@ describe('FileVersionService (integration)', () => {
       );
       await (prisma as any).$executeRawUnsafe(`DELETE FROM files WHERE id = $1`, singleFileId);
     });
+
+    it('should reject deleting the latest active version', async () => {
+      const latest = await service.getLatestVersion(testFileId, testWorkspaceId);
+
+      await expect(
+        service.deleteVersion(testFileId, latest!.version, testWorkspaceId),
+      ).rejects.toThrow(ConflictException);
+    });
   });
 
   describe('data persistence', () => {
     it('should persist created data correctly', async () => {
-      const version = await service.createVersion({
-        fileId: testFileId,
-        workspaceId: testWorkspaceId,
-        path: '2026/07/persist.pdf',
-        size: 999,
-        mimeType: 'application/pdf',
+      const version = await create(testFileId, testWorkspaceId, Buffer.from('persist'), {
         originalName: 'persist.pdf',
-        createdBy: testUserId,
       });
+      createdObjects.push(`${testWorkspaceId}/${version.path}`);
 
       const fetched = await fileVersionRepo.findById(version.id);
       expect(fetched).not.toBeNull();
-      expect(fetched!.size).toBe(999);
+      expect(fetched!.size).toBe(7);
       expect(fetched!.originalName).toBe('persist.pdf');
     });
   });
