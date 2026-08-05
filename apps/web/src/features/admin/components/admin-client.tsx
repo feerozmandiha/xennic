@@ -40,6 +40,7 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/stores/toast.store';
 import { apiClient } from '@/lib/api/client';
 import { cn } from '@/lib/utils';
+import { AiProviderManagement } from './ai-provider-management';
 
 // ─────────────────────────────────────────────────────────────
 // types
@@ -67,6 +68,7 @@ const SECTIONS = [
   { key: 'settings', label: 'تنظیمات', icon: Settings },
   { key: 'taxonomy', label: 'تاکسونومی', icon: Tags },
   { key: 'api-keys', label: 'کلید API', icon: Key },
+  { key: 'ai-providers', label: 'ارائه‌دهندگان AI', icon: Zap },
   { key: 'webhooks', label: 'Webhook ها', icon: Webhook },
   { key: 'feature-flags', label: 'Feature Flag ها', icon: Flag },
 ] as const;
@@ -2866,6 +2868,7 @@ export function AdminClient() {
     settings: <SettingsSection />,
     taxonomy: <TaxonomySection />,
     'api-keys': <ApiKeysSection />,
+    'ai-providers': <AiProviderManagement />,
     webhooks: <WebhooksSection />,
     'feature-flags': <FeatureFlagsSection />,
   };

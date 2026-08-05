@@ -8650,6 +8650,259 @@
         "tags": ["AI Provider Management - Admin"]
       }
     },
+    "/admin/ai/routing-policies": {
+      "post": {
+        "operationId": "RoutingPolicyController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateRoutingPolicyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Create a routing policy",
+        "tags": ["AI Provider Management - Routing Policies"]
+      },
+      "get": {
+        "operationId": "RoutingPolicyController_findAll",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "featureFlag",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "enabled",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "includeDeleted",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "List routing policies",
+        "tags": ["AI Provider Management - Routing Policies"]
+      }
+    },
+    "/admin/ai/routing-policies/effective": {
+      "get": {
+        "operationId": "RoutingPolicyController_findEffective",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "featureFlag",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get effective routing policy",
+        "tags": ["AI Provider Management - Routing Policies"]
+      }
+    },
+    "/admin/ai/routing-policies/{id}": {
+      "get": {
+        "operationId": "RoutingPolicyController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get routing policy by ID",
+        "tags": ["AI Provider Management - Routing Policies"]
+      },
+      "patch": {
+        "operationId": "RoutingPolicyController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateRoutingPolicyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Update routing policy and rules",
+        "tags": ["AI Provider Management - Routing Policies"]
+      },
+      "delete": {
+        "operationId": "RoutingPolicyController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Soft-delete routing policy",
+        "tags": ["AI Provider Management - Routing Policies"]
+      }
+    },
+    "/admin/ai/routing-policies/{id}/enable": {
+      "put": {
+        "operationId": "RoutingPolicyController_enable",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Enable routing policy",
+        "tags": ["AI Provider Management - Routing Policies"]
+      }
+    },
+    "/admin/ai/routing-policies/{id}/disable": {
+      "put": {
+        "operationId": "RoutingPolicyController_disable",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Disable routing policy",
+        "tags": ["AI Provider Management - Routing Policies"]
+      }
+    },
     "/ready": {
       "get": {
         "operationId": "MetricsController_getReadiness",
