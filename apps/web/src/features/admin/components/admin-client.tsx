@@ -1911,7 +1911,14 @@ function ApiKeysSection() {
       qc.invalidateQueries({ queryKey: ['admin', 'api-keys'] });
       toast.success('کلید API حذف شد');
     },
-    onError: () => toast.error('خطا در حذف کلید'),
+    onError: (error: any) => {
+      if (error?.status === 404 || error?.code === 'NOT_FOUND') {
+        qc.invalidateQueries({ queryKey: ['admin', 'api-keys'] });
+        toast.success('فهرست کلیدها به‌روزرسانی شد');
+        return;
+      }
+      toast.error('خطا در حذف کلید');
+    },
   });
 
   const inputCls =
