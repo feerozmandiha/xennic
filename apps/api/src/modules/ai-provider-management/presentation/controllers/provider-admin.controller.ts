@@ -56,13 +56,6 @@ export class ProviderAdminController {
     return { success: true, data: creds };
   }
 
-  @Get('providers/:id/api-key')
-  @ApiOperation({ summary: 'Get decrypted API key for a provider' })
-  async getApiKey(@Param('id') id: string) {
-    const key = await this.registry.getApiKey(id);
-    return { success: true, data: { apiKey: key } };
-  }
-
   // ── Health ─────────────────────────────────────────────────────────────────
 
   @Post('providers/:id/health/check')

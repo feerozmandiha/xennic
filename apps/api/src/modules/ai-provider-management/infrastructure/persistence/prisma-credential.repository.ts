@@ -69,4 +69,34 @@ export class PrismaCredentialRepository implements ICredentialRepository {
       data: { deleted_at: new Date() },
     });
   }
+
+  async replaceByProviderId(credential: ProviderCredentialEntity): Promise<void> {
+    await prisma.$transaction(async (tx) => {
+      await tx.ai_provider_credentials.updateMany({
+        where: {
+          provider_id: credential.providerId,
+          credential_type: credential.credentialType,
+          deleted_at: null,
+        },
+        data: {
+          deleted_at: new Date(),
+          updated_at: new Date(),
+        },
+      });
+
+      await tx.ai_provider_credentials.create({
+        data: {
+          id: credential.id,
+          provider_id: credential.providerId,
+          credential_type: credential.credentialType,
+          encrypted_value: credential.encryptedValue,
+          masked_value: credential.maskedValue,
+          expires_at: credential.expiresAt,
+          created_at: credential.createdAt,
+          updated_at: credential.updatedAt,
+          deleted_at: credential.deletedAt,
+        },
+      });
+    });
+  }
 }

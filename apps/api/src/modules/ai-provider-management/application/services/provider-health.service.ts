@@ -8,6 +8,8 @@ import {
   ProviderHealthEntity,
   HealthStatus,
 } from '../../domain/entities/provider-health.entity.js';
+import { CredentialService } from './credential.service.js';
+import { normalizeProviderBaseUrl } from '../../domain/entities/ai-provider.entity.js';
 import { ProviderHttpClient } from '../../infrastructure/http/provider-http.client.js';
 
 @Injectable()
@@ -20,6 +22,7 @@ export class ProviderHealthService {
     @Inject(IPROVIDER_REPOSITORY)
     private readonly providerRepo: IProviderRepository,
     private readonly httpClient: ProviderHttpClient,
+    private readonly credentials: CredentialService,
   ) {}
 
   async checkHealth(providerId: string, testUrl?: string): Promise<ProviderHealthEntity> {
@@ -31,8 +34,16 @@ export class ProviderHealthService {
     let errorMsg: string | null = null;
 
     try {
-      const url = testUrl || provider.baseUrl || `https://api.${provider.providerType}.com/v1`;
-      const res = await this.httpClient.request(`${url}/models`, { timeout: 10000 });
+      const url =
+        normalizeProviderBaseUrl(testUrl || provider.baseUrl) ||
+        `https://api.${provider.providerType}.com/v1`;
+
+      const apiKey = await this.credentials.getApiKey(providerId);
+
+      const res = await this.httpClient.request(`${url}/models`, {
+        timeout: 10000,
+        headers: apiKey ? { Authorization: `Bearer ${apiKey}` } : undefined,
+      });
 
       if (!res.ok) {
         status = res.status === 0 ? 'unhealthy' : 'degraded';

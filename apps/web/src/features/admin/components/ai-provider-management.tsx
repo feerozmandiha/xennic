@@ -49,6 +49,13 @@ export function AiProviderManagement() {
   const queryClient = useQueryClient();
   const [showCreate, setShowCreate] = useState(false);
   const [selectedProvider, setSelectedProvider] = useState<string | null>(null);
+  const [editingProvider, setEditingProvider] = useState<Provider | null>(null);
+  const [editForm, setEditForm] = useState({
+    displayName: '',
+    baseUrl: '',
+    apiKey: '',
+    priority: '0',
+  });
   const [form, setForm] = useState({
     name: '',
     displayName: '',
@@ -92,6 +99,23 @@ export function AiProviderManagement() {
       toast.success('ارائه‌دهنده AI ثبت شد');
     },
     onError: () => toast.error('ثبت ارائه‌دهنده انجام نشد'),
+  });
+
+  const updateProvider = useMutation({
+    mutationFn: (input: { id: string; body: Record<string, unknown> }) =>
+      apiClient.patch(`/admin/ai/providers/${input.id}`, input.body),
+    onSuccess: () => {
+      invalidate();
+      setEditingProvider(null);
+      setEditForm({
+        displayName: '',
+        baseUrl: '',
+        apiKey: '',
+        priority: '0',
+      });
+      toast.success('Provider ویرایش شد و credential جدید ذخیره شد');
+    },
+    onError: () => toast.error('ویرایش Provider ناموفق بود'),
   });
 
   const providerAction = useMutation({
@@ -223,6 +247,74 @@ export function AiProviderManagement() {
         </div>
       )}
 
+      {editingProvider && (
+        <div className="space-y-3 rounded-xl border border-blue-300 bg-blue-50/30 p-4">
+          <div className="flex items-center justify-between">
+            <h3 className="font-semibold">ویرایش {editingProvider.displayName}</h3>
+            <button onClick={() => setEditingProvider(null)}>
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+            <input
+              className={inputClass}
+              placeholder="نام نمایشی"
+              value={editForm.displayName}
+              onChange={(e) => setEditForm({ ...editForm, displayName: e.target.value })}
+            />
+            <input
+              className={inputClass}
+              placeholder="Base URL"
+              value={editForm.baseUrl}
+              onChange={(e) => setEditForm({ ...editForm, baseUrl: e.target.value })}
+            />
+            <input
+              className={inputClass}
+              type="password"
+              placeholder="API key جدید؛ خالی = بدون تغییر"
+              value={editForm.apiKey}
+              onChange={(e) => setEditForm({ ...editForm, apiKey: e.target.value })}
+            />
+            <input
+              className={inputClass}
+              type="number"
+              min="0"
+              placeholder="Priority"
+              value={editForm.priority}
+              onChange={(e) => setEditForm({ ...editForm, priority: e.target.value })}
+            />
+          </div>
+
+          <div className="flex justify-end gap-2">
+            <button
+              onClick={() => setEditingProvider(null)}
+              className="rounded-lg border px-4 py-2 text-sm"
+            >
+              لغو
+            </button>
+            <button
+              disabled={updateProvider.isPending}
+              onClick={() =>
+                updateProvider.mutate({
+                  id: editingProvider.id,
+                  body: {
+                    displayName: editForm.displayName || undefined,
+                    baseUrl: editForm.baseUrl || undefined,
+                    apiKey: editForm.apiKey || undefined,
+                    priority: Number(editForm.priority) || 0,
+                  },
+                })
+              }
+              className="rounded-lg bg-[hsl(var(--primary))] px-4 py-2 text-sm text-[hsl(var(--primary-foreground))] disabled:opacity-50"
+            >
+              {updateProvider.isPending && <Loader2 className="mr-1 inline h-4 w-4 animate-spin" />}
+              ذخیره و تعویض کلید
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="overflow-hidden rounded-xl border">
         <table className="w-full text-sm">
           <thead className="bg-[hsl(var(--secondary)/0.5)]">
@@ -279,6 +371,20 @@ export function AiProviderManagement() {
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex flex-wrap gap-1.5">
+                        <button
+                          onClick={() => {
+                            setEditingProvider(provider);
+                            setEditForm({
+                              displayName: provider.displayName,
+                              baseUrl: provider.baseUrl ?? '',
+                              apiKey: '',
+                              priority: String(provider.priority ?? 0),
+                            });
+                          }}
+                          className="rounded border px-2 py-1 text-xs"
+                        >
+                          ویرایش
+                        </button>
                         <button
                           onClick={() =>
                             providerAction.mutate({
