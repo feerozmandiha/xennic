@@ -1890,7 +1890,7 @@ function ApiKeysSection() {
     mutationFn: (body: any) => apiClient.post('/api-keys', body),
     onSuccess: (res: any) => {
       qc.invalidateQueries({ queryKey: ['admin', 'api-keys'] });
-      if (res?.data?.key) setNewKeyValue(res.data.key);
+      if (res?.data?.rawKey) setNewKeyValue(res.data.rawKey);
       toast.success('کلید API ایجاد شد');
       setShowCreate(false);
       setForm({ name: '', expiresAt: '' });
@@ -2085,10 +2085,18 @@ function ApiKeysSection() {
                     <span
                       className={cn(
                         'text-[10px] font-semibold px-2 py-0.5 rounded-full',
-                        k.isRevoked ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-700',
+                        k.status === 'revoked'
+                          ? 'bg-red-100 text-red-600'
+                          : k.isActive === false
+                            ? 'bg-yellow-100 text-yellow-700'
+                            : 'bg-green-100 text-green-700',
                       )}
                     >
-                      {k.isRevoked ? 'باطل شده' : 'فعال'}
+                      {k.status === 'revoked'
+                        ? 'باطل شده'
+                        : k.isActive === false
+                          ? 'منقضی شده'
+                          : 'فعال'}
                     </span>
                   </td>
                   <td className="px-4 py-3 text-xs text-[hsl(var(--muted-foreground))]">
@@ -2099,7 +2107,7 @@ function ApiKeysSection() {
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
-                      {!k.isRevoked && (
+                      {k.status !== 'revoked' && k.isActive !== false && (
                         <button
                           onClick={() => {
                             if (confirm('آیا از باطل‌سازی این کلید مطمئن هستید؟'))
