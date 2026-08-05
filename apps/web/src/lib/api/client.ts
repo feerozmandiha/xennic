@@ -106,7 +106,7 @@ async function request<T>(
   try {
     const isFormData = body instanceof FormData;
     const headers = buildHeaders(isFormData ? undefined : extraHeaders);
-    if (isFormData) delete headers['Content-Type'];
+    if (isFormData || body === undefined) delete headers['Content-Type'];
 
     const res = await fetch(`${API_BASE}${path}`, {
       method,
