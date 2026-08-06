@@ -91,3 +91,4 @@ htmlcov/
 
 # Local JWT public keys
 infrastructure/docker/secrets/*.pub
+infrastructure/docker/secrets/jwtRS256.key
