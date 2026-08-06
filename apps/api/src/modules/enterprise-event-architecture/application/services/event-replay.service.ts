@@ -6,7 +6,7 @@ import type {
   ReplayResult,
   ReplayHistoryEntry,
 } from '../../domain/interfaces/event-replayer.interface.js';
-import type { DomainEventPublisher } from '../../../semantic-integration/application/services/domain-event-publisher.service.js';
+import { DomainEventPublisher } from '../../../semantic-integration/application/services/domain-event-publisher.service.js';
 import { EventOutboxRepository } from '../../../semantic-integration/infrastructure/persistence/event-outbox.repository.js';
 
 @Injectable()

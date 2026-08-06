@@ -51,7 +51,7 @@ export class QueueConfigService {
     const config = stageConfigs[stage] || { attempts: 3, delay: 1000, stallTimeout: 60000 };
 
     return {
-      name: `knowledge-factory:${stage}`,
+      name: `knowledge-factory-${stage}`,
       attempts: config.attempts,
       backoff: {
         type: 'exponential',

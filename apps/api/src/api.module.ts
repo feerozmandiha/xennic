@@ -28,6 +28,21 @@ import { VisionModule } from './modules/vision/vision.module.js'; // ✅ بین�
 import { AiProviderManagementModule } from './modules/ai-provider-management/ai-provider-management.module.js'; // ✅ مدیریت ارائه‌دهندگان AI
 import { MonitoringModule } from './modules/monitoring/monitoring.module.js'; // ✅ مانیتورینگ
 import { CalculationPlatformModule } from './modules/calculation-platform/calculation-platform.module.js'; // ✅ Sprint C1
+// ═══════════════════════════════════════════════════════════════════════════
+// فعال‌سازی ماژول‌های خفته — feat/activate-dormant-platform-modules (2026-08-06)
+// این ماژول‌ها از قبل ساخته و گواهی شده بودند اما در گراف برنامه رجیستر نبودند.
+// ═══════════════════════════════════════════════════════════════════════════
+import { SemanticIntegrationModule } from './modules/semantic-integration/semantic-integration.module.js'; // ✅ لایه یکپارچگی رویداد (Outbox + Event Bus + Relay) — به‌همراه KnowledgeFactory/KnowledgeIntelligence/AiRuntime
+import { EnterpriseMessagingModule } from './modules/enterprise-messaging/enterprise-messaging.module.js'; // ✅ Sprint E1
+import { EnterpriseEventArchitectureModule } from './modules/enterprise-event-architecture/enterprise-event-architecture.module.js'; // ✅ Sprint E1
+import { EnterpriseSagaModule } from './modules/enterprise-saga/enterprise-saga.module.js'; // ✅ Sprint E1
+import { EnterpriseCacheModule } from './modules/enterprise-cache/enterprise-cache.module.js'; // ✅ Sprint E1
+import { EnterpriseObservabilityModule } from './modules/enterprise-observability/enterprise-observability.module.js'; // ✅ Sprint E1
+import { EnterpriseConfigModule } from './modules/enterprise-config/enterprise-config.module.js'; // ✅ Sprint E1
+import { EnterpriseApiPlatformModule } from './modules/enterprise-api-platform/enterprise-api-platform.module.js'; // ✅ Sprint E1
+import { EnterpriseSearchFederationModule } from './modules/enterprise-search-federation/enterprise-search-federation.module.js'; // ✅ Sprint E1
+import { EnterpriseIntelligenceModule } from './modules/enterprise-intelligence/enterprise-intelligence.module.js'; // ✅ Sprint I1 (۱۰ زیرماژول)
+import { EnterpriseOrchestrationModule } from './modules/enterprise-orchestration/enterprise-orchestration.module.js'; // ✅ Sprint O1 (۹ زیرماژول)
 
 @Module({
   imports: [
@@ -57,6 +72,18 @@ import { CalculationPlatformModule } from './modules/calculation-platform/calcul
     AiProviderManagementModule, // ✅ مدیریت ارائه‌دهندگان AI
     MonitoringModule, // ✅ مانیتورینگ (OpenTelemetry + Prometheus + logging)
     CalculationPlatformModule, // ✅ Sprint C1 — Enterprise Calculation Platform
+    // ═══ فعال‌سازی ماژول‌های خفته (2026-08-06) ═══
+    SemanticIntegrationModule, // لایه یکپارچگی رویداد: Outbox + Semantic Event Bus + Outbox Relay + DocumentPublished/CacheInvalidation handlers
+    EnterpriseMessagingModule, // Command/Query Bus + Message Queue + DLQ
+    EnterpriseEventArchitectureModule, // Schema Registry + Event Replay
+    EnterpriseSagaModule, // Saga Orchestrator + Compensation
+    EnterpriseCacheModule, // Cache Manager + Invalidation (Global)
+    EnterpriseObservabilityModule, // Tracing + Metrics + Logging (Global)
+    EnterpriseConfigModule, // Config Manager + Feature Flag Store
+    EnterpriseApiPlatformModule, // API Discovery + Token-Bucket Rate Limiter
+    EnterpriseSearchFederationModule, // Federated Search + Ranking
+    EnterpriseIntelligenceModule, // Sprint I1 — ۱۰ زیرماژول هوش سازمانی (Global)
+    EnterpriseOrchestrationModule, // Sprint O1 — ۹ زیرماژول ارکستراسیون (Global)
     // ✅ SEC-001C: Rate Limiting
     ThrottlerModule.forRoot([
       {

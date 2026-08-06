@@ -50,9 +50,9 @@ describe('KnowledgeFactoryMetricsService', () => {
     const mockQueue = {
       getJobCounts: jest.fn().mockResolvedValue({ waiting: 5, active: 2, delayed: 0 }),
     };
-    mockEventBus.queues.set('knowledge-factory:intake', mockQueue as any);
+    mockEventBus.queues.set('knowledge-factory-intake', mockQueue as any);
 
     const metrics = await service.getMetrics();
-    expect(metrics.queueDepths['knowledge-factory:intake']).toBe(7);
+    expect(metrics.queueDepths['knowledge-factory-intake']).toBe(7);
   });
 });
