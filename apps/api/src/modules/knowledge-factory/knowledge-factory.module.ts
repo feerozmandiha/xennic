@@ -1,5 +1,4 @@
 import { Module } from '@nestjs/common';
-import { MulterModule } from '@nestjs/platform-express';
 
 import { DocumentsController } from './presentation/controllers/documents.controller.js';
 import { PipelineStatusController } from './presentation/controllers/pipeline-status.controller.js';
@@ -50,7 +49,6 @@ async function createBullmqQueue(name: string) {
     RbacModule,
     KnowledgeModule,
     StorageModule,
-    MulterModule.register({ limits: { fileSize: 50 * 1024 * 1024 } }),
     BullModule.forRoot({} as any),
   ],
   controllers: [DocumentsController, PipelineStatusController, SearchController],

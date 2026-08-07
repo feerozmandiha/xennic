@@ -51,7 +51,13 @@ export class DocumentIntakeService {
     metadata?: Record<string, unknown>;
   }): Promise<KnowledgeDocument> {
     const path = `workspaces/${data.workspaceId}/${crypto.randomUUID()}-${data.filename}`;
-    await this.storageService.upload(data.buffer, path, data.contentType);
+    await this.storageService.upload({
+      workspaceId: data.workspaceId,
+      uploadedBy: data.createdBy ?? 'system',
+      buffer: data.buffer,
+      originalName: data.filename,
+      mimeType: data.contentType,
+    });
 
     const document = KnowledgeDocument.create({
       workspaceId: data.workspaceId,
