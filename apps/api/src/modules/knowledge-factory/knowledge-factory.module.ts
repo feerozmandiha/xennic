@@ -38,10 +38,11 @@ import { KnowledgeModule } from '../knowledge/knowledge.module.js';
 import { StorageModule } from '../storage/storage.module.js';
 import { StorageService } from '../storage/application/services/storage.service.js';
 import { BullModule } from '@nestjs/bullmq';
+import { getRedisConnectionOptions } from '../../common/redis/redis.config.js';
 
 async function createBullmqQueue(name: string) {
   const { Queue } = await import('bullmq');
-  return new Queue(name);
+  return new Queue(name, { connection: getRedisConnectionOptions() });
 }
 
 @Module({
@@ -51,7 +52,9 @@ async function createBullmqQueue(name: string) {
     KnowledgeModule,
     StorageModule,
     MulterModule.register({ limits: { fileSize: 50 * 1024 * 1024 } }),
-    BullModule.forRoot({} as any),
+    BullModule.forRoot({
+      connection: getRedisConnectionOptions(),
+    }),
   ],
   controllers: [DocumentsController, PipelineStatusController, SearchController],
   providers: [

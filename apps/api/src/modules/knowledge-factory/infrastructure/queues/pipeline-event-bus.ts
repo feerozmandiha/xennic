@@ -2,6 +2,7 @@ import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { Queue, Job } from 'bullmq';
 import { QUEUE_NAMES } from './queue-names.js';
+import { getRedisUrl } from '../../../../common/redis/redis.config.js';
 
 export interface PipelineJobData {
   documentId: string;
@@ -63,7 +64,7 @@ export class PipelineEventBus implements OnModuleInit, OnModuleDestroy {
       const Queue = bullmq.Queue;
       const ioredis = await import('ioredis');
       const Redis = ioredis.Redis;
-      const redis = new Redis(process.env.REDIS_URL || 'redis://localhost:6379');
+      const redis = new Redis(getRedisUrl());
       const queue = new Queue(name, { connection: redis as any });
       this.queues.set(name, queue);
     }
