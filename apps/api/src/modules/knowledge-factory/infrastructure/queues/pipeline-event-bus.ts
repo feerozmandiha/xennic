@@ -79,7 +79,7 @@ export class PipelineEventBus implements OnModuleInit, OnModuleDestroy {
 
   async enqueueIntake(data: IntakeJobData): Promise<Job<IntakeJobData>> {
     return this.queues.get(QUEUE_NAMES.INTAKE)!.add('intake', data, {
-      jobId: `intake:${data.documentId}`,
+      jobId: `intake-${data.documentId}`,
       removeOnComplete: { count: 100, age: 86400 },
       removeOnFail: { count: 50, age: 604800 },
       attempts: 3,
@@ -89,7 +89,7 @@ export class PipelineEventBus implements OnModuleInit, OnModuleDestroy {
 
   async enqueueClassify(data: ClassifyJobData): Promise<Job<ClassifyJobData>> {
     return this.queues.get(QUEUE_NAMES.CLASSIFY)!.add('classify', data, {
-      jobId: `classify:${data.documentId}`,
+      jobId: `classify-${data.documentId}`,
       removeOnComplete: { count: 100, age: 86400 },
       removeOnFail: { count: 50, age: 604800 },
       attempts: 3,
@@ -99,7 +99,7 @@ export class PipelineEventBus implements OnModuleInit, OnModuleDestroy {
 
   async enqueueParse(data: ParseJobData): Promise<Job<ParseJobData>> {
     return this.queues.get(QUEUE_NAMES.PARSE)!.add('parse', data, {
-      jobId: `parse:${data.documentId}`,
+      jobId: `parse-${data.documentId}`,
       removeOnComplete: { count: 100, age: 86400 },
       removeOnFail: { count: 50, age: 604800 },
       attempts: 3,
@@ -109,7 +109,7 @@ export class PipelineEventBus implements OnModuleInit, OnModuleDestroy {
 
   async enqueueNormalize(data: NormalizeJobData): Promise<Job<NormalizeJobData>> {
     return this.queues.get(QUEUE_NAMES.NORMALIZE)!.add('normalize', data, {
-      jobId: `normalize:${data.documentId}`,
+      jobId: `normalize-${data.documentId}`,
       removeOnComplete: { count: 100, age: 86400 },
       removeOnFail: { count: 50, age: 604800 },
       attempts: 3,
@@ -119,7 +119,7 @@ export class PipelineEventBus implements OnModuleInit, OnModuleDestroy {
 
   async enqueueChunk(data: ChunkJobData): Promise<Job<ChunkJobData>> {
     return this.queues.get(QUEUE_NAMES.CHUNK)!.add('chunk', data, {
-      jobId: `chunk:${data.documentId}`,
+      jobId: `chunk-${data.documentId}`,
       removeOnComplete: { count: 100, age: 86400 },
       removeOnFail: { count: 50, age: 604800 },
       attempts: 3,
@@ -129,7 +129,7 @@ export class PipelineEventBus implements OnModuleInit, OnModuleDestroy {
 
   async enqueueEmbed(data: EmbedJobData): Promise<Job<EmbedJobData>> {
     return this.queues.get(QUEUE_NAMES.EMBED)!.add('embed', data, {
-      jobId: `embed:${data.documentId}`,
+      jobId: `embed-${data.documentId}`,
       removeOnComplete: { count: 100, age: 86400 },
       removeOnFail: { count: 50, age: 604800 },
       attempts: 3,
@@ -139,7 +139,7 @@ export class PipelineEventBus implements OnModuleInit, OnModuleDestroy {
 
   async enqueuePublish(data: PublishJobData): Promise<Job<PublishJobData>> {
     return this.queues.get(QUEUE_NAMES.PUBLISH)!.add('publish', data, {
-      jobId: `publish:${data.documentId}`,
+      jobId: `publish-${data.documentId}`,
       removeOnComplete: { count: 100, age: 86400 },
       removeOnFail: { count: 50, age: 604800 },
       attempts: 3,
@@ -158,7 +158,7 @@ export class PipelineEventBus implements OnModuleInit, OnModuleDestroy {
       'dlq',
       { ...job.data, deadLetterReason: reason, originalQueue: queueName, originalJobId: jobId },
       {
-        jobId: `dlq:${queueName}:${jobId}`,
+        jobId: `dlq-${queueName}-${jobId}`,
         removeOnComplete: false,
         removeOnFail: false,
       },

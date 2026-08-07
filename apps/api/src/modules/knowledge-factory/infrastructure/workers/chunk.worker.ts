@@ -1,4 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
+import { Processor } from '@nestjs/bullmq';
 import type { IKnowledgeDocumentRepository } from '../../domain/interfaces/knowledge-document.repository.interface.js';
 import type { IKnowledgeChunkRepository } from '../../domain/interfaces/knowledge-chunk.repository.interface.js';
 import type { IPipelineRunRepository } from '../../domain/interfaces/pipeline-run.repository.interface.js';
@@ -8,6 +9,7 @@ import { QUEUE_NAMES } from '../queues/queue-names.js';
 import { KnowledgeDocumentChunk } from '../../domain/entities/knowledge-document-chunk.entity.js';
 
 @Injectable()
+@Processor(QUEUE_NAMES.CHUNK)
 export class ChunkWorker extends BasePipelineWorker {
   get queueName(): string {
     return QUEUE_NAMES.CHUNK;
@@ -33,6 +35,9 @@ export class ChunkWorker extends BasePipelineWorker {
     const job = context.job as any;
     const payload = job.data as ChunkJobData;
 
+    const document = await this.documentRepository.findById(documentId);
+    if (!document) throw new Error(`Document ${documentId} not found`);
+
     const rawText = `Normalized text for document ${documentId}`;
     const paragraphs = rawText.split(/\n\s*\n/).filter((p) => p.trim().length > 0);
     const chunks = paragraphs.map((text, idx) => ({
@@ -56,6 +61,9 @@ export class ChunkWorker extends BasePipelineWorker {
       );
       await this.chunkRepository.createBatch(chunkEntities);
     }
+
+    document.markEmbedding();
+    await this.documentRepository.update(document);
 
     await this.eventBus.enqueueEmbed({
       documentId,

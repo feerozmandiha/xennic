@@ -1,4 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
+import { Processor } from '@nestjs/bullmq';
 import type { IKnowledgeDocumentRepository } from '../../domain/interfaces/knowledge-document.repository.interface.js';
 import type { IPipelineRunRepository } from '../../domain/interfaces/pipeline-run.repository.interface.js';
 import { PipelineEventBus, type ClassifyJobData } from '../queues/pipeline-event-bus.js';
@@ -6,6 +7,7 @@ import { BasePipelineWorker, type WorkerContext } from './base-pipeline.worker.j
 import { QUEUE_NAMES } from '../queues/queue-names.js';
 
 @Injectable()
+@Processor(QUEUE_NAMES.CLASSIFY)
 export class ClassifyWorker extends BasePipelineWorker {
   get queueName(): string {
     return QUEUE_NAMES.CLASSIFY;
@@ -34,6 +36,7 @@ export class ClassifyWorker extends BasePipelineWorker {
     const document = await this.documentRepository.findById(documentId);
     if (!document) throw new Error(`Document ${documentId} not found`);
 
+    document.startParsing();
     await this.documentRepository.update(document);
 
     await this.eventBus.enqueueParse({

@@ -1,4 +1,5 @@
 import { Injectable, Inject } from '@nestjs/common';
+import { Processor } from '@nestjs/bullmq';
 import type { IKnowledgeDocumentRepository } from '../../domain/interfaces/knowledge-document.repository.interface.js';
 import type { IKnowledgeChunkRepository } from '../../domain/interfaces/knowledge-chunk.repository.interface.js';
 import type { IPipelineRunRepository } from '../../domain/interfaces/pipeline-run.repository.interface.js';
@@ -8,6 +9,7 @@ import { BasePipelineWorker, type WorkerContext } from './base-pipeline.worker.j
 import { QUEUE_NAMES } from '../queues/queue-names.js';
 
 @Injectable()
+@Processor(QUEUE_NAMES.EMBED)
 export class EmbedWorker extends BasePipelineWorker {
   get queueName(): string {
     return QUEUE_NAMES.EMBED;
@@ -35,6 +37,9 @@ export class EmbedWorker extends BasePipelineWorker {
     const job = context.job as any;
     const payload = job.data as EmbedJobData;
 
+    const document = await this.documentRepository.findById(documentId);
+    if (!document) throw new Error(`Document ${documentId} not found`);
+
     const chunks = await this.chunkRepository.findByDocument(documentId);
     const texts = chunks.map((c) => c.text);
 
@@ -57,6 +62,9 @@ export class EmbedWorker extends BasePipelineWorker {
         );
       }
     }
+
+    document.markPublishing();
+    await this.documentRepository.update(document);
 
     await this.eventBus.enqueuePublish({
       documentId,
