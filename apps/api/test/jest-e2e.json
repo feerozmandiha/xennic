@@ -4,7 +4,12 @@
   "testEnvironment": "node",
   "testRegex": ".e2e-spec.ts$",
   "transform": {
-    "^.+\\.ts$": ["ts-jest", { "tsconfig": "tsconfig.test.json" }]
+    "^.+\\.[jt]s$": [
+      "ts-jest",
+      {
+        "tsconfig": "tsconfig.test.json"
+      }
+    ]
   },
   "transformIgnorePatterns": ["node_modules/(?!@xennic/)"],
   "moduleNameMapper": {

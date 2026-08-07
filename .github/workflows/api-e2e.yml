@@ -36,6 +36,12 @@ env:
   NODE_VERSION: '22'
   PNPM_VERSION: '10.33.0'
   DATABASE_URL: postgresql://xennic:xennic@localhost:5432/xennic_test
+  REDIS_URL: redis://localhost:6379
+  MINIO_ENDPOINT: localhost
+  MINIO_PORT: '9000'
+  MINIO_ACCESS_KEY: minio
+  MINIO_SECRET_KEY: minio123
+  MINIO_BUCKET: xennic
 
 jobs:
   api-e2e:
@@ -54,6 +60,30 @@ jobs:
           - 5432:5432
         options: >-
           --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:8-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 5
+
+      minio:
+        image: minio/minio:latest
+        env:
+          MINIO_ROOT_USER: minio
+          MINIO_ROOT_PASSWORD: minio123
+        command: server /data
+        ports:
+          - 9000:9000
+        options: >-
+          --health-cmd "curl -fsS http://localhost:9000/minio/health/live || exit 1"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
@@ -98,7 +128,7 @@ jobs:
       - name: Run API E2E Tests
         run: |
           set -o pipefail
-          pnpm --dir apps/api exec jest --config test/jest-e2e.json --runInBand --detectOpenHandles 2>&1 | tee /tmp/xennic-api-e2e.log
+          pnpm --dir apps/api exec jest --config test/jest-e2e.json --runInBand --detectOpenHandles --forceExit 2>&1 | tee /tmp/xennic-api-e2e.log
         timeout-minutes: 15
 
       - name: Upload API E2E log
@@ -118,4 +148,5 @@ jobs:
           echo "| Item | Status |" >> "$GITHUB_STEP_SUMMARY"
           echo "|------|--------|" >> "$GITHUB_STEP_SUMMARY"
           echo "| API E2E Suites | Completed |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Services | Postgres 17 + Redis 8 + MinIO |" >> "$GITHUB_STEP_SUMMARY"
           echo "| Log Artifact | api-e2e-log |" >> "$GITHUB_STEP_SUMMARY"
