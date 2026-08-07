@@ -52,6 +52,19 @@ async function createBullmqQueue(name: string) {
     StorageModule,
     MulterModule.register({ limits: { fileSize: 50 * 1024 * 1024 } }),
     BullModule.forRoot({} as any),
+    // registerQueue بارگذاری coreModuleDefinition را فعال می‌کند که شامل
+    // BullExplorer/BullRegistrar است — بدون آن، worker های @Processor هرگز
+    // ساخته نمی‌شوند و job های صف پردازش نمی‌شوند.
+    BullModule.registerQueue(
+      { name: QUEUE_NAMES.INTAKE },
+      { name: QUEUE_NAMES.CLASSIFY },
+      { name: QUEUE_NAMES.PARSE },
+      { name: QUEUE_NAMES.NORMALIZE },
+      { name: QUEUE_NAMES.CHUNK },
+      { name: QUEUE_NAMES.EMBED },
+      { name: QUEUE_NAMES.PUBLISH },
+      { name: QUEUE_NAMES.DEAD_LETTER },
+    ),
   ],
   controllers: [DocumentsController, PipelineStatusController, SearchController],
   providers: [

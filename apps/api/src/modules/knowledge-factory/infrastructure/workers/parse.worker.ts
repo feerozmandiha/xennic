@@ -1,4 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
+import { Processor } from '@nestjs/bullmq';
 import type { IKnowledgeDocumentRepository } from '../../domain/interfaces/knowledge-document.repository.interface.js';
 import type { IPipelineRunRepository } from '../../domain/interfaces/pipeline-run.repository.interface.js';
 import type { IExtractionRepository } from '../../domain/interfaces/extraction.repository.interface.js';
@@ -8,6 +9,7 @@ import { QUEUE_NAMES } from '../queues/queue-names.js';
 import { KnowledgeExtraction } from '../../domain/entities/knowledge-extraction.entity.js';
 
 @Injectable()
+@Processor(QUEUE_NAMES.PARSE)
 export class ParseWorker extends BasePipelineWorker {
   get queueName(): string {
     return QUEUE_NAMES.PARSE;
@@ -48,6 +50,9 @@ export class ParseWorker extends BasePipelineWorker {
         metadata: { parser: 'textract', parsedAt: new Date().toISOString() },
       }),
     );
+
+    document.markExtracted();
+    await this.documentRepository.update(document);
 
     await this.eventBus.enqueueNormalize({
       documentId,

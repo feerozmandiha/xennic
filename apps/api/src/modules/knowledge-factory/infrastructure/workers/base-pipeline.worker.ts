@@ -1,4 +1,4 @@
-import { Processor, WorkerHost, OnWorkerEvent } from '@nestjs/bullmq';
+import { WorkerHost, OnWorkerEvent } from '@nestjs/bullmq';
 import { Job } from 'bullmq';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { KnowledgePipelineRun } from '../../domain/entities/knowledge-pipeline-run.entity.js';
@@ -17,7 +17,6 @@ export interface WorkerContext {
 }
 
 @Injectable()
-@Processor('')
 export abstract class BasePipelineWorker extends WorkerHost {
   protected readonly logger: Logger;
 

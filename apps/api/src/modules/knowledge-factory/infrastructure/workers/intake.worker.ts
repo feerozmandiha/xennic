@@ -1,4 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
+import { Processor } from '@nestjs/bullmq';
 import type { IKnowledgeDocumentRepository } from '../../domain/interfaces/knowledge-document.repository.interface.js';
 import type { IPipelineRunRepository } from '../../domain/interfaces/pipeline-run.repository.interface.js';
 import { PipelineEventBus, type IntakeJobData } from '../queues/pipeline-event-bus.js';
@@ -7,6 +8,7 @@ import { QUEUE_NAMES } from '../queues/queue-names.js';
 import { PipelineOrchestratorService } from '../../application/services/pipeline-orchestrator.service.js';
 
 @Injectable()
+@Processor(QUEUE_NAMES.INTAKE)
 export class IntakeWorker extends BasePipelineWorker {
   get queueName(): string {
     return QUEUE_NAMES.INTAKE;

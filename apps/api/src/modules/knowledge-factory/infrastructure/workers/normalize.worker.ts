@@ -1,4 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
+import { Processor } from '@nestjs/bullmq';
 import type { IKnowledgeDocumentRepository } from '../../domain/interfaces/knowledge-document.repository.interface.js';
 import type { IPipelineRunRepository } from '../../domain/interfaces/pipeline-run.repository.interface.js';
 import { PipelineEventBus, type NormalizeJobData } from '../queues/pipeline-event-bus.js';
@@ -6,6 +7,7 @@ import { BasePipelineWorker, type WorkerContext } from './base-pipeline.worker.j
 import { QUEUE_NAMES } from '../queues/queue-names.js';
 
 @Injectable()
+@Processor(QUEUE_NAMES.NORMALIZE)
 export class NormalizeWorker extends BasePipelineWorker {
   get queueName(): string {
     return QUEUE_NAMES.NORMALIZE;
@@ -31,11 +33,17 @@ export class NormalizeWorker extends BasePipelineWorker {
     const job = context.job as any;
     const payload = job.data as NormalizeJobData;
 
+    const document = await this.documentRepository.findById(documentId);
+    if (!document) throw new Error(`Document ${documentId} not found`);
+
     const sourceText = payload.sourceText || '';
     const normalized = this.normalizeText(sourceText);
     const chunksPreview = this.splitIntoChunks(normalized)
       .slice(0, 3)
       .map((c) => c.text.slice(0, 100));
+
+    document.markChunking();
+    await this.documentRepository.update(document);
 
     await this.eventBus.enqueueChunk({
       documentId,

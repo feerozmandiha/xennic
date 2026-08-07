@@ -1,4 +1,5 @@
 import { Injectable, Logger, Inject } from '@nestjs/common';
+import { prisma } from '@xennic/database';
 import type { IKnowledgeDocumentRepository } from '../../domain/interfaces/knowledge-document.repository.interface.js';
 import type { IKnowledgeChunkRepository } from '../../domain/interfaces/knowledge-chunk.repository.interface.js';
 import type { IPipelineRunRepository } from '../../domain/interfaces/pipeline-run.repository.interface.js';
@@ -108,10 +109,22 @@ export class PublishingService {
   }
 
   private async createPublishedKnowledge(
-    _document: { originalName: string; classification?: unknown },
+    document: { id: string; workspaceId: string; originalName: string; createdBy: string | null },
     _options: PublishOptions,
   ): Promise<string> {
-    return `knowledge-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+    const record = await prisma.knowledge.create({
+      data: {
+        workspace_id: document.workspaceId,
+        slug: `factory-${document.id}`,
+        status: 'published',
+        visibility: 'private',
+        content: { source: 'knowledge-factory', documentId: document.id },
+        search_text: document.originalName,
+        author_id: document.createdBy,
+        published_at: new Date(),
+      },
+    });
+    return record.id;
   }
 
   private async generateEmbeddings(
