@@ -101,7 +101,7 @@ export class RoutingEngineService {
 
   private async selectBest(
     providers: AIProviderEntity[],
-    _request: RoutingRequest,
+    request: RoutingRequest,
   ): Promise<RoutingTarget> {
     const scored: RoutingTarget[] = [];
 
@@ -114,10 +114,25 @@ export class RoutingEngineService {
       score *= Math.max(0.1, 1 - latency / 5000);
       score *= 1 / (provider.priority + 1);
 
-      scored.push({ provider, model: null, score });
+      let model: AIModelEntity | null = null;
+
+      if (request.preferredModelId) {
+        model = (await this.modelRepo.findByModelId(provider.id, request.preferredModelId)) ?? null;
+      }
+
+      if (!model && request.capability) {
+        const models = await this.modelRepo.findByType(request.capability as ModelType, {
+          enabledOnly: true,
+        });
+
+        model = models.find((candidate) => candidate.providerId === provider.id) ?? null;
+      }
+
+      scored.push({ provider, model, score });
     }
 
     scored.sort((a, b) => b.score - a.score);
+
     return scored[0]!;
   }
 

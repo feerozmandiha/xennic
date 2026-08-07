@@ -5,7 +5,11 @@ import type { ICredentialRepository } from '../ports/credential-repository.inter
 import { ICREDENTIAL_REPOSITORY } from '../ports/credential-repository.interface.js';
 import type { IQuotaRepository } from '../ports/quota-repository.interface.js';
 import { IQUOTA_REPOSITORY } from '../ports/quota-repository.interface.js';
-import { AIProviderEntity, ProviderType } from '../../domain/entities/ai-provider.entity.js';
+import {
+  AIProviderEntity,
+  ProviderType,
+  normalizeProviderBaseUrl,
+} from '../../domain/entities/ai-provider.entity.js';
 import { ProviderCredentialEntity } from '../../domain/entities/provider-credential.entity.js';
 import { ProviderQuotaEntity } from '../../domain/entities/provider-quota.entity.js';
 import { EncryptionService } from './encryption.service.js';
@@ -50,7 +54,7 @@ export class ProviderRegistryService {
       dto.providerType as ProviderType,
       dto.createdBy,
       {
-        baseUrl: dto.baseUrl,
+        baseUrl: normalizeProviderBaseUrl(dto.baseUrl),
         orgId: dto.orgId,
         priority: dto.priority,
         defaultWeight: dto.defaultWeight,
@@ -105,7 +109,7 @@ export class ProviderRegistryService {
 
     entity.update({
       displayName: dto.displayName,
-      baseUrl: dto.baseUrl,
+      baseUrl: normalizeProviderBaseUrl(dto.baseUrl),
       orgId: dto.orgId,
       priority: dto.priority,
       defaultWeight: dto.defaultWeight,
@@ -125,9 +129,8 @@ export class ProviderRegistryService {
     if (dto.apiKey) {
       const encrypted = this.encryptionService.encryptApiKey(dto.apiKey);
       const masked = this.encryptionService.maskApiKey(dto.apiKey);
-      await this.credentialRepo.deleteByProviderId(id);
       const credential = ProviderCredentialEntity.create(id, 'api_key', encrypted, masked);
-      await this.credentialRepo.save(credential);
+      await this.credentialRepo.replaceByProviderId(credential);
     }
 
     if (
@@ -176,12 +179,6 @@ export class ProviderRegistryService {
 
   async getEnabledProviders(): Promise<AIProviderEntity[]> {
     return this.providerRepo.findAll({ enabled: true });
-  }
-
-  async getApiKey(providerId: string): Promise<string | null> {
-    const apikey = await this.credentialRepo.findByType(providerId, 'api_key');
-    if (!apikey) return null;
-    return this.encryptionService.decryptApiKey(apikey.encryptedValue);
   }
 
   async getCredentials(providerId: string): Promise<{ type: string; maskedValue: string }[]> {

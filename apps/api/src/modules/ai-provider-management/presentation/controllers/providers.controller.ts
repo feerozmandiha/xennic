@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Controller,
   Get,
   Post,
@@ -17,6 +18,7 @@ import { ApiTags, ApiBearerAuth, ApiOperation, ApiQuery } from '@nestjs/swagger'
 import { JwtAuthGuard } from '../../../auth/infrastructure/guards/jwt-auth.guard.js';
 import { AdminGuard } from '../../../admin/infrastructure/guards/admin.guard.js';
 import { ProviderRegistryService } from '../../application/services/provider-registry.service.js';
+import { ProviderDiscoveryService } from '../../application/services/provider-discovery.service.js';
 import { CreateProviderDto } from '../dtos/create-provider.dto.js';
 import { UpdateProviderDto } from '../dtos/update-provider.dto.js';
 import { ProviderResponseDto } from '../dtos/provider-response.dto.js';
@@ -26,17 +28,65 @@ import { ProviderResponseDto } from '../dtos/provider-response.dto.js';
 @UseGuards(JwtAuthGuard, AdminGuard)
 @Controller('admin/ai/providers')
 export class ProvidersController {
-  constructor(private readonly registry: ProviderRegistryService) {}
+  constructor(
+    private readonly registry: ProviderRegistryService,
+    private readonly discovery: ProviderDiscoveryService,
+  ) {}
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Register a new AI provider' })
   async create(@Body() dto: CreateProviderDto, @Req() req: any) {
+    if (!dto.apiKey && dto.providerType !== 'ollama') {
+      throw new BadRequestException('API key is required for this provider type');
+    }
+
+    const normalizedBaseUrl = dto.baseUrl
+      ?.trim()
+      .replace(/\/+$/, '')
+      .replace(/\/(chat\/completions|completions|models)$/, '');
+
+    if (dto.apiKey && dto.discover !== false) {
+      const connection = await this.discovery.testConnection(
+        dto.apiKey,
+        dto.providerType,
+        normalizedBaseUrl,
+      );
+
+      if (!connection.success) {
+        throw new BadRequestException(
+          `Provider connection failed: ${connection.error ?? 'unknown error'}`,
+        );
+      }
+    }
+
     const entity = await this.registry.register({
       ...dto,
+      baseUrl: normalizedBaseUrl,
       createdBy: req.user.userId,
     });
-    return { success: true, data: ProviderResponseDto.fromEntity(entity) };
+
+    let discoveredModels = 0;
+
+    if (dto.apiKey && dto.discover !== false) {
+      const discovered = await this.discovery.discover(
+        dto.apiKey,
+        dto.providerType,
+        normalizedBaseUrl,
+      );
+
+      const saved = await this.discovery.saveDiscoveredModels(entity.id, discovered.models);
+
+      discoveredModels = saved.length;
+    }
+
+    return {
+      success: true,
+      data: {
+        provider: ProviderResponseDto.fromEntity(entity),
+        discoveredModels,
+      },
+    };
   }
 
   @Get()

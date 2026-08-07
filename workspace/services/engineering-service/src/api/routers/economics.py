@@ -13,7 +13,7 @@ from src.calculators.economics.roi import ROIInput
 from src.calculators.economics.npv import NPVInput
 from src.calculators.economics.irr import IRRInput
 
-router = APIRouter(prefix="/api/v1/engineering/economics", tags=["Economic Analysis"])
+router = APIRouter(tags=["Economic Analysis"])
 
 
 def execute_calc(request: Request, code: str, input_data, model_class) -> Dict[str, Any]:

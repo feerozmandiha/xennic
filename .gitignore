@@ -88,3 +88,8 @@ htmlcov/
 
 # TypeScript incremental build info
 *.tsbuildinfo
+
+# Local JWT public keys
+infrastructure/docker/secrets/*.pub
+infrastructure/docker/secrets/jwtRS256.key
+infrastructure/docker/secrets/jwtRS256.key

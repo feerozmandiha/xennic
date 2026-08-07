@@ -1,8 +1,8 @@
 # Architecture Governance Report
 
 > **Profile:** all  
-> **Generated:** 2026-07-18T11:58:50.311Z  
-> **Duration:** 1143ms
+> **Generated:** 2026-08-02T10:52:04.661Z  
+> **Duration:** 765ms
 
 ## Overall Score
 
@@ -39,8 +39,6 @@
 | email                         | 🟢 100 | 0          | 0        | 0    |
 | engineering                   | 🟢 100 | 0          | 0        | 0    |
 | enterprise-api-platform       | 🟢 100 | 0          | 0        | 0    |
-| enterprise-background         | 🟢 100 | 0          | 0        | 0    |
-| enterprise-backup             | 🟢 100 | 0          | 0        | 0    |
 | enterprise-cache              | 🟢 100 | 0          | 0        | 0    |
 | enterprise-config             | 🟢 100 | 0          | 0        | 0    |
 | enterprise-event-architecture | 🟢 100 | 0          | 0        | 0    |
@@ -48,7 +46,6 @@
 | enterprise-messaging          | 🟢 100 | 0          | 0        | 0    |
 | enterprise-observability      | 🟢 100 | 0          | 0        | 0    |
 | enterprise-orchestration      | 🟢 100 | 0          | 0        | 0    |
-| enterprise-performance        | 🟢 100 | 0          | 0        | 0    |
 | enterprise-saga               | 🟢 100 | 0          | 0        | 0    |
 | enterprise-search-federation  | 🟢 100 | 0          | 0        | 0    |
 | feature-flags                 | 🟢 100 | 0          | 0        | 0    |

@@ -36,7 +36,8 @@ import { WorkspaceModule } from '../workspace/workspace.module.js';
 import { RbacModule } from '../rbac/rbac.module.js';
 import { KnowledgeModule } from '../knowledge/knowledge.module.js';
 import { StorageModule } from '../storage/storage.module.js';
-import { StorageService } from '../storage/application/services/storage.service.js';
+import { MinioService } from '../storage/infrastructure/minio/minio.service.js';
+import { KfStorageAdapter } from './infrastructure/storage/minio-storage.service.js';
 import { BullModule } from '@nestjs/bullmq';
 
 async function createBullmqQueue(name: string) {
@@ -67,7 +68,7 @@ async function createBullmqQueue(name: string) {
     { provide: 'IKnowledgeChunkRepository', useClass: KnowledgeChunkRepository },
     { provide: 'IExtractionRepository', useClass: ExtractionRepository },
     { provide: 'IPipelineRunRepository', useClass: PipelineRunRepository },
-    { provide: 'IStorageService', useExisting: StorageService },
+    { provide: 'IStorageService', useClass: KfStorageAdapter },
     { provide: 'EmbeddingGateway', useClass: EmbeddingGatewayService },
     PipelineEventBus,
     {

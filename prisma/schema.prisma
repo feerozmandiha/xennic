@@ -47,11 +47,14 @@ model users {
   project_notes    project_notes[]
   calculations     calculations[]
   files            files[]
+  avatar_file      files?             @relation("UserAvatar", fields: [avatar_file_id], references: [id])
+  project_files_attached project_files[]
   notifications    notifications[]
   audit_logs       audit_logs[]
   ai_usage         ai_usage[]
   orders           orders[]
   payment_methods  payment_methods[]
+  file_versions_created file_versions[]
 
   // Knowledge Management System — relation names match knowledge model side
   knowledge_author               knowledge[]                @relation("KnowledgeAuthor")
@@ -436,6 +439,7 @@ model projects {
   notes        project_notes[]
   reports      project_reports[]
   calculations calculations[]
+  files        project_files[]
 
   @@index([workspace_id])
   @@index([status])
@@ -469,6 +473,22 @@ model project_notes {
   @@index([project_id])
 }
 
+model project_files {
+  id          String   @id @default(uuid())
+  project_id  String
+  file_id     String
+  added_by    String
+  created_at  DateTime @default(now())
+
+  project  projects @relation(fields: [project_id], references: [id], onDelete: Cascade)
+  file     files    @relation(fields: [file_id], references: [id], onDelete: Restrict)
+  attacher users    @relation(fields: [added_by], references: [id])
+
+  @@unique([project_id, file_id])
+  @@index([project_id])
+  @@index([file_id])
+}
+
 model project_reports {
   id         String   @id @default(uuid())
   project_id String
@@ -476,6 +496,7 @@ model project_reports {
   created_at DateTime @default(now())
 
   project    projects @relation(fields: [project_id], references: [id], onDelete: Cascade)
+  file        files?   @relation(fields: [file_id], references: [id])
 
   @@index([project_id])
 }
@@ -952,6 +973,7 @@ model knowledge_documents {
   mime_type             String
   size_bytes            Int
   storage_path          String?
+  storage_file_id       String?
   document_type         String    @default("pdf")
   status                String    @default("uploaded")
   classification        Json      @default("{}")
@@ -967,11 +989,13 @@ model knowledge_documents {
   workspace             workspaces                   @relation(fields: [workspace_id], references: [id])
   creator               users?                       @relation("KnowledgeDocumentCreator", fields: [created_by], references: [id])
   published_knowledge   knowledge?                   @relation("FactoryPublishedKnowledge", fields: [published_knowledge_id], references: [id])
+  storage_file          files?                       @relation(fields: [storage_file_id], references: [id])
   chunks                knowledge_document_chunks[]
   pipeline_runs         knowledge_pipeline_runs[]
   extractions           knowledge_extractions[]
 
   @@index([workspace_id])
+  @@index([storage_file_id])
   @@index([status])
   @@index([document_type])
   @@index([created_at])
@@ -1139,7 +1163,11 @@ model files {
 
   workspace     workspaces     @relation(fields: [workspace_id], references: [id])
   uploader      users          @relation(fields: [uploaded_by], references: [id])
+  avatar_user   users[]          @relation("UserAvatar")
   versions      file_versions[]
+  knowledge_documents  knowledge_documents[]
+  project_reports  project_reports[]
+  project_files project_files[]
 
   @@index([workspace_id])
   @@index([uploaded_by])
@@ -1147,16 +1175,24 @@ model files {
 }
 
 model file_versions {
-  id         String   @id @default(uuid())
-  file_id    String
-  version    Int      @default(1)
-  path       String
-  checksum   String?
-  created_at DateTime @default(now())
+  id            String    @id @default(uuid())
+  file_id       String
+  version       Int       @default(1)
+  path          String
+  size          BigInt
+  mime_type     String
+  original_name String
+  checksum      String?
+  change_reason String?
+  created_by    String?
+  created_at    DateTime  @default(now())
 
-  file       files    @relation(fields: [file_id], references: [id], onDelete: Cascade)
+  file files  @relation(fields: [file_id], references: [id], onDelete: Cascade)
+  user users? @relation(fields: [created_by], references: [id], onDelete: SetNull)
 
+  @@unique([file_id, version])
   @@index([file_id])
+  @@index([file_id, created_at])
 }
 
 // ============================================================

@@ -106,7 +106,7 @@ async function request<T>(
   try {
     const isFormData = body instanceof FormData;
     const headers = buildHeaders(isFormData ? undefined : extraHeaders);
-    if (isFormData) delete headers['Content-Type'];
+    if (isFormData || body === undefined) delete headers['Content-Type'];
 
     const res = await fetch(`${API_BASE}${path}`, {
       method,
@@ -116,6 +116,11 @@ async function request<T>(
     });
 
     const text = await res.text();
+
+    // DELETE may legitimately return 204 No Content.
+    if (res.status === 204) {
+      return {} as T;
+    }
 
     let json: any;
     try {

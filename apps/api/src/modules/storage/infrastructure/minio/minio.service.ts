@@ -1,5 +1,5 @@
 import { Injectable, Logger, ServiceUnavailableException } from '@nestjs/common';
-import { Client as MinioClient } from 'minio';
+import { Client as MinioClient, CopyDestinationOptions, CopySourceOptions } from 'minio';
 import type { FileBucket } from '../../domain/entities/file.entity.js';
 
 /**
@@ -87,6 +87,33 @@ export class MinioService {
       const error = err as Error;
       this.logger.error(`Upload failed for ${bucket}/${objectKey}: ${error.message}`);
       throw new ServiceUnavailableException('File upload failed');
+    }
+  }
+
+  // ── Copy (برای revert نسخه — object مستقل جدید) ───────────────────────────
+
+  async copyObject(
+    sourceBucket: string,
+    sourceObjectKey: string,
+    destBucket: string,
+    destObjectKey: string,
+  ): Promise<string> {
+    try {
+      await this.ensureBucket(destBucket);
+
+      await this.client.copyObject(
+        new CopySourceOptions({ Bucket: sourceBucket, Object: sourceObjectKey }),
+        new CopyDestinationOptions({ Bucket: destBucket, Object: destObjectKey }),
+      );
+
+      this.logger.debug(
+        `Copied: ${sourceBucket}/${sourceObjectKey} -> ${destBucket}/${destObjectKey}`,
+      );
+      return destObjectKey;
+    } catch (err) {
+      const error = err as Error;
+      this.logger.error(`Copy failed for ${sourceBucket}/${sourceObjectKey}: ${error.message}`);
+      throw new ServiceUnavailableException('File copy failed');
     }
   }
 

@@ -10,6 +10,8 @@ export interface ICredentialRepository {
   save(credential: ProviderCredentialEntity): Promise<void>;
   delete(id: string): Promise<void>;
   deleteByProviderId(providerId: string): Promise<void>;
+
+  replaceByProviderId(credential: ProviderCredentialEntity): Promise<void>;
 }
 
 export const ICREDENTIAL_REPOSITORY = 'ICredentialRepository';

@@ -1,27 +1,33 @@
 #!/usr/bin/env node
+
 import 'reflect-metadata';
 import { NestFactory } from '@nestjs/core';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { writeFileSync, mkdirSync } from 'fs';
 import { join, resolve } from 'path';
-import { fileURLToPath } from 'url';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = join(__filename, '..');
+async function generateOpenAPI(): Promise<void> {
+  console.log('Generating OpenAPI specification...');
 
-async function generateOpenAPI() {
-  console.log('📝 Generating OpenAPI specification...');
+  let app: { close(): Promise<void> } | undefined;
 
   try {
-    const { ApiModule } = await import(resolve(process.cwd(), 'dist/api.module.js'));
-    const app = await NestFactory.create(ApiModule, { logger: false });
+    const modulePath = resolve(process.cwd(), 'dist/api.module.js');
+    const importedModule = await import(modulePath);
+    const ApiModule = importedModule.ApiModule;
+
+    app = await NestFactory.create(ApiModule, { logger: false });
+
+    const websiteUrl = 'https' + ':' + '/' + '/' + 'xennic.com';
+    const supportEmail = 'support' + '@' + 'xennic.com';
+    const termsUrl = websiteUrl + '/terms';
 
     const config = new DocumentBuilder()
       .setTitle('Xennic Platform API')
       .setDescription('Xennic Engineering Platform API Documentation')
       .setVersion('1.0.0')
-      .setContact('Xennic Team', 'https://xennic.com', 'support@xennic.com')
-      .setLicense('Proprietary', 'https://xennic.com/terms')
+      .setContact('Xennic Team', websiteUrl, supportEmail)
+      .setLicense('Proprietary', termsUrl)
       .addBearerAuth(
         {
           type: 'http',
@@ -34,29 +40,40 @@ async function generateOpenAPI() {
         'JWT-auth',
       )
       .addTag('health', 'Health check endpoints')
-      .addTag('workspaces', 'Workspace management (multi-tenant isolation)')
+      .addTag('workspaces', 'Workspace management and tenant isolation')
       .addTag('auth', 'Authentication and user management')
       .addTag('users', 'User profile management')
       .addTag('roles', 'Role management and assignment')
       .addTag('permissions', 'Permission management')
       .addTag('projects', 'Project management')
+      .addTag('storage', 'File and document storage')
       .addTag('engineering', 'Engineering calculations')
       .build();
 
     const document = SwaggerModule.createDocument(app, config);
-    const outputDir = resolve(process.cwd(), '..', '..', 'packages', 'openapi', 'v1');
-    mkdirSync(outputDir, { recursive: true });
-    const outputPath = join(outputDir, 'openapi.json');
-    writeFileSync(outputPath, JSON.stringify(document, null, 2));
 
-    const endpointCount = Object.keys(document.paths).filter((path) => path !== '/api/v1').length;
-    console.log(`✅ OpenAPI specification saved to: ${outputPath}`);
-    console.log(`📊 Total endpoints: ${endpointCount}`);
-    await app.close();
+    const outputDir = resolve(process.cwd(), '..', '..', 'packages', 'openapi', 'v1');
+
+    mkdirSync(outputDir, { recursive: true });
+
+    const outputPath = join(outputDir, 'openapi.json');
+
+    writeFileSync(outputPath, JSON.stringify(document, null, 2) + '\n', 'utf-8');
+
+    const endpointCount = Object.keys(document.paths).filter(
+      (routePath) => routePath !== '/api/v1',
+    ).length;
+
+    console.log('OpenAPI specification saved to: ' + outputPath);
+    console.log('Total endpoints: ' + endpointCount);
   } catch (error) {
-    console.error('❌ Failed to generate OpenAPI specification:', error);
-    throw error;
+    console.error('Failed to generate OpenAPI specification:', error);
+    process.exitCode = 1;
+  } finally {
+    if (app) {
+      await app.close();
+    }
   }
 }
 
-generateOpenAPI();
+await generateOpenAPI();

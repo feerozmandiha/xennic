@@ -20,6 +20,21 @@ export type ProviderType =
 export type ProviderStatus = 'active' | 'inactive' | 'error';
 export type ProviderVisibility = 'global' | 'admin_only' | 'workspace';
 
+export function normalizeProviderBaseUrl(baseUrl: string | null | undefined): string | undefined {
+  if (!baseUrl) return undefined;
+
+  let normalized = baseUrl.trim().replace(/\/+$/, '');
+
+  for (const suffix of ['/chat/completions', '/completions', '/models']) {
+    if (normalized.endsWith(suffix)) {
+      normalized = normalized.slice(0, -suffix.length);
+      break;
+    }
+  }
+
+  return normalized.replace(/\/+$/, '') || undefined;
+}
+
 export class AIProviderEntity {
   private constructor(
     public readonly id: string,

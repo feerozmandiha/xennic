@@ -40,6 +40,7 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/stores/toast.store';
 import { apiClient } from '@/lib/api/client';
 import { cn } from '@/lib/utils';
+import { AiProviderManagement } from './ai-provider-management';
 
 // ─────────────────────────────────────────────────────────────
 // types
@@ -67,6 +68,7 @@ const SECTIONS = [
   { key: 'settings', label: 'تنظیمات', icon: Settings },
   { key: 'taxonomy', label: 'تاکسونومی', icon: Tags },
   { key: 'api-keys', label: 'کلید API', icon: Key },
+  { key: 'ai-providers', label: 'ارائه‌دهندگان AI', icon: Zap },
   { key: 'webhooks', label: 'Webhook ها', icon: Webhook },
   { key: 'feature-flags', label: 'Feature Flag ها', icon: Flag },
 ] as const;
@@ -1888,7 +1890,7 @@ function ApiKeysSection() {
     mutationFn: (body: any) => apiClient.post('/api-keys', body),
     onSuccess: (res: any) => {
       qc.invalidateQueries({ queryKey: ['admin', 'api-keys'] });
-      if (res?.data?.key) setNewKeyValue(res.data.key);
+      if (res?.data?.rawKey) setNewKeyValue(res.data.rawKey);
       toast.success('کلید API ایجاد شد');
       setShowCreate(false);
       setForm({ name: '', expiresAt: '' });
@@ -1911,7 +1913,14 @@ function ApiKeysSection() {
       qc.invalidateQueries({ queryKey: ['admin', 'api-keys'] });
       toast.success('کلید API حذف شد');
     },
-    onError: () => toast.error('خطا در حذف کلید'),
+    onError: (error: any) => {
+      if (error?.status === 404 || error?.code === 'NOT_FOUND') {
+        qc.invalidateQueries({ queryKey: ['admin', 'api-keys'] });
+        toast.success('فهرست کلیدها به‌روزرسانی شد');
+        return;
+      }
+      toast.error('خطا در حذف کلید');
+    },
   });
 
   const inputCls =
@@ -2076,10 +2085,18 @@ function ApiKeysSection() {
                     <span
                       className={cn(
                         'text-[10px] font-semibold px-2 py-0.5 rounded-full',
-                        k.isRevoked ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-700',
+                        k.status === 'revoked'
+                          ? 'bg-red-100 text-red-600'
+                          : k.isActive === false
+                            ? 'bg-yellow-100 text-yellow-700'
+                            : 'bg-green-100 text-green-700',
                       )}
                     >
-                      {k.isRevoked ? 'باطل شده' : 'فعال'}
+                      {k.status === 'revoked'
+                        ? 'باطل شده'
+                        : k.isActive === false
+                          ? 'منقضی شده'
+                          : 'فعال'}
                     </span>
                   </td>
                   <td className="px-4 py-3 text-xs text-[hsl(var(--muted-foreground))]">
@@ -2090,7 +2107,7 @@ function ApiKeysSection() {
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
-                      {!k.isRevoked && (
+                      {k.status !== 'revoked' && k.isActive !== false && (
                         <button
                           onClick={() => {
                             if (confirm('آیا از باطل‌سازی این کلید مطمئن هستید؟'))
@@ -2859,6 +2876,7 @@ export function AdminClient() {
     settings: <SettingsSection />,
     taxonomy: <TaxonomySection />,
     'api-keys': <ApiKeysSection />,
+    'ai-providers': <AiProviderManagement />,
     webhooks: <WebhooksSection />,
     'feature-flags': <FeatureFlagsSection />,
   };
