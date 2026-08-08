@@ -2532,3 +2532,13 @@ model calculation_plugins {
   created_at  DateTime @default(now())
   updated_at  DateTime @updatedAt
 }
+
+model landing_cms_config {
+  id         String   @id @default(uuid())
+  scope      String   @unique
+  data       Json     @default("{}")
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@index([scope])
+}
