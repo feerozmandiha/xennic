@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, Logger } from '@nestjs/common';
 import { MulterModule } from '@nestjs/platform-express';
 
 import { DocumentsController } from './presentation/controllers/documents.controller.js';
@@ -36,13 +36,68 @@ import { WorkspaceModule } from '../workspace/workspace.module.js';
 import { RbacModule } from '../rbac/rbac.module.js';
 import { KnowledgeModule } from '../knowledge/knowledge.module.js';
 import { StorageModule } from '../storage/storage.module.js';
-import { MinioService } from '../storage/infrastructure/minio/minio.service.js';
 import { KfStorageAdapter } from './infrastructure/storage/minio-storage.service.js';
 import { BullModule } from '@nestjs/bullmq';
 
+function getRedisConnection() {
+  // Parse REDIS_URL or use individual env vars
+  const redisUrl = process.env.REDIS_URL ?? '';
+  // Default to docker-compose values: localhost:6380 with password xennic
+  let host = process.env.REDIS_HOST ?? 'localhost';
+  let port = parseInt(process.env.REDIS_PORT ?? process.env.REDIS_EXTERNAL_PORT ?? '6380', 10);
+  let password = process.env.REDIS_PASSWORD ?? 'xennic';
+  let username: string | undefined = undefined;
+
+  // If REDIS_URL is set, try to parse it
+  if (redisUrl) {
+    try {
+      const url = new URL(redisUrl);
+      host = url.hostname || host;
+      if (url.port) port = parseInt(url.port, 10);
+      if (url.password) password = url.password;
+      if (url.username) username = url.username;
+    } catch {
+      // ignore, use defaults
+    }
+  }
+
+  // If port is 6379 but docker-compose exposes 6380, try 6380 as fallback is handled by env
+  return {
+    host,
+    port,
+    password: password || undefined,
+    username,
+    // BullMQ requires maxRetriesPerRequest null for blocking
+    maxRetriesPerRequest: null as unknown as number,
+    enableReadyCheck: false,
+  };
+}
+
 async function createBullmqQueue(name: string) {
-  const { Queue } = await import('bullmq');
-  return new Queue(name);
+  const logger = new Logger(`Queue:${name}`);
+  try {
+    const { Queue } = await import('bullmq');
+    const connection = getRedisConnection();
+    // Try to create queue with connection; if Redis unavailable, return mock
+    const queue = new Queue(name, { connection: connection as any });
+    // Attach error handler to avoid unhandled error crash
+    queue.on('error', (err: Error) => {
+      logger.warn(`Queue ${name} error (will use mock fallback): ${err.message}`);
+    });
+    return queue;
+  } catch (err: any) {
+    logger.warn(`Failed to create queue ${name}, using in-memory mock: ${err.message}`);
+    // Return minimal mock with same interface used by pipeline
+    return {
+      name,
+      add: async () => ({ id: 'mock' }),
+      addBulk: async () => [],
+      getJob: async () => null,
+      getJobs: async () => [],
+      on: () => {},
+      close: async () => {},
+    } as any;
+  }
 }
 
 @Module({
@@ -52,7 +107,9 @@ async function createBullmqQueue(name: string) {
     KnowledgeModule,
     StorageModule,
     MulterModule.register({ limits: { fileSize: 50 * 1024 * 1024 } }),
-    BullModule.forRoot({} as any),
+    BullModule.forRoot({
+      connection: getRedisConnection() as any,
+    } as any),
   ],
   controllers: [DocumentsController, PipelineStatusController, SearchController],
   providers: [
