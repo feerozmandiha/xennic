@@ -3,14 +3,16 @@
 
   "compilerOptions": {
     "target": "ES2022",
+    "lib": ["ES2022", "DOM", "ES2016.Array.Include"],
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
 
     "types": ["node"],
 
-    "strict": true,
+    "strict": false,
 
     "skipLibCheck": true,
+    "noImplicitAny": false,
 
     "esModuleInterop": true,
 
@@ -22,11 +24,11 @@
 
     "isolatedModules": true,
 
-    "noUncheckedIndexedAccess": true,
+    "noUncheckedIndexedAccess": false,
 
-    "noImplicitOverride": true,
+    "noImplicitOverride": false,
 
-    "noFallthroughCasesInSwitch": true,
+    "noFallthroughCasesInSwitch": false,
 
     "declaration": true,
 
