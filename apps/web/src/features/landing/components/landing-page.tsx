@@ -34,7 +34,7 @@ function Navbar({ locale }: { locale: string }) {
   const links: { label: string; href: string }[] = [
     { label: 'صفحه اصلی', href: `/${locale}` },
     { label: 'محاسبات', href: isAuth ? `/${locale}/engineering` : '#calculations' },
-    { label: 'مقالات', href: `/${locale}/knowledge` },
+    { label: 'دانشنامه فنی', href: `/${locale}/knowledge` },
     { label: 'درباره ما', href: `/${locale}/about` },
     { label: 'تماس', href: `/${locale}/contact` },
   ];
@@ -375,7 +375,7 @@ function Footer({ locale }: { locale: string }) {
             <ul className="space-y-2.5">
               {[
                 { label: 'ویژگی‌ها', href: '#features' },
-                { label: 'مقالات', href: `/${locale}/knowledge` },
+                { label: 'دانشنامه فنی', href: `/${locale}/knowledge` },
                 { label: 'محاسبات', href: '#calculations' },
                 { label: 'پلن‌ها', href: '#pricing' },
               ].map(({ label, href }) => (
