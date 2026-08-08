@@ -91,7 +91,7 @@ export function ArticlesSection({ locale }: { locale: string }) {
             </p>
           </div>
           <Link
-            href={`/${locale}/articles`}
+            href={`/${locale}/knowledge`}
             className="hidden sm:flex items-center gap-1.5 text-sm text-white/40 hover:text-white transition-colors"
           >
             همه مقالات
@@ -108,7 +108,7 @@ export function ArticlesSection({ locale }: { locale: string }) {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {articles.map((article) => (
-              <Link key={article.id} href={`/${locale}/articles/${article.slug}`}>
+              <Link key={article.id} href={`/${locale}/knowledge/${article.slug}`}>
                 <Card className="h-full border-white/5 bg-white/[0.02] hover:bg-white/[0.04] hover:border-white/10 transition-all duration-300 group">
                   <CardContent className="p-6 flex flex-col gap-3">
                     <div className="flex items-center justify-between">
@@ -142,7 +142,7 @@ export function ArticlesSection({ locale }: { locale: string }) {
 
         <div className="text-center mt-10 sm:hidden">
           <Link
-            href={`/${locale}/articles`}
+            href={`/${locale}/knowledge`}
             className="inline-flex items-center gap-1.5 text-sm text-white/40 hover:text-white transition-colors"
           >
             همه مقالات

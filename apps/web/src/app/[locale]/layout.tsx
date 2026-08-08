@@ -6,7 +6,6 @@ import localFont from 'next/font/local';
 import { ThemeProvider } from '@/components/providers/theme-provider';
 import { QueryProvider } from '@/components/providers/query-provider';
 import { routing } from '@/i18n/routing';
-// CSS در root layout.tsx import شده است
 
 // ── فونت IranSansX — فارسی ──────────────────────────────────────────────────
 const iranSans = localFont({
@@ -63,35 +62,22 @@ interface LocaleLayoutProps {
 export default async function LocaleLayout({ children, params }: LocaleLayoutProps) {
   const { locale } = await params;
 
-  // اعتبارسنجی locale
   if (!routing.locales.includes(locale as any)) {
     notFound();
   }
 
   const messages = await getMessages();
-
-  // direction بر اساس locale
   const dir = locale === 'fa' ? 'rtl' : 'ltr';
 
+  // توجه: html و body در app/layout.tsx هستند (برای رفع ارور Missing html/body tags)
+  // اینجا فقط providers و font variables را اعمال می‌کنیم
   return (
-    <html
-      lang={locale}
-      dir={dir}
-      className={`${iranSans.variable} ${inter.variable}`}
-      suppressHydrationWarning
-    >
-      <body className="min-h-screen bg-[hsl(var(--background))] font-sans antialiased">
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <NextIntlClientProvider messages={messages}>
-            <QueryProvider>{children}</QueryProvider>
-          </NextIntlClientProvider>
-        </ThemeProvider>
-      </body>
-    </html>
+    <div dir={dir} lang={locale} className={`${iranSans.variable} ${inter.variable} min-h-screen`}>
+      <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+        <NextIntlClientProvider messages={messages}>
+          <QueryProvider>{children}</QueryProvider>
+        </NextIntlClientProvider>
+      </ThemeProvider>
+    </div>
   );
 }
