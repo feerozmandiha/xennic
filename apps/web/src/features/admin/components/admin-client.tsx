@@ -33,6 +33,8 @@ import {
   Key,
   Webhook,
   Flag,
+  FileText,
+  List,
 } from 'lucide-react';
 import { useAuthStore } from '@/stores/auth.store';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -64,6 +66,7 @@ const SECTIONS = [
   { key: 'plans', label: 'پلن‌ها و تعرفه', icon: CreditCard },
   { key: 'consultations', label: 'تیکت‌ها', icon: MessageSquare },
   { key: 'articles', label: 'دانشنامه فنی', icon: BookOpen },
+  { key: 'knowledge-list', label: 'لیست مقالات', icon: FileText },
   { key: 'notifications', label: 'اعلان‌ها', icon: Bell },
   { key: 'settings', label: 'تنظیمات', icon: Settings },
   { key: 'taxonomy', label: 'تاکسونومی', icon: Tags },
@@ -2845,6 +2848,7 @@ export function AdminClient() {
     plans: <PlansSection />,
     consultations: <ConsultationsSection />,
     articles: <ArticlesAdminSection />,
+    'knowledge-list': <KnowledgeListSection />,
     notifications: <NotificationsSection />,
     settings: <SettingsSection />,
     taxonomy: <TaxonomySection />,
@@ -2853,6 +2857,202 @@ export function AdminClient() {
     webhooks: <WebhooksSection />,
     'feature-flags': <FeatureFlagsSection />,
   };
+
+  function KnowledgeListSection() {
+    const toast = useToast();
+    const qc = useQueryClient();
+    const [search, setSearch] = useState('');
+    const [status, setStatus] = useState('all');
+    const [page, setPage] = useState(1);
+
+    const { data, isLoading } = useQuery({
+      queryKey: ['admin', 'knowledge-list-full', search, status, page],
+      queryFn: async () => {
+        try {
+          const sp = new URLSearchParams();
+          sp.set('limit', '20');
+          sp.set('page', String(page));
+          if (search) sp.set('q', search);
+          if (status !== 'all') sp.set('status', status);
+          const res = await apiClient.get<any>(`/knowledge/search?${sp.toString()}`);
+          return res;
+        } catch {
+          const res = await apiClient.get<any>(
+            `/public/knowledge?limit=20&page=${page}&q=${encodeURIComponent(search)}`,
+          );
+          return res;
+        }
+      },
+    });
+
+    const deleteMutation = useMutation({
+      mutationFn: (id: string) => apiClient.delete(`/knowledge/${id}`),
+      onSuccess: () => {
+        qc.invalidateQueries({ queryKey: ['admin', 'knowledge-list-full'] });
+        toast.success('حذف شد');
+      },
+    });
+
+    const list: any[] = data?.data ?? [];
+    const meta = data?.meta ?? { total: list.length, totalPages: 1 };
+
+    return (
+      <div className="space-y-4">
+        <div className="flex flex-col md:flex-row gap-3">
+          <div className="relative flex-1">
+            <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[hsl(var(--muted-foreground))]" />
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="جستجو در عنوان، اسلاگ، محتوا..."
+              className="w-full h-9 pr-9 pl-3 rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--background))] text-sm outline-none focus:border-[hsl(var(--primary))]"
+            />
+          </div>
+          <select
+            value={status}
+            onChange={(e) => {
+              setStatus(e.target.value);
+              setPage(1);
+            }}
+            className="h-9 px-3 rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--background))] text-sm"
+          >
+            <option value="all">همه وضعیت‌ها</option>
+            <option value="published">منتشرشده</option>
+            <option value="draft">پیش‌نویس</option>
+            <option value="review">در بررسی</option>
+            <option value="archived">آرشیو</option>
+          </select>
+          <a
+            href="/fa/knowledge-manage"
+            className="h-9 px-4 rounded-lg bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] text-sm flex items-center gap-1 hover:opacity-90"
+          >
+            <Plus className="h-4 w-4" /> مدیریت پیشرفته
+          </a>
+        </div>
+
+        <div className="rounded-xl border border-[hsl(var(--border))] overflow-hidden">
+          <table className="w-full text-sm">
+            <thead className="bg-[hsl(var(--secondary)/0.5)]">
+              <tr>
+                <th className="text-right text-xs font-semibold text-[hsl(var(--muted-foreground))] px-4 py-3">
+                  عنوان
+                </th>
+                <th className="text-right text-xs font-semibold text-[hsl(var(--muted-foreground))] px-4 py-3">
+                  اسلاگ
+                </th>
+                <th className="text-right text-xs font-semibold text-[hsl(var(--muted-foreground))] px-4 py-3">
+                  وضعیت
+                </th>
+                <th className="text-right text-xs font-semibold text-[hsl(var(--muted-foreground))] px-4 py-3">
+                  سطح
+                </th>
+                <th className="text-right text-xs font-semibold text-[hsl(var(--muted-foreground))] px-4 py-3">
+                  زبان
+                </th>
+                <th className="text-right text-xs font-semibold text-[hsl(var(--muted-foreground))] px-4 py-3">
+                  عملیات
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-[hsl(var(--border)/0.5)]">
+              {isLoading ? (
+                Array.from({ length: 6 }).map((_, i) => (
+                  <tr key={i}>
+                    <td colSpan={6} className="px-4 py-3">
+                      <div className="h-4 bg-[hsl(var(--secondary)/0.5)] rounded animate-pulse" />
+                    </td>
+                  </tr>
+                ))
+              ) : list.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan={6}
+                    className="px-4 py-8 text-center text-sm text-[hsl(var(--muted-foreground))]"
+                  >
+                    مقاله‌ای یافت نشد
+                  </td>
+                </tr>
+              ) : (
+                list.map((a: any) => (
+                  <tr key={a.id} className="hover:bg-[hsl(var(--secondary)/0.3)]">
+                    <td className="px-4 py-3 max-w-[250px] truncate font-medium">
+                      {a.content?.title ?? a.slug ?? a.title ?? '—'}
+                    </td>
+                    <td className="px-4 py-3 font-mono text-xs text-[hsl(var(--muted-foreground))] truncate max-w-[150px]">
+                      {a.slug}
+                    </td>
+                    <td className="px-4 py-3">
+                      <span
+                        className={cn(
+                          'text-[10px] px-2 py-0.5 rounded-full font-semibold',
+                          a.status === 'published'
+                            ? 'bg-green-100 text-green-700'
+                            : a.status === 'draft'
+                              ? 'bg-gray-100 text-gray-600'
+                              : 'bg-amber-100 text-amber-700',
+                        )}
+                      >
+                        {a.status}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-xs">{a.difficulty ?? '—'}</td>
+                    <td className="px-4 py-3 text-xs">{a.language ?? 'fa'}</td>
+                    <td className="px-4 py-3">
+                      <div className="flex gap-1">
+                        <a
+                          href={`/fa/knowledge-manage/${a.id}`}
+                          className="text-[11px] px-2 py-1 rounded border hover:bg-[hsl(var(--secondary))]"
+                        >
+                          ویرایش
+                        </a>
+                        <a
+                          href={`/fa/knowledge/${a.slug}`}
+                          target="_blank"
+                          className="text-[11px] px-2 py-1 rounded border hover:bg-[hsl(var(--secondary))]"
+                        >
+                          مشاهده
+                        </a>
+                        <button
+                          onClick={() => {
+                            if (confirm('حذف؟')) deleteMutation.mutate(a.id);
+                          }}
+                          className="text-[11px] px-2 py-1 rounded border border-red-200 text-red-500 hover:bg-red-50"
+                        >
+                          حذف
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        <div className="flex items-center justify-between">
+          <span className="text-xs text-[hsl(var(--muted-foreground))]">
+            صفحه {page} از {meta.totalPages ?? 1} • {meta.total ?? list.length} مقاله
+          </span>
+          <div className="flex gap-2">
+            <button
+              disabled={page <= 1}
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              className="h-8 px-3 text-xs rounded border disabled:opacity-40"
+            >
+              قبلی
+            </button>
+            <button
+              disabled={page >= (meta.totalPages ?? 1)}
+              onClick={() => setPage((p) => p + 1)}
+              className="h-8 px-3 text-xs rounded border disabled:opacity-40"
+            >
+              بعدی
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const current = SECTIONS.find((s) => s.key === section);
 
