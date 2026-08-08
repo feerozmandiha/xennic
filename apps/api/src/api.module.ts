@@ -28,6 +28,11 @@ import { VisionModule } from './modules/vision/vision.module.js'; // ✅ بین�
 import { AiProviderManagementModule } from './modules/ai-provider-management/ai-provider-management.module.js'; // ✅ مدیریت ارائه‌دهندگان AI
 import { MonitoringModule } from './modules/monitoring/monitoring.module.js'; // ✅ مانیتورینگ
 import { CalculationPlatformModule } from './modules/calculation-platform/calculation-platform.module.js'; // ✅ Sprint C1
+// 🧠 Knowledge Intelligence Stack — Encyclopedia v2
+import { AiRuntimeModule } from './modules/ai-runtime/ai-runtime.module.js';
+import { SemanticIntegrationModule } from './modules/semantic-integration/semantic-integration.module.js';
+import { KnowledgeFactoryModule } from './modules/knowledge-factory/knowledge-factory.module.js';
+import { KnowledgeIntelligenceModule } from './modules/knowledge-intelligence/knowledge-intelligence.module.js';
 
 @Module({
   imports: [
@@ -43,11 +48,15 @@ import { CalculationPlatformModule } from './modules/calculation-platform/calcul
     StorageModule,
     NotificationModule,
     AiModule,
+    AiRuntimeModule, // 🧠 AI Runtime (memory, prompt registry) — required for SemanticIntegration
     ConsultationsModule,
     AdminModule, // ✅ مدیریت پلتفرم
     SearchModule, // ✅ جستجوی سراسری
     KnowledgeModule, // ✅ سیستم دانش
     StandardsModule, // ✅ استانداردهای مهندسی
+    KnowledgeFactoryModule, // 🏭 Knowledge Factory pipeline
+    KnowledgeIntelligenceModule, // 🧠 Knowledge Intelligence — graph, citations, ontology
+    SemanticIntegrationModule, // 🔗 Semantic Integration — outbox, event bus (Global)
     MarketplaceModule, // ✅ بازارگاه
     ApiKeysModule, // ✅ کلید API
     WebhooksModule, // ✅ وب‌هوک

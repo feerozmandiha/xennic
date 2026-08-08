@@ -44,9 +44,29 @@ function useTaxonomyOptions(type: TaxonomyType) {
     discipline: 'disciplines',
     audience: 'audiences',
   };
+
   return useQuery({
     queryKey: ['taxonomy', type],
-    queryFn: () => apiClient.get<any>(`/${pluralMap[type]}?limit=200`),
+    queryFn: async () => {
+      const plural = pluralMap[type];
+      const attempts = [
+        `/taxonomy/${type}?limit=200`,
+        `/public/taxonomy/${type}?limit=200`,
+        `/${plural}?limit=200`,
+        `/public/taxonomy/${plural}?limit=200`,
+      ];
+
+      for (const path of attempts) {
+        try {
+          const res = await apiClient.get<any>(path);
+          if (res?.data) return res;
+        } catch {
+          // try next
+        }
+      }
+      return { success: true, data: [] };
+    },
+    staleTime: 1000 * 60 * 5,
   });
 }
 
@@ -64,14 +84,16 @@ export function TaxonomySelect({ type, selected, onChange }: Props) {
   const [search, setSearch] = useState('');
 
   const { data, isLoading } = useTaxonomyOptions(type);
-  const items: Item[] = data?.data ?? [];
+  const raw = data as any;
+  const items: Item[] = raw?.data ?? raw?.data?.[`${type}s`] ?? raw?.data?.[type] ?? [];
 
   const filtered = items.filter((i) => {
     const q = search.toLowerCase();
     return (
       i.name?.toLowerCase().includes(q) ||
       i.name_en?.toLowerCase().includes(q) ||
-      i.title?.toLowerCase().includes(q)
+      i.title?.toLowerCase().includes(q) ||
+      i.id?.toLowerCase().includes(q)
     );
   });
 

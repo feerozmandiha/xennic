@@ -511,6 +511,12 @@ importers:
 
   packages/types: {}
 
+  services/bill-bot:
+    optionalDependencies:
+      pdfmake:
+        specifier: ^0.3.11
+        version: 0.3.11
+
 packages:
   '@alloc/quick-lru@5.2.0':
     resolution:
@@ -6188,6 +6194,7 @@ packages:
       {
         integrity: sha512-etE1DMiguEsWEKMhJNNAfJ2E6hkOkzVVwsbNicXLTfAYN1A1SqJBzzqLm4TmLM+FlE0X+SJcDUgLtc3tj36RWA==,
       }
+    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
 
   bintrees@1.0.2:
     resolution:
@@ -6869,6 +6876,7 @@ packages:
         integrity: sha512-p0SaNjrHOnQeR8/VnfGbmg9te2kfyYSQ7Sc/j/6DtPL3JQvKxmjO9TSjNFpujqV3vEYYBvNNvXSxzyksBWAx1Q==,
       }
     engines: { node: '>=12.0.0' }
+    deprecated: v4 is no longer maintained, upgrade to v5
 
   cron@4.4.0:
     resolution:
@@ -6903,6 +6911,7 @@ packages:
       {
         integrity: sha512-KALDyEYgpY+Rlob/iriUtjV6d5Eq+Y191A5g4UqLAi8CyGP9N1+FdVbkc1SxKc2r4YAYqG8JzO2KGL+AizD70Q==,
       }
+    deprecated: Active development of CryptoJS has been discontinued. This library is no longer maintained.
 
   css-line-break@2.1.0:
     resolution:
@@ -8175,6 +8184,7 @@ packages:
         integrity: sha512-Y+csSm2GD/PCSh6Isd/WiMjNAydu0VBiG9J7EdQsNA5P9uXvLayqjmTsNlK5Gs9IhblFZqOU0yid5Il5JPoLiQ==,
       }
     engines: { node: '>=18' }
+    deprecated: Deprecated and no longer maintained. Use @conventional-changelog/git-client instead.
     hasBin: true
 
   glob-parent@5.1.2:

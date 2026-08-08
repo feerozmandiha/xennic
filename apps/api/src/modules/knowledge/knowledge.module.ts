@@ -4,6 +4,7 @@ import { KnowledgeController } from './presentation/controllers/knowledge.contro
 import { KnowledgeStandardsController } from './presentation/controllers/knowledge-standards.controller.js';
 import { PublicKnowledgeController } from './presentation/controllers/public-knowledge.controller.js';
 import { TaxonomyController } from './presentation/controllers/taxonomy.controller.js';
+import { PublicTaxonomyController } from './presentation/controllers/public-taxonomy.controller.js';
 import { KnowledgeService } from './application/services/knowledge.service.js';
 import { KnowledgeRepository } from './infrastructure/repositories/knowledge.repository.js';
 import { WorkspaceModule } from '../workspace/workspace.module.js';
@@ -16,6 +17,7 @@ import { RbacModule } from '../rbac/rbac.module.js';
     KnowledgeStandardsController,
     PublicKnowledgeController,
     TaxonomyController,
+    PublicTaxonomyController,
   ],
   providers: [
     KnowledgeService,

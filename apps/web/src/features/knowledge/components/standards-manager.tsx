@@ -22,6 +22,21 @@ interface Props {
   onLinkedChange: () => void;
 }
 
+async function searchStandards(q: string): Promise<Standard[]> {
+  const encoded = encodeURIComponent(q);
+  const paths = [`/standards?q=${encoded}&limit=10`, `/public/standards?q=${encoded}&limit=10`];
+  for (const path of paths) {
+    try {
+      const res = await apiClient.get<{ success: boolean; data: Standard[] }>(path);
+      if (res?.data?.length) return res.data;
+      if (res?.data && Array.isArray(res.data)) return res.data;
+    } catch {
+      // try next
+    }
+  }
+  return [];
+}
+
 export function StandardsManager({ articleId, linked, onLinkedChange }: Props) {
   const toast = useToast();
   const queryClient = useQueryClient();
@@ -30,10 +45,7 @@ export function StandardsManager({ articleId, linked, onLinkedChange }: Props) {
 
   const { data: searchData, isLoading: searching } = useQuery({
     queryKey: ['standards-search', search],
-    queryFn: () =>
-      apiClient.get<{ success: boolean; data: Standard[] }>(
-        `/standards?q=${encodeURIComponent(search)}&limit=10`,
-      ),
+    queryFn: () => searchStandards(search),
     enabled: search.length >= 2,
   });
 
@@ -59,7 +71,7 @@ export function StandardsManager({ articleId, linked, onLinkedChange }: Props) {
     onError: () => toast.error('خطا در جداسازی استاندارد'),
   });
 
-  const searchResults = (searchData?.data ?? []).filter((s) => !linked.find((l) => l.id === s.id));
+  const searchResults = (searchData ?? []).filter((s) => !linked.find((l) => l.id === s.id));
 
   return (
     <div className="space-y-3">
@@ -115,7 +127,7 @@ export function StandardsManager({ articleId, linked, onLinkedChange }: Props) {
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="جستجوی استاندارد با کد یا عنوان..."
+              placeholder="جستجوی استاندارد با کد یا عنوان... مثلاً IEC 60364"
               className="w-full h-8 pr-8 pl-2 rounded border border-[hsl(var(--border))] bg-[hsl(var(--background))] text-xs outline-none focus:border-[hsl(var(--primary))]"
               autoFocus
             />
@@ -129,7 +141,7 @@ export function StandardsManager({ articleId, linked, onLinkedChange }: Props) {
                 </div>
               ) : searchResults.length === 0 ? (
                 <p className="text-xs text-[hsl(var(--muted-foreground))] text-center py-3">
-                  استانداردی یافت نشد
+                  استانداردی یافت نشد — از لیست محلی استفاده کنید
                 </p>
               ) : (
                 searchResults.map((s) => (
