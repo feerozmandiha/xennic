@@ -72,12 +72,14 @@ export class AdminService {
       }
 
       let totalCalcs = 0,
-        newCalcs = 0;
+        newCalcs = 0,
+        totalKnowledge = 0;
       try {
         totalCalcs = await prisma.calculations.count();
         newCalcs = await prisma.calculations.count({
           where: { created_at: { gte: thirtyDaysAgo } },
         });
+        totalKnowledge = await prisma.knowledge.count({ where: { is_active: true } });
       } catch {
         /* ignore */
       }
@@ -87,6 +89,8 @@ export class AdminService {
         workspaces: { total: totalWorkspaces, new_30d: newWorkspaces },
         calculations: { total: totalCalcs, new_30d: newCalcs },
         consultations: { total: 0, pending: 0, answered: 0 },
+        articles: { total: totalKnowledge },
+        knowledge: { total: totalKnowledge },
         revenue: { total: 0, monthly: 0 },
       };
     } catch (err) {
@@ -540,26 +544,25 @@ export class AdminService {
   }
 
   // ═══════════════════════════════════════
-  // ARTICLES (disabled — table not in Prisma schema)
+  // KNOWLEDGE (unified - articles removed, only knowledge endpoint used)
   // ═══════════════════════════════════════
+  // Old articles endpoints removed per 2026-08-08 decision:
+  // - POST /admin/articles and PATCH /admin/articles/:id/status deleted from controller
+  // - Frontend admin now uses /knowledge/search and /public/knowledge only
+  // - No duplicate code, single source of truth: knowledge module
 
-  async adminCreateArticle(_data: {
-    title: string;
-    titleEn?: string;
-    summary: string;
-    content: string;
-    category: string;
-    tags: string[];
-    status: string;
-    readMinutes: number;
-    authorId: string;
-    authorName: string;
-  }) {
-    return { id: '', slug: '', title: _data.title, status: _data.status, createdAt: new Date() };
-  }
-
-  async updateArticleStatus(_id: string, _status: string) {
-    return { success: true };
+  // Knowledge stats helper for dashboard
+  async getKnowledgeStats() {
+    try {
+      const [total, published, draft] = await Promise.all([
+        prisma.knowledge.count({ where: { is_active: true } }),
+        prisma.knowledge.count({ where: { is_active: true, status: 'published' } }),
+        prisma.knowledge.count({ where: { is_active: true, status: 'draft' } }),
+      ]);
+      return { total, published, draft };
+    } catch {
+      return { total: 0, published: 0, draft: 0 };
+    }
   }
 
   // ═══════════════════════════════════════

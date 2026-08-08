@@ -148,25 +148,10 @@ export class AdminController {
     return this.svc.updateConsultationStatus(id, body.status);
   }
 
-  // ── Articles ──────────────────────────────────────────────────────────────
-
-  @Post('articles')
-  @HttpCode(HttpStatus.CREATED)
-  @ApiOperation({ summary: 'ایجاد مقاله توسط ادمین' })
-  async createArticle(@Body() body: any, @Req() req: any) {
-    return this.svc.adminCreateArticle({
-      ...body,
-      authorId: req.user.userId,
-      authorName:
-        `${req.user?.firstName ?? ''} ${req.user?.lastName ?? 'ادمین'}`.trim() || 'تیم Xennic',
-    });
-  }
-
-  @Patch('articles/:id/status')
-  @ApiOperation({ summary: 'تغییر وضعیت مقاله (draft/published/archived)' })
-  async updateArticleStatus(@Param('id') id: string, @Body() body: { status: string }) {
-    return this.svc.updateArticleStatus(id, body.status);
-  }
+  // ── Knowledge (unified) — مقالات قدیمی حذف شد، فقط knowledge استفاده می‌شود ──
+  // برای مدیریت دانشنامه از /knowledge/* endpoints استفاده کنید:
+  // POST /knowledge, PATCH /knowledge/:id, POST /knowledge/:id/publish etc.
+  // این بخش عمدا خالی نگه داشته شده تا از دوباره‌نویسی جلوگیری شود
 
   // ── Notifications ─────────────────────────────────────────────────────────
 
