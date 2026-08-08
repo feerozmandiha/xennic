@@ -16,6 +16,7 @@ import {
   GraduationCap,
   Library,
   SearchX,
+  Network,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -31,10 +32,11 @@ import { KnowledgeCardModern, KnowledgeCardSkeleton } from './search/knowledge-c
 import { StandardsMatrixView } from './standards/standards-matrix-view';
 import { EquipmentDirectory } from './equipment/equipment-directory';
 import { EncyclopediaAiAssistant, FloatingAiButton } from './ai/encyclopedia-ai-assistant';
+import { KnowledgeGraphView } from './graph/knowledge-graph-view';
 import { EQUIPMENT_CATEGORIES } from '@/features/knowledge/lib/equipment-registry';
 import { TAXONOMY_META } from '@/features/knowledge/lib/taxonomy-data';
 
-type Tab = 'all' | 'standards' | 'equipment' | 'taxonomy' | 'ai';
+type Tab = 'all' | 'standards' | 'equipment' | 'taxonomy' | 'ai' | 'graph';
 
 const SUGGESTIONS = [
   'محاسبه افت ولتاژ کابل',
@@ -196,6 +198,7 @@ export function EncyclopediaHub() {
               { id: 'standards', label: 'استانداردها', icon: Shield },
               { id: 'equipment', label: 'تجهیزات', icon: Cpu },
               { id: 'taxonomy', label: 'دسته‌بندی', icon: Layers },
+              { id: 'graph', label: 'گراف دانش', icon: Network },
               { id: 'ai', label: 'دستیار AI', icon: Sparkles },
             ].map((t) => (
               <button
@@ -470,6 +473,12 @@ export function EncyclopediaHub() {
                 </div>
               </CardContent>
             </Card>
+          </div>
+        )}
+
+        {tab === 'graph' && (
+          <div>
+            <KnowledgeGraphView />
           </div>
         )}
 
