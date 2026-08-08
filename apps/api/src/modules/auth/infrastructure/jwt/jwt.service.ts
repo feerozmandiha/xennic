@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService as NestJwtService } from '@nestjs/jwt';
-import { readFileSync } from 'fs';
 import { JwtPayloadVO } from '../../domain/value-objects/jwt-payload.vo.js';
+import { loadJwtKeyFile } from './jwt-key-resolver.js';
 
 @Injectable()
 export class JwtService {
@@ -9,8 +9,8 @@ export class JwtService {
   private publicKey: string;
 
   constructor(private readonly jwtService: NestJwtService) {
-    this.privateKey = readFileSync(process.env.JWT_PRIVATE_KEY_PATH!, 'utf8');
-    this.publicKey = readFileSync(process.env.JWT_PUBLIC_KEY_PATH!, 'utf8');
+    this.privateKey = loadJwtKeyFile(process.env.JWT_PRIVATE_KEY_PATH, 'JWT_PRIVATE_KEY_PATH');
+    this.publicKey = loadJwtKeyFile(process.env.JWT_PUBLIC_KEY_PATH, 'JWT_PUBLIC_KEY_PATH');
   }
 
   async sign(payload: JwtPayloadVO): Promise<string> {

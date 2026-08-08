@@ -1,26 +1,35 @@
 import type { Metadata } from 'next';
 import { LandingPage } from '@/features/landing/components/landing-page';
+import { LandingContentProvider } from '@/features/landing/components/landing-content-provider';
+import { fetchPublicLandingContent } from '@/features/landing/lib/landing-api';
 
-export const metadata: Metadata = {
-  title: 'Xennic — پلتفرم تخصصی مهندسی برق',
-  description:
-    'محاسبات مهندسی برق، کیفیت توان (IEEE 519) و انرژی‌های تجدیدپذیر با استانداردهای IEC و IEEE. رایگان شروع کنید.',
-  keywords: [
-    'مهندسی برق',
-    'محاسبات مهندسی',
-    'کیفیت توان',
-    'THD',
-    'IEEE 519',
-    'IEC 60364',
-    'Xennic',
-  ],
-  openGraph: {
-    title: 'Xennic — پلتفرم تخصصی مهندسی برق',
-    description: 'محاسبات مهندسی برق با استانداردهای IEC و IEEE',
-    type: 'website',
-  },
-};
+interface PageProps {
+  params: Promise<{ locale: string }>;
+}
 
-export default function HomePage() {
-  return <LandingPage />;
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { locale } = await params;
+  const content = await fetchPublicLandingContent(locale);
+  return {
+    title: content.seo.title,
+    description: content.seo.description,
+    keywords: content.seo.keywords,
+    openGraph: {
+      title: content.seo.title,
+      description: content.seo.description,
+      type: 'website',
+      images: content.seo.ogImage?.url ? [{ url: content.seo.ogImage.url }] : undefined,
+    },
+    icons: content.branding.favicon?.url ? { icon: content.branding.favicon.url } : undefined,
+  };
+}
+
+export default async function HomePage({ params }: PageProps) {
+  const { locale } = await params;
+  const content = await fetchPublicLandingContent(locale);
+  return (
+    <LandingContentProvider content={content}>
+      <LandingPage />
+    </LandingContentProvider>
+  );
 }

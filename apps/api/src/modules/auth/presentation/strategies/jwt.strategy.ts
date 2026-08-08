@@ -1,13 +1,13 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
-import { readFileSync } from 'fs';
 import { JwtPayload } from '../../domain/value-objects/jwt-payload.vo.js';
+import { loadJwtKeyFile } from '../../infrastructure/jwt/jwt-key-resolver.js';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
   constructor() {
-    const publicKey = readFileSync(process.env.JWT_PUBLIC_KEY_PATH!, 'utf8');
+    const publicKey = loadJwtKeyFile(process.env.JWT_PUBLIC_KEY_PATH, 'JWT_PUBLIC_KEY_PATH');
 
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),

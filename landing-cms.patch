@@ -1,0 +1,3526 @@
+From 930da9f2e839618b0dbd204294d4c054817198c5 Mon Sep 17 00:00:00 2001
+From: Arena Agent <arena@local>
+Date: Sat, 8 Aug 2026 13:19:02 +0000
+Subject: [PATCH] feat(landing-cms): editable landing page CMS for admin
+ settings
+
+- backend module landing-cms with public + admin controllers
+- landing_cms_config table (JSON content, draft/published, locale)
+- asset upload via existing storage module (public bucket, XENNIC workspace)
+- landing page renders from CMS with default fallbacks; SEO/favicon from content
+- admin landing editor with tabbed UI (branding, SEO, header, hero,
+  calculations, features, articles, pricing, CTA, footer) and image upload
+- DB migration and docs
+---
+ apps/api/src/api.module.ts                    |    2 +
+ .../services/landing-cms.service.ts           |  314 ++++
+ .../landing-cms/domain/landing-content.ts     |  321 +++++
+ .../modules/landing-cms/landing-cms.module.ts |   13 +
+ .../controllers/landing-admin.controller.ts   |  142 ++
+ .../controllers/landing-public.controller.ts  |   20 +
+ .../presentation/dtos/landing-cms.dto.ts      |   37 +
+ apps/web/src/app/[locale]/page.tsx            |   52 +-
+ .../admin/components/admin-client.tsx         |   36 +
+ .../admin/components/landing-cms-editor.tsx   | 1267 +++++++++++++++++
+ .../components/landing-content-provider.tsx   |   26 +
+ .../landing/components/landing-page.tsx       |  521 +++----
+ .../src/features/landing/lib/landing-api.ts   |   77 +
+ .../features/landing/types/landing-content.ts |  212 +++
+ docs/LANDING-CMS.md                           |   86 ++
+ .../20260808120000_landing_cms/migration.sql  |   24 +
+ prisma/schema.prisma                          |   25 +
+ 17 files changed, 2902 insertions(+), 273 deletions(-)
+ create mode 100644 apps/api/src/modules/landing-cms/application/services/landing-cms.service.ts
+ create mode 100644 apps/api/src/modules/landing-cms/domain/landing-content.ts
+ create mode 100644 apps/api/src/modules/landing-cms/landing-cms.module.ts
+ create mode 100644 apps/api/src/modules/landing-cms/presentation/controllers/landing-admin.controller.ts
+ create mode 100644 apps/api/src/modules/landing-cms/presentation/controllers/landing-public.controller.ts
+ create mode 100644 apps/api/src/modules/landing-cms/presentation/dtos/landing-cms.dto.ts
+ create mode 100644 apps/web/src/features/admin/components/landing-cms-editor.tsx
+ create mode 100644 apps/web/src/features/landing/components/landing-content-provider.tsx
+ create mode 100644 apps/web/src/features/landing/lib/landing-api.ts
+ create mode 100644 apps/web/src/features/landing/types/landing-content.ts
+ create mode 100644 docs/LANDING-CMS.md
+ create mode 100644 prisma/migrations/20260808120000_landing_cms/migration.sql
+
+diff --git a/apps/api/src/api.module.ts b/apps/api/src/api.module.ts
+index fccf49a3..0f5c51be 100644
+--- a/apps/api/src/api.module.ts
++++ b/apps/api/src/api.module.ts
+@@ -28,6 +28,7 @@ import { VisionModule } from './modules/vision/vision.module.js'; // ✅ بین
+ import { AiProviderManagementModule } from './modules/ai-provider-management/ai-provider-management.module.js'; // ✅ مدیریت ارائه‌دهندگان AI
+ import { MonitoringModule } from './modules/monitoring/monitoring.module.js'; // ✅ مانیتورینگ
+ import { CalculationPlatformModule } from './modules/calculation-platform/calculation-platform.module.js'; // ✅ Sprint C1
++import { LandingCmsModule } from './modules/landing-cms/landing-cms.module.js'; // ✅ Landing CMS
+ 
+ @Module({
+   imports: [
+@@ -57,6 +58,7 @@ import { CalculationPlatformModule } from './modules/calculation-platform/calcul
+     AiProviderManagementModule, // ✅ مدیریت ارائه‌دهندگان AI
+     MonitoringModule, // ✅ مانیتورینگ (OpenTelemetry + Prometheus + logging)
+     CalculationPlatformModule, // ✅ Sprint C1 — Enterprise Calculation Platform
++    LandingCmsModule, // ✅ ویرایش محتوای صفحه فرود (CMS)
+     // ✅ SEC-001C: Rate Limiting
+     ThrottlerModule.forRoot([
+       {
+diff --git a/apps/api/src/modules/landing-cms/application/services/landing-cms.service.ts b/apps/api/src/modules/landing-cms/application/services/landing-cms.service.ts
+new file mode 100644
+index 00000000..ccffb4fb
+--- /dev/null
++++ b/apps/api/src/modules/landing-cms/application/services/landing-cms.service.ts
+@@ -0,0 +1,314 @@
++import {
++  Injectable,
++  Logger,
++  NotFoundException,
++  BadRequestException,
++} from '@nestjs/common';
++import { randomUUID } from 'node:crypto';
++import * as path from 'node:path';
++import { prisma } from '@xennic/database';
++import { MinioService } from '../../storage/infrastructure/minio/minio.service.js';
++import {
++  DEFAULT_LANDING_CONTENT,
++  mergeWithDefaults,
++  type CmsImage,
++  type LandingContent,
++} from '../../domain/landing-content.js';
++
++/**
++ * کد workspace سیستمی که assetهای صفحه فرود (لوگو، فاوآیکون، تصاویر) در آن
++ * نگهداری می‌شوند. این workspace در seed با کد XENNIC ساخته می‌شود.
++ */
++const SYSTEM_WORKSPACE_CODE = 'XENNIC';
++const ASSET_BUCKET = 'public';
++const CONFIG_SCOPE = 'default';
++const PUBLIC_URL_EXPIRY = 60 * 60 * 24 * 7; // 7 روز برای تصاویر عمومی
++
++@Injectable()
++export class LandingCmsService {
++  private readonly logger = new Logger(LandingCmsService.name);
++
++  constructor(private readonly minioService: MinioService) {}
++
++  // ── محتوای منتشرشده (عمومی) ───────────────────────────────────────────────
++
++  async getPublished(locale = 'fa'): Promise<LandingContent> {
++    const row = await this._findPublished(locale);
++    const content = row ? mergeWithDefaults(row.content) : structuredClone(DEFAULT_LANDING_CONTENT);
++    return this._resolveAssetUrls(content);
++  }
++
++  // ── محتوای پیش‌نویس (ادمین) ────────────────────────────────────────────────
++
++  async getDraft(locale = 'fa'): Promise<{
++    content: LandingContent;
++    published: boolean;
++    updatedAt: Date | null;
++    versionNote: string | null;
++  }> {
++    const row = await this._findRow(locale);
++    if (!row) {
++      return {
++        content: structuredClone(DEFAULT_LANDING_CONTENT),
++        published: false,
++        updatedAt: null,
++        versionNote: null,
++      };
++    }
++    return {
++      content: await this._resolveAssetUrls(mergeWithDefaults(row.content)),
++      published: row.published,
++      updatedAt: row.updated_at,
++      versionNote: row.version_note,
++    };
++  }
++
++  // ── ذخیره پیش‌نویس ─────────────────────────────────────────────────────────
++
++  async saveDraft(
++    content: Record<string, unknown>,
++    userId: string | undefined,
++    locale = 'fa',
++    versionNote?: string,
++  ): Promise<{ content: LandingContent; published: boolean }> {
++    if (!content || typeof content !== 'object') {
++      throw new BadRequestException('content باید یک شیء معتبر باشد');
++    }
++    // اعتبارسنجی سبک با merge تا ساختار ناشناخته حذف شود
++    const merged = mergeWithDefaults(content);
++
++    await prisma.landing_cms_config.upsert({
++      where: { scope: this._scopeKey(locale) },
++      update: {
++        content: merged as unknown as object,
++        locale,
++        version_note: versionNote ?? null,
++        updated_by: userId ?? null,
++        updated_at: new Date(),
++      },
++      create: {
++        id: randomUUID(),
++        scope: this._scopeKey(locale),
++        locale,
++        content: merged as unknown as object,
++        published: false,
++        version_note: versionNote ?? null,
++        updated_by: userId ?? null,
++      },
++    });
++
++    this.logger.log(`Landing draft saved (locale=${locale}) by ${userId ?? 'system'}`);
++    return { content: merged, published: false };
++  }
++
++  // ── انتشار / بازگرداندن به پیش‌نویس ────────────────────────────────────────
++
++  async setPublished(
++    published: boolean,
++    userId: string | undefined,
++    locale = 'fa',
++    versionNote?: string,
++  ): Promise<{ success: true }> {
++    const existing = await this._findRow(locale);
++    if (!existing) {
++      throw new NotFoundException('هنوز محتوایی برای انتشار ذخیره نشده است');
++    }
++    await prisma.landing_cms_config.update({
++      where: { scope: this._scopeKey(locale) },
++      data: {
++        published,
++        version_note: versionNote ?? existing.version_note,
++        updated_by: userId ?? existing.updated_by,
++        updated_at: new Date(),
++      },
++    });
++    this.logger.log(`Landing content published=${published} (locale=${locale}) by ${userId ?? 'system'}`);
++    return { success: true };
++  }
++
++  // ── بازنشانی به پیش‌فرض ────────────────────────────────────────────────────
++
++  async reset(locale = 'fa'): Promise<LandingContent> {
++    await prisma.landing_cms_config.deleteMany({ where: { scope: this._scopeKey(locale) } });
++    return structuredClone(DEFAULT_LANDING_CONTENT);
++  }
++
++  // ── آپلود asset ────────────────────────────────────────────────────────────
++
++  async uploadAsset(data: {
++    buffer: Buffer;
++    originalName: string;
++    mimeType: string;
++    uploadedBy?: string;
++    purpose?: string;
++  }): Promise<CmsImage> {
++    if (!data.mimeType.startsWith('image/')) {
++      throw new BadRequestException('فقط فایل تصویری مجاز است (image/*)');
++    }
++    if (data.buffer.length > 10 * 1024 * 1024) {
++      throw new BadRequestException('حداکثر حجم تصویر ۱۰ مگابایت است');
++    }
++
++    const workspaceId = await this._ensureSystemWorkspace(data.uploadedBy);
++    const ext = path.extname(data.originalName).toLowerCase().slice(1) || 'bin';
++    const filename = `${randomUUID()}.${ext}`;
++    const objectPath = `landing/${new Date().getFullYear()}/${String(
++      new Date().getMonth() + 1,
++    ).padStart(2, '0')}/${filename}`;
++
++    await this.minioService.uploadBuffer(
++      ASSET_BUCKET,
++      `${workspaceId}/${objectPath}`,
++      data.buffer,
++      data.mimeType,
++      data.buffer.length,
++    );
++
++    const file = await prisma.files.create({
++      data: {
++        id: randomUUID(),
++        workspace_id: workspaceId,
++        bucket: ASSET_BUCKET,
++        path: objectPath,
++        filename,
++        original_name: data.originalName,
++        extension: ext,
++        mime_type: data.mimeType,
++        size: BigInt(data.buffer.length),
++        uploaded_by: data.uploadedBy ?? workspaceId,
++      },
++    });
++
++    const url = await this._presignedUrl(ASSET_BUCKET, file.path);
++    this.logger.log(
++      `Landing asset uploaded: ${file.id} purpose=${data.purpose ?? 'generic'}`,
++    );
++    return { fileId: file.id, url, alt: data.originalName };
++  }
++
++  // ── helpers ────────────────────────────────────────────────────────────────
++
++  private _scopeKey(locale: string): string {
++    return locale === 'fa' ? CONFIG_SCOPE : `${CONFIG_SCOPE}:${locale}`;
++  }
++
++  private async _findRow(locale: string) {
++    return prisma.landing_cms_config.findUnique({
++      where: { scope: this._scopeKey(locale) },
++    });
++  }
++
++  private async _findPublished(locale: string) {
++    // ابتدا زبان درخواستی، در صورت نبود به fa برگرد
++    const row = await prisma.landing_cms_config.findFirst({
++      where: { locale, published: true },
++      orderBy: { updated_at: 'desc' },
++    });
++    if (row) return row;
++    if (locale !== 'fa') {
++      return prisma.landing_cms_config.findFirst({
++        where: { locale: 'fa', published: true },
++        orderBy: { updated_at: 'desc' },
++      });
++    }
++    return null;
++  }
++
++  private async _ensureSystemWorkspace(userId?: string): Promise<string> {
++    const ws = await prisma.workspaces.findUnique({ where: { code: SYSTEM_WORKSPACE_CODE } });
++    if (ws) return ws.id;
++
++    // اگر در محیطی seed اجرا نشده، workspace سیستمی را می‌سازیم.
++    // created_by یک FK به users است؛ اگر userId معتبر نبود اولین ادمین را برمی‌داریم.
++    let ownerId = userId;
++    if (!ownerId) {
++      const admin = await prisma.users.findFirst({
++        where: { is_admin: true, deleted_at: null },
++        select: { id: true },
++      });
++      ownerId = admin?.id;
++    }
++    if (!ownerId) {
++      // به‌عنوان آخرین راه‌کار، هر کاربر موجود را انتخاب می‌کنیم
++      const anyUser = await prisma.users.findFirst({
++        where: { deleted_at: null },
++        select: { id: true },
++      });
++      ownerId = anyUser?.id;
++    }
++    if (!ownerId) {
++      throw new BadRequestException(
++        'برای آپلود asset ابتدا باید حداقل یک کاربر در سیستم وجود داشته باشد',
++      );
++    }
++
++    const created = await prisma.workspaces.create({
++      data: {
++        id: randomUUID(),
++        code: SYSTEM_WORKSPACE_CODE,
++        name: 'Xennic System',
++        created_by: ownerId,
++        updated_by: ownerId,
++      },
++    });
++    this.logger.warn(`System workspace created on demand: ${created.id}`);
++    return created.id;
++  }
++
++  private async _presignedUrl(bucket: string, objectPath: string): Promise<string> {
++    // objectPath در دیتابیس به‌صورت نسبی (بدون workspaceId) ذخیره شده؛ کلید کامل در MinIO
++    // شامل workspaceId است. برای ساختن کلید، workspace سیستمی را می‌گیریم.
++    const wsId = await this._ensureSystemWorkspace();
++    const objectKey = `${wsId}/${objectPath}`;
++    try {
++      return await this.minioService.getPresignedUrl(bucket, objectKey, PUBLIC_URL_EXPIRY);
++    } catch (err) {
++      this.logger.error(`Failed to generate presigned URL: ${(err as Error).message}`);
++      return '';
++    }
++  }
++
++  /**
++   * تمام CmsImageهای درون محتوا که fileId دارند را به URL تازه تبدیل می‌کند.
++   * این کار باعث می‌شود لینک‌های امضاشده منقضی‌شده تازه شوند.
++   */
++  private async _resolveAssetUrls(content: LandingContent): Promise<LandingContent> {
++    const fileIds = new Set<string>();
++    const collect = (img?: CmsImage) => {
++      if (img?.fileId) fileIds.add(img.fileId);
++    };
++    collect(content.branding.logo);
++    collect(content.branding.logoDark);
++    collect(content.branding.favicon);
++    collect(content.seo.ogImage);
++    collect(content.hero.backgroundImage);
++
++    if (fileIds.size === 0) return content;
++
++    const files = await prisma.files.findMany({
++      where: { id: { in: Array.from(fileIds) }, deleted_at: null },
++    });
++    const urlById = new Map<string, string>();
++    for (const f of files) {
++      urlById.set(f.id, await this._presignedUrl(f.bucket, f.path));
++    }
++
++    const apply = (img?: CmsImage): CmsImage | undefined => {
++      if (!img?.fileId) return img;
++      const url = urlById.get(img.fileId);
++      return url ? { ...img, url } : img;
++    };
++
++    return {
++      ...content,
++      branding: {
++        ...content.branding,
++        logo: apply(content.branding.logo),
++        logoDark: apply(content.branding.logoDark),
++        favicon: apply(content.branding.favicon),
++      },
++      seo: { ...content.seo, ogImage: apply(content.seo.ogImage) },
++      hero: { ...content.hero, backgroundImage: apply(content.hero.backgroundImage) },
++    };
++  }
++}
+diff --git a/apps/api/src/modules/landing-cms/domain/landing-content.ts b/apps/api/src/modules/landing-cms/domain/landing-content.ts
+new file mode 100644
+index 00000000..b1c18a44
+--- /dev/null
++++ b/apps/api/src/modules/landing-cms/domain/landing-content.ts
+@@ -0,0 +1,321 @@
++/**
++ * Landing CMS — نوع‌های محتوای قابل تنظیم صفحه فرود.
++ *
++ * ساختار به‌صورت JSON در جدول `landing_cms_config.content` ذخیره می‌شود.
++ * هر فیلد تصویری به‌صورت { fileId, url } نگهداری می‌شود که fileId به رکورد
++ * ماژول storage اشاره دارد و url آدرس عمومی/امضاشده برای نمایش است.
++ */
++
++export interface CmsImage {
++  fileId?: string;
++  url?: string;
++  alt?: string;
++}
++
++export interface CmsLink {
++  label: string;
++  href: string;
++}
++
++export interface CmsButton {
++  label: string;
++  href: string;
++  variant?: 'primary' | 'secondary';
++}
++
++export interface CmsSeo {
++  title: string;
++  description: string;
++  keywords: string[];
++  ogImage?: CmsImage;
++}
++
++export interface CmsBranding {
++  platformName: string;
++  logo?: CmsImage;
++  logoDark?: CmsImage;
++  favicon?: CmsImage;
++  tagline?: string;
++}
++
++export interface CmsHeader {
++  visible: boolean;
++  links: CmsLink[];
++  showLanguageSwitcher: boolean;
++  showThemeToggle: boolean;
++  ctaButton?: CmsButton;
++}
++
++export interface CmsHero {
++  visible: boolean;
++  badge?: string;
++  title: string;
++  highlightedWord?: string;
++  subtitle: string;
++  primaryButton?: CmsButton;
++  secondaryButton?: CmsButton;
++  backgroundImage?: CmsImage;
++  showTerminalMockup: boolean;
++  stats: { value: string; label: string }[];
++}
++
++export interface CmsFeatureItem {
++  // شناسه آیکون از lucide-react
++  icon?: string;
++  title: string;
++  description: string;
++  tags?: string[];
++}
++
++export interface CmsFeaturesSection {
++  visible: boolean;
++  title?: string;
++  subtitle?: string;
++  items: CmsFeatureItem[];
++}
++
++export interface CmsArticleStub {
++  title: string;
++  summary: string;
++  category?: string;
++  href: string;
++}
++
++export interface CmsArticlesSection {
++  visible: boolean;
++  title?: string;
++  subtitle?: string;
++  // اگر خالی باشد، مقالات واقعی از API دانشنامه خوانده می‌شوند
++  items: CmsArticleStub[];
++}
++
++export interface CmsCalcStub {
++  code: string;
++  label: string;
++  formula?: string;
++}
++
++export interface CmsCalculationsSection {
++  visible: boolean;
++  title?: string;
++  subtitle?: string;
++  items: CmsCalcStub[];
++}
++
++export interface CmsPricingPlan {
++  name: string;
++  price: string;
++  period: string;
++  description?: string;
++  features: string[];
++  ctaLabel: string;
++  ctaHref: string;
++  highlighted?: boolean;
++  badge?: string;
++}
++
++export interface CmsPricingSection {
++  visible: boolean;
++  title?: string;
++  subtitle?: string;
++  plans: CmsPricingPlan[];
++}
++
++export interface CmsCtaSection {
++  visible: boolean;
++  eyebrow?: string;
++  title: string;
++  highlightedText?: string;
++  subtitle?: string;
++  button?: CmsButton;
++  trustBadges?: string[];
++}
++
++export interface CmsFooter {
++  visible: boolean;
++  aboutText?: string;
++  copyright: string;
++  version?: string;
++  columns: { title: string; links: CmsLink[] }[];
++  socialLinks?: CmsLink[];
++}
++
++export interface LandingContent {
++  seo: CmsSeo;
++  branding: CmsBranding;
++  header: CmsHeader;
++  hero: CmsHero;
++  calculations: CmsCalculationsSection;
++  features: CmsFeaturesSection;
++  articles: CmsArticlesSection;
++  pricing: CmsPricingSection;
++  cta: CmsCtaSection;
++  footer: CmsFooter;
++}
++
++export const DEFAULT_LANDING_CONTENT: LandingContent = {
++  seo: {
++    title: 'Xennic — پلتفرم تخصصی مهندسی برق',
++    description:
++      'محاسبات مهندسی برق، کیفیت توان (IEEE 519) و انرژی‌های تجدیدپذیر با استانداردهای IEC و IEEE. رایگان شروع کنید.',
++    keywords: ['مهندسی برق', 'محاسبات مهندسی', 'کیفیت توان', 'THD', 'IEEE 519', 'IEC 60364', 'Xennic'],
++  },
++  branding: {
++    platformName: 'Xennic',
++    tagline: 'پلتفرم تخصصی مهندسی برق و انرژی‌های نو',
++  },
++  header: {
++    visible: true,
++    showLanguageSwitcher: true,
++    showThemeToggle: true,
++    links: [
++      { label: 'صفحه اصلی', href: '/' },
++      { label: 'محاسبات', href: '#calculations' },
++      { label: 'مقالات', href: '/articles' },
++      { label: 'درباره ما', href: '/about' },
++      { label: 'تماس', href: '/contact' },
++    ],
++    ctaButton: { label: 'ورود', href: '/login', variant: 'secondary' },
++  },
++  hero: {
++    visible: true,
++    badge: 'پلتفرم تخصصی مهندسی برق و انرژی‌های نو',
++    title: 'محاسبات مهندسی',
++    highlightedWord: 'هوشمند',
++    subtitle:
++      'از طراحی کابل تا آنالیز کیفیت توان، از خورشیدی تا شبکه هوشمند — همه محاسبات تخصصی شما در یک پلتفرم یکپارچه',
++    primaryButton: { label: 'شروع رایگان', href: '/register', variant: 'primary' },
++    secondaryButton: { label: 'امتحان رایگان', href: '#calculations', variant: 'secondary' },
++    showTerminalMockup: true,
++    stats: [
++      { value: '۲۰+', label: 'محاسبه استاندارد' },
++      { value: 'IEC', label: '60364 / 60076' },
++      { value: 'IEEE', label: '519 / C57.110' },
++      { value: 'RTL', label: 'پشتیبانی فارسی' },
++    ],
++  },
++  calculations: {
++    visible: true,
++    title: 'محاسبات رایگان',
++    subtitle: 'بدون ثبت‌نام، سریع و مطابق استاندارد',
++    items: [
++      { code: 'BASIC-001', label: 'قانون اهم', formula: 'V = I × R' },
++      { code: 'BASIC-002', label: 'توان اکتیو', formula: 'P = V × I × PF' },
++      { code: 'CABLE-001', label: 'سایزینگ کابل', formula: 'S = ρLI/ΔV' },
++      { code: 'CABLE-002', label: 'افت ولتاژ', formula: 'ΔV = 2ρLI/S' },
++    ],
++  },
++  features: {
++    visible: true,
++    title: 'چرا Xennic؟',
++    subtitle: 'یک پلتفرم یکپارچه برای تمام نیازهای مهندسی',
++    items: [
++      {
++        icon: 'FlaskConical',
++        title: 'محاسبات استاندارد',
++        description: '۲۰+ محاسبه تخصصی مطابق IEC 60364، IEC 60076، IEEE 519 و IEEE C57.110',
++        tags: ['کابل‌سایزینگ', 'افت ولتاژ', 'اتصال کوتاه', 'ترانسفورماتور'],
++      },
++      {
++        icon: 'BarChart3',
++        title: 'کیفیت توان',
++        description: 'تحلیل THD، TDD، K-Factor و طراحی فیلتر مطابق IEEE 519',
++        tags: ['THD', 'TDD', 'Passive Filter'],
++      },
++      {
++        icon: 'Cpu',
++        title: 'هوش مصنوعی مهندسی',
++        description: 'مشاور AI تخصصی برق با دانش استانداردها و تشخیص اشکال',
++        tags: ['مشاور تخصصی', 'بهینه‌سازی'],
++      },
++      {
++        icon: 'Shield',
++        title: 'امنیت سازمانی',
++        description: 'جداسازی چنداجاره‌ای، RBAC و رمزنگانی end-to-end',
++        tags: ['Multi-tenant', 'RBAC'],
++      },
++    ],
++  },
++  articles: {
++    visible: true,
++    title: 'مقالات تخصصی',
++    subtitle: 'دانشنامه مهندسی برق',
++    items: [],
++  },
++  pricing: {
++    visible: true,
++    title: 'پلن‌های قیمت‌گذاری',
++    subtitle: 'مناسب برای هر مرحله از کار شما',
++    plans: [
++      {
++        name: 'رایگان',
++        price: '۰',
++        period: 'تومان / ماه',
++        description: 'برای آشنایی با پلتفرم',
++        features: ['۱۰۰ محاسبه در ماه', 'محاسبات پایه', '۱ فضای کاری'],
++        ctaLabel: 'شروع رایگان',
++        ctaHref: '/register',
++      },
++      {
++        name: 'حرفه‌ای',
++        price: '۴۹۰,۰۰۰',
++        period: 'تومان / ماه',
++        description: 'برای مهندسان حرفه‌ای',
++        features: ['محاسبات نامحدود', 'تمام ماژول‌ها', '۵ فضای کاری', '۵۰ گیگابایت فضا'],
++        ctaLabel: 'انتخاب پلن',
++        ctaHref: '/register',
++        highlighted: true,
++        badge: 'محبوب‌ترین',
++      },
++    ],
++  },
++  cta: {
++    visible: true,
++    eyebrow: 'شروع کنید',
++    title: 'محاسبات مهندسی خود را',
++    highlightedText: 'حرفه‌ای کنید',
++    subtitle: 'همین الان ثبت‌نام کنید — بدون نیاز به کارت اعتباری، رایگان شروع کنید',
++    button: { label: 'شروع رایگان', href: '/register', variant: 'primary' },
++    trustBadges: ['امنیت کامل', 'بروزرسانی مداوم', 'پشتیبانی فارسی'],
++  },
++  footer: {
++    visible: true,
++    aboutText:
++      'پلتفرم تخصصی محاسبات مهندسی برق، کیفیت توان و انرژی‌های تجدیدپذیر با استانداردهای IEC و IEEE',
++    copyright: '© ۱۴۰۴ Xennic — تمام حقوق محفوظ است',
++    version: 'v1.0.0',
++    columns: [
++      {
++        title: 'محصول',
++        links: [
++          { label: 'ویژگی‌ها', href: '#features' },
++          { label: 'محاسبات', href: '#calculations' },
++          { label: 'پلن‌ها', href: '#pricing' },
++        ],
++      },
++      {
++        title: 'سایر',
++        links: [
++          { label: 'درباره ما', href: '/about' },
++          { label: 'تماس', href: '/contact' },
++          { label: 'ورود', href: '/login' },
++        ],
++      },
++    ],
++  },
++};
++
++/** ادغام عمیق داده‌های ذخیره‌شده با پیش‌فرض‌ها تا فیلدهای جدید شکسته نشوند. */
++export function mergeWithDefaults(partial: unknown): LandingContent {
++  if (!partial || typeof partial !== 'object') return structuredClone(DEFAULT_LANDING_CONTENT);
++  const src = partial as Record<string, any>;
++  const def = structuredClone(DEFAULT_LANDING_CONTENT) as Record<string, any>;
++  for (const key of Object.keys(def)) {
++    if (src[key] && typeof src[key] === 'object' && !Array.isArray(src[key])) {
++      def[key] = { ...def[key], ...src[key] };
++    } else if (src[key] !== undefined) {
++      def[key] = src[key];
++    }
++  }
++  return def as LandingContent;
++}
+diff --git a/apps/api/src/modules/landing-cms/landing-cms.module.ts b/apps/api/src/modules/landing-cms/landing-cms.module.ts
+new file mode 100644
+index 00000000..d6d48182
+--- /dev/null
++++ b/apps/api/src/modules/landing-cms/landing-cms.module.ts
+@@ -0,0 +1,13 @@
++import { Module } from '@nestjs/common';
++import { StorageModule } from '../storage/storage.module.js';
++import { LandingCmsService } from './application/services/landing-cms.service.js';
++import { LandingPublicController } from './presentation/controllers/landing-public.controller.js';
++import { LandingAdminController } from './presentation/controllers/landing-admin.controller.js';
++
++@Module({
++  imports: [StorageModule],
++  controllers: [LandingPublicController, LandingAdminController],
++  providers: [LandingCmsService],
++  exports: [LandingCmsService],
++})
++export class LandingCmsModule {}
+diff --git a/apps/api/src/modules/landing-cms/presentation/controllers/landing-admin.controller.ts b/apps/api/src/modules/landing-cms/presentation/controllers/landing-admin.controller.ts
+new file mode 100644
+index 00000000..3c1afc36
+--- /dev/null
++++ b/apps/api/src/modules/landing-cms/presentation/controllers/landing-admin.controller.ts
+@@ -0,0 +1,142 @@
++import {
++  Body,
++  Controller,
++  Get,
++  HttpCode,
++  HttpStatus,
++  Post,
++  Put,
++  Query,
++  Req,
++  UseGuards,
++  BadRequestException,
++} from '@nestjs/common';
++import {
++  ApiBearerAuth,
++  ApiBody,
++  ApiConsumes,
++  ApiOperation,
++  ApiQuery,
++  ApiTags,
++} from '@nestjs/swagger';
++import { JwtAuthGuard } from '../../../auth/infrastructure/guards/jwt-auth.guard.js';
++import { AdminGuard } from '../../../admin/infrastructure/guards/admin.guard.js';
++import {
++  PublishLandingContentDto,
++  UpdateLandingContentDto,
++} from '../dtos/landing-cms.dto.js';
++import { LandingCmsService } from '../../application/services/landing-cms.service.js';
++
++const MAX_ASSET_SIZE = 10 * 1024 * 1024; // 10 MB
++
++@ApiTags('admin/landing-cms')
++@ApiBearerAuth('JWT-auth')
++@UseGuards(JwtAuthGuard, AdminGuard)
++@Controller('admin/landing')
++export class LandingAdminController {
++  constructor(private readonly svc: LandingCmsService) {}
++
++  @Get('content')
++  @ApiOperation({ summary: 'دریافت پیش‌نویس محتوای صفحه فرود' })
++  @ApiQuery({ name: 'locale', required: false })
++  async getDraft(@Query('locale') locale?: string) {
++    const data = await this.svc.getDraft(locale ?? 'fa');
++    return { success: true, data };
++  }
++
++  @Put('content')
++  @ApiOperation({ summary: 'ذخیره پیش‌نویس محتوای صفحه فرود' })
++  async saveDraft(@Body() body: UpdateLandingContentDto, @Req() req: any) {
++    const data = await this.svc.saveDraft(
++      body.content,
++      req.user?.userId,
++      body.locale ?? 'fa',
++      body.versionNote,
++    );
++    return { success: true, data };
++  }
++
++  @Post('publish')
++  @HttpCode(HttpStatus.OK)
++  @ApiOperation({ summary: 'انتشار یا بازگرداندن محتوا از حالت انتشار' })
++  async publish(@Body() body: PublishLandingContentDto, @Req() req: any) {
++    const data = await this.svc.setPublished(
++      body.published ?? true,
++      req.user?.userId,
++      'fa',
++      body.versionNote,
++    );
++    return { success: true, data };
++  }
++
++  @Post('reset')
++  @HttpCode(HttpStatus.OK)
++  @ApiOperation({ summary: 'بازنشانی محتوا به مقادیر پیش‌فرض' })
++  async reset() {
++    const data = await this.svc.reset('fa');
++    return { success: true, data };
++  }
++
++  // ── آپلود asset (لوگو، فاوآیکون، تصاویر) ──────────────────────────────────
++
++  @Post('assets')
++  @HttpCode(HttpStatus.CREATED)
++  @ApiConsumes('multipart/form-data')
++  @ApiOperation({
++    summary: 'آپلود تصویر برای صفحه فرود',
++    description:
++      'تصویر را در باکت عمومی storage ذخیره می‌کند و { fileId, url, alt } برمی‌گرداند.',
++  })
++  @ApiBody({
++    schema: {
++      type: 'object',
++      properties: {
++        file: { type: 'string', format: 'binary' },
++        purpose: { type: 'string', example: 'logo' },
++      },
++      required: ['file'],
++    },
++  })
++  async uploadAsset(@Req() req: any) {
++    if (!req.isMultipart || !req.isMultipart()) {
++      throw new BadRequestException('درخواست باید multipart/form-data باشد');
++    }
++
++    let buffer: Buffer;
++    let originalName: string;
++    let mimeType: string;
++    let purpose: string | undefined;
++
++    try {
++      const data = await req.file({ limits: { fileSize: MAX_ASSET_SIZE, files: 1 } });
++      if (!data) {
++        throw new BadRequestException('فایلی ارسال نشده است (فیلد: file)');
++      }
++      originalName = data.filename;
++      mimeType = data.mimetype;
++      purpose = data.fields?.purpose?.value as string | undefined;
++
++      const chunks: Buffer[] = [];
++      for await (const chunk of data.file) {
++        chunks.push(chunk as Buffer);
++      }
++      buffer = Buffer.concat(chunks);
++
++      if ((data.file as any).truncated) {
++        throw new BadRequestException('حداکثر حجم تصویر ۱۰ مگابایت است');
++      }
++    } catch (err) {
++      if (err instanceof BadRequestException) throw err;
++      throw new BadRequestException(`آپلود ناموفق: ${(err as Error).message}`);
++    }
++
++    const asset = await this.svc.uploadAsset({
++      buffer,
++      originalName,
++      mimeType,
++      uploadedBy: req.user?.userId,
++      purpose,
++    });
++    return { success: true, data: asset };
++  }
++}
+diff --git a/apps/api/src/modules/landing-cms/presentation/controllers/landing-public.controller.ts b/apps/api/src/modules/landing-cms/presentation/controllers/landing-public.controller.ts
+new file mode 100644
+index 00000000..ea8f69d7
+--- /dev/null
++++ b/apps/api/src/modules/landing-cms/presentation/controllers/landing-public.controller.ts
+@@ -0,0 +1,20 @@
++import { Controller, Get, Query } from '@nestjs/common';
++import { ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
++import { LandingCmsService } from '../../application/services/landing-cms.service.js';
++
++@ApiTags('landing')
++@Controller('landing')
++export class LandingPublicController {
++  constructor(private readonly svc: LandingCmsService) {}
++
++  @Get('content')
++  @ApiOperation({
++    summary: 'دریافت محتوای منتشرشده صفحه فرود (عمومی)',
++    description: 'محتوای منتشرشده شامل لوگو، هدر، هرو، سکشن‌ها و فوتر را برمی‌گرداند.',
++  })
++  @ApiQuery({ name: 'locale', required: false, example: 'fa' })
++  async getContent(@Query('locale') locale?: string) {
++    const data = await this.svc.getPublished(locale ?? 'fa');
++    return { success: true, data };
++  }
++}
+diff --git a/apps/api/src/modules/landing-cms/presentation/dtos/landing-cms.dto.ts b/apps/api/src/modules/landing-cms/presentation/dtos/landing-cms.dto.ts
+new file mode 100644
+index 00000000..f9e84fba
+--- /dev/null
++++ b/apps/api/src/modules/landing-cms/presentation/dtos/landing-cms.dto.ts
+@@ -0,0 +1,37 @@
++import { IsBoolean, IsObject, IsOptional, IsString, MaxLength } from 'class-validator';
++import { ApiPropertyOptional } from '@nestjs/swagger';
++
++export class UpdateLandingContentDto {
++  @ApiPropertyOptional({
++    description: 'پیکربندی کامل صفحه فرود (ساختار LandingContent)',
++    type: 'object',
++    additionalProperties: true,
++  })
++  @IsObject()
++  content!: Record<string, unknown>;
++
++  @ApiPropertyOptional({ description: 'یادداشت نسخه' })
++  @IsOptional()
++  @IsString()
++  @MaxLength(200)
++  versionNote?: string;
++
++  @ApiPropertyOptional({ description: 'زبان محتوا', default: 'fa' })
++  @IsOptional()
++  @IsString()
++  @MaxLength(10)
++  locale?: string;
++}
++
++export class PublishLandingContentDto {
++  @ApiPropertyOptional({ description: 'منتشر شود یا به پیش‌نویس بازگردد', default: true })
++  @IsOptional()
++  @IsBoolean()
++  published?: boolean;
++
++  @ApiPropertyOptional({ description: 'یادداشت نسخه' })
++  @IsOptional()
++  @IsString()
++  @MaxLength(200)
++  versionNote?: string;
++}
+diff --git a/apps/web/src/app/[locale]/page.tsx b/apps/web/src/app/[locale]/page.tsx
+index 9df24a1e..1f26d7e1 100644
+--- a/apps/web/src/app/[locale]/page.tsx
++++ b/apps/web/src/app/[locale]/page.tsx
+@@ -1,26 +1,36 @@
+ import type { Metadata } from 'next';
+ import { LandingPage } from '@/features/landing/components/landing-page';
++import { LandingContentProvider } from '@/features/landing/components/landing-content-provider';
++import { fetchPublicLandingContent } from '@/features/landing/lib/landing-api';
+ 
+-export const metadata: Metadata = {
+-  title: 'Xennic — پلتفرم تخصصی مهندسی برق',
+-  description:
+-    'محاسبات مهندسی برق، کیفیت توان (IEEE 519) و انرژی‌های تجدیدپذیر با استانداردهای IEC و IEEE. رایگان شروع کنید.',
+-  keywords: [
+-    'مهندسی برق',
+-    'محاسبات مهندسی',
+-    'کیفیت توان',
+-    'THD',
+-    'IEEE 519',
+-    'IEC 60364',
+-    'Xennic',
+-  ],
+-  openGraph: {
+-    title: 'Xennic — پلتفرم تخصصی مهندسی برق',
+-    description: 'محاسبات مهندسی برق با استانداردهای IEC و IEEE',
+-    type: 'website',
+-  },
+-};
++interface PageProps {
++  params: Promise<{ locale: string }>;
++}
++
++export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
++  const { locale } = await params;
++  const content = await fetchPublicLandingContent(locale);
++  return {
++    title: content.seo.title,
++    description: content.seo.description,
++    keywords: content.seo.keywords,
++    openGraph: {
++      title: content.seo.title,
++      description: content.seo.description,
++      type: 'website',
++      images: content.seo.ogImage?.url ? [{ url: content.seo.ogImage.url }] : undefined,
++    },
++    icons: content.branding.favicon?.url ? { icon: content.branding.favicon.url } : undefined,
++  };
++}
++
++export default async function HomePage({ params }: PageProps) {
++  const { locale } = await params;
++  const content = await fetchPublicLandingContent(locale);
+ 
+-export default function HomePage() {
+-  return <LandingPage />;
++  return (
++    <LandingContentProvider content={content}>
++      <LandingPage />
++    </LandingContentProvider>
++  );
+ }
+diff --git a/apps/web/src/features/admin/components/admin-client.tsx b/apps/web/src/features/admin/components/admin-client.tsx
+index 7a187562..efdda557 100644
+--- a/apps/web/src/features/admin/components/admin-client.tsx
++++ b/apps/web/src/features/admin/components/admin-client.tsx
+@@ -41,6 +41,7 @@ import { useToast } from '@/stores/toast.store';
+ import { apiClient } from '@/lib/api/client';
+ import { cn } from '@/lib/utils';
+ import { AiProviderManagement } from './ai-provider-management';
++import { LandingCmsEditor } from './landing-cms-editor';
+ 
+ // ─────────────────────────────────────────────────────────────
+ // types
+@@ -1128,6 +1129,41 @@ function NotificationsSection() {
+ // settings section
+ // ─────────────────────────────────────────────────────────────
+ function SettingsSection() {
++  const [settingsTab, setSettingsTab] = useState<'general' | 'landing'>('landing');
++
++  return (
++    <div className="space-y-4">
++      <div className="flex gap-1 border-b border-[hsl(var(--border))]">
++        <button
++          onClick={() => setSettingsTab('landing')}
++          className={cn(
++            'px-4 py-2 text-sm border-b-2 -mb-px transition-colors',
++            settingsTab === 'landing'
++              ? 'border-[hsl(var(--primary))] text-[hsl(var(--primary))] font-medium'
++              : 'border-transparent text-[hsl(var(--muted-foreground))]',
++          )}
++        >
++          صفحه فرود (CMS)
++        </button>
++        <button
++          onClick={() => setSettingsTab('general')}
++          className={cn(
++            'px-4 py-2 text-sm border-b-2 -mb-px transition-colors',
++            settingsTab === 'general'
++              ? 'border-[hsl(var(--primary))] text-[hsl(var(--primary))] font-medium'
++              : 'border-transparent text-[hsl(var(--muted-foreground))]',
++          )}
++        >
++          تنظیمات سیستم
++        </button>
++      </div>
++
++      {settingsTab === 'landing' ? <LandingCmsEditor /> : <GeneralSettingsForm />}
++    </div>
++  );
++}
++
++function GeneralSettingsForm() {
+   const toast = useToast();
+   const qc = useQueryClient();
+   const [form, setForm] = useState<Record<string, string>>({});
+diff --git a/apps/web/src/features/admin/components/landing-cms-editor.tsx b/apps/web/src/features/admin/components/landing-cms-editor.tsx
+new file mode 100644
+index 00000000..a426973c
+--- /dev/null
++++ b/apps/web/src/features/admin/components/landing-cms-editor.tsx
+@@ -0,0 +1,1267 @@
++'use client';
++
++import { useRef, useState } from 'react';
++import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
++import {
++  Save,
++  Send,
++  RotateCcw,
++  Upload,
++  Plus,
++  Trash2,
++  Image as ImageIcon,
++  Loader2,
++  Eye,
++  Type,
++  Layout,
++  Sparkles,
++  Calculator,
++  Grid3x3,
++  FileText,
++  CreditCard,
++  Megaphone,
++  MousePointerClick,
++  X,
++} from 'lucide-react';
++import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
++import { useToast } from '@/stores/toast.store';
++import { cn } from '@/lib/utils';
++import {
++  fetchDraftLandingContent,
++  publishLandingContent,
++  resetLandingContent,
++  saveDraftLandingContent,
++  uploadLandingAsset,
++} from '@/features/landing/lib/landing-api';
++import {
++  DEFAULT_LANDING_CONTENT,
++  mergeLandingContent,
++  type CmsImage,
++  type LandingContent,
++} from '@/features/landing/types/landing-content';
++
++type TabKey =
++  | 'branding'
++  | 'seo'
++  | 'header'
++  | 'hero'
++  | 'calculations'
++  | 'features'
++  | 'articles'
++  | 'pricing'
++  | 'cta'
++  | 'footer';
++
++const TABS: { key: TabKey; label: string; icon: React.ElementType }[] = [
++  { key: 'branding', label: 'برندینگ', icon: Sparkles },
++  { key: 'seo', label: 'سئو / متادیتا', icon: Type },
++  { key: 'header', label: 'هدر', icon: Layout },
++  { key: 'hero', label: 'هرو', icon: Eye },
++  { key: 'calculations', label: 'محاسبات', icon: Calculator },
++  { key: 'features', label: 'ویژگی‌ها', icon: Grid3x3 },
++  { key: 'articles', label: 'مقالات', icon: FileText },
++  { key: 'pricing', label: 'قیمت‌گذاری', icon: CreditCard },
++  { key: 'cta', label: 'فراخوان (CTA)', icon: Megaphone },
++  { key: 'footer', label: 'فوتر', icon: MousePointerClick },
++];
++
++const inputCls =
++  'w-full px-3 py-2 rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--background))] text-sm outline-none focus:border-[hsl(var(--primary))]';
++const labelCls = 'text-xs font-medium block mb-1 text-[hsl(var(--foreground))/0.8]';
++
++function Section({ title, children }: { title: string; children: React.ReactNode }) {
++  return (
++    <Card>
++      <CardHeader className="pb-3">
++        <CardTitle className="text-sm">{title}</CardTitle>
++      </CardHeader>
++      <CardContent className="space-y-4">{children}</CardContent>
++    </Card>
++  );
++}
++
++function TextField({
++  label,
++  value,
++  onChange,
++  placeholder,
++  multiline,
++}: {
++  label: string;
++  value: string;
++  onChange: (v: string) => void;
++  placeholder?: string;
++  multiline?: boolean;
++}) {
++  return (
++    <div>
++      <label className={labelCls}>{label}</label>
++      {multiline ? (
++        <textarea
++          value={value}
++          onChange={(e) => onChange(e.target.value)}
++          placeholder={placeholder}
++          rows={3}
++          className={cn(inputCls, 'resize-y')}
++        />
++      ) : (
++        <input
++          value={value}
++          onChange={(e) => onChange(e.target.value)}
++          placeholder={placeholder}
++          className={inputCls}
++        />
++      )}
++    </div>
++  );
++}
++
++function Toggle({
++  label,
++  checked,
++  onChange,
++}: {
++  label: string;
++  checked: boolean;
++  onChange: (v: boolean) => void;
++}) {
++  return (
++    <label className="flex items-center justify-between cursor-pointer">
++      <span className="text-sm">{label}</span>
++      <button
++        type="button"
++        onClick={() => onChange(!checked)}
++        className={cn(
++          'relative w-10 h-6 rounded-full transition-colors',
++          checked ? 'bg-[hsl(var(--primary))]' : 'bg-[hsl(var(--border))]',
++        )}
++      >
++        <span
++          className={cn(
++            'absolute top-0.5 w-5 h-5 rounded-full bg-white transition-all',
++            checked ? 'right-0.5' : 'right-4',
++          )}
++        />
++      </button>
++    </label>
++  );
++}
++
++function ImageUpload({
++  label,
++  value,
++  onChange,
++  purpose,
++}: {
++  label: string;
++  value?: CmsImage;
++  onChange: (img: CmsImage | undefined) => void;
++  purpose: string;
++}) {
++  const toast = useToast();
++  const inputRef = useRef<HTMLInputElement>(null);
++  const [uploading, setUploading] = useState(false);
++
++  async function handleFile(file: File) {
++    setUploading(true);
++    try {
++      const asset = await uploadLandingAsset(file, purpose);
++      onChange({ fileId: asset.fileId, url: asset.url, alt: file.name });
++      toast.success('تصویر آپلود شد');
++    } catch (e: any) {
++      toast.error(e?.message ?? 'خطا در آپلود');
++    } finally {
++      setUploading(false);
++    }
++  }
++
++  return (
++    <div>
++      <label className={labelCls}>{label}</label>
++      <div className="flex items-center gap-3">
++        <div className="w-16 h-16 rounded-lg border border-dashed border-[hsl(var(--border))] flex items-center justify-center overflow-hidden bg-[hsl(var(--secondary)/0.3)] shrink-0">
++          {value?.url ? (
++            // eslint-disable-next-line @next/next/no-img-element
++            <img src={value.url} alt={value.alt ?? ''} className="w-full h-full object-contain" />
++          ) : (
++            <ImageIcon className="h-5 w-5 text-[hsl(var(--muted-foreground))/0.4]" />
++          )}
++        </div>
++        <input
++          ref={inputRef}
++          type="file"
++          accept="image/*"
++          className="hidden"
++          onChange={(e) => {
++            const f = e.target.files?.[0];
++            if (f) handleFile(f);
++            e.target.value = '';
++          }}
++        />
++        <button
++          type="button"
++          onClick={() => inputRef.current?.click()}
++          disabled={uploading}
++          className="h-9 px-3 inline-flex items-center gap-2 text-xs rounded-lg border border-[hsl(var(--border))] hover:bg-[hsl(var(--secondary))] disabled:opacity-50"
++        >
++          {uploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
++          آپلود
++        </button>
++        {value?.url && (
++          <button
++            type="button"
++            onClick={() => onChange(undefined)}
++            className="h-9 px-3 inline-flex items-center gap-1 text-xs rounded-lg border border-red-200 text-red-500 hover:bg-red-50"
++          >
++            <Trash2 className="h-3.5 w-3.5" /> حذف
++          </button>
++        )}
++      </div>
++    </div>
++  );
++}
++
++function LinkListEditor({
++  title,
++  links,
++  onChange,
++}: {
++  title: string;
++  links: { label: string; href: string }[];
++  onChange: (links: { label: string; href: string }[]) => void;
++}) {
++  return (
++    <div>
++      <div className="flex items-center justify-between mb-2">
++        <label className={labelCls}>{title}</label>
++        <button
++          type="button"
++          onClick={() => onChange([...links, { label: 'لینک جدید', href: '/' }])}
++          className="text-xs flex items-center gap-1 text-[hsl(var(--primary))]"
++        >
++          <Plus className="h-3 w-3" /> افزودن
++        </button>
++      </div>
++      <div className="space-y-2">
++        {links.map((l, i) => (
++          <div key={i} className="flex gap-2 items-center">
++            <input
++              value={l.label}
++              onChange={(e) => {
++                const next = [...links];
++                next[i] = { ...l, label: e.target.value };
++                onChange(next);
++              }}
++              placeholder="عنوان"
++              className={cn(inputCls, 'flex-1')}
++            />
++            <input
++              value={l.href}
++              onChange={(e) => {
++                const next = [...links];
++                next[i] = { ...l, href: e.target.value };
++                onChange(next);
++              }}
++              placeholder="/path"
++              className={cn(inputCls, 'flex-1')}
++            />
++            <button
++              type="button"
++              onClick={() => onChange(links.filter((_, idx) => idx !== i))}
++              className="text-red-500 p-1.5 hover:bg-red-50 rounded"
++            >
++              <X className="h-4 w-4" />
++            </button>
++          </div>
++        ))}
++      </div>
++    </div>
++  );
++}
++
++export function LandingCmsEditor() {
++  const toast = useToast();
++  const qc = useQueryClient();
++  const [tab, setTab] = useState<TabKey>('branding');
++  const [draft, setDraft] = useState<LandingContent | null>(null);
++  const [loaded, setLoaded] = useState(false);
++
++  const { data, isLoading } = useQuery({
++    queryKey: ['admin', 'landing', 'draft'],
++    queryFn: () => fetchDraftLandingContent('fa'),
++  });
++
++  if (!loaded && data?.data?.content) {
++    setDraft(mergeLandingContent(data.data.content));
++    setLoaded(true);
++  }
++
++  const content = draft ?? DEFAULT_LANDING_CONTENT;
++
++  const update = (patch: Partial<LandingContent>) =>
++    setDraft((p) => mergeLandingContent({ ...(p ?? DEFAULT_LANDING_CONTENT), ...patch }));
++
++  const save = useMutation({
++    mutationFn: () => saveDraftLandingContent(content),
++    onSuccess: () => {
++      qc.invalidateQueries({ queryKey: ['admin', 'landing'] });
++      toast.success('پیش‌نویس ذخیره شد');
++    },
++    onError: (e: any) => toast.error(e?.message ?? 'خطا در ذخیره'),
++  });
++
++  const publish = useMutation({
++    mutationFn: () => publishLandingContent(true),
++    onSuccess: () => {
++      qc.invalidateQueries({ queryKey: ['admin', 'landing'] });
++      toast.success('محتوا منتشر شد');
++    },
++    onError: (e: any) => toast.error(e?.message ?? 'خطا در انتشار'),
++  });
++
++  const reset = useMutation({
++    mutationFn: () => resetLandingContent(),
++    onSuccess: (res) => {
++      setDraft(mergeLandingContent(res.data));
++      qc.invalidateQueries({ queryKey: ['admin', 'landing'] });
++      toast.success('به پیش‌فرض بازنشانی شد');
++    },
++  });
++
++  if (isLoading && !draft) {
++    return (
++      <div className="flex items-center gap-2 text-sm text-[hsl(var(--muted-foreground))]">
++        <Loader2 className="h-4 w-4 animate-spin" /> در حال بارگذاری...
++      </div>
++    );
++  }
++
++  return (
++    <div className="space-y-4">
++      {/* نوار ابزار */}
++      <div className="flex flex-wrap items-center gap-2">
++        <button
++          onClick={() => save.mutate()}
++          disabled={save.isPending}
++          className="h-9 px-4 inline-flex items-center gap-2 text-sm rounded-lg bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] hover:opacity-90 disabled:opacity-50"
++        >
++          {save.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
++          ذخیره پیش‌نویس
++        </button>
++        <button
++          onClick={() => publish.mutate()}
++          disabled={publish.isPending}
++          className="h-9 px-4 inline-flex items-center gap-2 text-sm rounded-lg bg-green-600 text-white hover:bg-green-700 disabled:opacity-50"
++        >
++          {publish.isPending ? (
++            <Loader2 className="h-4 w-4 animate-spin" />
++          ) : (
++            <Send className="h-4 w-4" />
++          )}
++          انتشار
++        </button>
++        <button
++          onClick={() => {
++            if (confirm('بازنشانی به محتوای پیش‌فرض؟')) reset.mutate();
++          }}
++          className="h-9 px-4 inline-flex items-center gap-2 text-sm rounded-lg border border-[hsl(var(--border))] hover:bg-[hsl(var(--secondary))]"
++        >
++          <RotateCcw className="h-4 w-4" /> بازنشانی
++        </button>
++        <a
++          href="/fa"
++          target="_blank"
++          rel="noreferrer"
++          className="h-9 px-4 inline-flex items-center gap-2 text-sm rounded-lg border border-[hsl(var(--border))] hover:bg-[hsl(var(--secondary))] mr-auto"
++        >
++          <Eye className="h-4 w-4" /> مشاهده سایت
++        </a>
++      </div>
++
++      <div className="grid grid-cols-12 gap-4">
++        {/* تب‌ها */}
++        <div className="col-span-12 md:col-span-3">
++          <div className="flex md:flex-col gap-1 flex-wrap">
++            {TABS.map((t) => {
++              const Icon = t.icon;
++              return (
++                <button
++                  key={t.key}
++                  onClick={() => setTab(t.key)}
++                  className={cn(
++                    'flex items-center gap-2 px-3 py-2 rounded-lg text-xs transition-all text-right',
++                    tab === t.key
++                      ? 'bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] font-medium'
++                      : 'text-[hsl(var(--foreground)/0.7)] hover:bg-[hsl(var(--secondary))]',
++                  )}
++                >
++                  <Icon className="h-4 w-4 shrink-0" />
++                  {t.label}
++                </button>
++              );
++            })}
++          </div>
++        </div>
++
++        {/* فرم */}
++        <div className="col-span-12 md:col-span-9 space-y-4">
++          {tab === 'branding' && (
++            <Section title="برندینگ و لوگو">
++              <TextField
++                label="نام پلتفرم"
++                value={content.branding.platformName}
++                onChange={(v) => update({ branding: { ...content.branding, platformName: v } })}
++              />
++              <TextField
++                label="شعار"
++                value={content.branding.tagline ?? ''}
++                onChange={(v) => update({ branding: { ...content.branding, tagline: v } })}
++              />
++              <ImageUpload
++                label="لوگو"
++                value={content.branding.logo}
++                onChange={(img) => update({ branding: { ...content.branding, logo: img } })}
++                purpose="logo"
++              />
++              <ImageUpload
++                label="فاوآیکون"
++                value={content.branding.favicon}
++                onChange={(img) => update({ branding: { ...content.branding, favicon: img } })}
++                purpose="favicon"
++              />
++            </Section>
++          )}
++
++          {tab === 'seo' && (
++            <Section title="سئو و متادیتا">
++              <TextField
++                label="عنوان صفحه"
++                value={content.seo.title}
++                onChange={(v) => update({ seo: { ...content.seo, title: v } })}
++              />
++              <TextField
++                label="توضیحات"
++                multiline
++                value={content.seo.description}
++                onChange={(v) => update({ seo: { ...content.seo, description: v } })}
++              />
++              <TextField
++                label="کلمات کلیدی (با ویرگول جدا کنید)"
++                value={content.seo.keywords.join('، ')}
++                onChange={(v) =>
++                  update({
++                    seo: {
++                      ...content.seo,
++                      keywords: v
++                        .split(/[،,]/)
++                        .map((s) => s.trim())
++                        .filter(Boolean),
++                    },
++                  })
++                }
++              />
++              <ImageUpload
++                label="تصویر Open Graph"
++                value={content.seo.ogImage}
++                onChange={(img) => update({ seo: { ...content.seo, ogImage: img } })}
++                purpose="og-image"
++              />
++            </Section>
++          )}
++
++          {tab === 'header' && (
++            <Section title="هدر و ناوبری">
++              <Toggle
++                label="نمایش هدر"
++                checked={content.header.visible}
++                onChange={(v) => update({ header: { ...content.header, visible: v } })}
++              />
++              <LinkListEditor
++                title="لینک‌های ناوبری"
++                links={content.header.links}
++                onChange={(links) => update({ header: { ...content.header, links } })}
++              />
++              <Toggle
++                label="نمایش تغییر زبان"
++                checked={content.header.showLanguageSwitcher}
++                onChange={(v) =>
++                  update({ header: { ...content.header, showLanguageSwitcher: v } })
++                }
++              />
++              <Toggle
++                label="نمایش تغییر تم"
++                checked={content.header.showThemeToggle}
++                onChange={(v) => update({ header: { ...content.header, showThemeToggle: v } })}
++              />
++              <div className="grid grid-cols-2 gap-2 pt-2 border-t border-[hsl(var(--border))/0.5]">
++                <TextField
++                  label="دکمه CTA - متن"
++                  value={content.header.ctaButton?.label ?? ''}
++                  onChange={(v) =>
++                    update({
++                      header: {
++                        ...content.header,
++                        ctaButton: { ...(content.header.ctaButton ?? { href: '/' }), label: v },
++                      },
++                    })
++                  }
++                />
++                <TextField
++                  label="دکمه CTA - لینک"
++                  value={content.header.ctaButton?.href ?? ''}
++                  onChange={(v) =>
++                    update({
++                      header: {
++                        ...content.header,
++                        ctaButton: { ...(content.header.ctaButton ?? { label: '' }), href: v },
++                      },
++                    })
++                  }
++                />
++              </div>
++            </Section>
++          )}
++
++          {tab === 'hero' && (
++            <Section title="بخش هرو">
++              <Toggle
++                label="فعال"
++                checked={content.hero.visible}
++                onChange={(v) => update({ hero: { ...content.hero, visible: v } })}
++              />
++              <TextField
++                label="نشان (badge)"
++                value={content.hero.badge ?? ''}
++                onChange={(v) => update({ hero: { ...content.hero, badge: v } })}
++              />
++              <TextField
++                label="عنوان"
++                value={content.hero.title}
++                onChange={(v) => update({ hero: { ...content.hero, title: v } })}
++              />
++              <TextField
++                label="کلمه هایلایت"
++                value={content.hero.highlightedWord ?? ''}
++                onChange={(v) => update({ hero: { ...content.hero, highlightedWord: v } })}
++              />
++              <TextField
++                label="زیرعنوان"
++                multiline
++                value={content.hero.subtitle}
++                onChange={(v) => update({ hero: { ...content.hero, subtitle: v } })}
++              />
++              <div className="grid grid-cols-2 gap-2">
++                <TextField
++                  label="دکمه اصلی - متن"
++                  value={content.hero.primaryButton?.label ?? ''}
++                  onChange={(v) =>
++                    update({
++                      hero: {
++                        ...content.hero,
++                        primaryButton: {
++                          ...(content.hero.primaryButton ?? { href: '/' }),
++                          label: v,
++                        },
++                      },
++                    })
++                  }
++                />
++                <TextField
++                  label="دکمه اصلی - لینک"
++                  value={content.hero.primaryButton?.href ?? ''}
++                  onChange={(v) =>
++                    update({
++                      hero: {
++                        ...content.hero,
++                        primaryButton: {
++                          ...(content.hero.primaryButton ?? { label: '' }),
++                          href: v,
++                        },
++                      },
++                    })
++                  }
++                />
++                <TextField
++                  label="دکمه ثانویه - متن"
++                  value={content.hero.secondaryButton?.label ?? ''}
++                  onChange={(v) =>
++                    update({
++                      hero: {
++                        ...content.hero,
++                        secondaryButton: {
++                          ...(content.hero.secondaryButton ?? { href: '#' }),
++                          label: v,
++                        },
++                      },
++                    })
++                  }
++                />
++                <TextField
++                  label="دکمه ثانویه - لینک"
++                  value={content.hero.secondaryButton?.href ?? ''}
++                  onChange={(v) =>
++                    update({
++                      hero: {
++                        ...content.hero,
++                        secondaryButton: {
++                          ...(content.hero.secondaryButton ?? { label: '' }),
++                          href: v,
++                        },
++                      },
++                    })
++                  }
++                />
++              </div>
++              <ImageUpload
++                label="تصویر پس‌زمینه (اختیاری)"
++                value={content.hero.backgroundImage}
++                onChange={(img) => update({ hero: { ...content.hero, backgroundImage: img } })}
++                purpose="hero-bg"
++              />
++              <Toggle
++                label="نمایش mockup ترمینال"
++                checked={content.hero.showTerminalMockup}
++                onChange={(v) => update({ hero: { ...content.hero, showTerminalMockup: v } })}
++              />
++              <div>
++                <label className={labelCls}>آمار</label>
++                <div className="space-y-2">
++                  {content.hero.stats.map((s, i) => (
++                    <div key={i} className="flex gap-2">
++                      <input
++                        value={s.value}
++                        onChange={(e) => {
++                          const next = [...content.hero.stats];
++                          next[i] = { ...s, value: e.target.value };
++                          update({ hero: { ...content.hero, stats: next } });
++                        }}
++                        placeholder="مقدار"
++                        className={cn(inputCls, 'w-32')}
++                      />
++                      <input
++                        value={s.label}
++                        onChange={(e) => {
++                          const next = [...content.hero.stats];
++                          next[i] = { ...s, label: e.target.value };
++                          update({ hero: { ...content.hero, stats: next } });
++                        }}
++                        placeholder="برچسب"
++                        className={cn(inputCls, 'flex-1')}
++                      />
++                      <button
++                        onClick={() =>
++                          update({
++                            hero: {
++                              ...content.hero,
++                              stats: content.hero.stats.filter((_, idx) => idx !== i),
++                            },
++                          })
++                        }
++                        className="text-red-500 p-1.5"
++                      >
++                        <Trash2 className="h-4 w-4" />
++                      </button>
++                    </div>
++                  ))}
++                  <button
++                    onClick={() =>
++                      update({
++                        hero: {
++                          ...content.hero,
++                          stats: [...content.hero.stats, { value: '۰', label: 'جدید' }],
++                        },
++                      })
++                    }
++                    className="text-xs flex items-center gap-1 text-[hsl(var(--primary))]"
++                  >
++                    <Plus className="h-3 w-3" /> افزودن آمار
++                  </button>
++                </div>
++              </div>
++            </Section>
++          )}
++
++          {tab === 'calculations' && (
++            <Section title="بخش محاسبات">
++              <Toggle
++                label="فعال"
++                checked={content.calculations.visible}
++                onChange={(v) => update({ calculations: { ...content.calculations, visible: v } })}
++              />
++              <TextField
++                label="عنوان"
++                value={content.calculations.title ?? ''}
++                onChange={(v) => update({ calculations: { ...content.calculations, title: v } })}
++              />
++              <div className="space-y-2">
++                {content.calculations.items.map((item, i) => (
++                  <div key={i} className="grid grid-cols-12 gap-2">
++                    <input
++                      value={item.code}
++                      onChange={(e) => {
++                        const next = [...content.calculations.items];
++                        next[i] = { ...item, code: e.target.value };
++                        update({ calculations: { ...content.calculations, items: next } });
++                      }}
++                      placeholder="کد"
++                      className={cn(inputCls, 'col-span-3')}
++                    />
++                    <input
++                      value={item.label}
++                      onChange={(e) => {
++                        const next = [...content.calculations.items];
++                        next[i] = { ...item, label: e.target.value };
++                        update({ calculations: { ...content.calculations, items: next } });
++                      }}
++                      placeholder="عنوان"
++                      className={cn(inputCls, 'col-span-4')}
++                    />
++                    <input
++                      value={item.formula ?? ''}
++                      onChange={(e) => {
++                        const next = [...content.calculations.items];
++                        next[i] = { ...item, formula: e.target.value };
++                        update({ calculations: { ...content.calculations, items: next } });
++                      }}
++                      placeholder="فرمول"
++                      className={cn(inputCls, 'col-span-4')}
++                    />
++                    <button
++                      onClick={() =>
++                        update({
++                          calculations: {
++                            ...content.calculations,
++                            items: content.calculations.items.filter((_, idx) => idx !== i),
++                          },
++                        })
++                      }
++                      className="text-red-500 col-span-1 flex items-center justify-center"
++                    >
++                      <Trash2 className="h-4 w-4" />
++                    </button>
++                  </div>
++                ))}
++                <button
++                  onClick={() =>
++                    update({
++                      calculations: {
++                        ...content.calculations,
++                        items: [
++                          ...content.calculations.items,
++                          { code: 'CODE', label: 'محاسبه جدید', formula: '' },
++                        ],
++                      },
++                    })
++                  }
++                  className="text-xs flex items-center gap-1 text-[hsl(var(--primary))]"
++                >
++                  <Plus className="h-3 w-3" /> افزودن
++                </button>
++              </div>
++            </Section>
++          )}
++
++          {tab === 'features' && (
++            <Section title="بخش ویژگی‌ها">
++              <Toggle
++                label="فعال"
++                checked={content.features.visible}
++                onChange={(v) => update({ features: { ...content.features, visible: v } })}
++              />
++              <TextField
++                label="عنوان بخش"
++                value={content.features.title ?? ''}
++                onChange={(v) => update({ features: { ...content.features, title: v } })}
++              />
++              <div className="space-y-3">
++                {content.features.items.map((f, i) => (
++                  <div key={i} className="p-3 rounded-lg border border-[hsl(var(--border))] space-y-2">
++                    <div className="flex justify-between">
++                      <span className="text-xs font-medium">ویژگی {i + 1}</span>
++                      <button
++                        onClick={() =>
++                          update({
++                            features: {
++                              ...content.features,
++                              items: content.features.items.filter((_, idx) => idx !== i),
++                            },
++                          })
++                        }
++                        className="text-red-500"
++                      >
++                        <Trash2 className="h-4 w-4" />
++                      </button>
++                    </div>
++                    <input
++                      value={f.icon ?? ''}
++                      onChange={(e) => {
++                        const next = [...content.features.items];
++                        next[i] = { ...f, icon: e.target.value };
++                        update({ features: { ...content.features, items: next } });
++                      }}
++                      placeholder="آیکون (مثل Shield, Cpu, Zap)"
++                      className={inputCls}
++                    />
++                    <input
++                      value={f.title}
++                      onChange={(e) => {
++                        const next = [...content.features.items];
++                        next[i] = { ...f, title: e.target.value };
++                        update({ features: { ...content.features, items: next } });
++                      }}
++                      placeholder="عنوان"
++                      className={inputCls}
++                    />
++                    <textarea
++                      value={f.description}
++                      onChange={(e) => {
++                        const next = [...content.features.items];
++                        next[i] = { ...f, description: e.target.value };
++                        update({ features: { ...content.features, items: next } });
++                      }}
++                      placeholder="توضیحات"
++                      rows={2}
++                      className={cn(inputCls, 'resize-y')}
++                    />
++                  </div>
++                ))}
++                <button
++                  onClick={() =>
++                    update({
++                      features: {
++                        ...content.features,
++                        items: [
++                          ...content.features.items,
++                          { icon: 'Zap', title: 'ویژگی جدید', description: '', tags: [] },
++                        ],
++                      },
++                    })
++                  }
++                  className="text-xs flex items-center gap-1 text-[hsl(var(--primary))]"
++                >
++                  <Plus className="h-3 w-3" /> افزودن ویژگی
++                </button>
++              </div>
++            </Section>
++          )}
++
++          {tab === 'articles' && (
++            <Section title="بخش مقالات">
++              <Toggle
++                label="فعال"
++                checked={content.articles.visible}
++                onChange={(v) => update({ articles: { ...content.articles, visible: v } })}
++              />
++              <p className="text-xs text-[hsl(var(--muted-foreground))]">
++                اگر خالی باشد، آخرین مقالات دانشنامه به‌صورت خودکار نمایش داده می‌شوند.
++              </p>
++              <div className="space-y-2">
++                {content.articles.items.map((a, i) => (
++                  <div key={i} className="p-3 rounded-lg border border-[hsl(var(--border))] space-y-2">
++                    <div className="flex justify-between">
++                      <span className="text-xs">مقاله {i + 1}</span>
++                      <button
++                        onClick={() =>
++                          update({
++                            articles: {
++                              ...content.articles,
++                              items: content.articles.items.filter((_, idx) => idx !== i),
++                            },
++                          })
++                        }
++                        className="text-red-500"
++                      >
++                        <Trash2 className="h-4 w-4" />
++                      </button>
++                    </div>
++                    <input
++                      value={a.title}
++                      onChange={(e) => {
++                        const next = [...content.articles.items];
++                        next[i] = { ...a, title: e.target.value };
++                        update({ articles: { ...content.articles, items: next } });
++                      }}
++                      placeholder="عنوان"
++                      className={inputCls}
++                    />
++                    <input
++                      value={a.summary}
++                      onChange={(e) => {
++                        const next = [...content.articles.items];
++                        next[i] = { ...a, summary: e.target.value };
++                        update({ articles: { ...content.articles, items: next } });
++                      }}
++                      placeholder="خلاصه"
++                      className={inputCls}
++                    />
++                    <input
++                      value={a.href}
++                      onChange={(e) => {
++                        const next = [...content.articles.items];
++                        next[i] = { ...a, href: e.target.value };
++                        update({ articles: { ...content.articles, items: next } });
++                      }}
++                      placeholder="/knowledge/slug"
++                      className={inputCls}
++                    />
++                  </div>
++                ))}
++                <button
++                  onClick={() =>
++                    update({
++                      articles: {
++                        ...content.articles,
++                        items: [
++                          ...content.articles.items,
++                          { title: 'مقاله جدید', summary: '', href: '/knowledge' },
++                        ],
++                      },
++                    })
++                  }
++                  className="text-xs flex items-center gap-1 text-[hsl(var(--primary))]"
++                >
++                  <Plus className="h-3 w-3" /> افزودن
++                </button>
++              </div>
++            </Section>
++          )}
++
++          {tab === 'pricing' && (
++            <Section title="پلن‌های قیمت‌گذاری">
++              <Toggle
++                label="فعال"
++                checked={content.pricing.visible}
++                onChange={(v) => update({ pricing: { ...content.pricing, visible: v } })}
++              />
++              <div className="space-y-3">
++                {content.pricing.plans.map((p, i) => (
++                  <div key={i} className="p-3 rounded-lg border border-[hsl(var(--border))] space-y-2">
++                    <div className="flex justify-between items-center">
++                      <span className="text-xs font-medium">{p.name}</span>
++                      <button
++                        onClick={() =>
++                          update({
++                            pricing: {
++                              ...content.pricing,
++                              plans: content.pricing.plans.filter((_, idx) => idx !== i),
++                            },
++                          })
++                        }
++                        className="text-red-500"
++                      >
++                        <Trash2 className="h-4 w-4" />
++                      </button>
++                    </div>
++                    <div className="grid grid-cols-2 gap-2">
++                      <input
++                        value={p.name}
++                        onChange={(e) => {
++                          const next = [...content.pricing.plans];
++                          next[i] = { ...p, name: e.target.value };
++                          update({ pricing: { ...content.pricing, plans: next } });
++                        }}
++                        placeholder="نام"
++                        className={inputCls}
++                      />
++                      <input
++                        value={p.price}
++                        onChange={(e) => {
++                          const next = [...content.pricing.plans];
++                          next[i] = { ...p, price: e.target.value };
++                          update({ pricing: { ...content.pricing, plans: next } });
++                        }}
++                        placeholder="قیمت"
++                        className={inputCls}
++                      />
++                      <input
++                        value={p.period}
++                        onChange={(e) => {
++                          const next = [...content.pricing.plans];
++                          next[i] = { ...p, period: e.target.value };
++                          update({ pricing: { ...content.pricing, plans: next } });
++                        }}
++                        placeholder="دوره"
++                        className={inputCls}
++                      />
++                      <input
++                        value={p.badge ?? ''}
++                        onChange={(e) => {
++                          const next = [...content.pricing.plans];
++                          next[i] = { ...p, badge: e.target.value };
++                          update({ pricing: { ...content.pricing, plans: next } });
++                        }}
++                        placeholder="نشان (اختیاری)"
++                        className={inputCls}
++                      />
++                    </div>
++                    <Toggle
++                      label="پلن برجسته"
++                      checked={!!p.highlighted}
++                      onChange={(v) => {
++                        const next = [...content.pricing.plans];
++                        next[i] = { ...p, highlighted: v };
++                        update({ pricing: { ...content.pricing, plans: next } });
++                      }}
++                    />
++                    <textarea
++                      value={p.features.join('\n')}
++                      onChange={(e) => {
++                        const next = [...content.pricing.plans];
++                        next[i] = { ...p, features: e.target.value.split('\n').filter(Boolean) };
++                        update({ pricing: { ...content.pricing, plans: next } });
++                      }}
++                      placeholder="ویژگی‌ها (هر خط یک مورد)"
++                      rows={4}
++                      className={cn(inputCls, 'resize-y')}
++                    />
++                    <div className="grid grid-cols-2 gap-2">
++                      <input
++                        value={p.ctaLabel}
++                        onChange={(e) => {
++                          const next = [...content.pricing.plans];
++                          next[i] = { ...p, ctaLabel: e.target.value };
++                          update({ pricing: { ...content.pricing, plans: next } });
++                        }}
++                        placeholder="متن دکمه"
++                        className={inputCls}
++                      />
++                      <input
++                        value={p.ctaHref}
++                        onChange={(e) => {
++                          const next = [...content.pricing.plans];
++                          next[i] = { ...p, ctaHref: e.target.value };
++                          update({ pricing: { ...content.pricing, plans: next } });
++                        }}
++                        placeholder="/register"
++                        className={inputCls}
++                      />
++                    </div>
++                  </div>
++                ))}
++                <button
++                  onClick={() =>
++                    update({
++                      pricing: {
++                        ...content.pricing,
++                        plans: [
++                          ...content.pricing.plans,
++                          {
++                            name: 'پلن جدید',
++                            price: '۰',
++                            period: 'تومان / ماه',
++                            features: [],
++                            ctaLabel: 'انتخاب',
++                            ctaHref: '/register',
++                          },
++                        ],
++                      },
++                    })
++                  }
++                  className="text-xs flex items-center gap-1 text-[hsl(var(--primary))]"
++                >
++                  <Plus className="h-3 w-3" /> افزودن پلن
++                </button>
++              </div>
++            </Section>
++          )}
++
++          {tab === 'cta' && (
++            <Section title="بخش فراخوان (CTA)">
++              <Toggle
++                label="فعال"
++                checked={content.cta.visible}
++                onChange={(v) => update({ cta: { ...content.cta, visible: v } })}
++              />
++              <TextField
++                label="عبارت کوچک (eyebrow)"
++                value={content.cta.eyebrow ?? ''}
++                onChange={(v) => update({ cta: { ...content.cta, eyebrow: v } })}
++              />
++              <TextField
++                label="عنوان"
++                value={content.cta.title}
++                onChange={(v) => update({ cta: { ...content.cta, title: v } })}
++              />
++              <TextField
++                label="متن هایلایت"
++                value={content.cta.highlightedText ?? ''}
++                onChange={(v) => update({ cta: { ...content.cta, highlightedText: v } })}
++              />
++              <TextField
++                label="زیرعنوان"
++                multiline
++                value={content.cta.subtitle ?? ''}
++                onChange={(v) => update({ cta: { ...content.cta, subtitle: v } })}
++              />
++              <div className="grid grid-cols-2 gap-2">
++                <TextField
++                  label="دکمه - متن"
++                  value={content.cta.button?.label ?? ''}
++                  onChange={(v) =>
++                    update({
++                      cta: { ...content.cta, button: { ...(content.cta.button ?? { href: '/' }), label: v } },
++                    })
++                  }
++                />
++                <TextField
++                  label="دکمه - لینک"
++                  value={content.cta.button?.href ?? ''}
++                  onChange={(v) =>
++                    update({
++                      cta: { ...content.cta, button: { ...(content.cta.button ?? { label: '' }), href: v } },
++                    })
++                  }
++                />
++              </div>
++              <TextField
++                label="نشان‌های اعتماد (با ویرگول)"
++                value={(content.cta.trustBadges ?? []).join('، ')}
++                onChange={(v) =>
++                  update({
++                    cta: {
++                      ...content.cta,
++                      trustBadges: v
++                        .split(/[،,]/)
++                        .map((s) => s.trim())
++                        .filter(Boolean),
++                    },
++                  })
++                }
++              />
++            </Section>
++          )}
++
++          {tab === 'footer' && (
++            <Section title="فوتر">
++              <Toggle
++                label="فعال"
++                checked={content.footer.visible}
++                onChange={(v) => update({ footer: { ...content.footer, visible: v } })}
++              />
++              <TextField
++                label="متن درباره"
++                multiline
++                value={content.footer.aboutText ?? ''}
++                onChange={(v) => update({ footer: { ...content.footer, aboutText: v } })}
++              />
++              <TextField
++                label="کپی‌رایت"
++                value={content.footer.copyright}
++                onChange={(v) => update({ footer: { ...content.footer, copyright: v } })}
++              />
++              <TextField
++                label="نسخه"
++                value={content.footer.version ?? ''}
++                onChange={(v) => update({ footer: { ...content.footer, version: v } })}
++              />
++              <div className="space-y-3 pt-2 border-t border-[hsl(var(--border))/0.5]">
++                <div className="flex items-center justify-between">
++                  <label className={labelCls}>ستون‌های لینک</label>
++                  <button
++                    onClick={() =>
++                      update({
++                        footer: {
++                          ...content.footer,
++                          columns: [
++                            ...content.footer.columns,
++                            { title: 'ستون جدید', links: [] },
++                          ],
++                        },
++                      })
++                    }
++                    className="text-xs flex items-center gap-1 text-[hsl(var(--primary))]"
++                  >
++                    <Plus className="h-3 w-3" /> افزودن ستون
++                  </button>
++                </div>
++                {content.footer.columns.map((col, ci) => (
++                  <div key={ci} className="p-3 rounded-lg border border-[hsl(var(--border))] space-y-2">
++                    <div className="flex gap-2 items-center">
++                      <input
++                        value={col.title}
++                        onChange={(e) => {
++                          const next = [...content.footer.columns];
++                          next[ci] = { ...col, title: e.target.value };
++                          update({ footer: { ...content.footer, columns: next } });
++                        }}
++                        placeholder="عنوان ستون"
++                        className={inputCls}
++                      />
++                      <button
++                        onClick={() =>
++                          update({
++                            footer: {
++                              ...content.footer,
++                              columns: content.footer.columns.filter((_, idx) => idx !== ci),
++                            },
++                          })
++                        }
++                        className="text-red-500 p-1.5"
++                      >
++                        <Trash2 className="h-4 w-4" />
++                      </button>
++                    </div>
++                    {col.links.map((l, li) => (
++                      <div key={li} className="flex gap-2">
++                        <input
++                          value={l.label}
++                          onChange={(e) => {
++                            const nextCols = [...content.footer.columns];
++                            const links = [...col.links];
++                            links[li] = { ...l, label: e.target.value };
++                            nextCols[ci] = { ...col, links };
++                            update({ footer: { ...content.footer, columns: nextCols } });
++                          }}
++                          placeholder="عنوان"
++                          className={cn(inputCls, 'flex-1')}
++                        />
++                        <input
++                          value={l.href}
++                          onChange={(e) => {
++                            const nextCols = [...content.footer.columns];
++                            const links = [...col.links];
++                            links[li] = { ...l, href: e.target.value };
++                            nextCols[ci] = { ...col, links };
++                            update({ footer: { ...content.footer, columns: nextCols } });
++                          }}
++                          placeholder="/path"
++                          className={cn(inputCls, 'flex-1')}
++                        />
++                        <button
++                          onClick={() => {
++                            const nextCols = [...content.footer.columns];
++                            nextCols[ci] = {
++                              ...col,
++                              links: col.links.filter((_, idx) => idx !== li),
++                            };
++                            update({ footer: { ...content.footer, columns: nextCols } });
++                          }}
++                          className="text-red-500 p-1.5"
++                        >
++                          <X className="h-4 w-4" />
++                        </button>
++                      </div>
++                    ))}
++                    <button
++                      onClick={() => {
++                        const nextCols = [...content.footer.columns];
++                        nextCols[ci] = {
++                          ...col,
++                          links: [...col.links, { label: 'لینک', href: '/' }],
++                        };
++                        update({ footer: { ...content.footer, columns: nextCols } });
++                      }}
++                      className="text-xs text-[hsl(var(--primary))] flex items-center gap-1"
++                    >
++                      <Plus className="h-3 w-3" /> لینک
++                    </button>
++                  </div>
++                ))}
++              </div>
++            </Section>
++          )}
++        </div>
++      </div>
++    </div>
++  );
++}
+diff --git a/apps/web/src/features/landing/components/landing-content-provider.tsx b/apps/web/src/features/landing/components/landing-content-provider.tsx
+new file mode 100644
+index 00000000..cb461ab1
+--- /dev/null
++++ b/apps/web/src/features/landing/components/landing-content-provider.tsx
+@@ -0,0 +1,26 @@
++'use client';
++
++import { createContext, useContext, useMemo, type ReactNode } from 'react';
++import {
++  DEFAULT_LANDING_CONTENT,
++  type LandingContent,
++} from '../types/landing-content';
++
++const LandingContentContext = createContext<LandingContent>(DEFAULT_LANDING_CONTENT);
++
++export function LandingContentProvider({
++  content,
++  children,
++}: {
++  content: LandingContent;
++  children: ReactNode;
++}) {
++  const value = useMemo(() => content ?? DEFAULT_LANDING_CONTENT, [content]);
++  return (
++    <LandingContentContext.Provider value={value}>{children}</LandingContentContext.Provider>
++  );
++}
++
++export function useLandingContent(): LandingContent {
++  return useContext(LandingContentContext);
++}
+diff --git a/apps/web/src/features/landing/components/landing-page.tsx b/apps/web/src/features/landing/components/landing-page.tsx
+index a230de78..51664525 100644
+--- a/apps/web/src/features/landing/components/landing-page.tsx
++++ b/apps/web/src/features/landing/components/landing-page.tsx
+@@ -1,29 +1,81 @@
+ 'use client';
+ 
+-import { useState, useEffect } from 'react';
++import { useEffect, useState } from 'react';
+ import { useParams } from 'next/navigation';
+ import Link from 'next/link';
+-import { Zap, ArrowRight, ChevronDown, Shield, TrendingUp, Star, Menu, X } from 'lucide-react';
++import {
++  Zap,
++  ArrowRight,
++  ChevronDown,
++  Shield,
++  TrendingUp,
++  Star,
++  Menu,
++  X,
++} from 'lucide-react';
+ import { cn } from '@/lib/utils';
+ import { useAuthStore } from '@/stores/auth.store';
+ import { UserStatus } from '@/components/layout/user-status';
+ import { LanguageSwitcher } from '@/components/layout/language-switcher';
+-import { ThemeToggle } from '@/components/layout/theme-toggle'; // ✅ اضافه کردن import
++import { ThemeToggle } from '@/components/layout/theme-toggle';
++import { useLandingContent } from './landing-content-provider';
+ import { FeaturesSection } from './features-section';
+ import { PricingSection } from './pricing-section';
+ import { ArticlesSection } from './articles-section';
+ import { CalculationsSection } from './calculations-section';
++import type { LandingContent } from '../types/landing-content';
++
++// اصلاح لینک‌های نسبی با locale
++function localizeHref(href: string | undefined, locale: string): string {
++  if (!href) return '#';
++  if (href.startsWith('http') || href.startsWith('#')) return href;
++  const clean = href.startsWith('/') ? href : `/${href}`;
++  if (clean === '/') return `/${locale}`;
++  return `/${locale}${clean}`;
++}
+ 
+-// ⚠️ حذف کامپوننت محلی ThemeToggleDark (دیگر نیاز نیست)
++function BrandLogo({
++  branding,
++  size = 'sm',
++}: {
++  branding: LandingContent['branding'];
++  size?: 'sm' | 'lg';
++}) {
++  const dim = size === 'lg' ? 'w-10 h-10' : 'w-8 h-8';
++  const textSize = size === 'lg' ? 'text-2xl' : 'text-lg';
++  if (branding.logo?.url) {
++    return (
++      // eslint-disable-next-line @next/next/no-img-element
++      <img
++        src={branding.logo.url}
++        alt={branding.logo.alt ?? branding.platformName}
++        className={cn(dim, 'rounded-lg object-contain')}
++      />
++    );
++  }
++  return (
++    <div
++      className={cn(
++        dim,
++        'rounded-lg bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--accent))] flex items-center justify-center shadow-[0_0_16px_hsl(var(--primary)/0.3)]',
++      )}
++    >
++      <Zap className={size === 'lg' ? 'h-5 w-5 text-white' : 'h-4 w-4 text-white'} />
++    </div>
++  );
++}
+ 
+ // ─────────────────────────────────────────────────────────────
+ // NAVBAR
+ // ─────────────────────────────────────────────────────────────
+ 
+-function Navbar({ locale }: { locale: string }) {
++function Navbar({ content }: { content: LandingContent }) {
++  const params = useParams();
++  const locale = (params?.locale as string) ?? 'fa';
+   const [scrolled, setScrolled] = useState(false);
+   const [open, setOpen] = useState(false);
+   const isAuth = useAuthStore((s) => s.isAuthenticated);
++  const { header, branding } = content;
+ 
+   useEffect(() => {
+     const onScroll = () => setScrolled(window.scrollY > 24);
+@@ -31,13 +83,7 @@ function Navbar({ locale }: { locale: string }) {
+     return () => window.removeEventListener('scroll', onScroll);
+   }, []);
+ 
+-  const links: { label: string; href: string }[] = [
+-    { label: 'صفحه اصلی', href: `/${locale}` },
+-    { label: 'محاسبات', href: isAuth ? `/${locale}/engineering` : '#calculations' },
+-    { label: 'مقالات', href: `/${locale}/articles` },
+-    { label: 'درباره ما', href: `/${locale}/about` },
+-    { label: 'تماس', href: `/${locale}/contact` },
+-  ];
++  if (!header.visible) return null;
+ 
+   return (
+     <header
+@@ -50,29 +96,38 @@ function Navbar({ locale }: { locale: string }) {
+     >
+       <div className="max-w-7xl mx-auto px-5 h-16 flex items-center justify-between gap-4">
+         <Link href={`/${locale}`} className="flex items-center gap-2.5 shrink-0">
+-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--accent))] flex items-center justify-center shadow-[0_0_16px_hsl(var(--primary)/0.3)]">
+-            <Zap className="h-4 w-4 text-white" />
+-          </div>
++          <BrandLogo branding={branding} />
+           <span className="font-bold text-[hsl(var(--foreground))] tracking-wide text-lg">
+-            Xennic
++            {branding.platformName}
+           </span>
+         </Link>
+ 
+         <nav className="hidden md:flex items-center gap-1">
+-          {links.map((l) => (
+-            <Link
+-              key={l.href}
+-              href={l.href}
+-              className="px-4 py-2 text-sm text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] rounded-lg hover:bg-[hsl(var(--secondary))] transition-all"
+-            >
+-              {l.label}
+-            </Link>
+-          ))}
++          {header.links.map((l) => {
++            const href = l.href === '#calculations' && isAuth ? `/${locale}/engineering` : localizeHref(l.href, locale);
++            return (
++              <Link
++                key={l.label}
++                href={href}
++                className="px-4 py-2 text-sm text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] rounded-lg hover:bg-[hsl(var(--secondary))] transition-all"
++              >
++                {l.label}
++              </Link>
++            );
++          })}
+         </nav>
+ 
+         <div className="hidden md:flex items-center gap-2">
+-          <LanguageSwitcher />
+-          <ThemeToggle /> {/* ✅ استفاده از کامپوننت اصلی */}
++          {header.showLanguageSwitcher && <LanguageSwitcher />}
++          {header.showThemeToggle && <ThemeToggle />}
++          {header.ctaButton && (
++            <Link
++              href={localizeHref(header.ctaButton.href, locale)}
++              className="h-9 px-4 inline-flex items-center text-sm rounded-lg border border-[hsl(var(--border))] hover:bg-[hsl(var(--secondary))] text-[hsl(var(--foreground))]"
++            >
++              {header.ctaButton.label}
++            </Link>
++          )}
+           <UserStatus />
+         </div>
+ 
+@@ -86,10 +141,10 @@ function Navbar({ locale }: { locale: string }) {
+ 
+       {open && (
+         <div className="md:hidden bg-[hsl(var(--background)/0.98)] border-b border-[hsl(var(--border))] px-5 pb-5 space-y-1 animate-slide-down">
+-          {links.map((l) => (
++          {header.links.map((l) => (
+             <Link
+-              key={l.href}
+-              href={l.href}
++              key={l.label}
++              href={localizeHref(l.href, locale)}
+               onClick={() => setOpen(false)}
+               className="block px-4 py-2.5 text-sm text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] rounded-lg hover:bg-[hsl(var(--secondary))] transition-all"
+             >
+@@ -97,8 +152,8 @@ function Navbar({ locale }: { locale: string }) {
+             </Link>
+           ))}
+           <div className="pt-3 flex items-center gap-2 border-t border-[hsl(var(--border))]">
+-            <LanguageSwitcher />
+-            <ThemeToggle /> {/* ✅ استفاده از کامپوننت اصلی */}
++            {header.showLanguageSwitcher && <LanguageSwitcher />}
++            {header.showThemeToggle && <ThemeToggle />}
+           </div>
+           <UserStatus variant="mobile" />
+         </div>
+@@ -108,140 +163,124 @@ function Navbar({ locale }: { locale: string }) {
+ }
+ 
+ // ─────────────────────────────────────────────────────────────
+-// HERO SECTION
++// HERO
+ // ─────────────────────────────────────────────────────────────
+ 
+-function HeroSection({ locale }: { locale: string }) {
++function HeroSection({ content }: { content: LandingContent }) {
++  const params = useParams();
++  const locale = (params?.locale as string) ?? 'fa';
++  const { hero } = content;
++  if (!hero.visible) return null;
++
+   return (
+     <section className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden pt-16">
+       <div className="absolute inset-0 bg-[hsl(var(--background))]" />
+-      <div
+-        className="absolute inset-0 opacity-[0.03]"
+-        style={{
+-          backgroundImage:
+-            'linear-gradient(rgba(255,255,255,0.8) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.8) 1px, transparent 1px)',
+-          backgroundSize: '60px 60px',
+-        }}
+-      />
+-      <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] rounded-full bg-[hsl(var(--primary))] opacity-[0.06] blur-[120px] pointer-events-none" />
+-      <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] rounded-full bg-[hsl(var(--accent))] opacity-[0.07] blur-[100px] pointer-events-none" />
+-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[200px] rounded-full bg-[hsl(var(--accent))] opacity-[0.04] blur-[80px] pointer-events-none" />
++      {hero.backgroundImage?.url ? (
++        // eslint-disable-next-line @next/next/no-img-element
++        <img
++          src={hero.backgroundImage.url}
++          alt={hero.backgroundImage.alt ?? ''}
++          className="absolute inset-0 w-full h-full object-cover opacity-20"
++        />
++      ) : (
++        <>
++          <div
++            className="absolute inset-0 opacity-[0.03]"
++            style={{
++              backgroundImage:
++                'linear-gradient(rgba(255,255,255,0.8) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.8) 1px, transparent 1px)',
++              backgroundSize: '60px 60px',
++            }}
++          />
++          <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] rounded-full bg-[hsl(var(--primary))] opacity-[0.06] blur-[120px] pointer-events-none" />
++          <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] rounded-full bg-[hsl(var(--accent))] opacity-[0.07] blur-[100px] pointer-events-none" />
++        </>
++      )}
+ 
+       <div className="relative z-10 max-w-5xl mx-auto px-5 text-center space-y-8">
+-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[hsl(var(--primary))/0.3] bg-[hsl(var(--primary))/0.05] text-xs text-[hsl(var(--primary))/0.8] font-medium animate-fade-in">
+-          <span className="w-1.5 h-1.5 rounded-full bg-[hsl(var(--primary))] animate-pulse" />
+-          پلتفرم تخصصی مهندسی برق و انرژی‌های نو
+-        </div>
++        {hero.badge && (
++          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[hsl(var(--primary))/0.3] bg-[hsl(var(--primary))/0.05] text-xs text-[hsl(var(--primary))/0.8] font-medium animate-fade-in">
++            <span className="w-1.5 h-1.5 rounded-full bg-[hsl(var(--primary))] animate-pulse" />
++            {hero.badge}
++          </div>
++        )}
+ 
+         <div className="space-y-3 animate-fade-in stagger-1">
+           <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black leading-[1.08] tracking-tight text-[hsl(var(--foreground))] text-balance">
+-            محاسبات مهندسی{' '}
+-            <span
+-              className="inline-block"
+-              style={{
+-                background: 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)))',
+-                WebkitBackgroundClip: 'text',
+-                WebkitTextFillColor: 'transparent',
+-                backgroundClip: 'text',
+-              }}
+-            >
+-              هوشمند
+-            </span>
+-            <br />
+-            با استانداردهای <span className="text-[hsl(var(--foreground))/0.8]">IEC / IEEE</span>
++            {hero.title}{' '}
++            {hero.highlightedWord && (
++              <span
++                className="inline-block"
++                style={{
++                  background: 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)))',
++                  WebkitBackgroundClip: 'text',
++                  WebkitTextFillColor: 'transparent',
++                  backgroundClip: 'text',
++                }}
++              >
++                {hero.highlightedWord}
++              </span>
++            )}
+           </h1>
+           <p className="text-base sm:text-lg text-[hsl(var(--muted-foreground))] max-w-2xl mx-auto leading-relaxed text-pretty">
+-            از طراحی کابل تا آنالیز کیفیت توان، از خورشیدی تا شبکه هوشمند — همه محاسبات تخصصی شما در
+-            یک پلتفرم یکپارچه
++            {hero.subtitle}
+           </p>
+         </div>
+ 
+         <div className="flex flex-col sm:flex-row items-center justify-center gap-3 animate-fade-in stagger-2">
+-          <a
+-            href={`/${locale}/register`}
+-            className="group inline-flex items-center gap-2.5 px-7 py-3.5 rounded-xl font-semibold text-white text-sm transition-all duration-200"
+-            style={{
+-              background: `linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)))`,
+-              boxShadow: `0 0 30px hsl(var(--primary)/0.35), inset 0 1px 0 rgba(255,255,255,0.15)`,
+-            }}
+-          >
+-            شروع رایگان
+-            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-[-4px]" />
+-          </a>
+-          <a
+-            href="#calculations"
+-            className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl font-medium text-[hsl(var(--foreground))/0.7] text-sm border border-[hsl(var(--border))] hover:border-[hsl(var(--primary))/0.2] hover:text-[hsl(var(--foreground))] hover:bg-[hsl(var(--secondary))] transition-all"
+-          >
+-            امتحان رایگان
+-          </a>
++          {hero.primaryButton && (
++            <a
++              href={localizeHref(hero.primaryButton.href, locale)}
++              className="group inline-flex items-center gap-2.5 px-7 py-3.5 rounded-xl font-semibold text-white text-sm transition-all duration-200"
++              style={{
++                background: 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)))',
++                boxShadow: '0 0 30px hsl(var(--primary)/0.35), inset 0 1px 0 rgba(255,255,255,0.15)',
++              }}
++            >
++              {hero.primaryButton.label}
++              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-[-4px]" />
++            </a>
++          )}
++          {hero.secondaryButton && (
++            <a
++              href={localizeHref(hero.secondaryButton.href, locale)}
++              className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl font-medium text-[hsl(var(--foreground))/0.7] text-sm border border-[hsl(var(--border))] hover:border-[hsl(var(--primary))/0.2] hover:text-[hsl(var(--foreground))] hover:bg-[hsl(var(--secondary))] transition-all"
++            >
++              {hero.secondaryButton.label}
++            </a>
++          )}
+         </div>
+ 
+-        <div className="flex flex-wrap items-center justify-center gap-6 pt-2 animate-fade-in stagger-3">
+-          {[
+-            { v: '۲۰+', l: 'محاسبه استاندارد' },
+-            { v: 'IEC', l: '60364 / 60076' },
+-            { v: 'IEEE', l: '519 / C57.110' },
+-            { v: 'RTL', l: 'پشتیبانی فارسی' },
+-          ].map(({ v, l }) => (
+-            <div key={v} className="text-center">
+-              <p className="text-lg font-bold text-[hsl(var(--foreground))]">{v}</p>
+-              <p className="text-xs text-[hsl(var(--muted-foreground))/0.6]">{l}</p>
+-            </div>
+-          ))}
+-        </div>
++        {hero.stats.length > 0 && (
++          <div className="flex flex-wrap items-center justify-center gap-6 pt-2 animate-fade-in stagger-3">
++            {hero.stats.map((s) => (
++              <div key={s.label} className="text-center">
++                <p className="text-lg font-bold text-[hsl(var(--foreground))]">{s.value}</p>
++                <p className="text-xs text-[hsl(var(--muted-foreground))/0.6]">{s.label}</p>
++              </div>
++            ))}
++          </div>
++        )}
+       </div>
+ 
+-      <div className="relative z-10 mt-16 w-full max-w-3xl mx-auto px-5 animate-fade-in stagger-4">
+-        <TerminalMockup />
+-      </div>
++      {hero.showTerminalMockup && (
++        <div className="relative z-10 mt-16 w-full max-w-3xl mx-auto px-5 animate-fade-in stagger-4">
++          <TerminalMockup />
++        </div>
++      )}
+ 
+       <a
+         href="#calculations"
+         className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center gap-2 text-[hsl(var(--foreground))/0.25] hover:text-[hsl(var(--foreground))/0.5] transition-colors animate-bounce-soft"
+       >
+-        <span className="text-[10px] uppercase tracking-widest">محاسبات رایگان</span>
++        <span className="text-[10px] uppercase tracking-widest">پایین</span>
+         <ChevronDown className="h-4 w-4" />
+       </a>
+     </section>
+   );
+ }
+ 
+-// ─────────────────────────────────────────────────────────────
+-// TERMINAL MOCKUP
+-// ─────────────────────────────────────────────────────────────
+-
+ function TerminalMockup() {
+-  const lines = [
+-    {
+-      t: 100,
+-      text: '$ xennic calc --type PQ-001 --thd 8.3%',
+-      color: 'text-[hsl(var(--primary))/0.8]',
+-    },
+-    {
+-      t: 600,
+-      text: '  ✓ THD Analysis (IEEE 519-2022)',
+-      color: 'text-[hsl(var(--foreground))/0.4]',
+-    },
+-    { t: 900, text: '  → THD_I = 8.3% > 5% (Limit)', color: 'text-[hsl(var(--destructive))/0.8]' },
+-    {
+-      t: 1100,
+-      text: '  → Recommendation: 5th Harmonic Filter',
+-      color: 'text-[hsl(var(--warning))/0.8]',
+-    },
+-    { t: 1400, text: '  → C = 147.3 μF  |  L = 12.4 mH', color: 'text-[hsl(var(--success))/0.8]' },
+-    { t: 1700, text: '  ✓ Completed in 42ms', color: 'text-[hsl(var(--success))/0.8]' },
+-    { t: 2000, text: '$ _', color: 'text-[hsl(var(--primary))/0.8]' },
+-  ];
+-
+-  const [visible, setVisible] = useState(0);
+-
+-  useEffect(() => {
+-    lines.forEach(({ t }, i) => {
+-      const timer = setTimeout(() => setVisible(i + 1), t);
+-      return () => clearTimeout(timer);
+-    });
+-  }, []);
+-
+   return (
+     <div
+       className="rounded-2xl overflow-hidden border border-[hsl(var(--border))/0.5]"
+@@ -259,84 +298,83 @@ function TerminalMockup() {
+           xennic-cli — bash
+         </span>
+       </div>
+-      <div className="p-5 font-mono text-sm space-y-1 min-h-[180px]">
+-        {lines.slice(0, visible).map((l, i) => (
+-          <div key={i} className={cn('leading-relaxed', l.color, 'animate-fade-in-fast')}>
+-            {l.text}
+-            {i === visible - 1 && l.text.endsWith('_') && <span className="animate-pulse">|</span>}
+-          </div>
+-        ))}
++      <div className="p-5 font-mono text-sm space-y-1 min-h-[120px] text-[hsl(var(--foreground))/0.5]">
++        <div className="text-[hsl(var(--primary))/0.8]">$ xennic --ready</div>
++        <div className="text-green-500/80">✓ پلتفرم آماده است</div>
+       </div>
+     </div>
+   );
+ }
+ 
+ // ─────────────────────────────────────────────────────────────
+-// CTA SECTION
++// CTA
+ // ─────────────────────────────────────────────────────────────
+ 
+-function CTASection({ locale }: { locale: string }) {
++function CtaSection({ content }: { content: LandingContent }) {
++  const params = useParams();
++  const locale = (params?.locale as string) ?? 'fa';
++  const { cta } = content;
++  if (!cta.visible) return null;
++
+   return (
+     <section className="relative py-28 overflow-hidden bg-[hsl(var(--background))]">
+       <div className="absolute inset-0">
+         <div className="absolute inset-0 bg-gradient-to-br from-[hsl(var(--secondary))/0.3] to-transparent" />
+         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] rounded-full bg-[hsl(var(--primary))] opacity-[0.05] blur-[120px]" />
+       </div>
+-
+       <div className="relative z-10 max-w-4xl mx-auto px-5 text-center space-y-8">
+         <div className="space-y-4">
+-          <p className="text-xs text-[hsl(var(--primary))] font-mono uppercase tracking-[0.2em]">
+-            // شروع کنید
+-          </p>
++          {cta.eyebrow && (
++            <p className="text-xs text-[hsl(var(--primary))] font-mono uppercase tracking-[0.2em]">
++              // {cta.eyebrow}
++            </p>
++          )}
+           <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-[hsl(var(--foreground))] text-balance">
+-            محاسبات مهندسی خود را
+-            <br />
+-            <span
+-              style={{
+-                background: `linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)))`,
+-                WebkitBackgroundClip: 'text',
+-                WebkitTextFillColor: 'transparent',
+-                backgroundClip: 'text',
+-              }}
+-            >
+-              حرفه‌ای کنید
+-            </span>
++            {cta.title}{' '}
++            {cta.highlightedText && (
++              <span
++                style={{
++                  background: 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)))',
++                  WebkitBackgroundClip: 'text',
++                  WebkitTextFillColor: 'transparent',
++                  backgroundClip: 'text',
++                }}
++              >
++                {cta.highlightedText}
++              </span>
++            )}
+           </h2>
+-          <p className="text-[hsl(var(--foreground))/0.45] text-base max-w-lg mx-auto">
+-            همین الان ثبت‌نام کنید — بدون نیاز به کارت اعتباری، رایگان شروع کنید
+-          </p>
++          {cta.subtitle && (
++            <p className="text-[hsl(var(--foreground))/0.45] text-base max-w-lg mx-auto">{cta.subtitle}</p>
++          )}
+         </div>
+-
+-        <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
++        {cta.button && (
+           <a
+-            href={`/${locale}/register`}
++            href={localizeHref(cta.button.href, locale)}
+             className="group inline-flex items-center gap-2.5 px-8 py-4 rounded-xl font-bold text-white transition-all duration-200"
+             style={{
+-              background: `linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)))`,
+-              boxShadow: `0 0 40px hsl(var(--primary)/0.4), inset 0 1px 0 rgba(255,255,255,0.15)`,
++              background: 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)))',
++              boxShadow: '0 0 40px hsl(var(--primary)/0.4), inset 0 1px 0 rgba(255,255,255,0.15)',
+             }}
+           >
+             <Zap className="h-5 w-5" />
+-            شروع رایگان
++            {cta.button.label}
+             <ArrowRight className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
+           </a>
+-        </div>
+-
+-        <div className="flex flex-wrap items-center justify-center gap-6 pt-4">
+-          {[
+-            { icon: Shield, text: 'امنیت کامل' },
+-            { icon: TrendingUp, text: 'بروزرسانی مداوم' },
+-            { icon: Star, text: 'پشتیبانی فارسی' },
+-          ].map(({ icon: Icon, text }) => (
+-            <div
+-              key={text}
+-              className="flex items-center gap-2 text-xs text-[hsl(var(--foreground))/0.3]"
+-            >
+-              <Icon className="h-3.5 w-3.5" />
+-              {text}
+-            </div>
+-          ))}
+-        </div>
++        )}
++        {cta.trustBadges && cta.trustBadges.length > 0 && (
++          <div className="flex flex-wrap items-center justify-center gap-6 pt-4">
++            {cta.trustBadges.map((text, i) => {
++              const Icon = [Shield, TrendingUp, Star][i % 3];
++              return (
++                <div key={text} className="flex items-center gap-2 text-xs text-[hsl(var(--foreground))/0.3]">
++                  <Icon className="h-3.5 w-3.5" />
++                  {text}
++                </div>
++              );
++            })}
++          </div>
++        )}
+       </div>
+     </section>
+   );
+@@ -346,80 +384,58 @@ function CTASection({ locale }: { locale: string }) {
+ // FOOTER
+ // ─────────────────────────────────────────────────────────────
+ 
+-function Footer({ locale }: { locale: string }) {
++function Footer({ content }: { content: LandingContent }) {
++  const params = useParams();
++  const locale = (params?.locale as string) ?? 'fa';
++  const { footer, branding } = content;
++  if (!footer.visible) return null;
++
+   return (
+     <footer id="footer" className="relative border-t border-[hsl(var(--border))]">
+       <div className="max-w-7xl mx-auto px-5 py-12">
+         <div className="grid grid-cols-1 md:grid-cols-4 gap-10 mb-12">
+           <div className="md:col-span-2 space-y-4">
+             <div className="flex items-center gap-2.5">
+-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--accent))] flex items-center justify-center">
+-                <Zap className="h-4 w-4 text-white" />
+-              </div>
+-              <span className="font-bold text-[hsl(var(--foreground))] text-lg">Xennic</span>
++              <BrandLogo branding={branding} />
++              <span className="font-bold text-[hsl(var(--foreground))] text-lg">{branding.platformName}</span>
+             </div>
+-            <p className="text-sm text-[hsl(var(--foreground))/0.35] leading-relaxed max-w-xs">
+-              پلتفرم تخصصی محاسبات مهندسی برق، کیفیت توان و انرژی‌های تجدیدپذیر با استانداردهای IEC
+-              و IEEE
+-            </p>
++            {footer.aboutText && (
++              <p className="text-sm text-[hsl(var(--foreground))/0.35] leading-relaxed max-w-xs">
++                {footer.aboutText}
++              </p>
++            )}
+             <div className="flex items-center gap-2 text-xs text-[hsl(var(--foreground))/0.2] font-mono">
+               <span className="w-1.5 h-1.5 rounded-full bg-[hsl(var(--success))] animate-pulse" />
+               سیستم آنلاین و پایدار
+             </div>
+           </div>
+ 
+-          <div>
+-            <h4 className="text-xs font-semibold text-[hsl(var(--foreground))/0.5] uppercase tracking-wider mb-4">
+-              محصول
+-            </h4>
+-            <ul className="space-y-2.5">
+-              {[
+-                { label: 'ویژگی‌ها', href: '#features' },
+-                { label: 'مقالات', href: `/${locale}/articles` },
+-                { label: 'محاسبات', href: '#calculations' },
+-                { label: 'پلن‌ها', href: '#pricing' },
+-              ].map(({ label, href }) => (
+-                <li key={label}>
+-                  <a
+-                    href={href}
+-                    className="text-sm text-[hsl(var(--foreground))/0.35] hover:text-[hsl(var(--foreground))/0.7] transition-colors"
+-                  >
+-                    {label}
+-                  </a>
+-                </li>
+-              ))}
+-            </ul>
+-          </div>
+-
+-          <div>
+-            <h4 className="text-xs font-semibold text-[hsl(var(--foreground))/0.5] uppercase tracking-wider mb-4">
+-              سایر
+-            </h4>
+-            <ul className="space-y-2.5">
+-              {[
+-                { label: 'درباره ما', href: `/${locale}/about` },
+-                { label: 'تماس', href: `/${locale}/contact` },
+-                { label: 'ورود', href: `/${locale}/login` },
+-                { label: 'ثبت‌نام', href: `/${locale}/register` },
+-              ].map(({ label, href }) => (
+-                <li key={label}>
+-                  <a
+-                    href={href}
+-                    className="text-sm text-[hsl(var(--foreground))/0.35] hover:text-[hsl(var(--foreground))/0.7] transition-colors"
+-                  >
+-                    {label}
+-                  </a>
+-                </li>
+-              ))}
+-            </ul>
+-          </div>
++          {footer.columns.map((col) => (
++            <div key={col.title}>
++              <h4 className="text-xs font-semibold text-[hsl(var(--foreground))/0.5] uppercase tracking-wider mb-4">
++                {col.title}
++              </h4>
++              <ul className="space-y-2.5">
++                {col.links.map((l) => (
++                  <li key={l.label}>
++                    <a
++                      href={localizeHref(l.href, locale)}
++                      className="text-sm text-[hsl(var(--foreground))/0.35] hover:text-[hsl(var(--foreground))/0.7] transition-colors"
++                    >
++                      {l.label}
++                    </a>
++                  </li>
++                ))}
++              </ul>
++            </div>
++          ))}
+         </div>
+ 
+         <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-8 border-t border-[hsl(var(--border))]">
+-          <p className="text-xs text-[hsl(var(--foreground))/0.2]">
+-            © ۱۴۰۴ Xennic — تمام حقوق محفوظ است
+-          </p>
+-          <p className="text-xs text-[hsl(var(--foreground))/0.15] font-mono">v1.0.0-beta</p>
++          <p className="text-xs text-[hsl(var(--foreground))/0.2]">{footer.copyright}</p>
++          {footer.version && (
++            <p className="text-xs text-[hsl(var(--foreground))/0.15] font-mono">{footer.version}</p>
++          )}
+         </div>
+       </div>
+     </footer>
+@@ -427,23 +443,24 @@ function Footer({ locale }: { locale: string }) {
+ }
+ 
+ // ─────────────────────────────────────────────────────────────
+-// MAIN EXPORT
++// MAIN
+ // ─────────────────────────────────────────────────────────────
+ 
+ export function LandingPage() {
++  const content = useLandingContent();
+   const params = useParams();
+   const locale = (params?.locale as string) ?? 'fa';
+ 
+   return (
+     <div dir="rtl" className="min-h-screen bg-[hsl(var(--background))] font-sans">
+-      <Navbar locale={locale} />
+-      <HeroSection locale={locale} />
+-      <CalculationsSection locale={locale} />
+-      <FeaturesSection />
+-      <ArticlesSection locale={locale} />
+-      <PricingSection locale={locale} />
+-      <CTASection locale={locale} />
+-      <Footer locale={locale} />
++      <Navbar content={content} />
++      <HeroSection content={content} />
++      {content.calculations.visible && <CalculationsSection locale={locale} />}
++      {content.features.visible && <FeaturesSection />}
++      {content.articles.visible && <ArticlesSection locale={locale} />}
++      {content.pricing.visible && <PricingSection locale={locale} />}
++      <CtaSection content={content} />
++      <Footer content={content} />
+     </div>
+   );
+ }
+diff --git a/apps/web/src/features/landing/lib/landing-api.ts b/apps/web/src/features/landing/lib/landing-api.ts
+new file mode 100644
+index 00000000..c5054683
+--- /dev/null
++++ b/apps/web/src/features/landing/lib/landing-api.ts
+@@ -0,0 +1,77 @@
++import { apiClient } from '@/lib/api/client';
++import {
++  DEFAULT_LANDING_CONTENT,
++  mergeLandingContent,
++  type CmsImage,
++  type LandingContent,
++} from '../types/landing-content';
++
++const API_BASE =
++  typeof window !== 'undefined'
++    ? `${process.env.NEXT_PUBLIC_API_URL ?? ''}/api/v1`
++    : `${process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000'}/api/v1`;
++
++/**
++ * واکشی محتوای منتشرشده صفحه فرود از سمت سرور/کلاینت.
++ * در صورت خطا (مثلاً API در دسترس نباشد) محتوای پیش‌فرض برمی‌گردد.
++ */
++export async function fetchPublicLandingContent(locale = 'fa'): Promise<LandingContent> {
++  try {
++    const res = await fetch(`${API_BASE}/landing/content?locale=${locale}`, {
++      next: { revalidate: 60, tags: ['landing-cms'] },
++    });
++    if (!res.ok) return structuredClone(DEFAULT_LANDING_CONTENT);
++    const json = await res.json();
++    return mergeLandingContent(json?.data);
++  } catch {
++    return structuredClone(DEFAULT_LANDING_CONTENT);
++  }
++}
++
++/** محتوای در حال ویرایش ادمین. */
++export async function fetchDraftLandingContent(locale = 'fa') {
++  return apiClient.get<{
++    success: boolean;
++    data: {
++      content: LandingContent;
++      published: boolean;
++      updatedAt: string | null;
++      versionNote: string | null;
++    };
++  }>(`/admin/landing/content?locale=${locale}`);
++}
++
++export async function saveDraftLandingContent(
++  content: LandingContent,
++  versionNote?: string,
++  locale = 'fa',
++) {
++  return apiClient.put<{ success: boolean; data: { content: LandingContent } }>(
++    `/admin/landing/content?locale=${locale}`,
++    { content, versionNote, locale },
++  );
++}
++
++export async function publishLandingContent(published = true, versionNote?: string) {
++  return apiClient.post<{ success: true }>('/admin/landing/publish', { published, versionNote });
++}
++
++export async function resetLandingContent() {
++  return apiClient.post<{ success: true; data: LandingContent }>('/admin/landing/reset', {});
++}
++
++/** آپلود تصویر با استفاده از ماژول storage (بازنویسی برای مسیر CMS). */
++export async function uploadLandingAsset(
++  file: File,
++  purpose?: string,
++): Promise<{ fileId: string; url: string; alt?: string }> {
++  const form = new FormData();
++  form.append('file', file);
++  if (purpose) form.append('purpose', purpose);
++  const json = await apiClient.post<{ success: boolean; data: CmsImage }>(
++    '/admin/landing/assets',
++    form,
++  );
++  if (!json.data?.url) throw new Error('آدرس تصویر دریافت نشد');
++  return { fileId: json.data.fileId!, url: json.data.url, alt: json.data.alt };
++}
+diff --git a/apps/web/src/features/landing/types/landing-content.ts b/apps/web/src/features/landing/types/landing-content.ts
+new file mode 100644
+index 00000000..51e1c61e
+--- /dev/null
++++ b/apps/web/src/features/landing/types/landing-content.ts
+@@ -0,0 +1,212 @@
++// نوع‌های مشترک محتوای قابل تنظیم صفحه فرود — باید با بک‌اند هماهنگ باشد.
++
++export interface CmsImage {
++  fileId?: string;
++  url?: string;
++  alt?: string;
++}
++
++export interface CmsLink {
++  label: string;
++  href: string;
++}
++
++export interface CmsButton {
++  label: string;
++  href: string;
++  variant?: 'primary' | 'secondary';
++}
++
++export interface CmsSeo {
++  title: string;
++  description: string;
++  keywords: string[];
++  ogImage?: CmsImage;
++}
++
++export interface CmsBranding {
++  platformName: string;
++  logo?: CmsImage;
++  logoDark?: CmsImage;
++  favicon?: CmsImage;
++  tagline?: string;
++}
++
++export interface CmsHeader {
++  visible: boolean;
++  links: CmsLink[];
++  showLanguageSwitcher: boolean;
++  showThemeToggle: boolean;
++  ctaButton?: CmsButton;
++}
++
++export interface CmsHero {
++  visible: boolean;
++  badge?: string;
++  title: string;
++  highlightedWord?: string;
++  subtitle: string;
++  primaryButton?: CmsButton;
++  secondaryButton?: CmsButton;
++  backgroundImage?: CmsImage;
++  showTerminalMockup: boolean;
++  stats: { value: string; label: string }[];
++}
++
++export interface CmsFeatureItem {
++  icon?: string;
++  title: string;
++  description: string;
++  tags?: string[];
++}
++export interface CmsFeaturesSection {
++  visible: boolean;
++  title?: string;
++  subtitle?: string;
++  items: CmsFeatureItem[];
++}
++
++export interface CmsArticleStub {
++  title: string;
++  summary: string;
++  category?: string;
++  href: string;
++}
++export interface CmsArticlesSection {
++  visible: boolean;
++  title?: string;
++  subtitle?: string;
++  items: CmsArticleStub[];
++}
++
++export interface CmsCalcStub {
++  code: string;
++  label: string;
++  formula?: string;
++}
++export interface CmsCalculationsSection {
++  visible: boolean;
++  title?: string;
++  subtitle?: string;
++  items: CmsCalcStub[];
++}
++
++export interface CmsPricingPlan {
++  name: string;
++  price: string;
++  period: string;
++  description?: string;
++  features: string[];
++  ctaLabel: string;
++  ctaHref: string;
++  highlighted?: boolean;
++  badge?: string;
++}
++export interface CmsPricingSection {
++  visible: boolean;
++  title?: string;
++  subtitle?: string;
++  plans: CmsPricingPlan[];
++}
++
++export interface CmsCtaSection {
++  visible: boolean;
++  eyebrow?: string;
++  title: string;
++  highlightedText?: string;
++  subtitle?: string;
++  button?: CmsButton;
++  trustBadges?: string[];
++}
++
++export interface CmsFooter {
++  visible: boolean;
++  aboutText?: string;
++  copyright: string;
++  version?: string;
++  columns: { title: string; links: CmsLink[] }[];
++  socialLinks?: CmsLink[];
++}
++
++export interface LandingContent {
++  seo: CmsSeo;
++  branding: CmsBranding;
++  header: CmsHeader;
++  hero: CmsHero;
++  calculations: CmsCalculationsSection;
++  features: CmsFeaturesSection;
++  articles: CmsArticlesSection;
++  pricing: CmsPricingSection;
++  cta: CmsCtaSection;
++  footer: CmsFooter;
++}
++
++export const DEFAULT_LANDING_CONTENT: LandingContent = {
++  seo: {
++    title: 'Xennic — پلتفرم تخصصی مهندسی برق',
++    description:
++      'محاسبات مهندسی برق، کیفیت توان (IEEE 519) و انرژی‌های تجدیدپذیر با استانداردهای IEC و IEEE.',
++    keywords: ['مهندسی برق', 'محاسبات مهندسی', 'کیفیت توان', 'THD', 'IEEE 519', 'IEC 60364', 'Xennic'],
++  },
++  branding: { platformName: 'Xennic', tagline: 'پلتفرم تخصصی مهندسی برق و انرژی‌های نو' },
++  header: {
++    visible: true,
++    showLanguageSwitcher: true,
++    showThemeToggle: true,
++    links: [
++      { label: 'صفحه اصلی', href: '/' },
++      { label: 'محاسبات', href: '#calculations' },
++      { label: 'درباره ما', href: '/about' },
++      { label: 'تماس', href: '/contact' },
++    ],
++  },
++  hero: {
++    visible: true,
++    badge: 'پلتفرم تخصصی مهندسی برق و انرژی‌های نو',
++    title: 'محاسبات مهندسی',
++    highlightedWord: 'هوشمند',
++    subtitle: 'همه محاسبات تخصصی شما در یک پلتفرم یکپارچه',
++    primaryButton: { label: 'شروع رایگان', href: '/register', variant: 'primary' },
++    secondaryButton: { label: 'امتحان رایگان', href: '#calculations', variant: 'secondary' },
++    showTerminalMockup: true,
++    stats: [
++      { value: '۲۰+', label: 'محاسبه استاندارد' },
++      { value: 'IEC', label: '60364 / 60076' },
++      { value: 'IEEE', label: '519 / C57.110' },
++    ],
++  },
++  calculations: { visible: true, title: 'محاسبات رایگان', items: [] },
++  features: { visible: true, title: 'چرا Xennic؟', items: [] },
++  articles: { visible: true, title: 'مقالات تخصصی', items: [] },
++  pricing: { visible: true, title: 'پلن‌های قیمت‌گذاری', plans: [] },
++  cta: {
++    visible: true,
++    title: 'محاسبات مهندسی خود را',
++    highlightedText: 'حرفه‌ای کنید',
++    button: { label: 'شروع رایگان', href: '/register', variant: 'primary' },
++  },
++  footer: {
++    visible: true,
++    aboutText: 'پلتفرم تخصصی محاسبات مهندسی برق و انرژی‌های تجدیدپذیر',
++    copyright: '© ۱۴۰۴ Xennic — تمام حقوق محفوظ است',
++    columns: [],
++  },
++};
++
++export function mergeLandingContent(partial?: Partial<LandingContent> | null): LandingContent {
++  if (!partial) return structuredClone(DEFAULT_LANDING_CONTENT);
++  return {
++    ...structuredClone(DEFAULT_LANDING_CONTENT),
++    ...partial,
++    seo: { ...DEFAULT_LANDING_CONTENT.seo, ...(partial.seo ?? {}) },
++    branding: { ...DEFAULT_LANDING_CONTENT.branding, ...(partial.branding ?? {}) },
++    header: { ...DEFAULT_LANDING_CONTENT.header, ...(partial.header ?? {}) },
++    hero: { ...DEFAULT_LANDING_CONTENT.hero, ...(partial.hero ?? {}) },
++    calculations: { ...DEFAULT_LANDING_CONTENT.calculations, ...(partial.calculations ?? {}) },
++    features: { ...DEFAULT_LANDING_CONTENT.features, ...(partial.features ?? {}) },
++    articles: { ...DEFAULT_LANDING_CONTENT.articles, ...(partial.articles ?? {}) },
++    pricing: { ...DEFAULT_LANDING_CONTENT.pricing, ...(partial.pricing ?? {}) },
++    cta: { ...DEFAULT_LANDING_CONTENT.cta, ...(partial.cta ?? {}) },
++    footer: { ...DEFAULT_LANDING_CONTENT.footer, ...(partial.footer ?? {}) },
++  };
++}
+diff --git a/docs/LANDING-CMS.md b/docs/LANDING-CMS.md
+new file mode 100644
+index 00000000..27f794ed
+--- /dev/null
++++ b/docs/LANDING-CMS.md
+@@ -0,0 +1,86 @@
++# Landing CMS — ویرایش محتوای صفحه فرود
++
++این قابلیت به ادمین اجازه می‌دهد تمام بخش‌های صفحه لندینگ را از پنل مدیریت (مسیر
++`/fa/admin` ← گزینه **تنظیمات** ← تب **صفحه فرود (CMS)**) بدون تغییر کد ویرایش،
++ذخیره و منتشر کند.
++
++## بخش‌های قابل ویرایش
++
++- **برندینگ**: نام پلتفرم، شعار، لوگو، فاوآیکون
++- **سئو/متادیتا**: title، description، keywords، تصویر Open Graph
++- **هدر**: لینک‌های ناوبری، نمایش تغییر زبان/تم، دکمه CTA
++- **هرو**: badge، عنوان، کلمه هایلایت، زیرعنوان، دو دکمه، تصویر پس‌زمینه، آمار، mockup
++- **محاسبات**: لیست محاسبات نمایشی (کد، عنوان، فرمول)
++- **ویژگی‌ها**: کارت‌های ویژگی (آیکون، عنوان، توضیح)
++- **مقالات**: مقادل دستی (در صورت خالی بودن، مقالات واقعی نمایش داده می‌شوند)
++- **قیمت‌گذاری**: پلن‌ها (نام، قیمت، ویژگی‌ها، برجسته، CTA)
++- **CTA**: بخش فراخوان پایانی
++- **فوتر**: متن درباره، کپی‌رایت، ستون‌های لینک
++
++## تصاویر و فایل‌ها
++
++همه تصاویر (لوگو، فاوآیکون، پس‌زمینه هرو، og:image) از طریق ماژول موجود **storage**
++در باکت `public` و workspace سیستمی با کد `XENNIC` ذخیره می‌شوند. در دیتابیس
++فقط `fileId` نگهداری می‌شود و URL به‌صورت presigned و هنگام خواندن تولید می‌گردد.
++
++اندازه هر تصویر حداکثر ۱۰ مگابایت و فقط انواع `image/*` مجاز است.
++
++## معماری
++
++### بک‌اند (`apps/api/src/modules/landing-cms`)
++
++- `GET  /api/v1/landing/content?locale=fa` — عمومی؛ محتوای منتشرشده
++- `GET  /api/v1/admin/landing/content` — ادمین؛ پیش‌نویس
++- `PUT  /api/v1/admin/landing/content` — ذخیره پیش‌نویس
++- `POST /api/v1/admin/landing/publish` — انتشار
++- `POST /api/v1/admin/landing/reset` — بازنشانی به پیش‌فرض
++- `POST /api/v1/admin/landing/assets` (multipart) — آپلود تصویر
++
++دسترسی‌ها با `JwtAuthGuard` و `AdminGuard` محافظت می‌شوند. محتوا در جدول
++`landing_cms_config` به‌صورت JSON ذخیره می‌شود؛ ساختار تایپ‌شده در
++`domain/landing-content.ts` با مقادیر پیش‌فرض و تابع ادغام (`mergeWithDefaults`)
++تعریف شده تا افزودن فیلدهای جدید در آینده نسخه‌های قدیمی را نشکند.
++
++### فرانت‌اند (`apps/web`)
++
++- `features/landing/types/landing-content.ts` — تایپ‌ها و پیش‌فرض‌های سمت وب
++- `features/landing/lib/landing-api.ts` — توابع fetch و آپلود
++- `features/landing/components/landing-content-provider.tsx` — Context
++- `features/landing/components/landing-page.tsx` — رندر بر اساس محتوای CMS
++- `features/admin/components/landing-cms-editor.tsx` — ویرایشگر ادمین
++- `app/[locale]/page.tsx` — Server Component که محتوا را fetch و به Provider می‌دهد
++  و متادیتا (title/description/favicon/og:image) را از CMS می‌سازد.
++
++صفحه لندینگ هنگام خطا یا در دسترس نبودن API، به‌صورت self-contained با مقادیر
++پیش‌فرض رندر می‌شود تا سایت هرگز خاموش نماند.
++
++## اعمال تغییرات
++
++1. مهاجرت دیتابیس:
++
++   ```bash
++   pnpm db:migrate         # اگر از prisma migrate استفاده می‌کنید
++   # یا مستقیم:
++   psql "$DATABASE_URL" -f prisma/migrations/20260808120000_landing_cms/migration.sql
++   pnpm db:generate
++   ```
++
++2. از وجود workspace با کد `XENNIC` اطمینان حاصل کنید (seed آن را می‌سازد):
++
++   ```bash
++   pnpm db:seed
++   ```
++
++3. بک‌اند و فرانت را اجرا کنید:
++
++   ```bash
++   pnpm dev
++   ```
++
++## نکات
++
++- در حال حاضر یک نسخه محتوا برای هر زبان نگهداری می‌شود؛ فارسی با scope `default`
++  و سایر زبان‌ها با `default:<locale>`.
++- انتشار، پیش‌نویس را منتشر می‌کند؛ می‌توانید چندین بار ذخیره کنید و سپس یک‌بار
++  انتشار دهید.
++- URLهای presigned ۷ روزه هستند و در هر درخواست GET تازه می‌شوند.
+diff --git a/prisma/migrations/20260808120000_landing_cms/migration.sql b/prisma/migrations/20260808120000_landing_cms/migration.sql
+new file mode 100644
+index 00000000..e3d6ef2d
+--- /dev/null
++++ b/prisma/migrations/20260808120000_landing_cms/migration.sql
+@@ -0,0 +1,24 @@
++-- Landing CMS: ذخیره محتوای قابل تنظیم صفحه فرود
++
++CREATE TABLE IF NOT EXISTS "landing_cms_config" (
++    "id"           TEXT         NOT NULL,
++    "scope"        TEXT         NOT NULL DEFAULT 'default',
++    "locale"       TEXT         NOT NULL DEFAULT 'fa',
++    "content"      JSONB        NOT NULL DEFAULT '{}'::jsonb,
++    "published"    BOOLEAN      NOT NULL DEFAULT false,
++    "version_note" TEXT,
++    "updated_by"   TEXT,
++    "created_at"   TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
++    "updated_at"   TIMESTAMP(3) NOT NULL,
++
++    CONSTRAINT "landing_cms_config_pkey" PRIMARY KEY ("id")
++);
++
++CREATE UNIQUE INDEX IF NOT EXISTS "landing_cms_config_scope_key"
++    ON "landing_cms_config"("scope");
++
++CREATE INDEX IF NOT EXISTS "landing_cms_config_published_idx"
++    ON "landing_cms_config"("published");
++
++CREATE INDEX IF NOT EXISTS "landing_cms_config_locale_idx"
++    ON "landing_cms_config"("locale");
+diff --git a/prisma/schema.prisma b/prisma/schema.prisma
+index 8cdd83d9..6651fa15 100644
+--- a/prisma/schema.prisma
++++ b/prisma/schema.prisma
+@@ -2532,3 +2532,28 @@ model calculation_plugins {
+   created_at  DateTime @default(now())
+   updated_at  DateTime @updatedAt
+ }
++
++// ============================================================
++// LANDING CMS DOMAIN
++// ویرایش محتوای صفحه فرود پلتفرم توسط ادمین
++// ============================================================
++
++model landing_cms_config {
++  id           String   @id @default(uuid())
++  // کلید نسخه/اسکوپ محتوا، مثلاً "default" یا "v2"
++  scope        String   @unique @default("default")
++  // زبان این رکورد؛ برای محتوای چندزبانه
++  locale       String   @default("fa")
++  // پیکربندی کامل صفحه فرود به‌صورت JSON (ساختار تایپ‌شده در سرویس)
++  content      Json     @default("{}")
++  // آیا این نسخه منتشر شده (live) است یا پیش‌نویس
++  published    Boolean  @default(false)
++  // یادداشت نسخه
++  version_note String?
++  updated_by   String?
++  created_at   DateTime @default(now())
++  updated_at   DateTime @updatedAt
++
++  @@index([published])
++  @@index([locale])
++}
+-- 
+2.47.3
+

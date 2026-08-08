@@ -2532,3 +2532,22 @@ model calculation_plugins {
   created_at  DateTime @default(now())
   updated_at  DateTime @updatedAt
 }
+
+// ============================================================
+// LANDING CMS DOMAIN
+// ============================================================
+
+model landing_cms_config {
+  id           String   @id @default(uuid())
+  scope        String   @unique @default("default")
+  locale       String   @default("fa")
+  content      Json     @default("{}")
+  published    Boolean  @default(false)
+  version_note String?
+  updated_by   String?
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+
+  @@index([published])
+  @@index([locale])
+}

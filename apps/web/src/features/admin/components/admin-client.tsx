@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useParams } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   LayoutDashboard,
@@ -33,6 +34,7 @@ import {
   Key,
   Webhook,
   Flag,
+  FileEdit,
 } from 'lucide-react';
 import { useAuthStore } from '@/stores/auth.store';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -66,6 +68,7 @@ const SECTIONS = [
   { key: 'articles', label: 'مقالات', icon: BookOpen },
   { key: 'notifications', label: 'اعلان‌ها', icon: Bell },
   { key: 'settings', label: 'تنظیمات', icon: Settings },
+  { key: 'landing-cms', label: 'صفحه فرود (CMS)', icon: FileEdit },
   { key: 'taxonomy', label: 'تاکسونومی', icon: Tags },
   { key: 'api-keys', label: 'کلید API', icon: Key },
   { key: 'ai-providers', label: 'ارائه‌دهندگان AI', icon: Zap },
@@ -2864,6 +2867,8 @@ function FeatureFlagsSection() {
 // ─────────────────────────────────────────────────────────────
 export function AdminClient() {
   const [section, setSection] = useState<Section>('dashboard');
+  const params = useParams();
+  const locale = (params?.locale as string) ?? 'fa';
 
   const SECTION_COMPONENTS: Record<Section, React.ReactNode> = {
     dashboard: <DashboardSection />,
@@ -2874,6 +2879,13 @@ export function AdminClient() {
     articles: <ArticlesAdminSection />,
     notifications: <NotificationsSection />,
     settings: <SettingsSection />,
+    'landing-cms': (
+      <iframe
+        title="مدیریت صفحه فرود"
+        src={`/${locale}/admin/landing`}
+        className="w-full h-[calc(100vh-7rem)] rounded-xl border border-[hsl(var(--border))] bg-white"
+      />
+    ),
     taxonomy: <TaxonomySection />,
     'api-keys': <ApiKeysSection />,
     'ai-providers': <AiProviderManagement />,
