@@ -13,16 +13,13 @@ function resolveKey(envPathKey: string, envInlineKey: string): string {
   }
 
   const configuredPath = process.env[envPathKey];
-  if (!configuredPath) {
-    throw new Error(`${envPathKey} not set and ${envInlineKey} inline not provided`);
-  }
 
   const candidates = [
     configuredPath,
-    resolve(process.cwd(), configuredPath),
-    resolve(process.cwd(), '..', '..', configuredPath),
-    resolve(__dirname, '..', '..', '..', '..', '..', '..', configuredPath),
-    // safe fallbacks
+    configuredPath ? resolve(process.cwd(), configuredPath) : null,
+    configuredPath ? resolve(process.cwd(), '..', '..', configuredPath) : null,
+    configuredPath ? resolve(__dirname, '..', '..', '..', '..', '..', '..', configuredPath) : null,
+    // safe fallbacks - try even without env
     'infrastructure/docker/secrets/jwtRS256.key',
     'infrastructure/docker/secrets/jwt-private.key',
     'infrastructure/docker/secrets/jwtRS256.key.pub',
@@ -30,7 +27,10 @@ function resolveKey(envPathKey: string, envInlineKey: string): string {
     resolve(process.cwd(), 'infrastructure/docker/secrets/jwtRS256.key'),
     resolve(process.cwd(), 'infrastructure/docker/secrets/jwt-private.key'),
     resolve(process.cwd(), 'infrastructure/docker/secrets/jwt-public.key'),
-  ];
+    resolve(process.cwd(), '../../infrastructure/docker/secrets/jwtRS256.key'),
+    resolve(process.cwd(), '../../infrastructure/docker/secrets/jwt-private.key'),
+    resolve(process.cwd(), '../../infrastructure/docker/secrets/jwt-public.key'),
+  ].filter(Boolean) as string[];
 
   const unique = [...new Set(candidates)];
   for (const p of unique) {
@@ -45,7 +45,7 @@ function resolveKey(envPathKey: string, envInlineKey: string): string {
   }
 
   throw new Error(
-    `JWT key not found for ${envPathKey}. Tried: ${unique.join(', ')}. cwd=${process.cwd()}`,
+    `JWT key not found for ${envPathKey}. Tried: ${unique.join(', ')}. cwd=${process.cwd()}, env ${envPathKey}=${configuredPath}`,
   );
 }
 

@@ -1,4 +1,14 @@
 import 'reflect-metadata';
+import * as dotenv from 'dotenv';
+import { resolve } from 'path';
+
+// Load .env from multiple possible locations (repo root, apps/api, cwd)
+// This fixes ERR_INVALID_ARG_TYPE when running via pnpm --filter which sets cwd to apps/api
+dotenv.config({ path: resolve(process.cwd(), '.env') });
+dotenv.config({ path: resolve(process.cwd(), '../../.env') });
+dotenv.config({ path: resolve(__dirname, '../../..', '.env') });
+dotenv.config({ path: resolve(__dirname, '../../../..', '.env') });
+// Also load default dotenv/config as fallback
 import 'dotenv/config';
 
 import { NestFactory } from '@nestjs/core';

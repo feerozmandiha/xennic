@@ -14,25 +14,29 @@ function resolvePublicKey(): string {
   }
 
   const configuredPath = process.env.JWT_PUBLIC_KEY_PATH;
-  if (!configuredPath) {
-    throw new Error('JWT_PUBLIC_KEY_PATH not set and JWT_PUBLIC_KEY inline not provided');
-  }
 
-  // List of candidate paths to try
+  // List of candidate paths to try - always try defaults even if env not set
   const candidates = [
     configuredPath,
-    resolve(process.cwd(), configuredPath),
-    resolve(process.cwd(), '..', '..', configuredPath),
-    resolve(__dirname, '..', '..', '..', '..', '..', '..', configuredPath),
-    resolve(__dirname, '..', '..', '..', '..', '..', '..', '..', configuredPath),
-    // Fallback to old names and new safe names
+    configuredPath ? resolve(process.cwd(), configuredPath) : null,
+    configuredPath ? resolve(process.cwd(), '..', '..', configuredPath) : null,
+    configuredPath ? resolve(__dirname, '..', '..', '..', '..', '..', '..', configuredPath) : null,
+    configuredPath ? resolve(__dirname, '..', '..', '..', '..', '..', '..', '..', configuredPath) : null,
+    // Fallback to old names and new safe names - try these even without env
     'infrastructure/docker/secrets/jwtRS256.key.pub',
     'infrastructure/docker/secrets/jwt-public.key',
     'infrastructure/docker/secrets/jwtRS256.key',
+    'infrastructure/docker/secrets/jwt-private.key',
     resolve(process.cwd(), 'infrastructure/docker/secrets/jwtRS256.key.pub'),
     resolve(process.cwd(), 'infrastructure/docker/secrets/jwt-public.key'),
     resolve(process.cwd(), 'infrastructure/docker/secrets/jwtRS256.key'),
-  ];
+    resolve(process.cwd(), 'infrastructure/docker/secrets/jwt-private.key'),
+    resolve(process.cwd(), '../../infrastructure/docker/secrets/jwtRS256.key.pub'),
+    resolve(process.cwd(), '../../infrastructure/docker/secrets/jwt-public.key'),
+    resolve(process.cwd(), '../../infrastructure/docker/secrets/jwt-private.key'),
+    resolve(__dirname, '../../..', 'infrastructure/docker/secrets/jwt-public.key'),
+    resolve(__dirname, '../../../..', 'infrastructure/docker/secrets/jwt-public.key'),
+  ].filter(Boolean) as string[];
 
   // Deduplicate
   const unique = [...new Set(candidates)];
