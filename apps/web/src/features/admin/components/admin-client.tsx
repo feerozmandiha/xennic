@@ -1393,13 +1393,24 @@ function ArticlesAdminSection() {
                       >
                         مدیریت
                       </a>
-                      <a
-                        href={`/fa/knowledge/${a.slug}`}
-                        target="_blank"
-                        className="text-[11px] px-2 py-1 rounded border border-[hsl(var(--border))] hover:bg-[hsl(var(--secondary))]"
-                      >
-                        مشاهده
-                      </a>
+                      {a.status === 'published' ? (
+                        <a
+                          href={`/fa/knowledge/${a.slug}`}
+                          target="_blank"
+                          className="text-[11px] px-2 py-1 rounded border border-[hsl(var(--border))] hover:bg-[hsl(var(--secondary))] bg-green-50"
+                          title="مشاهده عمومی (منتشر شده)"
+                        >
+                          مشاهده عمومی
+                        </a>
+                      ) : (
+                        <a
+                          href={`/fa/knowledge-manage/${a.id}`}
+                          className="text-[11px] px-2 py-1 rounded border border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100"
+                          title="پیش‌نمایش مدیریتی (چون پیش‌نویس است، عمومی نمایش داده نمی‌شود)"
+                        >
+                          پیش‌نمایش
+                        </a>
+                      )}
                       <button
                         onClick={() => {
                           if (confirm('حذف شود؟')) deleteMutation.mutate(a.id);
