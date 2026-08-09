@@ -14,9 +14,9 @@ interface MemoryRow {
 }
 
 interface PrismaMemoryValue {
-  content: string;
-  metadata: Record<string, unknown>;
-  score: number;
+  content?: string;
+  metadata?: Record<string, unknown>;
+  score?: number;
 }
 
 @Injectable()
@@ -57,15 +57,15 @@ export class PrismaMemoryStore implements IMemoryStore {
     })) as unknown as MemoryRow[];
 
     let results = rows.map((row: MemoryRow) => {
-      const val = (row.value as PrismaMemoryValue) ?? {};
+      const val = (row.value as PrismaMemoryValue) ?? ({} as PrismaMemoryValue);
       return new MemoryEntry(
         row.id,
         row.session_id,
         row.key as MemoryType,
-        val.content ?? '',
-        val.metadata ?? {},
+        (val as any)?.content ?? '',
+        (val as any)?.metadata ?? {},
         row.created_at,
-        val.score ?? 1.0,
+        (val as any)?.score ?? 1.0,
       );
     });
 
