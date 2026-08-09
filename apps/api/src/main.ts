@@ -1,6 +1,11 @@
 import 'reflect-metadata';
 import * as dotenv from 'dotenv';
-import { resolve } from 'path';
+import { resolve, dirname } from 'path';
+import { fileURLToPath } from 'url';
+
+// ESM compatible __dirname
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 // Load .env from multiple possible locations (repo root, apps/api, cwd)
 // This fixes ERR_INVALID_ARG_TYPE when running via pnpm --filter which sets cwd to apps/api
