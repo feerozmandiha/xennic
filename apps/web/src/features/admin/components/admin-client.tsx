@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useParams } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   LayoutDashboard,
@@ -33,8 +34,7 @@ import {
   Key,
   Webhook,
   Flag,
-  FileText,
-  List,
+  FileEdit,
 } from 'lucide-react';
 import { useAuthStore } from '@/stores/auth.store';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -43,6 +43,7 @@ import { useToast } from '@/stores/toast.store';
 import { apiClient } from '@/lib/api/client';
 import { cn } from '@/lib/utils';
 import { AiProviderManagement } from './ai-provider-management';
+import { LandingCmsEditor } from './landing-cms-editor';
 
 // ─────────────────────────────────────────────────────────────
 // types
@@ -65,10 +66,10 @@ const SECTIONS = [
   { key: 'workspaces', label: 'Workspace ها', icon: Building2 },
   { key: 'plans', label: 'پلن‌ها و تعرفه', icon: CreditCard },
   { key: 'consultations', label: 'تیکت‌ها', icon: MessageSquare },
-  { key: 'articles', label: 'دانشنامه فنی', icon: BookOpen },
-  { key: 'knowledge-list', label: 'لیست مقالات', icon: FileText },
+  { key: 'articles', label: 'مقالات', icon: BookOpen },
   { key: 'notifications', label: 'اعلان‌ها', icon: Bell },
   { key: 'settings', label: 'تنظیمات', icon: Settings },
+  { key: 'landing-cms', label: 'تنظیمات لندینگ', icon: FileEdit },
   { key: 'taxonomy', label: 'تاکسونومی', icon: Tags },
   { key: 'api-keys', label: 'کلید API', icon: Key },
   { key: 'ai-providers', label: 'ارائه‌دهندگان AI', icon: Zap },
@@ -1248,79 +1249,177 @@ function SettingsSection() {
 function ArticlesAdminSection() {
   const toast = useToast();
   const qc = useQueryClient();
-  const [search, setSearch] = useState('');
-
-  const { data, isLoading } = useQuery({
-    queryKey: ['admin', 'knowledge-list', search],
-    queryFn: async () => {
-      // Try workspace knowledge search, fallback to public
-      try {
-        const res = await apiClient.get<any>(
-          `/knowledge/search?limit=50&q=${encodeURIComponent(search)}`,
-        );
-        return res;
-      } catch {
-        const res = await apiClient.get<any>(
-          `/public/knowledge?limit=50&q=${encodeURIComponent(search)}`,
-        );
-        return res;
-      }
-    },
+  const [showForm, setShowForm] = useState(false);
+  const [form, setForm] = useState({
+    title: '',
+    titleEn: '',
+    summary: '',
+    content: '',
+    category: 'general',
+    tags: '',
+    status: 'draft',
+    readMinutes: '5',
   });
 
-  const deleteMutation = useMutation({
-    mutationFn: (id: string) => apiClient.delete(`/knowledge/${id}`),
+  const { data } = useQuery({
+    queryKey: ['admin', 'articles-list'],
+    queryFn: () => apiClient.get<any>('/articles?limit=50&status=all'),
+  });
+
+  const create = useMutation({
+    mutationFn: () =>
+      apiClient.post<any>('/admin/articles', {
+        ...form,
+        tags: form.tags
+          .split(',')
+          .map((t) => t.trim())
+          .filter(Boolean),
+        readMinutes: Number(form.readMinutes),
+      }),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['admin', 'knowledge-list'] });
-      toast.success('مقاله حذف شد');
+      qc.invalidateQueries({ queryKey: ['admin', 'articles-list'] });
+      toast.success('مقاله ایجاد شد');
+      setShowForm(false);
+      setForm({
+        title: '',
+        titleEn: '',
+        summary: '',
+        content: '',
+        category: 'general',
+        tags: '',
+        status: 'draft',
+        readMinutes: '5',
+      });
     },
-    onError: () => toast.error('خطا در حذف'),
+    onError: () => toast.error('خطا'),
   });
 
   const articles: any[] = data?.data ?? [];
-  const getTitle = (a: any) => a.content?.title ?? a.slug ?? a.title ?? 'بدون عنوان';
+  const inputCls =
+    'w-full px-3 py-2 rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--background))] text-sm outline-none focus:border-[hsl(var(--primary))]';
+
+  if (showForm)
+    return (
+      <div className="max-w-3xl space-y-4">
+        <div className="flex items-center justify-between">
+          <h3 className="font-bold">مقاله جدید</h3>
+          <button
+            onClick={() => setShowForm(false)}
+            className="text-sm text-[hsl(var(--muted-foreground))]"
+          >
+            ← بازگشت
+          </button>
+        </div>
+        <div className="space-y-3">
+          <input
+            value={form.title}
+            onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
+            placeholder="عنوان فارسی *"
+            className={inputCls}
+          />
+          <input
+            value={form.titleEn}
+            onChange={(e) => setForm((f) => ({ ...f, titleEn: e.target.value }))}
+            placeholder="عنوان انگلیسی"
+            className={inputCls}
+          />
+          <textarea
+            value={form.summary}
+            onChange={(e) => setForm((f) => ({ ...f, summary: e.target.value }))}
+            rows={2}
+            placeholder="خلاصه مقاله *"
+            className={cn(inputCls, 'resize-none')}
+          />
+          <textarea
+            value={form.content}
+            onChange={(e) => setForm((f) => ({ ...f, content: e.target.value }))}
+            rows={15}
+            placeholder="محتوای مقاله (Markdown) *"
+            className={cn(inputCls, 'resize-none font-mono text-xs')}
+          />
+          <div className="grid grid-cols-3 gap-3">
+            <select
+              value={form.category}
+              onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}
+              className={inputCls}
+            >
+              {[
+                'general',
+                'cable',
+                'transformer',
+                'protection',
+                'power_quality',
+                'grounding',
+                'renewable',
+                'motor',
+              ].map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
+            </select>
+            <select
+              value={form.status}
+              onChange={(e) => setForm((f) => ({ ...f, status: e.target.value }))}
+              className={inputCls}
+            >
+              <option value="draft">پیش‌نویس</option>
+              <option value="published">منتشر شده</option>
+            </select>
+            <input
+              value={form.readMinutes}
+              onChange={(e) => setForm((f) => ({ ...f, readMinutes: e.target.value }))}
+              type="number"
+              placeholder="زمان مطالعه (دقیقه)"
+              className={inputCls}
+            />
+          </div>
+          <input
+            value={form.tags}
+            onChange={(e) => setForm((f) => ({ ...f, tags: e.target.value }))}
+            placeholder="تگ‌ها با کاما: کابل، IEC 60364، سایزینگ"
+            className={inputCls}
+          />
+          <div className="flex justify-end gap-2">
+            <button
+              onClick={() => setShowForm(false)}
+              className="h-8 px-4 text-xs rounded border border-[hsl(var(--border))] hover:bg-[hsl(var(--secondary))]"
+            >
+              لغو
+            </button>
+            <button
+              onClick={() => create.mutate()}
+              disabled={create.isPending || !form.title || !form.content}
+              className="h-8 px-5 text-xs rounded flex items-center gap-2 bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] disabled:opacity-50"
+            >
+              {create.isPending ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <Plus className="h-3.5 w-3.5" />
+              )}
+              ذخیره مقاله
+            </button>
+          </div>
+        </div>
+      </div>
+    );
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
-        <div>
-          <h3 className="font-bold text-sm">دانشنامه فنی - مدیریت مقالات</h3>
-          <p className="text-xs text-[hsl(var(--muted-foreground))] mt-1">
-            این بخش به دانشنامه یکپارچه (knowledge) متصل است. برای مدیریت پیشرفته به{' '}
-            <a href="/fa/knowledge-manage" className="text-[hsl(var(--primary))] hover:underline">
-              پنل مدیریت دانشنامه
-            </a>{' '}
-            بروید.
-          </p>
-        </div>
-        <a
-          href="/fa/knowledge-manage/new"
-          className="inline-flex items-center gap-2 h-9 px-4 rounded-lg bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] text-sm hover:opacity-90"
+      <div className="flex justify-end">
+        <button
+          onClick={() => setShowForm(true)}
+          className="flex items-center gap-2 h-9 px-4 rounded-lg bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] text-sm hover:opacity-90"
         >
-          <Plus className="h-4 w-4" /> مقاله جدید (حرفه‌ای)
-        </a>
+          <Plus className="h-4 w-4" />
+          مقاله جدید
+        </button>
       </div>
-
-      <div className="flex gap-2">
-        <div className="relative flex-1">
-          <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[hsl(var(--muted-foreground))]" />
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="جستجو در عنوان، اسلاگ..."
-            className="w-full h-9 pr-9 pl-3 rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--background))] text-sm outline-none focus:border-[hsl(var(--primary))]"
-          />
-        </div>
-        <Badge variant="secondary" className="h-9 px-3 flex items-center">
-          {data?.meta?.total ?? articles.length} مقاله
-        </Badge>
-      </div>
-
       <div className="rounded-xl border border-[hsl(var(--border))] overflow-hidden">
         <table className="w-full text-sm">
           <thead className="bg-[hsl(var(--secondary)/0.5)]">
             <tr>
-              {['عنوان', 'وضعیت', 'سطح', 'بازدید', 'عملیات'].map((h) => (
+              {['عنوان', 'دسته', 'وضعیت', 'بازدید', 'لایک'].map((h) => (
                 <th
                   key={h}
                   className="text-right text-xs font-semibold text-[hsl(var(--muted-foreground))] px-4 py-3"
@@ -1331,105 +1430,34 @@ function ArticlesAdminSection() {
             </tr>
           </thead>
           <tbody className="divide-y divide-[hsl(var(--border)/0.5)]">
-            {isLoading ? (
-              Array.from({ length: 5 }).map((_, i) => (
-                <tr key={i}>
-                  <td colSpan={5} className="px-4 py-3">
-                    <div className="h-4 bg-[hsl(var(--secondary)/0.5)] rounded animate-pulse" />
-                  </td>
-                </tr>
-              ))
-            ) : articles.length === 0 ? (
-              <tr>
-                <td
-                  colSpan={5}
-                  className="px-4 py-8 text-center text-[hsl(var(--muted-foreground))] text-sm"
-                >
-                  مقاله‌ای یافت نشد — از پنل دانشنامه مقاله جدید بسازید
+            {articles.map((a: any) => (
+              <tr key={a.id} className="hover:bg-[hsl(var(--secondary)/0.3)]">
+                <td className="px-4 py-3 font-medium max-w-xs truncate">{a.title}</td>
+                <td className="px-4 py-3 text-xs text-[hsl(var(--muted-foreground))]">
+                  {a.category}
+                </td>
+                <td className="px-4 py-3">
+                  <span
+                    className={cn(
+                      'text-[10px] px-2 py-0.5 rounded-full font-semibold',
+                      a.status === 'published'
+                        ? 'bg-green-100 text-green-700'
+                        : 'bg-gray-100 text-gray-600',
+                    )}
+                  >
+                    {a.status === 'published' ? 'منتشر' : 'پیش‌نویس'}
+                  </span>
+                </td>
+                <td className="px-4 py-3 text-xs text-[hsl(var(--muted-foreground))]">
+                  {a.viewCount ?? 0}
+                </td>
+                <td className="px-4 py-3 text-xs text-[hsl(var(--muted-foreground))]">
+                  {a.likeCount ?? 0}
                 </td>
               </tr>
-            ) : (
-              articles.map((a: any) => (
-                <tr key={a.id} className="hover:bg-[hsl(var(--secondary)/0.3)]">
-                  <td className="px-4 py-3 font-medium max-w-xs truncate">
-                    <div className="flex flex-col">
-                      <span className="truncate">{getTitle(a)}</span>
-                      <span className="text-[10px] text-[hsl(var(--muted-foreground))] font-mono truncate">
-                        {a.slug}
-                      </span>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3">
-                    <span
-                      className={cn(
-                        'text-[10px] px-2 py-0.5 rounded-full font-semibold',
-                        a.status === 'published'
-                          ? 'bg-green-100 text-green-700'
-                          : a.status === 'review'
-                            ? 'bg-amber-100 text-amber-700'
-                            : 'bg-gray-100 text-gray-600',
-                      )}
-                    >
-                      {a.status === 'published'
-                        ? 'منتشر'
-                        : a.status === 'review'
-                          ? 'در بررسی'
-                          : a.status === 'archived'
-                            ? 'آرشیو'
-                            : 'پیش‌نویس'}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-xs text-[hsl(var(--muted-foreground))]">
-                    {a.difficulty ?? '—'}
-                  </td>
-                  <td className="px-4 py-3 text-xs text-[hsl(var(--muted-foreground))]">
-                    {a.reading_time ?? a.readingTime ?? 5}′
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-1">
-                      <a
-                        href={`/fa/knowledge-manage/${a.id}`}
-                        className="text-[11px] px-2 py-1 rounded border border-[hsl(var(--border))] hover:bg-[hsl(var(--secondary))] inline-flex items-center gap-1"
-                      >
-                        مدیریت
-                      </a>
-                      <a
-                        href={`/fa/knowledge/${a.slug}`}
-                        target="_blank"
-                        className="text-[11px] px-2 py-1 rounded border border-[hsl(var(--border))] hover:bg-[hsl(var(--secondary))]"
-                      >
-                        مشاهده
-                      </a>
-                      <button
-                        onClick={() => {
-                          if (confirm('حذف شود؟')) deleteMutation.mutate(a.id);
-                        }}
-                        className="text-[11px] px-2 py-1 rounded border border-red-200 text-red-500 hover:bg-red-50"
-                      >
-                        <Trash2 className="h-3 w-3" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))
-            )}
+            ))}
           </tbody>
         </table>
-      </div>
-
-      <div className="rounded-xl bg-blue-50 dark:bg-blue-950/20 border border-blue-200 p-3 text-xs text-blue-800 dark:text-blue-300">
-        <p className="font-semibold flex items-center gap-1">
-          <BookOpen className="h-4 w-4" /> نکته
-        </p>
-        <p className="mt-1 leading-relaxed">
-          در پلتفرم فقط <strong>knowledge</strong> وجود دارد، نه articles جدا. این جدول همان
-          دانشنامه را نشان می‌دهد. برای امکانات کامل (فرمول LaTeX، استاندارد IEC/IEEE، تجهیزات، وارد
-          کردن PDF) به{' '}
-          <a href="/fa/knowledge-manage" className="underline">
-            /fa/knowledge-manage
-          </a>{' '}
-          بروید.
-        </p>
       </div>
     </div>
   );
@@ -2840,6 +2868,8 @@ function FeatureFlagsSection() {
 // ─────────────────────────────────────────────────────────────
 export function AdminClient() {
   const [section, setSection] = useState<Section>('dashboard');
+  const params = useParams();
+  const locale = (params?.locale as string) ?? 'fa';
 
   const SECTION_COMPONENTS: Record<Section, React.ReactNode> = {
     dashboard: <DashboardSection />,
@@ -2848,211 +2878,15 @@ export function AdminClient() {
     plans: <PlansSection />,
     consultations: <ConsultationsSection />,
     articles: <ArticlesAdminSection />,
-    'knowledge-list': <KnowledgeListSection />,
     notifications: <NotificationsSection />,
     settings: <SettingsSection />,
+    'landing-cms': <LandingCmsEditor />,
     taxonomy: <TaxonomySection />,
     'api-keys': <ApiKeysSection />,
     'ai-providers': <AiProviderManagement />,
     webhooks: <WebhooksSection />,
     'feature-flags': <FeatureFlagsSection />,
   };
-
-  function KnowledgeListSection() {
-    const toast = useToast();
-    const qc = useQueryClient();
-    const [search, setSearch] = useState('');
-    const [status, setStatus] = useState('all');
-    const [page, setPage] = useState(1);
-
-    const { data, isLoading } = useQuery({
-      queryKey: ['admin', 'knowledge-list-full', search, status, page],
-      queryFn: async () => {
-        try {
-          const sp = new URLSearchParams();
-          sp.set('limit', '20');
-          sp.set('page', String(page));
-          if (search) sp.set('q', search);
-          if (status !== 'all') sp.set('status', status);
-          const res = await apiClient.get<any>(`/knowledge/search?${sp.toString()}`);
-          return res;
-        } catch {
-          const res = await apiClient.get<any>(
-            `/public/knowledge?limit=20&page=${page}&q=${encodeURIComponent(search)}`,
-          );
-          return res;
-        }
-      },
-    });
-
-    const deleteMutation = useMutation({
-      mutationFn: (id: string) => apiClient.delete(`/knowledge/${id}`),
-      onSuccess: () => {
-        qc.invalidateQueries({ queryKey: ['admin', 'knowledge-list-full'] });
-        toast.success('حذف شد');
-      },
-    });
-
-    const list: any[] = data?.data ?? [];
-    const meta = data?.meta ?? { total: list.length, totalPages: 1 };
-
-    return (
-      <div className="space-y-4">
-        <div className="flex flex-col md:flex-row gap-3">
-          <div className="relative flex-1">
-            <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[hsl(var(--muted-foreground))]" />
-            <input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="جستجو در عنوان، اسلاگ، محتوا..."
-              className="w-full h-9 pr-9 pl-3 rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--background))] text-sm outline-none focus:border-[hsl(var(--primary))]"
-            />
-          </div>
-          <select
-            value={status}
-            onChange={(e) => {
-              setStatus(e.target.value);
-              setPage(1);
-            }}
-            className="h-9 px-3 rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--background))] text-sm"
-          >
-            <option value="all">همه وضعیت‌ها</option>
-            <option value="published">منتشرشده</option>
-            <option value="draft">پیش‌نویس</option>
-            <option value="review">در بررسی</option>
-            <option value="archived">آرشیو</option>
-          </select>
-          <a
-            href="/fa/knowledge-manage"
-            className="h-9 px-4 rounded-lg bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] text-sm flex items-center gap-1 hover:opacity-90"
-          >
-            <Plus className="h-4 w-4" /> مدیریت پیشرفته
-          </a>
-        </div>
-
-        <div className="rounded-xl border border-[hsl(var(--border))] overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="bg-[hsl(var(--secondary)/0.5)]">
-              <tr>
-                <th className="text-right text-xs font-semibold text-[hsl(var(--muted-foreground))] px-4 py-3">
-                  عنوان
-                </th>
-                <th className="text-right text-xs font-semibold text-[hsl(var(--muted-foreground))] px-4 py-3">
-                  اسلاگ
-                </th>
-                <th className="text-right text-xs font-semibold text-[hsl(var(--muted-foreground))] px-4 py-3">
-                  وضعیت
-                </th>
-                <th className="text-right text-xs font-semibold text-[hsl(var(--muted-foreground))] px-4 py-3">
-                  سطح
-                </th>
-                <th className="text-right text-xs font-semibold text-[hsl(var(--muted-foreground))] px-4 py-3">
-                  زبان
-                </th>
-                <th className="text-right text-xs font-semibold text-[hsl(var(--muted-foreground))] px-4 py-3">
-                  عملیات
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-[hsl(var(--border)/0.5)]">
-              {isLoading ? (
-                Array.from({ length: 6 }).map((_, i) => (
-                  <tr key={i}>
-                    <td colSpan={6} className="px-4 py-3">
-                      <div className="h-4 bg-[hsl(var(--secondary)/0.5)] rounded animate-pulse" />
-                    </td>
-                  </tr>
-                ))
-              ) : list.length === 0 ? (
-                <tr>
-                  <td
-                    colSpan={6}
-                    className="px-4 py-8 text-center text-sm text-[hsl(var(--muted-foreground))]"
-                  >
-                    مقاله‌ای یافت نشد
-                  </td>
-                </tr>
-              ) : (
-                list.map((a: any) => (
-                  <tr key={a.id} className="hover:bg-[hsl(var(--secondary)/0.3)]">
-                    <td className="px-4 py-3 max-w-[250px] truncate font-medium">
-                      {a.content?.title ?? a.slug ?? a.title ?? '—'}
-                    </td>
-                    <td className="px-4 py-3 font-mono text-xs text-[hsl(var(--muted-foreground))] truncate max-w-[150px]">
-                      {a.slug}
-                    </td>
-                    <td className="px-4 py-3">
-                      <span
-                        className={cn(
-                          'text-[10px] px-2 py-0.5 rounded-full font-semibold',
-                          a.status === 'published'
-                            ? 'bg-green-100 text-green-700'
-                            : a.status === 'draft'
-                              ? 'bg-gray-100 text-gray-600'
-                              : 'bg-amber-100 text-amber-700',
-                        )}
-                      >
-                        {a.status}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-xs">{a.difficulty ?? '—'}</td>
-                    <td className="px-4 py-3 text-xs">{a.language ?? 'fa'}</td>
-                    <td className="px-4 py-3">
-                      <div className="flex gap-1">
-                        <a
-                          href={`/fa/knowledge-manage/${a.id}`}
-                          className="text-[11px] px-2 py-1 rounded border hover:bg-[hsl(var(--secondary))]"
-                        >
-                          ویرایش
-                        </a>
-                        <a
-                          href={`/fa/knowledge/${a.slug}`}
-                          target="_blank"
-                          className="text-[11px] px-2 py-1 rounded border hover:bg-[hsl(var(--secondary))]"
-                        >
-                          مشاهده
-                        </a>
-                        <button
-                          onClick={() => {
-                            if (confirm('حذف؟')) deleteMutation.mutate(a.id);
-                          }}
-                          className="text-[11px] px-2 py-1 rounded border border-red-200 text-red-500 hover:bg-red-50"
-                        >
-                          حذف
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-
-        <div className="flex items-center justify-between">
-          <span className="text-xs text-[hsl(var(--muted-foreground))]">
-            صفحه {page} از {meta.totalPages ?? 1} • {meta.total ?? list.length} مقاله
-          </span>
-          <div className="flex gap-2">
-            <button
-              disabled={page <= 1}
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-              className="h-8 px-3 text-xs rounded border disabled:opacity-40"
-            >
-              قبلی
-            </button>
-            <button
-              disabled={page >= (meta.totalPages ?? 1)}
-              onClick={() => setPage((p) => p + 1)}
-              className="h-8 px-3 text-xs rounded border disabled:opacity-40"
-            >
-              بعدی
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   const current = SECTIONS.find((s) => s.key === section);
 
