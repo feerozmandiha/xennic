@@ -1,5 +1,6 @@
 /**
  * Seed Knowledge Taxonomy — Categories, Topics, Disciplines, Audiences, Tags
+ * Resilient to different table schemas
  */
 const { PrismaClient } = require('@prisma/client');
 const { randomUUID } = require('crypto');
@@ -59,27 +60,115 @@ const tags = [
   { slug: 'ai-assisted', name: 'هوش مصنوعی', name_en: 'AI Assisted' },
 ];
 
+function buildCreateData(table, item) {
+  const base = {
+    id: randomUUID(),
+    slug: item.slug,
+    name: item.name,
+    name_en: item.name_en,
+  };
+  if (table === 'categories') {
+    return {
+      ...base,
+      icon: item.icon || null,
+      color: item.color || null,
+      sort_order: item.sort_order ?? 0,
+      is_active: true,
+      created_at: new Date(),
+      updated_at: new Date(),
+    };
+  }
+  if (table === 'topics') {
+    return {
+      ...base,
+      icon: item.icon || null,
+      is_active: true,
+      created_at: new Date(),
+      updated_at: new Date(),
+    };
+  }
+  if (table === 'disciplines') {
+    return {
+      ...base,
+      is_active: true,
+      created_at: new Date(),
+      updated_at: new Date(),
+    };
+  }
+  if (table === 'audiences') {
+    return {
+      ...base,
+      description: item.description || null,
+      is_active: true,
+      created_at: new Date(),
+      updated_at: new Date(),
+    };
+  }
+  if (table === 'tags') {
+    return {
+      ...base,
+      created_at: new Date(),
+    };
+  }
+  return {
+    ...base,
+    created_at: new Date(),
+    updated_at: new Date(),
+  };
+}
+
+function buildUpdateData(table, item) {
+  const base = {
+    name: item.name,
+    name_en: item.name_en,
+    updated_at: new Date(),
+  };
+  if (table === 'categories') {
+    return { ...base, icon: item.icon || undefined, color: item.color || undefined, sort_order: item.sort_order ?? undefined };
+  }
+  if (table === 'topics') {
+    return { ...base, icon: item.icon || undefined };
+  }
+  if (table === 'audiences') {
+    return { ...base, description: item.description || undefined };
+  }
+  return base;
+}
+
 async function seedTable(table, items) {
   console.log(`\n📚 Seeding ${table}...`);
+  let count = 0;
   for (const item of items) {
-    await prisma[table].upsert({
-      where: { slug: item.slug },
-      update: { name: item.name, name_en: item.name_en, updated_at: new Date() },
-      create: {
-        id: randomUUID(),
-        slug: item.slug,
-        name: item.name,
-        name_en: item.name_en,
-        icon: item.icon || null,
-        color: item.color || null,
-        sort_order: item.sort_order ?? 0,
-        is_active: true,
-        created_at: new Date(),
-        updated_at: new Date(),
-      },
-    });
+    try {
+      await prisma[table].upsert({
+        where: { slug: item.slug },
+        update: buildUpdateData(table, item),
+        create: buildCreateData(table, item),
+      });
+      count++;
+    } catch (e) {
+      console.warn(`  ⚠️ Failed ${item.slug}: ${e.message}`);
+      try {
+        await prisma[table].upsert({
+          where: { slug: item.slug },
+          update: { name: item.name },
+          create: {
+            id: randomUUID(),
+            slug: item.slug,
+            name: item.name,
+            name_en: item.name_en,
+            created_at: new Date(),
+            ...(table !== 'tags' ? { updated_at: new Date() } : {}),
+          },
+        });
+        count++;
+        console.log(`  ✅ Retry ok ${item.slug}`);
+      } catch (e2) {
+        console.error(`  ❌ Failed again ${item.slug}: ${e2.message}`);
+      }
+    }
   }
-  console.log(`  ✅ ${items.length} ${table}`);
+  console.log(`  ✅ ${count}/${items.length} ${table}`);
 }
 
 async function main() {
