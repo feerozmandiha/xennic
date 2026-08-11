@@ -7,9 +7,9 @@
 
 این سند مرجع عملیاتی مدیریت Git/GitHub در Xennic است. هدف آن ایجاد یک مسیر ساده و قابل اجرا برای `main`، `dev` و Branchهای کاری است؛ نه ارائه آموزش عمومی Git.
 
-## 1. وضعیت فعلی
+## 1. مبنای آغاز کار
 
-ممیزی به‌صورت read-only انجام شد. Checkout محلی shallow است؛ بنابراین Branchهای Remote با `git ls-remote` و GitHub API بررسی شدند.
+این Snapshot پیش از ایجاد Issue #2، Push شدن Branch فعلی و بازشدن [PR #3](https://github.com/feerozmandiha/xennic/pull/3) ثبت شد. ممیزی به‌صورت read-only انجام شد و چون Checkout محلی shallow است، Branchهای Remote با `git ls-remote` و GitHub API بررسی شدند.
 
 | مورد                 | وضعیت مشاهده‌شده                                           |
 | -------------------- | ---------------------------------------------------------- |
