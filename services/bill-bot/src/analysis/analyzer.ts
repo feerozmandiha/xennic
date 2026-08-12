@@ -49,7 +49,7 @@ export function analyzeBill(bill: BillData, opts: AnalyzeOptions = {}): ReportMo
   const supplyCostRials =
     opts.supplyCostOverrideRials ??
     SUPPLY_COST_RIALS_PER_KWH[year] ??
-    SUPPLY_COST_RIALS_PER_KWH[1405];
+    SUPPLY_COST_RIALS_PER_KWH[1405]!;
 
   if (!SUPPLY_COST_RIALS_PER_KWH[year]) {
     warnings.push(`داده تعرفه سال ${faNumber(year)} موجود نیست؛ مبنای محاسبه ۱۴۰۵ قرار گرفت.`);
@@ -101,14 +101,15 @@ export function analyzeBill(bill: BillData, opts: AnalyzeOptions = {}): ReportMo
   );
   const effectiveRateRials = computedEnergyRials / bill.consumptionKwh;
 
-  const deviationPct =
-    bill.energyChargeRials && bill.energyChargeRials > 0
-      ? ((computedEnergyRials - bill.energyChargeRials) / bill.energyChargeRials) * 100
-      : null;
-  if (deviationPct !== null && Math.abs(deviationPct) > 5) {
-    warnings.push(
-      `انحراف محاسبه ربات (${faNumber(computedEnergyRials)} ریال) نسبت به بهای انرژی روی قبض (${faNumber(bill.energyChargeRials)} ریال) بیش از ۵٪ است. علل محتمل: تبصره‌ها/عوارض محلی، گردکردن شرکت توزیع، یا خطای استخراج.`,
-    );
+  const energyChargeRials = bill.energyChargeRials;
+  let deviationPct: number | null = null;
+  if (energyChargeRials !== undefined && energyChargeRials > 0) {
+    deviationPct = ((computedEnergyRials - energyChargeRials) / energyChargeRials) * 100;
+    if (Math.abs(deviationPct) > 5) {
+      warnings.push(
+        `انحراف محاسبه ربات (${faNumber(computedEnergyRials)} ریال) نسبت به بهای انرژی روی قبض (${faNumber(energyChargeRials)} ریال) بیش از ۵٪ است. علل محتمل: تبصره‌ها/عوارض محلی، گردکردن شرکت توزیع، یا خطای استخراج.`,
+      );
+    }
   }
 
   // ── اوج‌بار ────────────────────────────────────────────────────
