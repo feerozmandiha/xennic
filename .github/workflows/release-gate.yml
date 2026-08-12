@@ -6,17 +6,6 @@ on:
   pull_request:
     branches: [main]
   workflow_dispatch:
-    inputs:
-      skip_tests:
-        description: 'Skip unit/e2e tests'
-        required: false
-        default: false
-        type: boolean
-      run_e2e:
-        description: 'Run E2E tests (manual-only until stabilization)'
-        required: false
-        default: false
-        type: boolean
 
 concurrency:
   group: release-gate-${{ github.ref }}
@@ -139,18 +128,13 @@ jobs:
           echo "JWT_ACCESS_TOKEN_TTL=900" >> "$GITHUB_ENV"
           echo "JWT_REFRESH_TOKEN_TTL=2592000" >> "$GITHUB_ENV"
       - name: Unit Tests
-        if: ${{ github.event_name != 'workflow_dispatch' || !inputs.skip_tests }}
         run: |
           set -o pipefail
           pnpm --dir apps/api exec jest --runInBand 2>&1 | tee /tmp/xennic-release-unit-tests.log
         timeout-minutes: 15
       - name: E2E Tests
-        if: ${{ github.event_name == 'workflow_dispatch' && inputs.run_e2e && !inputs.skip_tests }}
         run: pnpm --dir apps/api exec jest --config test/jest-e2e.json --runInBand
         timeout-minutes: 15
-      - name: E2E Tests Skipped
-        if: ${{ github.event_name != 'workflow_dispatch' || !inputs.run_e2e }}
-        run: echo "E2E tests are manual-only until dedicated E2E stabilization is complete."
       - name: Upload Release Gate unit test log
         if: always()
         uses: actions/upload-artifact@v4

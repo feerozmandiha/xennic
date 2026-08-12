@@ -80,10 +80,6 @@ jobs:
         run: pnpm --filter @xennic/web lint
         timeout-minutes: 5
 
-      - name: Test API
-        run: pnpm --dir apps/api exec jest --runInBand
-        timeout-minutes: 15
-
       - name: Generate CI JWT keys
         run: |
           mkdir -p /tmp/xennic-jwt
@@ -95,6 +91,10 @@ jobs:
           echo "JWT_AUDIENCE=xennic-client" >> "$GITHUB_ENV"
           echo "JWT_ACCESS_TOKEN_TTL=900" >> "$GITHUB_ENV"
           echo "JWT_REFRESH_TOKEN_TTL=2592000" >> "$GITHUB_ENV"
+
+      - name: Test API
+        run: pnpm --dir apps/api exec jest --runInBand
+        timeout-minutes: 15
 
       - name: Build API
         run: |

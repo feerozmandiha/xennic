@@ -12,6 +12,7 @@ on:
       - 'pnpm-lock.yaml'
       - 'pnpm-workspace.yaml'
       - '.github/workflows/api-e2e.yml'
+      - '.github/actions/setup-minio/**'
   push:
     branches: [main]
     paths:
@@ -22,6 +23,7 @@ on:
       - 'pnpm-lock.yaml'
       - 'pnpm-workspace.yaml'
       - '.github/workflows/api-e2e.yml'
+      - '.github/actions/setup-minio/**'
 
 concurrency:
   group: api-e2e-${{ github.ref }}
