@@ -38,6 +38,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Set up MinIO
+        uses: ./.github/actions/setup-minio
+
       - uses: pnpm/action-setup@v4
         with:
           version: ${{ env.PNPM_VERSION }}
@@ -58,6 +61,10 @@ jobs:
 
       - name: Push Schema
         run: npx prisma db push --skip-generate
+
+      - name: Build Database
+        run: pnpm --filter @xennic/database build
+        timeout-minutes: 2
 
       - name: Validate Architecture
         run: pnpm validate:arch
@@ -88,10 +95,6 @@ jobs:
           echo "JWT_AUDIENCE=xennic-client" >> "$GITHUB_ENV"
           echo "JWT_ACCESS_TOKEN_TTL=900" >> "$GITHUB_ENV"
           echo "JWT_REFRESH_TOKEN_TTL=2592000" >> "$GITHUB_ENV"
-
-      - name: Build Database
-        run: pnpm --filter @xennic/database build
-        timeout-minutes: 2
 
       - name: Build API
         run: |

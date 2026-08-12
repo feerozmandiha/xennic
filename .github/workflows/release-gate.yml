@@ -109,6 +109,8 @@ jobs:
       NODE_ENV: test
     steps:
       - uses: actions/checkout@v4
+      - name: Set up MinIO
+        uses: ./.github/actions/setup-minio
       - uses: pnpm/action-setup@v4
         with:
           version: ${{ env.PNPM_VERSION }}
