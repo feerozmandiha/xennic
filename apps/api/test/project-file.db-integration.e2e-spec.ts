@@ -2,18 +2,22 @@
  * Database Integration Tests — project_files table
  *
  * XENNIC-STORAGE-EO-1B-TESTS-012 Section 9
- * Runs against real PostgreSQL (Local Development)
- * NO schema changes, NO migrations, NO db push
+ * Runs against a real PostgreSQL database in CI or local development.
+ * The runner must apply committed migrations first; this suite creates only
+ * isolated data fixtures and never changes the schema.
  *
  * Uses @prisma/client directly to avoid ESM issues with @xennic/database
  */
+import { randomUUID } from 'node:crypto';
 import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-let testUserId: string;
-let testProjectId: string;
-let testFileId: string;
+const testUserId = `test-user-${randomUUID()}`;
+const testWorkspaceId = `test-workspace-${randomUUID()}`;
+const testWorkspaceCode = `test-ws-${randomUUID()}`;
+const testProjectId = `test-project-${randomUUID()}`;
+const testFileId = `test-file-${randomUUID()}`;
 
 async function sql(query: string): Promise<any[]> {
   return (prisma as any).$queryRawUnsafe(query);
@@ -24,15 +28,38 @@ async function exec(query: string): Promise<number> {
 }
 
 beforeAll(async () => {
-  const users = await sql(`SELECT id FROM users LIMIT 1`);
-  if (users.length === 0) {
-    throw new Error('No users in database — cannot run integration tests');
-  }
-  testUserId = users[0].id;
+  await exec(
+    `INSERT INTO users
+      (id, email, password, first_name, last_name, is_admin, is_active, created_at, updated_at)
+     VALUES
+      ('${testUserId}', '${testUserId}@test.local', 'test-hash', 'E2E', 'ProjectFile', false, true, NOW(), NOW())`,
+  );
+  await exec(
+    `INSERT INTO workspaces
+      (id, code, name, created_by, created_at, updated_at)
+     VALUES
+      ('${testWorkspaceId}', '${testWorkspaceCode}', 'Project File E2E Workspace', '${testUserId}', NOW(), NOW())`,
+  );
+  await exec(
+    `INSERT INTO projects
+      (id, workspace_id, name, status, created_by, created_at, updated_at)
+     VALUES
+      ('${testProjectId}', '${testWorkspaceId}', 'Project File E2E Project', 'active', '${testUserId}', NOW(), NOW())`,
+  );
+  await exec(
+    `INSERT INTO files
+      (id, workspace_id, bucket, path, filename, original_name, extension, mime_type, size, uploaded_by, created_at)
+     VALUES
+      ('${testFileId}', '${testWorkspaceId}', 'documents', 'e2e/${testFileId}.pdf', '${testFileId}.pdf', 'project-file.pdf', '.pdf', 'application/pdf', 1, '${testUserId}', NOW())`,
+  );
 });
 
 afterAll(async () => {
-  await exec(`DELETE FROM project_files WHERE id LIKE 'test-%'`).catch(() => {});
+  await exec(`DELETE FROM project_files WHERE project_id = '${testProjectId}'`).catch(() => {});
+  await exec(`DELETE FROM files WHERE id = '${testFileId}'`).catch(() => {});
+  await exec(`DELETE FROM projects WHERE id = '${testProjectId}'`).catch(() => {});
+  await exec(`DELETE FROM workspaces WHERE id = '${testWorkspaceId}'`).catch(() => {});
+  await exec(`DELETE FROM users WHERE id = '${testUserId}'`).catch(() => {});
   await prisma.$disconnect();
 });
 
@@ -160,21 +187,8 @@ describe('project_files — Foreign Key Verification', () => {
 });
 
 describe('project_files — CRUD Operations', () => {
-  beforeAll(async () => {
-    const projects = await sql(`SELECT id FROM projects WHERE deleted_at IS NULL LIMIT 1`);
-    const files = await sql(`SELECT id FROM files WHERE deleted_at IS NULL LIMIT 1`);
-
-    if (projects.length > 0) testProjectId = projects[0].id;
-    if (files.length > 0) testFileId = files[0].id;
-  });
-
   it('should insert a project_file row', async () => {
-    if (!testProjectId || !testFileId) {
-      console.warn('Skipping: no projects or files in database');
-      return;
-    }
-
-    const id = `test-${crypto.randomUUID()}`;
+    const id = `test-${randomUUID()}`;
     const count = await exec(
       `INSERT INTO project_files (id, project_id, file_id, added_by, created_at)
        VALUES ('${id}', '${testProjectId}', '${testFileId}', '${testUserId}', NOW())`,
@@ -191,13 +205,8 @@ describe('project_files — CRUD Operations', () => {
   });
 
   it('should reject duplicate (project_id, file_id)', async () => {
-    if (!testProjectId || !testFileId) {
-      console.warn('Skipping: no projects or files');
-      return;
-    }
-
-    const id1 = `test-${crypto.randomUUID()}`;
-    const id2 = `test-${crypto.randomUUID()}`;
+    const id1 = `test-${randomUUID()}`;
+    const id2 = `test-${randomUUID()}`;
 
     await exec(
       `INSERT INTO project_files (id, project_id, file_id, added_by, created_at)
@@ -215,12 +224,7 @@ describe('project_files — CRUD Operations', () => {
   });
 
   it('should reject insert with non-existent project_id (FK violation)', async () => {
-    if (!testFileId) {
-      console.warn('Skipping: no files');
-      return;
-    }
-
-    const id = `test-${crypto.randomUUID()}`;
+    const id = `test-${randomUUID()}`;
     await expect(
       exec(
         `INSERT INTO project_files (id, project_id, file_id, added_by, created_at)
@@ -230,12 +234,7 @@ describe('project_files — CRUD Operations', () => {
   });
 
   it('should reject insert with non-existent file_id (FK violation)', async () => {
-    if (!testProjectId) {
-      console.warn('Skipping: no projects');
-      return;
-    }
-
-    const id = `test-${crypto.randomUUID()}`;
+    const id = `test-${randomUUID()}`;
     await expect(
       exec(
         `INSERT INTO project_files (id, project_id, file_id, added_by, created_at)
@@ -245,12 +244,7 @@ describe('project_files — CRUD Operations', () => {
   });
 
   it('should reject insert with non-existent added_by (FK violation)', async () => {
-    if (!testProjectId || !testFileId) {
-      console.warn('Skipping: no projects or files');
-      return;
-    }
-
-    const id = `test-${crypto.randomUUID()}`;
+    const id = `test-${randomUUID()}`;
     await expect(
       exec(
         `INSERT INTO project_files (id, project_id, file_id, added_by, created_at)
@@ -260,12 +254,7 @@ describe('project_files — CRUD Operations', () => {
   });
 
   it('should delete a project_file row', async () => {
-    if (!testProjectId || !testFileId) {
-      console.warn('Skipping: no projects or files');
-      return;
-    }
-
-    const id = `test-${crypto.randomUUID()}`;
+    const id = `test-${randomUUID()}`;
     await exec(
       `INSERT INTO project_files (id, project_id, file_id, added_by, created_at)
        VALUES ('${id}', '${testProjectId}', '${testFileId}', '${testUserId}', NOW())`,
@@ -279,11 +268,6 @@ describe('project_files — CRUD Operations', () => {
   });
 
   it('should query by project_id with LIMIT/OFFSET', async () => {
-    if (!testProjectId) {
-      console.warn('Skipping: no projects');
-      return;
-    }
-
     const rows = await sql(
       `SELECT * FROM project_files
        WHERE project_id = '${testProjectId}'
@@ -294,11 +278,6 @@ describe('project_files — CRUD Operations', () => {
   });
 
   it('should count by project_id', async () => {
-    if (!testProjectId) {
-      console.warn('Skipping: no projects');
-      return;
-    }
-
     const result = await sql(
       `SELECT COUNT(*)::text as count FROM project_files
        WHERE project_id = '${testProjectId}'`,

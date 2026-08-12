@@ -4,7 +4,7 @@ on:
   push:
     branches: [main, release/*]
   pull_request:
-    branches: [main]
+    branches: [main, dev]
   workflow_dispatch:
 
 concurrency:
@@ -111,12 +111,14 @@ jobs:
         run: pnpm install --frozen-lockfile
       - name: Generate Prisma Client
         run: pnpm db:generate
-      - name: Push Schema
-        run: npx prisma db push --skip-generate
+      - name: Apply Database Migrations
+        run: |
+          set -o pipefail
+          pnpm exec prisma migrate deploy 2>&1 | tee /tmp/xennic-release-e2e.log
       - name: Build Database Package
         run: pnpm --filter @xennic/database build
         timeout-minutes: 2
-      - name: Generate CI JWT keys
+      - name: Generate CI cryptographic material
         run: |
           mkdir -p /tmp/xennic-jwt
           openssl genrsa -out /tmp/xennic-jwt/jwtRS256.key 2048
@@ -127,14 +129,26 @@ jobs:
           echo "JWT_AUDIENCE=xennic-client" >> "$GITHUB_ENV"
           echo "JWT_ACCESS_TOKEN_TTL=900" >> "$GITHUB_ENV"
           echo "JWT_REFRESH_TOKEN_TTL=2592000" >> "$GITHUB_ENV"
+          echo "AI_MASTER_KEY=$(openssl rand -hex 32)" >> "$GITHUB_ENV"
+          echo "AI_MASTER_KEY_SALT=$(openssl rand -hex 16)" >> "$GITHUB_ENV"
       - name: Unit Tests
         run: |
           set -o pipefail
           pnpm --dir apps/api exec jest --runInBand 2>&1 | tee /tmp/xennic-release-unit-tests.log
         timeout-minutes: 15
       - name: E2E Tests
-        run: pnpm --dir apps/api exec jest --config test/jest-e2e.json --runInBand
+        run: |
+          set -o pipefail
+          pnpm --dir apps/api exec jest --config test/jest-e2e.json --runInBand 2>&1 | tee -a /tmp/xennic-release-e2e.log
         timeout-minutes: 15
+      - name: Upload Release Gate E2E log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-gate-e2e-log
+          path: /tmp/xennic-release-e2e.log
+          if-no-files-found: ignore
+          retention-days: 7
       - name: Upload Release Gate unit test log
         if: always()
         uses: actions/upload-artifact@v4
@@ -190,7 +204,7 @@ jobs:
           cache: pnpm
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-      - name: Generate CI JWT keys
+      - name: Generate CI cryptographic material
         run: |
           mkdir -p /tmp/xennic-jwt
           openssl genrsa -out /tmp/xennic-jwt/jwtRS256.key 2048
@@ -201,6 +215,8 @@ jobs:
           echo "JWT_AUDIENCE=xennic-client" >> "$GITHUB_ENV"
           echo "JWT_ACCESS_TOKEN_TTL=900" >> "$GITHUB_ENV"
           echo "JWT_REFRESH_TOKEN_TTL=2592000" >> "$GITHUB_ENV"
+          echo "AI_MASTER_KEY=$(openssl rand -hex 32)" >> "$GITHUB_ENV"
+          echo "AI_MASTER_KEY_SALT=$(openssl rand -hex 16)" >> "$GITHUB_ENV"
       - name: Run Release Validator
         run: pnpm validate:release
         timeout-minutes: 10

@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [main, develop]
+    branches: [main, dev]
   pull_request:
-    branches: [main, develop]
+    branches: [main, dev]
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -59,8 +59,10 @@ jobs:
       - name: Validate Prisma Schema
         run: pnpm prisma:validate
 
-      - name: Push Schema
-        run: npx prisma db push --skip-generate
+      - name: Apply Database Migrations
+        run: |
+          set -o pipefail
+          pnpm exec prisma migrate deploy 2>&1 | tee /tmp/xennic-api-build.log
 
       - name: Build Database
         run: pnpm --filter @xennic/database build
@@ -80,7 +82,7 @@ jobs:
         run: pnpm --filter @xennic/web lint
         timeout-minutes: 5
 
-      - name: Generate CI JWT keys
+      - name: Generate CI cryptographic material
         run: |
           mkdir -p /tmp/xennic-jwt
           openssl genrsa -out /tmp/xennic-jwt/jwtRS256.key 2048
@@ -91,6 +93,8 @@ jobs:
           echo "JWT_AUDIENCE=xennic-client" >> "$GITHUB_ENV"
           echo "JWT_ACCESS_TOKEN_TTL=900" >> "$GITHUB_ENV"
           echo "JWT_REFRESH_TOKEN_TTL=2592000" >> "$GITHUB_ENV"
+          echo "AI_MASTER_KEY=$(openssl rand -hex 32)" >> "$GITHUB_ENV"
+          echo "AI_MASTER_KEY_SALT=$(openssl rand -hex 16)" >> "$GITHUB_ENV"
 
       - name: Test API
         run: pnpm --dir apps/api exec jest --runInBand
@@ -105,7 +109,7 @@ jobs:
           echo "JWT_PUBLIC_KEY_PATH=$JWT_PUBLIC_KEY_PATH"
           test -f "$JWT_PRIVATE_KEY_PATH"
           test -f "$JWT_PUBLIC_KEY_PATH"
-          pnpm --filter @xennic/api build 2>&1 | tee /tmp/xennic-api-build.log
+          pnpm --filter @xennic/api build 2>&1 | tee -a /tmp/xennic-api-build.log
         timeout-minutes: 10
 
       - name: Build Web

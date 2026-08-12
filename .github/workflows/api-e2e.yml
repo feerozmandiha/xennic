@@ -3,7 +3,7 @@ name: API E2E Gate
 on:
   workflow_dispatch:
   pull_request:
-    branches: [main]
+    branches: [main, dev]
     paths:
       - 'apps/api/**'
       - 'packages/database/**'
@@ -14,7 +14,7 @@ on:
       - '.github/workflows/api-e2e.yml'
       - '.github/actions/setup-minio/**'
   push:
-    branches: [main]
+    branches: [main, dev]
     paths:
       - 'apps/api/**'
       - 'packages/database/**'
@@ -81,14 +81,16 @@ jobs:
       - name: Generate Prisma Client
         run: pnpm db:generate
 
-      - name: Push Schema
-        run: npx prisma db push --skip-generate
+      - name: Apply Database Migrations
+        run: |
+          set -o pipefail
+          pnpm exec prisma migrate deploy 2>&1 | tee /tmp/xennic-api-e2e.log
 
       - name: Build Database Package
         run: pnpm --filter @xennic/database build
         timeout-minutes: 2
 
-      - name: Generate CI JWT keys
+      - name: Generate CI cryptographic material
         run: |
           mkdir -p /tmp/xennic-jwt
           openssl genrsa -out /tmp/xennic-jwt/jwtRS256.key 2048
@@ -99,11 +101,13 @@ jobs:
           echo "JWT_AUDIENCE=xennic-client" >> "$GITHUB_ENV"
           echo "JWT_ACCESS_TOKEN_TTL=900" >> "$GITHUB_ENV"
           echo "JWT_REFRESH_TOKEN_TTL=2592000" >> "$GITHUB_ENV"
+          echo "AI_MASTER_KEY=$(openssl rand -hex 32)" >> "$GITHUB_ENV"
+          echo "AI_MASTER_KEY_SALT=$(openssl rand -hex 16)" >> "$GITHUB_ENV"
 
       - name: Run API E2E Tests
         run: |
           set -o pipefail
-          pnpm --dir apps/api exec jest --config test/jest-e2e.json --runInBand --detectOpenHandles 2>&1 | tee /tmp/xennic-api-e2e.log
+          pnpm --dir apps/api exec jest --config test/jest-e2e.json --runInBand --detectOpenHandles 2>&1 | tee -a /tmp/xennic-api-e2e.log
         timeout-minutes: 15
 
       - name: Upload API E2E log
