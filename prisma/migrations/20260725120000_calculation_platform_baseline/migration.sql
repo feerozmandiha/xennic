@@ -561,3 +561,7 @@ ALTER TABLE ONLY public.unit_conversions
 --
 -- PostgreSQL database dump complete
 --
+
+-- pg_dump clears the session search_path near the start of this migration.
+-- Restore the default before Prisma records this migration as completed.
+SET search_path = "$user", public;
