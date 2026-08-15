@@ -4,7 +4,8 @@ set -eu
 # ──────────────────────────────────────────────────────────────────────────────
 # Xennic API container entrypoint
 #  1. Wait for PostgreSQL and apply Prisma migrations (with retries).
-#  2. Start the NestJS API.
+#  2. Run the provided command if one is given (e.g. `node prisma/seed.js`),
+#     otherwise start the NestJS API.
 # ──────────────────────────────────────────────────────────────────────────────
 
 MAX_ATTEMPTS="${MIGRATE_MAX_ATTEMPTS:-40}"
@@ -23,5 +24,13 @@ until ./node_modules/.bin/prisma migrate deploy; do
   sleep "$RETRY_SECONDS"
 done
 
-echo "[api-entrypoint] Migrations applied. Starting API..."
+echo "[api-entrypoint] Migrations applied."
+
+# Allow one-off commands (e.g. seeding) to run against the migrated database.
+if [ "$#" -gt 0 ]; then
+  echo "[api-entrypoint] Executing command: $*"
+  exec "$@"
+fi
+
+echo "[api-entrypoint] Starting API..."
 exec node apps/api/dist/main.js

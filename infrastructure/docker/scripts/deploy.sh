@@ -98,8 +98,13 @@ echo "==> Starting the production stack..."
 dc up -d
 
 # ── 5. Wait for the API to become healthy through nginx ───────────────────────
-echo "==> Waiting for the API health endpoint (via nginx on port ${NGINX_HTTP_PORT:-80})..."
-BASE_URL="http://localhost:${NGINX_HTTP_PORT:-80}"
+# The HTTP port is read from .env (docker compose only passes it to containers,
+# not to this script's shell).
+NGINX_HTTP_PORT="$(grep -E '^NGINX_HTTP_PORT=' "$ENV_FILE" | tail -1 | cut -d= -f2- | tr -d '"' | tr -d "'" | tr -d '[:space:]')"
+NGINX_HTTP_PORT="${NGINX_HTTP_PORT:-80}"
+BASE_URL="http://localhost:${NGINX_HTTP_PORT}"
+
+echo "==> Waiting for the API health endpoint (via nginx on port ${NGINX_HTTP_PORT})..."
 attempt=1
 max_attempts="${HEALTHCHECK_MAX_ATTEMPTS:-120}"
 until curl -sf "$BASE_URL/api/v1/health" >/dev/null 2>&1; do
