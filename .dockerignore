@@ -1,0 +1,37 @@
+# ── VCS & tooling ─────────────────────────────────────────────────────────────
+.git
+.gitignore
+.husky
+.kilo
+.kilocode.json
+.github
+
+# ── Dependencies & build artifacts ────────────────────────────────────────────
+node_modules
+**/node_modules
+**/.next
+**/dist
+**/build
+**/out
+**/__pycache__
+**/*.pyc
+**/.venv
+**/.pytest_cache
+**/target
+
+# ── Heavy / non-runtime content (kept out of the Docker build context) ────────
+docs
+workspace
+
+# ── Local environment & secrets ───────────────────────────────────────────────
+.env
+.env.*
+!.env.example
+
+# ── Empty SQL backup placeholders at repo root ────────────────────────────────
+backup_pre_security_*.sql
+
+# ── Misc ──────────────────────────────────────────────────────────────────────
+*.log
+*.pid
+next
