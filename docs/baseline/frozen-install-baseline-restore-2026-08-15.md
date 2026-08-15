@@ -63,9 +63,10 @@ Jobهای Python (`engineering-service` و `ai-service`) مستقل از pnpm ه
 
 | Gate                                   | Run                                                                                  | نتیجه      |
 | -------------------------------------- | ------------------------------------------------------------------------------------ | ---------- |
-| CI (node) — `pnpm install --frozen-lockfile` | [31875046006](https://github.com/feerozmandiha/xennic/actions/runs/31875046006) | ✅ success |
-| API E2E Gate                           | [31875046036](https://github.com/feerozmandiha/xennic/actions/runs/31875046036) | ✅ success |
-| Release Gate (Architecture Validation) | روی PR به `dev` اجرا می‌شود (trigger `pull_request → dev`)                          | تأیید روی همین PR |
+| CI (node) — `pnpm install --frozen-lockfile` | push `dev`: [31875046006](https://github.com/feerozmandiha/xennic/actions/runs/31875046006) | ✅ success |
+| API E2E Gate                           | push `dev`: [31875046036](https://github.com/feerozmandiha/xennic/actions/runs/31875046036) | ✅ success |
+| Release Gate (Architecture Validation) | PR #5: [31876613141](https://github.com/feerozmandiha/xennic/actions/runs/31876613141) | ✅ success |
+| CI (node + Python)                     | PR #5: [31876613142](https://github.com/feerozmandiha/xennic/actions/runs/31876613142) | ✅ success |
 
 - مرحله `Install dependencies` در همه Workflowها همچنان `pnpm install --frozen-lockfile` است؛
   هیچ Gateای با skip/bypass به‌عنوان موفق پذیرفته نشده است.
@@ -75,10 +76,14 @@ Jobهای Python (`engineering-service` و `ai-service`) مستقل از pnpm ه
 
 - [x] `corepack pnpm install --frozen-lockfile` موفق است (شواهد CI بالا)
 - [x] `CI / node` از مرحله Install عبور می‌کند
-- [ ] `Release Gate / Architecture Validation` از مرحله Install عبور می‌کند — روی این PR تأیید می‌شود
+- [x] `Release Gate / Architecture Validation` از مرحله Install عبور می‌کند (PR #5، run 31876613141)
 - [x] علت و Diff لاک‌فایل در PR ثبت شده است (همین سند)
 - [x] هیچ Test یا Gate با skip/bypass پذیرفته نشده است
 - [x] `dev` از SHA تأییدشده `main` ایجاد شده است: `dev@650c2dd` با parent مستقیم `main@e3a2dff`
+
+> نکته: Jobهای `Build Certification`، `Release Artifacts` و `Release Validator` در PR به `dev` به‌صورت
+> طراحی‌شده skip می‌شوند (فقط روی `main`/`release/*` اجرا می‌شوند). این skip مربوط به انتشار است،
+> نه نصب وابستگی؛ اعتبارسنجی frozen-install در `Architecture Validation` و `node` به‌طور واقعی اجرا و سبز شد.
 
 ## گام بعدی
 
