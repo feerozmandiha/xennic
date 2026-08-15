@@ -4,19 +4,8 @@ on:
   push:
     branches: [main, release/*]
   pull_request:
-    branches: [main]
+    branches: [main, dev]
   workflow_dispatch:
-    inputs:
-      skip_tests:
-        description: 'Skip unit/e2e tests'
-        required: false
-        default: false
-        type: boolean
-      run_e2e:
-        description: 'Run E2E tests (manual-only until stabilization)'
-        required: false
-        default: false
-        type: boolean
 
 concurrency:
   group: release-gate-${{ github.ref }}
@@ -109,6 +98,8 @@ jobs:
       NODE_ENV: test
     steps:
       - uses: actions/checkout@v4
+      - name: Set up MinIO
+        uses: ./.github/actions/setup-minio
       - uses: pnpm/action-setup@v4
         with:
           version: ${{ env.PNPM_VERSION }}
@@ -120,12 +111,14 @@ jobs:
         run: pnpm install --frozen-lockfile
       - name: Generate Prisma Client
         run: pnpm db:generate
-      - name: Push Schema
-        run: npx prisma db push --skip-generate
+      - name: Apply Database Migrations
+        run: |
+          set -o pipefail
+          pnpm exec prisma migrate deploy 2>&1 | tee /tmp/xennic-release-e2e.log
       - name: Build Database Package
         run: pnpm --filter @xennic/database build
         timeout-minutes: 2
-      - name: Generate CI JWT keys
+      - name: Generate CI cryptographic material
         run: |
           mkdir -p /tmp/xennic-jwt
           openssl genrsa -out /tmp/xennic-jwt/jwtRS256.key 2048
@@ -136,19 +129,26 @@ jobs:
           echo "JWT_AUDIENCE=xennic-client" >> "$GITHUB_ENV"
           echo "JWT_ACCESS_TOKEN_TTL=900" >> "$GITHUB_ENV"
           echo "JWT_REFRESH_TOKEN_TTL=2592000" >> "$GITHUB_ENV"
+          echo "AI_MASTER_KEY=$(openssl rand -hex 32)" >> "$GITHUB_ENV"
+          echo "AI_MASTER_KEY_SALT=$(openssl rand -hex 16)" >> "$GITHUB_ENV"
       - name: Unit Tests
-        if: ${{ github.event_name != 'workflow_dispatch' || !inputs.skip_tests }}
         run: |
           set -o pipefail
           pnpm --dir apps/api exec jest --runInBand 2>&1 | tee /tmp/xennic-release-unit-tests.log
         timeout-minutes: 15
       - name: E2E Tests
-        if: ${{ github.event_name == 'workflow_dispatch' && inputs.run_e2e && !inputs.skip_tests }}
-        run: pnpm --dir apps/api exec jest --config test/jest-e2e.json --runInBand
+        run: |
+          set -o pipefail
+          pnpm --dir apps/api exec jest --config test/jest-e2e.json --runInBand 2>&1 | tee -a /tmp/xennic-release-e2e.log
         timeout-minutes: 15
-      - name: E2E Tests Skipped
-        if: ${{ github.event_name != 'workflow_dispatch' || !inputs.run_e2e }}
-        run: echo "E2E tests are manual-only until dedicated E2E stabilization is complete."
+      - name: Upload Release Gate E2E log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-gate-e2e-log
+          path: /tmp/xennic-release-e2e.log
+          if-no-files-found: ignore
+          retention-days: 7
       - name: Upload Release Gate unit test log
         if: always()
         uses: actions/upload-artifact@v4
@@ -204,7 +204,7 @@ jobs:
           cache: pnpm
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-      - name: Generate CI JWT keys
+      - name: Generate CI cryptographic material
         run: |
           mkdir -p /tmp/xennic-jwt
           openssl genrsa -out /tmp/xennic-jwt/jwtRS256.key 2048
@@ -215,6 +215,8 @@ jobs:
           echo "JWT_AUDIENCE=xennic-client" >> "$GITHUB_ENV"
           echo "JWT_ACCESS_TOKEN_TTL=900" >> "$GITHUB_ENV"
           echo "JWT_REFRESH_TOKEN_TTL=2592000" >> "$GITHUB_ENV"
+          echo "AI_MASTER_KEY=$(openssl rand -hex 32)" >> "$GITHUB_ENV"
+          echo "AI_MASTER_KEY_SALT=$(openssl rand -hex 16)" >> "$GITHUB_ENV"
       - name: Run Release Validator
         run: pnpm validate:release
         timeout-minutes: 10

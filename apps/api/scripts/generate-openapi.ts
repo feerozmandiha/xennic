@@ -16,7 +16,12 @@ async function generateOpenAPI(): Promise<void> {
     const importedModule = await import(modulePath);
     const ApiModule = importedModule.ApiModule;
 
-    app = await NestFactory.create(ApiModule, { logger: false });
+    app = await NestFactory.create(ApiModule, {
+      logger: false,
+      // Let initialization errors reach this script's catch block instead of
+      // allowing Nest to terminate the process without actionable build logs.
+      abortOnError: false,
+    });
 
     const websiteUrl = 'https' + ':' + '/' + '/' + 'xennic.com';
     const supportEmail = 'support' + '@' + 'xennic.com';

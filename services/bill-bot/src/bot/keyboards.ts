@@ -21,7 +21,7 @@ export const CB = {
 } as const;
 
 export function analysisKeyboard(report: ReportModel): ReplyMarkup {
-  const rows = [
+  const rows: NonNullable<ReplyMarkup['inline_keyboard']> = [
     [
       { text: '🖨 چاپ گزارش PDF', callback_data: CB.pdf },
       { text: '🎧 درخواست مشاوره', callback_data: CB.consult },
