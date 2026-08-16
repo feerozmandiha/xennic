@@ -125,7 +125,12 @@ fi
 
 # ── 4. Start the stack ────────────────────────────────────────────────────────
 echo "==> Starting the production stack..."
-dc up -d
+if ! dc up -d; then
+  echo "" >&2
+  echo "ERROR: the stack failed to start. Recent logs from api/web/nginx:" >&2
+  dc logs --tail=80 api web nginx || true
+  exit 1
+fi
 
 # ── 5. Wait for the API to become healthy through nginx ───────────────────────
 # NGINX_HTTP_PORT was already read from .env during the preflight step.

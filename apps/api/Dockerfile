@@ -53,22 +53,33 @@ ENV NODE_ENV=production \
     HOST=0.0.0.0 \
     PORT=3000
 
+# pnpm uses an isolated node_modules layout: every workspace project keeps its
+# own node_modules directory with symlinks into the root .pnpm store. Copying
+# only the root node_modules would drop all 27 runtime dependencies declared in
+# apps/api/package.json (@nestjs/platform-fastify, ioredis, minio, ...), so the
+# whole linked set must be carried over together.
 COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/package.json ./package.json
 COPY --from=build /app/pnpm-workspace.yaml ./pnpm-workspace.yaml
 
-# Application build output
+# Application build output + its resolved dependencies
 COPY --from=build /app/apps/api/dist ./apps/api/dist
 COPY --from=build /app/apps/api/package.json ./apps/api/package.json
+COPY --from=build /app/apps/api/node_modules ./apps/api/node_modules
 
 # Workspace packages (database is resolved from its dist at runtime)
 COPY --from=build /app/packages/database/dist ./packages/database/dist
 COPY --from=build /app/packages/database/package.json ./packages/database/package.json
+COPY --from=build /app/packages/database/node_modules ./packages/database/node_modules
 COPY --from=build /app/packages/shared ./packages/shared
 COPY --from=build /app/packages/types ./packages/types
 
 # Prisma schema + migrations (used by `prisma migrate deploy` on startup)
 COPY --from=build /app/prisma ./prisma
+
+# Fail fast at build time if the runtime dependency graph is incomplete,
+# instead of surfacing as an unhealthy container after deploy.
+RUN node -e "require.resolve('@nestjs/platform-fastify',{paths:['/app/apps/api']});require.resolve('ioredis',{paths:['/app/apps/api']});require.resolve('minio',{paths:['/app/apps/api']});console.log('runtime dependency check: ok')"
 
 COPY infrastructure/docker/api/entrypoint.sh /usr/local/bin/api-entrypoint.sh
 RUN chmod +x /usr/local/bin/api-entrypoint.sh

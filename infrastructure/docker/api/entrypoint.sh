@@ -32,5 +32,5 @@ if [ "$#" -gt 0 ]; then
   exec "$@"
 fi
 
-echo "[api-entrypoint] Starting API..."
+echo "[api-entrypoint] Starting API on ${HOST:-0.0.0.0}:${PORT:-3000}..."
 exec node apps/api/dist/main.js

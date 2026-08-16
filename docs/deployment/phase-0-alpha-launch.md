@@ -207,6 +207,15 @@ docker compose -f infrastructure/docker/compose/production/docker-compose.yml do
 | `curl` → `000` روی `$BASE/...` | استک اصلاً بالا نیامده (deploy با خطا متوقف شده) | ابتدا `deploy.sh` را با موفقیت اجرا کنید، سپس smoke test |
 | `docker compose … logs` خروجی خالی | هیچ کانتینری از این پروژه ساخته نشده | همان مورد بالا |
 | Seed پیش از بالا آمدن استک | `run --rm api` تلاش می‌کند وابستگی‌ها را بسازد | ابتدا `deploy.sh`، سپس `deploy.sh --seed` یا دستور seed |
+| `dependency failed to start: container xennic-prod-api is unhealthy` | `Cannot find module …` — ایمیج API فقط `node_modules` ریشه را داشت | رفع شد؛ ایمیج حالا `apps/api/node_modules` و `packages/database/node_modules` را هم می‌برد و در زمان build صحت graph را چک می‌کند |
+| لاگ API پر از `ECONNREFUSED …:4318` | OpenTelemetry بدون collector فعال می‌شد | رفع شد؛ SDK فقط با `OTEL_EXPORTER_ENABLED=true` بالا می‌آید |
+
+بررسی دستی سلامت API وقتی unhealthy است:
+
+```bash
+docker logs --tail=100 xennic-prod-api
+docker exec xennic-prod-api curl -sf http://localhost:3000/api/v1/health
+```
 
 ## 11. پیوند با مدل Governance
 
