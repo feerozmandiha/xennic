@@ -143,8 +143,15 @@ docker compose --env-file infrastructure/docker/compose/production/.env \
 
 ## 6. راستی‌آزمایی اولیه (Smoke Test)
 
+> ⚠️ `BASE` را از روی `NGINX_HTTP_PORT` همان `.env` بسازید، نه از روی حدس. اگر
+> `NGINX_HTTP_PORT=80` باشد ولی `BASE` را `:8080` بگذارید، همهٔ `curl`ها `000` می‌دهند
+> در حالی که استک کاملاً سالم است. `deploy.sh` هم در پایان آدرس درست را چاپ می‌کند.
+
 ```bash
-BASE=http://YOUR_SERVER
+ENV_FILE=infrastructure/docker/compose/production/.env
+PORT=$(grep -E '^NGINX_HTTP_PORT=' $ENV_FILE | tail -1 | cut -d= -f2- | tr -d '"'"'"'[:space:]')
+BASE="http://localhost:${PORT:-80}"
+echo "BASE=$BASE"
 
 # سلامت API
 curl -s $BASE/api/v1/health
@@ -209,6 +216,8 @@ docker compose -f infrastructure/docker/compose/production/docker-compose.yml do
 | Seed پیش از بالا آمدن استک | `run --rm api` تلاش می‌کند وابستگی‌ها را بسازد | ابتدا `deploy.sh`، سپس `deploy.sh --seed` یا دستور seed |
 | `dependency failed to start: container xennic-prod-api is unhealthy` | `Cannot find module …` — ایمیج API فقط `node_modules` ریشه را داشت | رفع شد؛ ایمیج حالا `apps/api/node_modules` و `packages/database/node_modules` را هم می‌برد و در زمان build صحت graph را چک می‌کند |
 | لاگ API پر از `ECONNREFUSED …:4318` | OpenTelemetry بدون collector فعال می‌شد | رفع شد؛ SDK فقط با `OTEL_EXPORTER_ENABLED=true` بالا می‌آید |
+| همهٔ `curl`ها `000` اما `docker ps` همه‌چیز را healthy نشان می‌دهد | `BASE` با `NGINX_HTTP_PORT` واقعی در `.env` نمی‌خواند | `BASE` را طبق بخش ۶ از `.env` بسازید |
+| `deploy.sh` با پیام `secrets are still empty or set to a CHANGE_ME placeholder` متوقف می‌شود | رمزهای الزامی در `.env` پر نشده‌اند | مقادیر را پر کنید؛ این گارد عمدی است |
 
 بررسی دستی سلامت API وقتی unhealthy است:
 

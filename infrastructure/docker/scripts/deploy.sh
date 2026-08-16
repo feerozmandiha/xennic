@@ -77,6 +77,35 @@ if [ ! -f "$ENV_FILE" ]; then
   exit 1
 fi
 
+# ── 1a. Reject unfilled placeholder secrets ───────────────────────────────────
+# Only the variables that this stack actually consumes are enforced; optional
+# integrations (SMTP, LLM providers, Zarinpal, Grafana...) may stay as-is.
+REQUIRED_SECRETS="POSTGRES_PASSWORD REDIS_PASSWORD RABBITMQ_DEFAULT_PASS MINIO_ROOT_USER MINIO_ROOT_PASSWORD AI_MASTER_KEY ADMIN_PASSWORD"
+unfilled=""
+for key in $REQUIRED_SECRETS; do
+  value="$(grep -E "^${key}=" "$ENV_FILE" | tail -1 | cut -d= -f2- | tr -d '"' | tr -d "'")"
+  case "$value" in
+    ''|CHANGE_ME*) unfilled="$unfilled $key" ;;
+  esac
+done
+
+if [ -n "$unfilled" ]; then
+  echo "ERROR: the following required secrets are still empty or set to a CHANGE_ME" >&2
+  echo "       placeholder in $ENV_FILE:" >&2
+  for key in $unfilled; do echo "         - $key" >&2; done
+  echo "" >&2
+  echo "       Generate strong values (letters, digits, - and _ only, because they are" >&2
+  echo "       embedded in connection URLs):" >&2
+  echo "         openssl rand -base64 32 | tr -dc 'A-Za-z0-9' | head -c 32" >&2
+  echo "" >&2
+  echo "       Set ALLOW_INSECURE_DEFAULTS=1 to bypass this check for a throwaway" >&2
+  echo "       local trial (never on a public server)." >&2
+  if [ "${ALLOW_INSECURE_DEFAULTS:-0}" != "1" ]; then
+    exit 1
+  fi
+  echo "WARNING: ALLOW_INSECURE_DEFAULTS=1 — continuing with insecure credentials." >&2
+fi
+
 # ── 1b. Preflight: make sure the public HTTP port is free ─────────────────────
 read_env() {
   grep -E "^$1=" "$ENV_FILE" | tail -1 | cut -d= -f2- | tr -d '"' | tr -d "'" | tr -d '[:space:]'
