@@ -86,12 +86,49 @@ openssl rand -base64 32
 
 > نکته: کلیدهای JWT (RSA) لازم نیست دستی بسازید؛ `deploy.sh` خودش تولید می‌کند.
 
+### 4.1 هم‌زیستی با استک توسعهٔ محلی
+
+این استک با نام پروژهٔ `xennic-prod` و کانتینرهای `xennic-prod-*` اجرا می‌شود و **هیچ
+پورتی از سرویس‌های زیرساختی روی host منتشر نمی‌کند**؛ بنابراین می‌تواند در کنار استک
+توسعهٔ محلی (`xennic-postgres`، `xennic-redis`، `xennic-minio` و …) روی یک ماشین اجرا شود
+بدون تداخل نام یا پورت.
+
+اگر روی ماشین محلی پورت 80 اشغال است (یا استک دیگری روی آن است)، در `.env` بگذارید:
+
+```env
+NGINX_HTTP_PORT=8080
+FRONTEND_URL=http://localhost:8080
+API_PUBLIC_URL=http://localhost:8080
+CORS_ORIGINS=http://localhost:8080
+```
+
+برای دیباگ مستقیم زیرساخت (اتصال به Postgres/Redis/MinIO از host) از فایل override
+استفاده کنید — فقط وقتی پورت‌ها آزاد باشند:
+
+```bash
+docker compose --env-file infrastructure/docker/compose/production/.env \
+  -f infrastructure/docker/compose/production/docker-compose.yml \
+  -f infrastructure/docker/compose/production/docker-compose.debug-ports.yml up -d
+```
+
 ## 5. استقرار
 
 ```bash
 ./infrastructure/docker/scripts/deploy.sh           # build + up + healthcheck
 ./infrastructure/docker/scripts/deploy.sh --seed    # + ساخت ادمین و داده‌های اولیه
 ```
+
+> اگر خطای `Permission denied` گرفتید (مثلاً به‌خاطر تنظیمات فایل‌سیستم ویندوز/WSL)، یا
+> اسکریپت را با `bash` صدا بزنید یا بیت اجرا را ست کنید:
+>
+> ```bash
+> bash infrastructure/docker/scripts/deploy.sh
+> # یا
+> chmod +x infrastructure/docker/scripts/deploy.sh
+> ```
+
+- اسکریپت پیش از هر کاری بررسی می‌کند پورت `NGINX_HTTP_PORT` آزاد باشد و در غیر این صورت
+  با پیام راهنما متوقف می‌شود.
 
 - ایمیج‌های `api` و `web` از مسیر `apps/*` و سرویس‌های Python از `workspace/services/*`
   ساخته می‌شوند.
@@ -118,10 +155,18 @@ curl -s -o /dev/null -w '%{http_code}\n' $BASE/api/docs
 # Frontend
 curl -s -o /dev/null -w '%{http_code}\n' $BASE/
 
-# سلامت سرویس‌های Python (مستقیم روی host فقط برای دیباگ)
-curl -s http://localhost:8001/health   # engineering-service
-curl -s http://localhost:8002/health   # ai-service
-curl -s http://localhost:8003/health   # vision-service
+# Frontend (locale فارسی)
+curl -s -o /dev/null -w '%{http_code}\n' $BASE/fa
+
+# وضعیت کانتینرها
+docker ps --filter name=xennic-prod
+
+# سلامت سرویس‌های Python (از داخل شبکه، چون پورتی روی host منتشر نمی‌شود)
+docker compose --env-file infrastructure/docker/compose/production/.env \
+  -f infrastructure/docker/compose/production/docker-compose.yml \
+  exec api sh -lc 'curl -s http://engineering-service:8001/health; \
+                   curl -s http://ai-service:8002/health; \
+                   curl -s http://vision-service:8003/health'
 ```
 
 ورود به پنل: باز کردن `$BASE/` و استفاده از `ADMIN_EMAIL` / `ADMIN_PASSWORD`.
@@ -130,7 +175,7 @@ curl -s http://localhost:8003/health   # vision-service
 
 ```bash
 # پشتیبان دیتابیس
-docker exec xennic-postgres pg_dump -U xennic xennic > backup_$(date +%F).sql
+docker exec xennic-prod-postgres pg_dump -U xennic xennic > backup_$(date +%F).sql
 
 # بازگشت (Rollback): stop → remove containers → restore volume
 docker compose -f infrastructure/docker/compose/production/docker-compose.yml down
@@ -152,7 +197,18 @@ docker compose -f infrastructure/docker/compose/production/docker-compose.yml do
   دامنه انجام می‌شود تا `NEXT_PUBLIC_*` در Build درون‌خطی نشود.
 - اتصال API به PostgreSQL مستقیم است (بدون PgBouncer).
 
-## 10. پیوند با مدل Governance
+## 10. عیب‌یابی متداول
+
+| نشانه | علت | راه‌حل |
+| ----- | ---- | ------ |
+| `./…/deploy.sh: Permission denied` | بیت اجرا روی فایل‌سیستم (WSL/NTFS) اعمال نشده | `bash infrastructure/docker/scripts/deploy.sh` یا `chmod +x …` |
+| `Conflict. The container name "/xennic-…" is already in use` | استک توسعهٔ محلی با همان نام‌ها بالاست | از نسخهٔ فعلی استفاده کنید؛ کانتینرها `xennic-prod-*` هستند و تداخل ندارند |
+| `Bind for 0.0.0.0:80 failed: port is already allocated` | پورت 80 اشغال است | `NGINX_HTTP_PORT=8080` (به‌همراه `FRONTEND_URL`/`API_PUBLIC_URL`/`CORS_ORIGINS`) |
+| `curl` → `000` روی `$BASE/...` | استک اصلاً بالا نیامده (deploy با خطا متوقف شده) | ابتدا `deploy.sh` را با موفقیت اجرا کنید، سپس smoke test |
+| `docker compose … logs` خروجی خالی | هیچ کانتینری از این پروژه ساخته نشده | همان مورد بالا |
+| Seed پیش از بالا آمدن استک | `run --rm api` تلاش می‌کند وابستگی‌ها را بسازد | ابتدا `deploy.sh`، سپس `deploy.sh --seed` یا دستور seed |
+
+## 11. پیوند با مدل Governance
 
 - تغییرات این فاز اول روی `dev` (با PR) می‌روند؛ سپس اولین **Release PR `dev → main`**
   ساخته می‌شود. هیچ Push مستقیم به `main` انجام نمی‌شود.

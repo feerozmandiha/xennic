@@ -77,6 +77,36 @@ if [ ! -f "$ENV_FILE" ]; then
   exit 1
 fi
 
+# ── 1b. Preflight: make sure the public HTTP port is free ─────────────────────
+read_env() {
+  grep -E "^$1=" "$ENV_FILE" | tail -1 | cut -d= -f2- | tr -d '"' | tr -d "'" | tr -d '[:space:]'
+}
+
+NGINX_HTTP_PORT="$(read_env NGINX_HTTP_PORT)"
+NGINX_HTTP_PORT="${NGINX_HTTP_PORT:-80}"
+
+port_in_use() {
+  if command -v ss >/dev/null 2>&1; then
+    ss -ltn 2>/dev/null | awk '{print $4}' | grep -qE "[:.]$1\$"
+  elif command -v lsof >/dev/null 2>&1; then
+    lsof -iTCP:"$1" -sTCP:LISTEN >/dev/null 2>&1
+  else
+    return 1
+  fi
+}
+
+if ! docker compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE" ps --status running 2>/dev/null | grep -q nginx; then
+  if port_in_use "$NGINX_HTTP_PORT"; then
+    echo "ERROR: host port ${NGINX_HTTP_PORT} is already in use by another process." >&2
+    echo "       Set a free port in $ENV_FILE, for example:" >&2
+    echo "         NGINX_HTTP_PORT=8080" >&2
+    echo "         FRONTEND_URL=http://localhost:8080" >&2
+    echo "         API_PUBLIC_URL=http://localhost:8080" >&2
+    echo "         CORS_ORIGINS=http://localhost:8080" >&2
+    exit 1
+  fi
+fi
+
 # ── 2. JWT RSA keys (idempotent) ──────────────────────────────────────────────
 mkdir -p "$JWT_DIR"
 if [ ! -f "$JWT_PRIVATE" ] || [ ! -f "$JWT_PUBLIC" ]; then
@@ -98,10 +128,7 @@ echo "==> Starting the production stack..."
 dc up -d
 
 # ── 5. Wait for the API to become healthy through nginx ───────────────────────
-# The HTTP port is read from .env (docker compose only passes it to containers,
-# not to this script's shell).
-NGINX_HTTP_PORT="$(grep -E '^NGINX_HTTP_PORT=' "$ENV_FILE" | tail -1 | cut -d= -f2- | tr -d '"' | tr -d "'" | tr -d '[:space:]')"
-NGINX_HTTP_PORT="${NGINX_HTTP_PORT:-80}"
+# NGINX_HTTP_PORT was already read from .env during the preflight step.
 BASE_URL="http://localhost:${NGINX_HTTP_PORT}"
 
 echo "==> Waiting for the API health endpoint (via nginx on port ${NGINX_HTTP_PORT})..."

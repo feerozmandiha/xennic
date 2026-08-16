@@ -329,7 +329,7 @@ docker compose -f workspace/docker-compose.yml down
 ### بررسی اینکه چیزی از Xennic روشن نمانده باشد
 
 ```bash
-docker ps --filter "name=xennic"
+docker ps --filter "name=xennic-prod"
 ```
 
 ---
