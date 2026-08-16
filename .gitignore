@@ -93,3 +93,10 @@ htmlcov/
 infrastructure/docker/secrets/*.pub
 infrastructure/docker/secrets/jwtRS256.key
 infrastructure/docker/secrets/jwtRS256.key
+
+# Phase-0 Alpha deployment secrets & TLS material (generated locally by deploy.sh)
+infrastructure/docker/compose/production/secrets/
+infrastructure/docker/compose/production/certs/
+
+# CMS local file storage
+/storage/cms/

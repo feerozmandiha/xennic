@@ -65,6 +65,8 @@ model users {
   knowledge_workflows_reviewer   knowledge_workflows[]      @relation("KnowledgeWorkflowReview")
   knowledge_workflow_history     knowledge_workflow_history[]
   knowledge_documents_creator    knowledge_documents[]      @relation("KnowledgeDocumentCreator")
+  cms_content_created            cms_content[]              @relation("CmsContentCreatedBy")
+  cms_content_updated            cms_content[]              @relation("CmsContentUpdatedBy")
 
   @@index([deleted_at])
   @@index([created_at])
@@ -2531,4 +2533,30 @@ model calculation_plugins {
   config      Json     @default("{}")
   created_at  DateTime @default(now())
   updated_at  DateTime @updatedAt
+}
+
+// ============================================================
+// CMS — Landing / Header / Footer editable content
+// ============================================================
+
+model cms_content {
+  id          String    @id @default(uuid())
+  slot        String
+  locale      String    @default("fa")
+  document    Json
+  version     Int       @default(1)
+  publishedAt DateTime? @map("published_at")
+  createdBy   String?   @map("created_by")
+  updatedBy   String?   @map("updated_by")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  createdByUser users? @relation("CmsContentCreatedBy", fields: [createdBy], references: [id], onDelete: SetNull)
+  updatedByUser users? @relation("CmsContentUpdatedBy", fields: [updatedBy], references: [id], onDelete: SetNull)
+
+  @@unique([slot, locale])
+  @@index([locale])
+  @@index([slot])
+  @@index([publishedAt])
+  @@map("cms_content")
 }
