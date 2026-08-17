@@ -51,8 +51,41 @@ const ALLOWED_BLOCK_TYPES = new Set([
   'nav-link',
   'nav-links',
   'social-links',
+  'social-link',
   'footer-column',
   'html',
+  'newsletter',
+  'map',
+  'countdown',
+  'card',
+  'cards',
+  'steps',
+  'step',
+  'quote',
+  'code',
+  'alert',
+  'logo',
+  'stat',
+]);
+
+const ALLOWED_STYLE_KEYS = new Set([
+  'backgroundColor',
+  'textColor',
+  'gradient',
+  'backgroundImage',
+  'backgroundOverlay',
+  'paddingY',
+  'paddingX',
+  'marginY',
+  'align',
+  'textAlign',
+  'maxWidth',
+  'rounded',
+  'shadow',
+  'border',
+  'className',
+  'textSize',
+  'fontWeight',
 ]);
 
 @Injectable()
@@ -222,8 +255,8 @@ export class CmsService {
   // ── Validation ─────────────────────────────────────────────────────────────
 
   private _validateDocument(doc: CmsDocument): void {
-    if (!doc || doc.schema !== 'xennic-cms/v1') {
-      throw new BadRequestException('سند باید با نسخه‌ی xennic-cms/v1 باشد');
+    if (!doc || (doc.schema !== 'xennic-cms/v1' && doc.schema !== 'xennic-cms/v2')) {
+      throw new BadRequestException('سند باید با نسخه‌ی xennic-cms/v2 باشد');
     }
     if (!Array.isArray(doc.blocks)) {
       throw new BadRequestException('blocks باید آرایه باشد');
@@ -243,6 +276,13 @@ export class CmsService {
     }
     if (block.props && typeof block.props !== 'object') {
       throw new BadRequestException('پراپس‌های بلوک باید آبجکت باشد');
+    }
+    if (block.style && typeof block.style === 'object') {
+      for (const k of Object.keys(block.style)) {
+        if (!ALLOWED_STYLE_KEYS.has(k)) {
+          throw new BadRequestException(`کلید استایل "${k}" مجاز نیست`);
+        }
+      }
     }
     if (block.children) {
       if (!Array.isArray(block.children)) {

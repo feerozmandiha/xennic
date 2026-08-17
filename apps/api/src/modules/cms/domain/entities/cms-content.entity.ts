@@ -9,6 +9,26 @@
 export type CmsSlot = string;
 export type CmsLocale = string;
 
+export interface CmsBlockStyle {
+  backgroundColor?: string;
+  textColor?: string;
+  gradient?: string;
+  backgroundImage?: string;
+  backgroundOverlay?: string;
+  paddingY?: 'none' | 'sm' | 'md' | 'lg' | 'xl';
+  paddingX?: 'none' | 'sm' | 'md' | 'lg';
+  marginY?: 'none' | 'sm' | 'md' | 'lg';
+  align?: 'start' | 'center' | 'end';
+  textAlign?: 'right' | 'center' | 'left';
+  maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | 'full';
+  rounded?: 'none' | 'sm' | 'md' | 'lg' | 'xl' | 'full';
+  shadow?: 'none' | 'sm' | 'md' | 'lg' | 'xl';
+  border?: boolean;
+  className?: string;
+  textSize?: 'xs' | 'sm' | 'base' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl' | '5xl';
+  fontWeight?: 'normal' | 'medium' | 'semibold' | 'bold' | 'extrabold';
+}
+
 export interface CmsBlock {
   /** نوع بلوک — باید در فهرست رسمی تعریف‌شده در CmsBlockRegistry باشد */
   type: string;
@@ -16,13 +36,17 @@ export interface CmsBlock {
   id: string;
   /** محتوای قابل رندر — برای هر نوع بلوک اختصاصی است */
   props: Record<string, unknown>;
+  /** استایل قابل ویرایش برای هر بلوک */
+  style?: CmsBlockStyle;
+  /** آیا بلوک در خروجی مخفی شود */
+  hidden?: boolean;
   /** بلوک‌های فرزند برای ترکیب‌بندی */
   children?: CmsBlock[];
 }
 
 export interface CmsDocument {
   /** نسخه‌ی ساختار — برای اعتبارسنجی آینده */
-  schema: 'xennic-cms/v1';
+  schema: 'xennic-cms/v1' | 'xennic-cms/v2';
   /** متادیتای آزاد */
   meta?: Record<string, unknown>;
   /** فهرست بلوک‌ها */
