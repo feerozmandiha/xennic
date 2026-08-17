@@ -11,8 +11,79 @@ import {
   MinLength,
   ValidateNested,
 } from 'class-validator';
-import { Type } from 'class-transformer';
-import type { CmsBlock, CmsDocument } from '../../domain/entities/cms-content.entity.js';
+import { Transform, Type } from 'class-transformer';
+import type {
+  CmsBlock,
+  CmsBlockStyle,
+  CmsDocument,
+} from '../../domain/entities/cms-content.entity.js';
+
+export class CmsBlockStyleDto implements CmsBlockStyle {
+  @ApiPropertyOptional() @IsOptional() @IsString() backgroundColor?: string;
+  @ApiPropertyOptional() @IsOptional() @IsString() textColor?: string;
+  @ApiPropertyOptional() @IsOptional() @IsString() gradient?: string;
+  @ApiPropertyOptional() @IsOptional() @IsString() backgroundImage?: string;
+  @ApiPropertyOptional() @IsOptional() @IsString() backgroundOverlay?: string;
+
+  @ApiPropertyOptional({ enum: ['none', 'sm', 'md', 'lg', 'xl'] })
+  @IsOptional()
+  @IsString()
+  paddingY?: 'none' | 'sm' | 'md' | 'lg' | 'xl';
+
+  @ApiPropertyOptional({ enum: ['none', 'sm', 'md', 'lg'] })
+  @IsOptional()
+  @IsString()
+  paddingX?: 'none' | 'sm' | 'md' | 'lg';
+
+  @ApiPropertyOptional({ enum: ['none', 'sm', 'md', 'lg'] })
+  @IsOptional()
+  @IsString()
+  marginY?: 'none' | 'sm' | 'md' | 'lg';
+
+  @ApiPropertyOptional({ enum: ['start', 'center', 'end'] })
+  @IsOptional()
+  @IsString()
+  align?: 'start' | 'center' | 'end';
+
+  @ApiPropertyOptional({ enum: ['right', 'center', 'left'] })
+  @IsOptional()
+  @IsString()
+  textAlign?: 'right' | 'center' | 'left';
+
+  @ApiPropertyOptional({ enum: ['sm', 'md', 'lg', 'xl', 'full'] })
+  @IsOptional()
+  @IsString()
+  maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | 'full';
+
+  @ApiPropertyOptional({ enum: ['none', 'sm', 'md', 'lg', 'xl', 'full'] })
+  @IsOptional()
+  @IsString()
+  rounded?: 'none' | 'sm' | 'md' | 'lg' | 'xl' | 'full';
+
+  @ApiPropertyOptional({ enum: ['none', 'sm', 'md', 'lg', 'xl'] })
+  @IsOptional()
+  @IsString()
+  shadow?: 'none' | 'sm' | 'md' | 'lg' | 'xl';
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @Transform(({ value }) => value === true || value === 'true')
+  border?: boolean;
+
+  @ApiPropertyOptional() @IsOptional() @IsString() className?: string;
+
+  @ApiPropertyOptional({
+    enum: ['xs', 'sm', 'base', 'lg', 'xl', '2xl', '3xl', '4xl', '5xl'],
+  })
+  @IsOptional()
+  @IsString()
+  textSize?: 'xs' | 'sm' | 'base' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl' | '5xl';
+
+  @ApiPropertyOptional({ enum: ['normal', 'medium', 'semibold', 'bold', 'extrabold'] })
+  @IsOptional()
+  @IsString()
+  fontWeight?: 'normal' | 'medium' | 'semibold' | 'bold' | 'extrabold';
+}
 
 export class CmsBlockDto implements CmsBlock {
   @ApiProperty({ description: 'نوع بلوک (هیرو/ویژگی/قیمت/متن/تصویر/... )' })
@@ -31,6 +102,17 @@ export class CmsBlockDto implements CmsBlock {
   @IsObject()
   props!: Record<string, unknown>;
 
+  @ApiPropertyOptional({ type: CmsBlockStyleDto })
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => CmsBlockStyleDto)
+  style?: CmsBlockStyleDto;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @Transform(({ value }) => value === true || value === 'true')
+  hidden?: boolean;
+
   @ApiPropertyOptional({ type: [CmsBlockDto] })
   @IsOptional()
   @IsArray()
@@ -40,9 +122,9 @@ export class CmsBlockDto implements CmsBlock {
 }
 
 export class CmsDocumentDto implements CmsDocument {
-  @ApiProperty({ enum: ['xennic-cms/v1'] })
-  @IsIn(['xennic-cms/v1'])
-  schema!: 'xennic-cms/v1';
+  @ApiProperty({ enum: ['xennic-cms/v1', 'xennic-cms/v2'] })
+  @IsIn(['xennic-cms/v1', 'xennic-cms/v2'])
+  schema!: 'xennic-cms/v1' | 'xennic-cms/v2';
 
   @ApiPropertyOptional({ type: Object })
   @IsOptional()

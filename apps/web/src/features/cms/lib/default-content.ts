@@ -1,41 +1,39 @@
 import { createBlock, type CmsBlock, type CmsDocument } from './types';
 
 /* ──────────────────────────────────────────────────────────────
- *  Default / seed content
- *  در صورت نبود رکورد در دیتابیس، از این مقادیر به‌عنوان پیش‌فرض
- *  استفاده می‌شود. این مقادیر با همان ساختار قابل ویرایش هستند.
+ *  Default / seed content (schema v2 — includes style)
  * ──────────────────────────────────────────────────────────── */
 
 export const DEFAULT_HEADER: CmsDocument = {
-  schema: 'xennic-cms/v1',
+  schema: 'xennic-cms/v2',
   blocks: [
     createBlock('nav-links', {
       links: [
         { label: 'صفحه اصلی', href: '/' },
         { label: 'امکانات', href: '/#features' },
         { label: 'قیمت‌ها', href: '/#pricing' },
-        { label: 'سوالات متداول', href: '/#faq' },
+        { label: 'سوالات', href: '/#faq' },
         { label: 'تماس', href: '/contact' },
       ],
     }),
-    createBlock('buttons', {}, [
-      createBlock('button', { label: 'ورود', href: '/login', variant: 'ghost' }),
+    createBlock('buttons', { justify: 'end' }, [
+      createBlock('button', { label: 'ورود', href: '/login', variant: 'ghost', size: 'sm' }),
       createBlock('button', {
         label: 'شروع رایگان',
         href: '/register',
         variant: 'primary',
+        size: 'sm',
       }),
     ]),
   ],
 };
 
 export const DEFAULT_FOOTER: CmsDocument = {
-  schema: 'xennic-cms/v1',
+  schema: 'xennic-cms/v2',
   blocks: [
-    createBlock('columns', { cols: 4 }, [
+    createBlock('columns', { cols: 4, gap: 'md' }, [
       createBlock('footer-column', { title: 'زنیک' }, [
         createBlock('paragraph', {
-          align: 'right',
           text: 'پلتفرم تخصصی مهندسی برق با موتور محاسبات استاندارد و هوش مصنوعی.',
         }),
       ]),
@@ -58,20 +56,18 @@ export const DEFAULT_FOOTER: CmsDocument = {
           ],
         }),
       ]),
-      createBlock('footer-column', { title: 'حقوقی' }, [
-        createBlock('nav-links', {
-          links: [
-            { label: 'حریم خصوصی', href: '/privacy' },
-            { label: 'شرایط استفاده', href: '/terms' },
-          ],
-        }),
+      createBlock('footer-column', { title: 'ما را دنبال کنید' }, [
+        createBlock('social-links', {}, [
+          createBlock('social-link', { href: '#', label: 'وب‌سایت', icon: 'globe' }),
+          createBlock('social-link', { href: '#', label: 'تلگرام', icon: 'send' }),
+        ]),
       ]),
     ]),
   ],
 };
 
 export const DEFAULT_LANDING: CmsDocument = {
-  schema: 'xennic-cms/v1',
+  schema: 'xennic-cms/v2',
   blocks: [
     createBlock(
       'hero',
@@ -82,127 +78,168 @@ export const DEFAULT_LANDING: CmsDocument = {
           'زنیک با استانداردهای IEC، IEEE و VDE، محاسبات مهندسی برق، کیفیت توان و انرژی‌های تجدیدپذیر را در یک فضای کاری یکپارچه ارائه می‌دهد.',
       },
       [
-        createBlock('buttons', {}, [
+        createBlock('buttons', { justify: 'center' }, [
           createBlock('button', {
             label: 'شروع رایگان',
             href: '/register',
             variant: 'primary',
             showArrow: true,
           }),
-          createBlock('button', {
-            label: 'مشاهده دمو',
-            href: '/engineering',
-            variant: 'outline',
-          }),
+          createBlock('button', { label: 'مشاهده دمو', href: '/engineering', variant: 'outline' }),
         ]),
       ],
     ),
 
-    createBlock('stats', {
-      items: [
-        { value: '۸۰+', label: 'محاسبه‌گر' },
-        { value: '۱۰k+', label: 'مهندس فعال' },
-        { value: '۹۹.۹٪', label: 'در دسترس بودن' },
-        { value: '۲۴/۷', label: 'پشتیبانی' },
+    createBlock('stats', {}, [
+      createBlock('stat', { value: '۸۰+', label: 'محاسبه‌گر' }),
+      createBlock('stat', { value: '۱۰k+', label: 'مهندس فعال' }),
+      createBlock('stat', { value: '۹۹.۹٪', label: 'در دسترس بودن' }),
+      createBlock('stat', { value: '۲۴/۷', label: 'پشتیبانی' }),
+    ]),
+
+    createBlock(
+      'features',
+      { title: 'چرا زنیک؟', subtitle: 'همه چیز برای مهندسان برق در یک پلتفرم' },
+      [
+        createBlock('feature', {
+          icon: 'flask',
+          color: 'from-[#3b82f6] to-[#6366f1]',
+          title: 'محاسبات استاندارد',
+          desc: '۲۰+ محاسبه تخصصی مطابق IEC 60364، IEC 60076، IEEE 519 و IEEE C57.110',
+          tags: ['کابل‌سایزینگ', 'افت ولتاژ', 'اتصال کوتاه'],
+        }),
+        createBlock('feature', {
+          icon: 'barChart3',
+          color: 'from-[#06b6d4] to-[#3b82f6]',
+          title: 'کیفیت توان',
+          desc: 'تحلیل THD، TDD، K-Factor و طراحی فیلتر پسیو/فعال مطابق IEEE 519',
+          tags: ['THD', 'TDD', 'فیلتر'],
+        }),
+        createBlock('feature', {
+          icon: 'cpu',
+          color: 'from-[#8b5cf6] to-[#6366f1]',
+          title: 'هوش مصنوعی',
+          desc: 'مشاور AI تخصصی برق با دانش استانداردها و تشخیص خطا',
+          tags: ['مشاور', 'تشخیص', 'بهینه‌سازی'],
+        }),
+        createBlock('feature', {
+          icon: 'layers',
+          color: 'from-[#f59e0b] to-[#ef4444]',
+          title: 'مدیریت پروژه',
+          desc: 'سازماندهی پروژه‌ها، یادداشت‌های فنی، تاریخچه و همکاری تیمی',
+          tags: ['Multi-tenant', 'RBAC'],
+        }),
+        createBlock('feature', {
+          icon: 'shield',
+          color: 'from-[#10b981] to-[#06b6d4]',
+          title: 'امنیت و تطابق',
+          desc: 'احراز هویت JWT، کنترل دسترسی نقش‌محور و ثبت کامل رویدادها',
+          tags: ['JWT', 'RBAC', 'Audit'],
+        }),
+        createBlock('feature', {
+          icon: 'globe',
+          color: 'from-[#6366f1] to-[#8b5cf6]',
+          title: 'چندزبانه و RTL',
+          desc: 'پشتیبانی کامل فارسی با چینش RTL، فونت استاندارد و تقویم شمسی',
+          tags: ['فارسی', 'RTL'],
+        }),
       ],
-    }),
+    ),
 
-    createBlock('features', { title: 'چرا زنیک؟', id: 'features' }, [
-      createBlock('feature', {
-        icon: 'flask',
-        color: 'from-[#3b82f6] to-[#6366f1]',
-        title: 'محاسبات استاندارد',
-        desc: '۲۰+ محاسبه تخصصی مطابق IEC 60364، IEC 60076، IEEE 519 و IEEE C57.110',
-        tags: ['کابل‌سایزینگ', 'افت ولتاژ', 'اتصال کوتاه'],
+    createBlock('steps', { title: 'در سه گام شروع کنید' }, [
+      createBlock('step', {
+        number: 1,
+        title: 'ثبت‌نام',
+        text: 'با ایمیل خود در کمتر از یک دقیقه حساب بسازید.',
       }),
-      createBlock('feature', {
-        icon: 'barChart3',
-        color: 'from-[#06b6d4] to-[#3b82f6]',
-        title: 'کیفیت توان',
-        desc: 'تحلیل THD، TDD، K-Factor و طراحی فیلتر پسیو/فعال مطابق IEEE 519',
-        tags: ['THD', 'TDD', 'فیلتر'],
+      createBlock('step', {
+        number: 2,
+        title: 'ایجاد پروژه',
+        text: 'پروژه‌ی مهندسی خود را ایجاد و تیم را دعوت کنید.',
       }),
-      createBlock('feature', {
-        icon: 'cpu',
-        color: 'from-[#8b5cf6] to-[#6366f1]',
-        title: 'هوش مصنوعی',
-        desc: 'مشاور AI تخصصی برق با دانش استانداردها و تشخیص خطا',
-        tags: ['مشاور', 'تشخیص', 'بهینه‌سازی'],
-      }),
-      createBlock('feature', {
-        icon: 'layers',
-        color: 'from-[#f59e0b] to-[#ef4444]',
-        title: 'مدیریت پروژه',
-        desc: 'سازماندهی پروژه‌ها، یادداشت‌های فنی، تاریخچه و همکاری تیمی',
-        tags: ['Multi-tenant', 'RBAC'],
-      }),
-      createBlock('feature', {
-        icon: 'shield',
-        color: 'from-[#10b981] to-[#06b6d4]',
-        title: 'امنیت و تطابق',
-        desc: 'احراز هویت JWT، کنترل دسترسی نقش‌محور و ثبت کامل رویدادها',
-        tags: ['JWT', 'RBAC', 'Audit'],
-      }),
-      createBlock('feature', {
-        icon: 'globe',
-        color: 'from-[#6366f1] to-[#8b5cf6]',
-        title: 'چندزبانه و RTL',
-        desc: 'پشتیبانی کامل فارسی با چینش RTL، فونت استاندارد و تقویم شمسی',
-        tags: ['فارسی', 'RTL'],
+      createBlock('step', {
+        number: 3,
+        title: 'محاسبه و خروجی',
+        text: 'محاسبات را اجرا و گزارش PDF استاندارد دریافت کنید.',
       }),
     ]),
 
-    createBlock('pricing', { title: 'قیمت‌گذاری شفاف', id: 'pricing' }, [
-      createBlock(
-        'pricing-plan',
-        {
-          name: 'رایگان',
-          price: '۰',
-          period: 'تومان / ماه',
-          desc: 'برای آشنایی با پلتفرم',
-          features: ['۱۰۰ محاسبه در ماه', 'محاسبات پایه', '۱ فضای کاری', '۱ گیگابایت فضا'],
-        },
-        [createBlock('button', { label: 'شروع رایگان', href: '/register', variant: 'outline' })],
-      ),
-      createBlock(
-        'pricing-plan',
-        {
-          name: 'حرفه‌ای',
-          price: '۴۹۰,۰۰۰',
-          period: 'تومان / ماه',
-          desc: 'برای مهندسان حرفه‌ای',
-          badge: 'محبوب‌ترین',
-          highlighted: true,
-          features: [
-            'محاسبات نامحدود',
-            'همه ماژول‌ها',
-            '۵ فضای کاری',
-            '۵۰ گیگابایت فضا',
-            'AI (۵۰۰ درخواست/ماه)',
+    createBlock(
+      'pricing',
+      { title: 'قیمت‌گذاری شفاف', subtitle: 'پلنی متن نیاز خود انتخاب کنید' },
+      [
+        createBlock(
+          'pricing-plan',
+          {
+            name: 'رایگان',
+            price: '۰',
+            period: 'تومان / ماه',
+            desc: 'برای آشنایی با پلتفرم',
+            features: ['۱۰۰ محاسبه در ماه', 'محاسبات پایه', '۱ فضای کاری', '۱ گیگابایت فضا'],
+          },
+          [createBlock('button', { label: 'شروع رایگان', href: '/register', variant: 'outline' })],
+        ),
+        createBlock(
+          'pricing-plan',
+          {
+            name: 'حرفه‌ای',
+            price: '۴۹۰,۰۰۰',
+            period: 'تومان / ماه',
+            desc: 'برای مهندسان حرفه‌ای',
+            badge: 'محبوب‌ترین',
+            highlighted: true,
+            features: [
+              'محاسبات نامحدود',
+              'همه ماژول‌ها',
+              '۵ فضای کاری',
+              '۵۰ گیگابایت فضا',
+              'AI (۵۰۰ درخواست/ماه)',
+            ],
+          },
+          [
+            createBlock('button', {
+              label: 'شروع با Pro',
+              href: '/register?plan=pro',
+              variant: 'primary',
+            }),
           ],
-        },
-        [
-          createBlock('button', {
-            label: 'شروع با Pro',
-            href: '/register?plan=pro',
-            variant: 'primary',
-          }),
-        ],
-      ),
-      createBlock(
-        'pricing-plan',
-        {
-          name: 'سازمانی',
-          price: 'تماس',
-          period: 'برای قیمت',
-          desc: 'برای شرکت‌ها',
-          features: ['همه امکانات Pro', 'فضای کاری نامحدود', 'AI نامحدود', 'SSO & SAML'],
-        },
-        [createBlock('button', { label: 'تماس با فروش', href: '/contact', variant: 'outline' })],
-      ),
+        ),
+        createBlock(
+          'pricing-plan',
+          {
+            name: 'سازمانی',
+            price: 'تماس',
+            period: 'برای قیمت',
+            desc: 'برای شرکت‌ها',
+            features: ['همه امکانات Pro', 'فضای کاری نامحدود', 'AI نامحدود', 'SSO & SAML'],
+          },
+          [createBlock('button', { label: 'تماس با فروش', href: '/contact', variant: 'outline' })],
+        ),
+      ],
+    ),
+
+    createBlock('testimonials', { title: 'نظر مهندسان' }, [
+      createBlock('testimonial', {
+        quote: 'گزارش‌های استاندارد این پلتفرم در زمان طراحی تابلوها بسیار کمک‌کننده بود.',
+        author: 'مهندس رضایی',
+        role: 'طراح ارشد',
+        rating: 5,
+      }),
+      createBlock('testimonial', {
+        quote: 'کیفیت توان و هارمونیک‌ها را دقیق محاسبه می‌کند.',
+        author: 'دکتر موسوی',
+        role: 'مشاور کیفیت توان',
+        rating: 5,
+      }),
+      createBlock('testimonial', {
+        quote: 'پشتیبانی سریع و رابط کاربری حرفه‌ای دارد.',
+        author: 'مهندس کریمی',
+        role: 'پیمانکار برق',
+        rating: 4,
+      }),
     ]),
 
-    createBlock('faq', { title: 'سوالات متداول', id: 'faq' }, [
+    createBlock('faq', { title: 'سوالات متداول' }, [
       createBlock('faq-item', {
         question: 'آیا می‌توانم رایگان شروع کنم؟',
         answer: 'بله، پلن رایگان شامل ۱۰۰ محاسبه در ماه است و بدون نیاز به کارت بانکی فعال می‌شود.',
@@ -218,6 +255,11 @@ export const DEFAULT_LANDING: CmsDocument = {
       }),
     ]),
 
+    createBlock('newsletter', {
+      title: 'عضویت در خبرنامه',
+      subtitle: 'از آخرین به‌روزرسانی‌ها و مقالات مهندسی باخبر شوید.',
+    }),
+
     createBlock(
       'cta',
       {
@@ -225,7 +267,7 @@ export const DEFAULT_LANDING: CmsDocument = {
         subtitle: 'همین حالا به جمع مهندسان حرفه‌ای بپیوندید.',
       },
       [
-        createBlock('buttons', {}, [
+        createBlock('buttons', { justify: 'center' }, [
           createBlock('button', { label: 'شروع رایگان', href: '/register', variant: 'primary' }),
           createBlock('button', { label: 'تماس با ما', href: '/contact', variant: 'outline' }),
         ]),
@@ -250,47 +292,7 @@ export const EDITABLE_SLOTS: { slot: string; label: string; description: string 
   { slot: 'site/footer', label: 'فوتر سایت', description: 'ستون‌ها و لینک‌های پاورقی' },
 ];
 
-export const BLOCK_LIBRARY: {
-  type: CmsBlock['type'];
-  label: string;
-  defaultProps: Record<string, unknown>;
-}[] = [
-  {
-    type: 'hero',
-    label: 'هیرو',
-    defaultProps: { title: 'عنوان', subtitle: 'توضیحات', eyebrow: 'تیتر کوچک' },
-  },
-  { type: 'features', label: 'بخش ویژگی‌ها', defaultProps: { title: 'عنوان بخش' } },
-  {
-    type: 'feature',
-    label: 'ویژگی تکی',
-    defaultProps: { title: 'عنوان', desc: 'توضیح', icon: 'zap' },
-  },
-  { type: 'pricing', label: 'بخش قیمت', defaultProps: { title: 'قیمت‌ها' } },
-  {
-    type: 'pricing-plan',
-    label: 'پلن قیمت',
-    defaultProps: { name: 'پلن', price: '۰', period: '/ماه' },
-  },
-  { type: 'cta', label: 'فراخوان', defaultProps: { title: 'عنوان', subtitle: 'توضیح' } },
-  { type: 'faq', label: 'سوالات متداول', defaultProps: { title: 'سوالات' } },
-  { type: 'faq-item', label: 'سوال', defaultProps: { question: 'سوال؟', answer: 'پاسخ' } },
-  { type: 'stats', label: 'آمار', defaultProps: { items: [] } },
-  { type: 'testimonials', label: 'نظرات', defaultProps: { title: 'مشتریان' } },
-  {
-    type: 'testimonial',
-    label: 'نظر تکی',
-    defaultProps: { quote: 'متن نظر', author: 'نام', rating: 5 },
-  },
-  { type: 'contact', label: 'اطلاعات تماس', defaultProps: {} },
-  { type: 'heading', label: 'تیتر', defaultProps: { text: 'عنوان', as: 'h2', size: 'lg' } },
-  { type: 'paragraph', label: 'پاراگراف', defaultProps: { text: 'متن پاراگراف', align: 'center' } },
-  { type: 'rich-text', label: 'متن غنی', defaultProps: { html: '<p>متن</p>' } },
-  { type: 'image', label: 'تصویر', defaultProps: { src: '', alt: '', ratio: '16/9' } },
-  { type: 'buttons', label: 'گروه دکمه', defaultProps: {} },
-  { type: 'button', label: 'دکمه', defaultProps: { label: 'دکمه', href: '#', variant: 'primary' } },
-  { type: 'columns', label: 'ستون‌ها', defaultProps: { cols: 3 } },
-  { type: 'spacer', label: 'فاصله', defaultProps: { size: 'md' } },
-  { type: 'divider', label: 'جداکننده', defaultProps: {} },
-  { type: 'html', label: 'HTML سفارشی', defaultProps: { html: '' } },
-];
+// Back-compat: re-export BLOCK_LIBRARY consumers can import from this file.
+export { BLOCK_LIBRARY } from './block-library';
+
+export type { CmsBlock };
