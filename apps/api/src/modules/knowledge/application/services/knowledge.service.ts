@@ -264,6 +264,24 @@ export class KnowledgeService {
     return entity;
   }
 
+  // ── updateSearchText ────────────────────────────────────────────────────────
+
+  /**
+   * Replaces the full-text search projection of an article.
+   *
+   * Used when searchable child content (formulas, worked examples) changes and
+   * the index has to be rebuilt without touching the article body itself.
+   */
+  async updateSearchText(
+    id: string,
+    workspaceId: string,
+    searchText: string | null,
+  ): Promise<void> {
+    const entity = await this.findOne(id, workspaceId);
+    entity.setSearchText(searchText);
+    await this.knowledgeRepository.save(entity);
+  }
+
   // ── softDelete ──────────────────────────────────────────────────────────────
 
   async remove(id: string, workspaceId: string): Promise<void> {
