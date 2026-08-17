@@ -79,9 +79,10 @@ export class CmsAdminController {
     return { success: true, data: CmsContentResponseDto.from(e) };
   }
 
-  @Get('slot/*slot')
+  @Get('slot/*')
   @ApiOperation({ summary: 'گرفتن سند با slot (حتی منتشر نشده)' })
-  async getBySlot(@Param('slot') slot: string, @Query('locale') locale?: string) {
+  async getBySlot(@Param('*') wildcard: string, @Query('locale') locale?: string) {
+    const slot = wildcard.replace(/^\/+/, '');
     const e = await this.cms.getBySlot(slot, locale ?? 'fa');
     return { success: true, data: CmsContentResponseDto.from(e) };
   }
