@@ -11,11 +11,8 @@ import {
   Post,
   Query,
   Req,
-  UploadedFile,
   UseGuards,
-  UseInterceptors,
 } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
 import {
   ApiBearerAuth,
   ApiBody,
@@ -135,7 +132,6 @@ export class CmsAdminController {
   }
 
   @Post('media')
-  @UseInterceptors(FileInterceptor('file'))
   @ApiConsumes('multipart/form-data')
   @ApiOperation({ summary: 'آپلود تصویر رسانه‌ی CMS' })
   @ApiBody({
@@ -148,14 +144,33 @@ export class CmsAdminController {
       required: ['file'],
     },
   })
-  async uploadMedia(@UploadedFile() file: any, @Body('slot') slot?: string) {
-    if (!file?.buffer) {
+  async uploadMedia(@Req() req: any) {
+    // Fastify multipart (FileInterceptor from @nestjs/platform-express is not
+    // compatible with Fastify; parse the stream just like StorageController does).
+    if (!req.isMultipart || !req.isMultipart()) {
+      throw new BadRequestException('درخواست باید multipart/form-data باشد');
+    }
+    const data = await req.file({
+      limits: { fileSize: 10 * 1024 * 1024 /* 10MB */, files: 1 },
+    });
+    if (!data) {
       throw new BadRequestException('فایلی ارسال نشده است. فیلد file الزامی است.');
     }
+    const chunks: Buffer[] = [];
+    for await (const chunk of data.file) chunks.push(chunk as Buffer);
+    const buffer = Buffer.concat(chunks);
+
+    // `slot` is sent as a multipart text field
+    let slot: string | undefined;
+    if (data.fields?.slot) {
+      const f = data.fields.slot as unknown;
+      slot = typeof f === 'string' ? f : (f as { value?: string }).value;
+    }
+
     const result = await this.cms.uploadMedia({
-      buffer: file.buffer,
-      originalName: file.originalname,
-      mimeType: file.mimetype,
+      buffer,
+      originalName: data.filename,
+      mimeType: data.mimetype,
       slot,
     });
     return { success: true, data: CmsMediaResponseDto.from(result) };
