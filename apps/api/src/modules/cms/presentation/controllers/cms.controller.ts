@@ -14,7 +14,7 @@ import { CmsService } from '../../application/services/cms.service.js';
 export class CmsPublicController {
   constructor(private readonly cms: CmsService) {}
 
-  @Get('content/:slot(*)')
+  @Get('content/*slot')
   @ApiOperation({ summary: 'دریافت محتوای منتشرشده‌ی یک slot' })
   @ApiParam({ name: 'slot', example: 'landing/hero' })
   @ApiQuery({ name: 'locale', required: false, example: 'fa' })
@@ -35,11 +35,11 @@ export class CmsPublicController {
     };
   }
 
-  @Get('media/*')
+  @Get('media/*path')
   @ApiOperation({ summary: 'سرو فایل رسانه از storage محلی' })
-  async serveMedia(@Param('*') wildcard: string, @Res() res: FastifyReply) {
-    if (!wildcard) throw new BadRequestException('مسیر رسانه نامعتبر است');
-    const objectKey = wildcard;
+  async serveMedia(@Param('path') path: string, @Res() res: FastifyReply) {
+    if (!path) throw new BadRequestException('مسیر رسانه نامعتبر است');
+    const objectKey = path;
     const { stream, mimeType, size } = await this.cms.readMedia(objectKey);
     res
       .header('Content-Type', mimeType)
