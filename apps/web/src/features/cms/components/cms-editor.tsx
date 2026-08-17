@@ -83,7 +83,7 @@ export function CmsEditor() {
   }
 
   function moveBlock(id: string, dir: -1 | 1) {
-    setDoc((d) => ({ ...d, blocks: reorder(d.blocks, id, dir) }));
+    setDoc((d) => ({ ...d, blocks: reorderTree(d.blocks, id, dir) }));
   }
 
   function addBlock(parentId: string | null, type: string) {
@@ -547,14 +547,17 @@ function findBlock(blocks: CmsBlock[], id: string | null): CmsBlock | null {
   return null;
 }
 
-function reorder(blocks: CmsBlock[], id: string, dir: -1 | 1): CmsBlock[] {
+function reorderTree(blocks: CmsBlock[], id: string, dir: -1 | 1): CmsBlock[] {
   const idx = blocks.findIndex((b) => b.id === id);
-  if (idx < 0) return blocks;
-  const target = idx + dir;
-  if (target < 0 || target >= blocks.length) return blocks;
-  const next = blocks.slice();
-  [next[idx], next[target]] = [next[target], next[idx]];
-  return next;
+  if (idx >= 0) {
+    const target = idx + dir;
+    if (target < 0 || target >= blocks.length) return blocks;
+    const next = blocks.slice();
+    [next[idx], next[target]] = [next[target], next[idx]];
+    return next;
+  }
+  // recurse into children
+  return blocks.map((b) => (b.children ? { ...b, children: reorderTree(b.children, id, dir) } : b));
 }
 
 function isContainer(type: string): boolean {

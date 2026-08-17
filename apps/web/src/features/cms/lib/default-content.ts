@@ -69,48 +69,7 @@ export const DEFAULT_HEADER: CmsDocument = {
 
 export const DEFAULT_FOOTER: CmsDocument = {
   schema: 'xennic-cms/v2',
-  blocks: [
-    createBlock('columns', 'default-columns-1', { cols: 4, gap: 'md' }, [
-      createBlock('footer-column', 'default-footer-column-1', { title: 'زنیک' }, [
-        createBlock('paragraph', 'default-paragraph-1', {
-          text: 'پلتفرم تخصصی مهندسی برق با موتور محاسبات استاندارد و هوش مصنوعی.',
-        }),
-      ]),
-      createBlock('footer-column', 'default-footer-column-2', { title: 'محصول' }, [
-        createBlock('nav-links', 'default-nav-links-2', {
-          links: [
-            { label: 'موتور محاسبات', href: '/engineering' },
-            { label: 'هوش مصنوعی', href: '/ai' },
-            { label: 'دانشنامه', href: '/knowledge' },
-            { label: 'بازارگاه', href: '/marketplace' },
-          ],
-        }),
-      ]),
-      createBlock('footer-column', 'default-footer-column-3', { title: 'شرکت' }, [
-        createBlock('nav-links', 'default-nav-links-3', {
-          links: [
-            { label: 'درباره ما', href: '/about' },
-            { label: 'تماس', href: '/contact' },
-            { label: 'وبلاگ', href: '/articles' },
-          ],
-        }),
-      ]),
-      createBlock('footer-column', 'default-footer-column-4', { title: 'ما را دنبال کنید' }, [
-        createBlock('social-links', 'default-social-links-1', {}, [
-          createBlock('social-link', 'default-social-link-1', {
-            href: '#',
-            label: 'وب‌سایت',
-            icon: 'globe',
-          }),
-          createBlock('social-link', 'default-social-link-2', {
-            href: '#',
-            label: 'تلگرام',
-            icon: 'send',
-          }),
-        ]),
-      ]),
-    ]),
-  ],
+  blocks: [],
 };
 
 export const DEFAULT_LANDING: CmsDocument = {
