@@ -41,6 +41,7 @@ import { useToast } from '@/stores/toast.store';
 import { apiClient } from '@/lib/api/client';
 import { cn } from '@/lib/utils';
 import { AiProviderManagement } from './ai-provider-management';
+import { CmsEditor } from '@/features/cms/components/cms-editor';
 
 // ─────────────────────────────────────────────────────────────
 // types
@@ -71,6 +72,7 @@ const SECTIONS = [
   { key: 'ai-providers', label: 'ارائه‌دهندگان AI', icon: Zap },
   { key: 'webhooks', label: 'Webhook ها', icon: Webhook },
   { key: 'feature-flags', label: 'Feature Flag ها', icon: Flag },
+  { key: 'cms', label: 'مدیریت محتوا (CMS)', icon: Edit3 },
 ] as const;
 
 type Section = (typeof SECTIONS)[number]['key'];
@@ -2879,6 +2881,14 @@ export function AdminClient() {
     'ai-providers': <AiProviderManagement />,
     webhooks: <WebhooksSection />,
     'feature-flags': <FeatureFlagsSection />,
+    cms: (
+      <div className="space-y-4">
+        <p className="text-sm text-[hsl(var(--muted-foreground))]">
+          ویرایش هدر، فوتر و صفحه‌ی فرود سایت. تغییرات پس از انتشار عمومی می‌شود.
+        </p>
+        <CmsEditor />
+      </div>
+    ),
   };
 
   const current = SECTIONS.find((s) => s.key === section);
