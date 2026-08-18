@@ -1,13 +1,260 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ═══════════════════════════════════════════════════════════════
+   XENNIC DESIGN TOKENS
+   پالت سازمانی پیش‌فرض (نفتابی-آبی نیلی / فیروزه‌ای روی خنثی‌های اسلیت)
+   برای تغییر رنگ‌ها، می‌توان این مقادیر را در همین فایل ویرایش کرد
+   یا در آینده از پنل تنظیمات تم آن‌ها را تغییر داد.
+═══════════════════════════════════════════════════════════════ */
+:root {
+  /* Brand — Indigo */
+  --primary: 243 100% 64%; /* #4f46e5 */
+  --primary-foreground: 0 0% 100%;
+  --primary-soft: 243 100% 96%;
+
+  /* Accent — Teal/Cyan */
+  --accent: 189 94% 43%; /* #0891b2 */
+  --accent-foreground: 0 0% 100%;
+
+  /* Success / Warning / Destructive */
+  --success: 152 62% 40%;
+  --warning: 38 92% 50%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 100%;
+
+  /* Neutrals (Slate) */
+  --background: 210 40% 99%;
+  --foreground: 222 47% 11%;
+  --card: 0 0% 100%;
+  --card-foreground: 222 47% 11%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 222 47% 11%;
+  --muted: 210 40% 96%;
+  --muted-foreground: 215 16% 47%;
+  --secondary: 210 40% 94%;
+  --secondary-foreground: 222 47% 11%;
+  --border: 214 32% 91%;
+  --input: 214 32% 91%;
+  --ring: 243 100% 64%;
+
+  --sidebar: 222 47% 11%;
+  --sidebar-foreground: 210 40% 96%;
+
+  /* Radii */
+  --radius: 0.75rem;
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px hsl(222 47% 11% / 0.06);
+  --shadow-md: 0 4px 12px hsl(222 47% 11% / 0.08);
+  --shadow-lg: 0 12px 32px hsl(222 47% 11% / 0.12);
+  --shadow-xl: 0 24px 60px hsl(222 47% 11% / 0.18);
+
+  /* Fonts */
+  --font-sans: 'Vazirmatn', 'IRANSans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.dark {
+  --background: 222 47% 7%;
+  --foreground: 210 40% 98%;
+  --card: 222 47% 10%;
+  --card-foreground: 210 40% 98%;
+  --popover: 222 47% 10%;
+  --popover-foreground: 210 40% 98%;
+  --muted: 217 33% 16%;
+  --muted-foreground: 215 20% 65%;
+  --secondary: 217 33% 18%;
+  --secondary-foreground: 210 40% 98%;
+  --border: 217 33% 20%;
+  --input: 217 33% 20%;
+  --primary-soft: 243 60% 22%;
+  --ring: 243 100% 72%;
+}
+
+/* Expose tokens to Tailwind v4 as theme colors */
+@theme inline {
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+  --color-sidebar: hsl(var(--sidebar));
+  --color-sidebar-foreground: hsl(var(--sidebar-foreground));
+  --radius-lg: var(--radius);
+  --radius-xl: var(--radius-xl);
+}
+
+/* Base */
+@layer base {
+  * {
+    border-color: hsl(var(--border));
+  }
+  html {
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
+  }
+  body {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-family: var(--font-sans);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    color: hsl(var(--foreground));
+    font-weight: 700;
+    line-height: 1.25;
+  }
+  a {
+    color: hsl(var(--primary));
+    transition: color 150ms ease;
+  }
+  a:hover {
+    color: hsl(var(--accent));
+  }
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: hsl(var(--muted));
+  }
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--border));
+    border-radius: 999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--muted-foreground));
+  }
+}
+
+/* Reusable components */
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition-all disabled:opacity-50 disabled:pointer-events-none;
+  }
+  .btn-primary {
+    background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)));
+    color: hsl(var(--primary-foreground));
+    box-shadow: 0 8px 24px hsl(var(--primary) / 0.25);
+  }
+  .btn-primary:hover {
+    filter: brightness(1.08);
+    transform: translateY(-1px);
+    color: hsl(var(--primary-foreground));
+  }
+  .btn-outline {
+    border: 1px solid hsl(var(--border));
+    background: hsl(var(--card));
+    color: hsl(var(--foreground));
+  }
+  .btn-outline:hover {
+    background: hsl(var(--muted));
+    color: hsl(var(--foreground));
+  }
+  .btn-ghost {
+    background: transparent;
+    color: hsl(var(--foreground));
+  }
+  .btn-ghost:hover {
+    background: hsl(var(--muted));
+  }
+
+  .input {
+    @apply w-full rounded-xl border bg-[hsl(var(--background))] px-3.5 py-2.5 text-sm outline-none transition;
+    border-color: hsl(var(--input));
+  }
+  .input:focus {
+    border-color: hsl(var(--ring));
+    box-shadow: 0 0 0 3px hsl(var(--ring) / 0.18);
+  }
+
+  .card {
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .badge {
+    @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium;
+    background: hsl(var(--primary) / 0.1);
+    color: hsl(var(--primary));
+  }
+
+  .gradient-text {
+    background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+}
+
+/* Utilities */
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  .animate-fade-in {
+    animation: cms-fade 240ms ease both;
+  }
+  .animate-slide-up {
+    animation: cms-slide 320ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  }
+}
+
+@keyframes cms-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes cms-slide {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.landing-dark {
+  color-scheme: dark;
+}
 
 /* ═══════════════════════════════════════════════════════════════
    CMS BLOCK STYLES
-   هر بلوک با data-cms-block علامت‌گذاری می‌شود. رنگ‌ها از طریق
-   CSS Variable به فرزندان منتشر می‌شوند و در حالت themed (یعنی
-   وقتی کاربر رنگ دلخواه ست کرده) متن‌های muted/border هم تطبیق
-   پیدا می‌کنند.
 ═══════════════════════════════════════════════════════════════ */
 [data-cms-block] {
   background-color: var(--cms-bg, transparent);
@@ -19,21 +266,19 @@
     transform 200ms ease,
     border-color 200ms ease;
 }
-
 [data-cms-block]:hover {
   background-color: var(--cms-bg-hover, var(--cms-bg, transparent));
   color: var(--cms-fg-hover, var(--cms-fg, inherit));
 }
-
 [data-cms-block][data-cms-hover-scale='true']:hover {
   transform: scale(1.02);
 }
 
-/* Surface (card-like) blocks default to the card color but yield to
-   the editor-supplied --cms-bg. */
 [data-cms-block].cms-surface {
   background-color: hsl(var(--card));
-  border-color: hsl(var(--border));
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
 }
 [data-cms-block].cms-surface[data-cms-themed='true'] {
   background-color: var(--cms-bg, hsl(var(--card)));
@@ -45,9 +290,6 @@
   color: var(--cms-fg-hover, var(--cms-fg, inherit));
 }
 
-/* When a block is themed, override the common muted/text/border
-   utility classes inside it so user colors remain readable. */
-[data-cms-block][data-cms-themed='true'] .cms-fg-foreground,
 [data-cms-block][data-cms-themed='true'] h1,
 [data-cms-block][data-cms-themed='true'] h2,
 [data-cms-block][data-cms-themed='true'] h3,
@@ -55,38 +297,18 @@
 [data-cms-block][data-cms-themed='true'] strong {
   color: var(--cms-fg, inherit) !important;
 }
-
-[data-cms-block][data-cms-themed='true'] .cms-fg-muted,
 [data-cms-block][data-cms-themed='true'] p,
 [data-cms-block][data-cms-themed='true'] .cms-text-muted,
-[data-cms-block][data-cms-themed='true'] .cms-text-subtle {
-  color: color-mix(in srgb, var(--cms-fg, currentColor) 70%, transparent) !important;
+[data-cms-block][data-cms-themed='true'] .text-muted-foreground,
+[data-cms-block][data-cms-themed='true'] .text-\[hsl\(var\(--muted-foreground\)\)\] {
+  color: color-mix(in srgb, var(--cms-fg, currentColor) 75%, transparent) !important;
 }
-
-[data-cms-block][data-cms-themed='true'] .cms-fg-subtle {
-  color: color-mix(in srgb, var(--cms-fg, currentColor) 55%, transparent) !important;
-}
-
-[data-cms-block][data-cms-themed='true'] .cms-border {
-  border-color: var(--cms-border, color-mix(in srgb, var(--cms-fg) 25%, transparent)) !important;
-}
-
-/* Buttons/links inside themed blocks keep their own look but inherit
-   text color if they don't specify one. */
 [data-cms-block][data-cms-themed='true'] a:not(.btn):not(button) {
   color: inherit;
+  text-decoration: underline;
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   Landing dark mode helper (kept for backwards compatibility)
-═══════════════════════════════════════════════════════════════ */
-.landing-dark {
-  color-scheme: dark;
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   PRINT
-═══════════════════════════════════════════════════════════════ */
+/* Print */
 @media print {
   body {
     background: white;
