@@ -29,6 +29,7 @@ import { AiProviderManagementModule } from './modules/ai-provider-management/ai-
 import { MonitoringModule } from './modules/monitoring/monitoring.module.js'; // ✅ مانیتورینگ
 import { CalculationPlatformModule } from './modules/calculation-platform/calculation-platform.module.js'; // ✅ Sprint C1
 import { CmsModule } from './modules/cms/cms.module.js'; // ✅ Landing CMS
+import { ThemeModule } from './modules/theme/theme.module.js';
 
 @Module({
   imports: [
@@ -59,6 +60,7 @@ import { CmsModule } from './modules/cms/cms.module.js'; // ✅ Landing CMS
     MonitoringModule, // ✅ مانیتورینگ (OpenTelemetry + Prometheus + logging)
     CalculationPlatformModule, // ✅ Sprint C1 — Enterprise Calculation Platform
     CmsModule, // ✅ Landing CMS
+    ThemeModule,
     // ✅ SEC-001C: Rate Limiting
     ThrottlerModule.forRoot([
       {

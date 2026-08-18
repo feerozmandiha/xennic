@@ -33,6 +33,7 @@ import {
   Key,
   Webhook,
   Flag,
+  Palette,
 } from 'lucide-react';
 import { useAuthStore } from '@/stores/auth.store';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -42,6 +43,7 @@ import { apiClient } from '@/lib/api/client';
 import { cn } from '@/lib/utils';
 import { AiProviderManagement } from './ai-provider-management';
 import { CmsEditor } from '@/features/cms/components/cms-editor';
+import { ThemeSection } from './theme-section';
 
 // ─────────────────────────────────────────────────────────────
 // types
@@ -73,6 +75,7 @@ const SECTIONS = [
   { key: 'webhooks', label: 'Webhook ها', icon: Webhook },
   { key: 'feature-flags', label: 'Feature Flag ها', icon: Flag },
   { key: 'cms', label: 'مدیریت محتوا (CMS)', icon: Edit3 },
+  { key: 'theme', label: 'رنگ‌ها و تم', icon: Palette },
 ] as const;
 
 type Section = (typeof SECTIONS)[number]['key'];
@@ -2889,6 +2892,7 @@ export function AdminClient() {
         <CmsEditor />
       </div>
     ),
+    theme: <ThemeSection />,
   };
 
   const current = SECTIONS.find((s) => s.key === section);

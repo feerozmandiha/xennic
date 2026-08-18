@@ -3,81 +3,76 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 /* ═══════════════════════════════════════════════════════════════
-   XENNIC DESIGN TOKENS
-   پالت سازمانی پیش‌فرض (نفتابی-آبی نیلی / فیروزه‌ای روی خنثی‌های اسلیت)
-   برای تغییر رنگ‌ها، می‌توان این مقادیر را در همین فایل ویرایش کرد
-   یا در آینده از پنل تنظیمات تم آن‌ها را تغییر داد.
+   XENNIC — CORPORATE DESIGN TOKENS (from docs/SMOS)
+   Primary  : Xennic Blue   #1A3A5C  hsl(210 56% 23%)
+   Accent   : Xennic L.Blue #3A7CA5  hsl(204 47% 44%)
+   Dark     : #0D1B2A
+   Muted    : #6C757D
+   Success  : #28A745
+   Warning  : #FFC107
+   Error    : #DC3545
+   All values are HSL triplets so themes can be edited from the
+   admin panel without rebuilding.
 ═══════════════════════════════════════════════════════════════ */
 :root {
-  /* Brand — Indigo */
-  --primary: 243 100% 64%; /* #4f46e5 */
+  --primary: 210 56% 23%;
   --primary-foreground: 0 0% 100%;
-  --primary-soft: 243 100% 96%;
-
-  /* Accent — Teal/Cyan */
-  --accent: 189 94% 43%; /* #0891b2 */
+  --accent: 204 47% 44%;
   --accent-foreground: 0 0% 100%;
+  --ring: 204 47% 44%;
 
-  /* Success / Warning / Destructive */
-  --success: 152 62% 40%;
-  --warning: 38 92% 50%;
-  --destructive: 0 84% 60%;
-  --destructive-foreground: 0 0% 100%;
-
-  /* Neutrals (Slate) */
-  --background: 210 40% 99%;
-  --foreground: 222 47% 11%;
+  --background: 0 0% 100%;
+  --foreground: 210 64% 11%;
   --card: 0 0% 100%;
-  --card-foreground: 222 47% 11%;
+  --card-foreground: 210 64% 11%;
+  --muted: 210 16% 96%;
+  --muted-foreground: 208 7% 45%;
+  --secondary: 204 47% 94%;
+  --secondary-foreground: 210 64% 11%;
+  --border: 210 16% 88%;
+  --input: 210 16% 88%;
   --popover: 0 0% 100%;
-  --popover-foreground: 222 47% 11%;
-  --muted: 210 40% 96%;
-  --muted-foreground: 215 16% 47%;
-  --secondary: 210 40% 94%;
-  --secondary-foreground: 222 47% 11%;
-  --border: 214 32% 91%;
-  --input: 214 32% 91%;
-  --ring: 243 100% 64%;
+  --popover-foreground: 210 64% 11%;
 
-  --sidebar: 222 47% 11%;
-  --sidebar-foreground: 210 40% 96%;
+  --destructive: 354 70% 54%;
+  --destructive-foreground: 0 0% 100%;
+  --success: 134 61% 41%;
+  --warning: 45 100% 51%;
 
-  /* Radii */
-  --radius: 0.75rem;
-  --radius-sm: 0.5rem;
-  --radius-md: 0.75rem;
-  --radius-lg: 1rem;
-  --radius-xl: 1.5rem;
+  --sidebar: 210 64% 11%;
+  --sidebar-foreground: 0 0% 100%;
 
-  /* Shadows */
-  --shadow-sm: 0 1px 2px hsl(222 47% 11% / 0.06);
-  --shadow-md: 0 4px 12px hsl(222 47% 11% / 0.08);
-  --shadow-lg: 0 12px 32px hsl(222 47% 11% / 0.12);
-  --shadow-xl: 0 24px 60px hsl(222 47% 11% / 0.18);
+  --radius: 0.625rem;
+  --radius-sm: 0.375rem;
+  --radius-md: 0.625rem;
+  --radius-lg: 0.875rem;
+  --radius-xl: 1.25rem;
 
-  /* Fonts */
+  --shadow-sm: 0 1px 2px hsl(210 64% 11% / 0.06);
+  --shadow-md: 0 4px 12px hsl(210 64% 11% / 0.08);
+  --shadow-lg: 0 12px 32px hsl(210 64% 11% / 0.12);
+  --shadow-xl: 0 24px 60px hsl(210 64% 11% / 0.18);
+
   --font-sans: 'Vazirmatn', 'IRANSans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
 .dark {
-  --background: 222 47% 7%;
-  --foreground: 210 40% 98%;
-  --card: 222 47% 10%;
-  --card-foreground: 210 40% 98%;
-  --popover: 222 47% 10%;
-  --popover-foreground: 210 40% 98%;
-  --muted: 217 33% 16%;
-  --muted-foreground: 215 20% 65%;
-  --secondary: 217 33% 18%;
-  --secondary-foreground: 210 40% 98%;
-  --border: 217 33% 20%;
-  --input: 217 33% 20%;
-  --primary-soft: 243 60% 22%;
-  --ring: 243 100% 72%;
+  --background: 210 64% 7%;
+  --foreground: 0 0% 98%;
+  --card: 210 64% 10%;
+  --card-foreground: 0 0% 98%;
+  --muted: 210 40% 16%;
+  --muted-foreground: 210 20% 65%;
+  --secondary: 204 47% 18%;
+  --secondary-foreground: 0 0% 98%;
+  --border: 210 40% 20%;
+  --input: 210 40% 20%;
+  --popover: 210 64% 10%;
+  --popover-foreground: 0 0% 98%;
+  --sidebar: 210 64% 8%;
 }
 
-/* Expose tokens to Tailwind v4 as theme colors */
 @theme inline {
   --color-primary: hsl(var(--primary));
   --color-primary-foreground: hsl(var(--primary-foreground));
@@ -104,7 +99,6 @@
   --radius-xl: var(--radius-xl);
 }
 
-/* Base */
 @layer base {
   * {
     border-color: hsl(var(--border));
@@ -138,7 +132,6 @@
   a:hover {
     color: hsl(var(--accent));
   }
-  /* Custom scrollbar */
   ::-webkit-scrollbar {
     width: 10px;
     height: 10px;
@@ -155,7 +148,6 @@
   }
 }
 
-/* Reusable components */
 @layer components {
   .btn {
     @apply inline-flex items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition-all disabled:opacity-50 disabled:pointer-events-none;
@@ -217,7 +209,6 @@
   }
 }
 
-/* Utilities */
 @layer utilities {
   .text-balance {
     text-wrap: balance;
@@ -229,7 +220,6 @@
     animation: cms-slide 320ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
   }
 }
-
 @keyframes cms-fade {
   from {
     opacity: 0;
@@ -298,9 +288,7 @@
   color: var(--cms-fg, inherit) !important;
 }
 [data-cms-block][data-cms-themed='true'] p,
-[data-cms-block][data-cms-themed='true'] .cms-text-muted,
-[data-cms-block][data-cms-themed='true'] .text-muted-foreground,
-[data-cms-block][data-cms-themed='true'] .text-\[hsl\(var\(--muted-foreground\)\)\] {
+[data-cms-block][data-cms-themed='true'] .cms-text-muted {
   color: color-mix(in srgb, var(--cms-fg, currentColor) 75%, transparent) !important;
 }
 [data-cms-block][data-cms-themed='true'] a:not(.btn):not(button) {
@@ -308,7 +296,6 @@
   text-decoration: underline;
 }
 
-/* Print */
 @media print {
   body {
     background: white;
