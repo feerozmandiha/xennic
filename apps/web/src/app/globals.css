@@ -1,392 +1,84 @@
-@import 'tailwindcss';
-@plugin "@tailwindcss/typography";
-@import 'katex/dist/katex.min.css';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 /* ═══════════════════════════════════════════════════════════════
-   RTL / LTR variants — Tailwind v4
+   CMS BLOCK STYLES
+   هر بلوک با data-cms-block علامت‌گذاری می‌شود. رنگ‌ها از طریق
+   CSS Variable به فرزندان منتشر می‌شوند و در حالت themed (یعنی
+   وقتی کاربر رنگ دلخواه ست کرده) متن‌های muted/border هم تطبیق
+   پیدا می‌کنند.
 ═══════════════════════════════════════════════════════════════ */
-@variant rtl (&:where([dir="rtl"], [dir="rtl"] *));
-@variant ltr (&:where([dir="ltr"], [dir="ltr"] *));
-
-/* ═══════════════════════════════════════════════════════════════
-   XENNIC DESIGN TOKENS
-═══════════════════════════════════════════════════════════════ */
-@theme {
-  --font-sans: var(--font-iran-sans), system-ui, sans-serif;
-  --font-en: var(--font-inter), system-ui, sans-serif;
-  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
-
-  --radius-sm: 0.25rem;
-  --radius: 0.5rem;
-  --radius-md: 0.625rem;
-  --radius-lg: 0.75rem;
-  --radius-xl: 1rem;
-  --radius-2xl: 1.25rem;
+[data-cms-block] {
+  background-color: var(--cms-bg, transparent);
+  color: var(--cms-fg, inherit);
+  transition:
+    background-color 200ms ease,
+    color 200ms ease,
+    box-shadow 200ms ease,
+    transform 200ms ease,
+    border-color 200ms ease;
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   CSS VARIABLES — Light Mode
-═══════════════════════════════════════════════════════════════ */
-:root {
-  color-scheme: light dark;
-
-  --background: 0 0% 100%;
-  --foreground: 222 47% 11%;
-  --card: 0 0% 100%;
-  --card-foreground: 222 47% 11%;
-  --popover: 0 0% 100%;
-  --popover-foreground: 222 47% 11%;
-  --primary: 221 83% 53%;
-  --primary-foreground: 0 0% 100%;
-  --secondary: 210 40% 96%;
-  --secondary-foreground: 222 47% 11%;
-  --muted: 210 40% 96%;
-  --muted-foreground: 215 16% 47%;
-  --accent: 200 98% 39%;
-  --accent-foreground: 0 0% 100%;
-  --success: 142 76% 36%;
-  --success-foreground: 0 0% 100%;
-  --warning: 38 92% 50%;
-  --warning-foreground: 0 0% 100%;
-  --destructive: 0 84% 60%;
-  --destructive-foreground: 0 0% 100%;
-  --border: 214 32% 91%;
-  --input: 214 32% 91%;
-  --ring: 221 83% 53%;
-
-  /* ── Sidebar ── */
-  --sidebar: 222 47% 11%;
-  --sidebar-foreground: 210 40% 96%;
-  --sidebar-muted: 215 28% 17%;
-  --sidebar-accent: 221 83% 53%;
-  --sidebar-border: 215 28% 17%;
-
-  /* ── Shadow ── */
-  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
-  --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-  --shadow-md: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-  --shadow-lg: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+[data-cms-block]:hover {
+  background-color: var(--cms-bg-hover, var(--cms-bg, transparent));
+  color: var(--cms-fg-hover, var(--cms-fg, inherit));
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   CSS VARIABLES — Dark Mode
-═══════════════════════════════════════════════════════════════ */
-.dark {
-  --background: 222 47% 6%;
-  --foreground: 210 40% 98%;
-  --card: 222 47% 9%;
-  --card-foreground: 210 40% 98%;
-  --popover: 222 47% 9%;
-  --popover-foreground: 210 40% 98%;
-  --primary: 213 94% 68%;
-  --primary-foreground: 222 47% 6%;
-  --secondary: 217 33% 17%;
-  --secondary-foreground: 210 40% 98%;
-  --muted: 217 33% 17%;
-  --muted-foreground: 215 20% 65%;
-  --accent: 200 98% 48%;
-  --accent-foreground: 222 47% 6%;
-  --success: 142 71% 45%;
-  --success-foreground: 222 47% 6%;
-  --warning: 38 92% 50%;
-  --warning-foreground: 222 47% 6%;
-  --destructive: 0 62% 60%;
-  --destructive-foreground: 0 0% 100%;
-  --border: 217 33% 17%;
-  --input: 217 33% 17%;
-  --ring: 213 94% 68%;
-
-  /* ── Sidebar ── */
-  --sidebar: 222 47% 8%;
-  --sidebar-foreground: 210 40% 96%;
-  --sidebar-muted: 222 47% 11%;
-  --sidebar-accent: 213 94% 68%;
-  --sidebar-border: 217 33% 14%;
-
-  /* ── Shadow dark ── */
-  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.2);
-  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.3), 0 1px 2px -1px rgb(0 0 0 / 0.3);
-  --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.3), 0 2px 4px -2px rgb(0 0 0 / 0.3);
-  --shadow-md: 0 10px 15px -3px rgb(0 0 0 / 0.3), 0 4px 6px -4px rgb(0 0 0 / 0.3);
-  --shadow-lg: 0 20px 25px -5px rgb(0 0 0 / 0.3), 0 8px 10px -6px rgb(0 0 0 / 0.3);
+[data-cms-block][data-cms-hover-scale='true']:hover {
+  transform: scale(1.02);
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   BASE RESET
-═══════════════════════════════════════════════════════════════ */
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
+/* Surface (card-like) blocks default to the card color but yield to
+   the editor-supplied --cms-bg. */
+[data-cms-block].cms-surface {
+  background-color: hsl(var(--card));
   border-color: hsl(var(--border));
 }
-
-html {
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-rendering: optimizeLegibility;
+[data-cms-block].cms-surface[data-cms-themed='true'] {
+  background-color: var(--cms-bg, hsl(var(--card)));
+  color: var(--cms-fg, inherit);
+  border-color: var(--cms-border, hsl(var(--border)));
+}
+[data-cms-block].cms-surface[data-cms-themed='true']:hover {
+  background-color: var(--cms-bg-hover, var(--cms-bg, hsl(var(--card))));
+  color: var(--cms-fg-hover, var(--cms-fg, inherit));
 }
 
-body {
-  background-color: hsl(var(--background));
-  color: hsl(var(--foreground));
-  font-family: var(--font-sans);
-  line-height: 1.6;
-  min-height: 100dvh;
+/* When a block is themed, override the common muted/text/border
+   utility classes inside it so user colors remain readable. */
+[data-cms-block][data-cms-themed='true'] .cms-fg-foreground,
+[data-cms-block][data-cms-themed='true'] h1,
+[data-cms-block][data-cms-themed='true'] h2,
+[data-cms-block][data-cms-themed='true'] h3,
+[data-cms-block][data-cms-themed='true'] h4,
+[data-cms-block][data-cms-themed='true'] strong {
+  color: var(--cms-fg, inherit) !important;
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   SCROLLBAR — Custom Styled
-═══════════════════════════════════════════════════════════════ */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-::-webkit-scrollbar-thumb {
-  background: hsl(var(--border));
-  border-radius: 100px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: hsl(var(--muted-foreground) / 0.4);
+[data-cms-block][data-cms-themed='true'] .cms-fg-muted,
+[data-cms-block][data-cms-themed='true'] p,
+[data-cms-block][data-cms-themed='true'] .cms-text-muted,
+[data-cms-block][data-cms-themed='true'] .cms-text-subtle {
+  color: color-mix(in srgb, var(--cms-fg, currentColor) 70%, transparent) !important;
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   SELECTION
-═══════════════════════════════════════════════════════════════ */
-::selection {
-  background: hsl(var(--primary) / 0.2);
-  color: hsl(var(--foreground));
+[data-cms-block][data-cms-themed='true'] .cms-fg-subtle {
+  color: color-mix(in srgb, var(--cms-fg, currentColor) 55%, transparent) !important;
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   FOCUS RING
-═══════════════════════════════════════════════════════════════ */
-:focus-visible {
-  outline: 2px solid hsl(var(--ring));
-  outline-offset: 2px;
+[data-cms-block][data-cms-themed='true'] .cms-border {
+  border-color: var(--cms-border, color-mix(in srgb, var(--cms-fg) 25%, transparent)) !important;
+}
+
+/* Buttons/links inside themed blocks keep their own look but inherit
+   text color if they don't specify one. */
+[data-cms-block][data-cms-themed='true'] a:not(.btn):not(button) {
+  color: inherit;
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   ANIMATIONS
-═══════════════════════════════════════════════════════════════ */
-@keyframes fade-in {
-  from {
-    opacity: 0;
-    transform: translateY(4px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-@keyframes fade-in-fast {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-@keyframes slide-in-right {
-  from {
-    opacity: 0;
-    transform: translateX(16px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-@keyframes slide-in-left {
-  from {
-    opacity: 0;
-    transform: translateX(-16px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-@keyframes slide-in-up {
-  from {
-    opacity: 0;
-    transform: translateY(16px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-@keyframes slide-in-down {
-  from {
-    opacity: 0;
-    transform: translateY(-8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-@keyframes scale-in {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-@keyframes shimmer {
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
-  }
-}
-@keyframes pulse-soft {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.5;
-  }
-}
-@keyframes spin-slow {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-@keyframes bounce-soft {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-4px);
-  }
-}
-
-.animate-fade-in {
-  animation: fade-in 200ms ease-out both;
-}
-.animate-fade-in-fast {
-  animation: fade-in-fast 120ms ease-out both;
-}
-.animate-slide-right {
-  animation: slide-in-right 250ms ease-out both;
-}
-.animate-slide-left {
-  animation: slide-in-left 250ms ease-out both;
-}
-.animate-slide-up {
-  animation: slide-in-up 250ms ease-out both;
-}
-.animate-slide-down {
-  animation: slide-in-down 200ms ease-out both;
-}
-.animate-scale-in {
-  animation: scale-in 180ms ease-out both;
-}
-.animate-spin-slow {
-  animation: spin-slow 1.5s linear infinite;
-}
-.animate-bounce-soft {
-  animation: bounce-soft 1s ease-in-out infinite;
-}
-
-/* stagger helpers */
-.stagger-1 {
-  animation-delay: 50ms;
-}
-.stagger-2 {
-  animation-delay: 100ms;
-}
-.stagger-3 {
-  animation-delay: 150ms;
-}
-.stagger-4 {
-  animation-delay: 200ms;
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   SKELETON SHIMMER
-═══════════════════════════════════════════════════════════════ */
-.skeleton-shimmer {
-  background: linear-gradient(
-    90deg,
-    hsl(var(--muted)) 25%,
-    hsl(var(--border)) 50%,
-    hsl(var(--muted)) 75%
-  );
-  background-size: 200% 100%;
-  animation: shimmer 1.6s ease-in-out infinite;
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   GLASS CARD
-═══════════════════════════════════════════════════════════════ */
-.glass {
-  background: hsl(var(--card) / 0.8);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid hsl(var(--border) / 0.6);
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   UTILITY CLASSES
-═══════════════════════════════════════════════════════════════ */
-.text-balance {
-  text-wrap: balance;
-}
-.text-pretty {
-  text-wrap: pretty;
-}
-
-/* Gradient text */
-.gradient-primary {
-  background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-/* Card hover lift */
-.card-hover {
-  transition:
-    transform 150ms ease,
-    box-shadow 150ms ease;
-}
-.card-hover:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   PAGE TRANSITION
-═══════════════════════════════════════════════════════════════ */
-main {
-  animation: fade-in 200ms ease-out both;
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   SMOOTH SCROLL
-═══════════════════════════════════════════════════════════════ */
-html {
-  scroll-behavior: smooth;
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   LANDING PAGE DARK OVERRIDES
+   Landing dark mode helper (kept for backwards compatibility)
 ═══════════════════════════════════════════════════════════════ */
 .landing-dark {
   color-scheme: dark;
@@ -406,49 +98,4 @@ html {
   .no-print {
     display: none !important;
   }
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   CMS BLOCK STYLES
-   رنگ‌ها، هاور و بوردر از طریق CSS Variable توسط هر بلوک تنظیم
-   می‌شود. این قانون باعث می‌شود فرزندان هم به‌درستی رنگ را به
-   ارث ببرند.
-═══════════════════════════════════════════════════════════════ */
-[data-cms-block] {
-  background-color: var(--cms-bg, transparent);
-  color: var(--cms-fg, inherit);
-  border-color: var(--cms-border, hsl(var(--border)));
-  transition:
-    background-color 200ms ease,
-    color 200ms ease,
-    box-shadow 200ms ease,
-    transform 200ms ease,
-    border-color 200ms ease;
-}
-[data-cms-block]:hover {
-  background-color: var(--cms-bg-hover, var(--cms-bg, transparent));
-  color: var(--cms-fg-hover, var(--cms-fg, inherit));
-}
-/* For block with hoverScale */
-[data-cms-block][data-cms-hover-scale='true']:hover {
-  transform: scale(1.02);
-}
-/* Make sure child links/buttons use inherited text color unless they
-   specify their own. */
-[data-cms-block] a:not(.btn):not(button) {
-  color: inherit;
-}
-
-/* Surface (card-like) backgrounds for CMS blocks:
-   - Default uses the card surface color
-   - When the editor sets --cms-bg, it wins (even over Tailwind utilities)
-   - On hover, --cms-bg-hover takes over */
-[data-cms-block].cms-surface {
-  background-color: hsl(var(--card)) !important;
-}
-[data-cms-block][style*='--cms-bg'].cms-surface {
-  background-color: var(--cms-bg) !important;
-}
-[data-cms-block][style*='--cms-bg'].cms-surface:hover {
-  background-color: var(--cms-bg-hover, var(--cms-bg)) !important;
 }

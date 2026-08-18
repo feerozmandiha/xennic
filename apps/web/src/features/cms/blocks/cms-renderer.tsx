@@ -117,6 +117,7 @@ function BlockShell({
       style={props.style}
       data-block={block?.type}
       data-cms-block={block ? '' : undefined}
+      data-cms-themed={props.themed ? 'true' : undefined}
       data-cms-hover-scale={s?.hoverScale ? 'true' : undefined}
     >
       {children}
