@@ -16,5 +16,5 @@ export interface IGraphMetricsRepository {
     workspaceId: string,
     metric: 'confidence' | 'freshness' | 'authority' | 'completeness',
     limit: number,
-  ): Promise<{ nodeId: string; score: number }[]>;
+  ): Promise<{ nodeId: string; score: number; label: string | null }[]>;
 }

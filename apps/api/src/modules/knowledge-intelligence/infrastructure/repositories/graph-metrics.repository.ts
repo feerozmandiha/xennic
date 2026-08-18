@@ -3,6 +3,15 @@ import { prisma } from '@xennic/database';
 import { KnowledgeGraphMetrics } from '../../domain/entities/graph-metrics.entity.js';
 import type { IGraphMetricsRepository } from '../../domain/interfaces/graph-metrics.repository.interface.js';
 
+type GraphMetricRankingRow = {
+  node_id: string;
+  confidence: number;
+  freshness: number;
+  authority: number;
+  completeness: number;
+  node: { label: string | null };
+};
+
 @Injectable()
 export class GraphMetricsRepository implements IGraphMetricsRepository {
   async findByNodeId(nodeId: string): Promise<KnowledgeGraphMetrics | null> {
@@ -59,16 +68,37 @@ export class GraphMetricsRepository implements IGraphMetricsRepository {
     workspaceId: string,
     metric: 'confidence' | 'freshness' | 'authority' | 'completeness',
     limit: number,
-  ): Promise<{ nodeId: string; score: number }[]> {
-    const rows = await prisma.$queryRaw<any[]>`
-      SELECT m.node_id, m.${metric} as score
-      FROM knowledge_graph_metrics m
-      JOIN knowledge_graph_nodes n ON n.id = m.node_id
-      WHERE n.workspace_id = ${workspaceId}
-      ORDER BY m.${metric} DESC
-      LIMIT ${limit}
-    `;
-    return rows.map((r) => ({ nodeId: r.node_id, score: Number(r.score) }));
+  ): Promise<{ nodeId: string; score: number; label: string | null }[]> {
+    const parsedLimit = Number(limit);
+    const boundedLimit = Number.isFinite(parsedLimit)
+      ? Math.max(1, Math.min(Math.trunc(parsedLimit), 100))
+      : 10;
+    const orderBy = {
+      confidence: { confidence: 'desc' as const },
+      freshness: { freshness: 'desc' as const },
+      authority: { authority: 'desc' as const },
+      completeness: { completeness: 'desc' as const },
+    }[metric];
+
+    const rows = await prisma.knowledge_graph_metrics.findMany({
+      where: { node: { workspace_id: workspaceId } },
+      orderBy,
+      take: boundedLimit,
+      select: {
+        node_id: true,
+        confidence: true,
+        freshness: true,
+        authority: true,
+        completeness: true,
+        node: { select: { label: true } },
+      },
+    });
+
+    return rows.map((row: GraphMetricRankingRow) => ({
+      nodeId: row.node_id,
+      score: Number(row[metric]),
+      label: row.node.label,
+    }));
   }
 
   private _toEntity(row: any): KnowledgeGraphMetrics {

@@ -18,6 +18,8 @@ import { BillingModule } from './modules/billing/billing.module.js'; // ✅ صو
 import { AdminModule } from './modules/admin/admin.module.js'; // ✅ ادمین
 import { SearchModule } from './modules/search/search.module.js'; // ✅ جستجوی سراسری
 import { KnowledgeModule } from './modules/knowledge/knowledge.module.js'; // ✅ سیستم دانش
+import { KnowledgeIntelligenceModule } from './modules/knowledge-intelligence/knowledge-intelligence.module.js';
+import { SemanticIntegrationModule } from './modules/semantic-integration/semantic-integration.module.js';
 import { StandardsModule } from './modules/standards/standards.module.js'; // ✅ استانداردها
 import { MarketplaceModule } from './modules/marketplace/marketplace.module.js'; // ✅ بازارگاه
 import { ApiKeysModule } from './modules/api-keys/api-keys.module.js'; // ✅ کلید API
@@ -47,6 +49,8 @@ import { CalculationPlatformModule } from './modules/calculation-platform/calcul
     AdminModule, // ✅ مدیریت پلتفرم
     SearchModule, // ✅ جستجوی سراسری
     KnowledgeModule, // ✅ سیستم دانش
+    KnowledgeIntelligenceModule,
+    SemanticIntegrationModule,
     StandardsModule, // ✅ استانداردهای مهندسی
     MarketplaceModule, // ✅ بازارگاه
     ApiKeysModule, // ✅ کلید API
