@@ -5,9 +5,12 @@ import type { CmsBlockStyle } from './types';
  *
  * استراتژی:
  *  - از CSS Variables برای رنگ‌ها استفاده می‌کنیم تا همه‌ی فرزندان (از جمله
- *    دکمه‌ها، لینک‌ها و ...) از رنگ بلوک پیروی کنند.
+ *    دکمه‌ها، لینک‌ها و متن‌های muted) از رنگ بلوک پیروی کنند.
  *  - هاور از طریق --cms-hover-* و یک گروه از پراپرتی‌های سفارشی پیاده می‌شود.
- *  - transition بین حالت عادی و هاور اضافه می‌شود مگر اینکه خواسته نشده باشد.
+ *  - transition بین حالت عادی و هاور اضافه می‌شود.
+ *  - وقتی کاربر رنگ ست کرده، یک data-cms-themed روی بلوک می‌گذاریم تا در
+ *    CSS سراسری، رنگ‌های hard-code شده‌ی فرزندان (مثل text-muted-foreground)
+ *    با رنگ تم بازنویسی شوند.
  */
 
 const PADDING_Y: Record<NonNullable<CmsBlockStyle['paddingY']>, string> = {
@@ -89,6 +92,17 @@ const TEXT_ALIGN: Record<NonNullable<CmsBlockStyle['textAlign']>, string> = {
   left: 'text-left',
 };
 
+export function hasCustomColors(s?: CmsBlockStyle): boolean {
+  if (!s) return false;
+  return !!(
+    s.backgroundColor ||
+    s.textColor ||
+    s.gradient ||
+    s.hoverBackgroundColor ||
+    s.hoverTextColor
+  );
+}
+
 export function styleToClasses(s?: CmsBlockStyle): string {
   if (!s) return '';
   const classes: string[] = [];
@@ -102,12 +116,12 @@ export function styleToClasses(s?: CmsBlockStyle): string {
   if (s.fontWeight) classes.push(FONT_WEIGHT[s.fontWeight]);
   if (s.textAlign) classes.push(TEXT_ALIGN[s.textAlign]);
   if (s.align) classes.push(ALIGN[s.align]);
-  if (s.border) classes.push(s.borderColor ? 'border' : 'border border-[hsl(var(--border))]');
+  if (s.border) classes.push('border');
   if (s.className) classes.push(s.className);
 
-  // Hover classes (Tailwind static)
-  if (s.hoverBackgroundColor) classes.push('transition-colors duration-200');
-  if (s.hoverTextColor) classes.push('transition-colors duration-200');
+  if (s.hoverBackgroundColor || s.hoverTextColor) {
+    classes.push('transition-colors duration-200');
+  }
   if (s.hoverShadow && s.hoverShadow !== 'none') {
     classes.push(`hover:${SHADOW[s.hoverShadow]}`);
   }
@@ -120,13 +134,13 @@ export function styleToClasses(s?: CmsBlockStyle): string {
 
 export function styleToCss(s?: CmsBlockStyle): React.CSSProperties {
   if (!s) return {};
-  const css: React.CSSProperties = {};
-  const vars: Record<string, string> = {};
+  const css: Record<string, string | number> = {};
 
-  if (s.backgroundColor) vars['--cms-bg'] = normalizeColor(s.backgroundColor);
-  if (s.textColor) vars['--cms-fg'] = normalizeColor(s.textColor);
-  if (s.hoverBackgroundColor) vars['--cms-bg-hover'] = normalizeColor(s.hoverBackgroundColor);
-  if (s.hoverTextColor) vars['--cms-fg-hover'] = normalizeColor(s.hoverTextColor);
+  if (s.backgroundColor) css['--cms-bg'] = s.backgroundColor;
+  if (s.textColor) css['--cms-fg'] = s.textColor;
+  if (s.hoverBackgroundColor) css['--cms-bg-hover'] = s.hoverBackgroundColor;
+  if (s.hoverTextColor) css['--cms-fg-hover'] = s.hoverTextColor;
+  if (s.borderColor) css['--cms-border'] = s.borderColor;
 
   if (s.gradient) {
     css.backgroundImage = s.gradient;
@@ -144,46 +158,13 @@ export function styleToCss(s?: CmsBlockStyle): React.CSSProperties {
     css.color = s.textColor;
   }
 
-  if (s.borderColor) vars['--cms-border'] = normalizeColor(s.borderColor);
-
-  if (Object.keys(vars).length > 0) {
-    (css as Record<string, unknown>)['--cms-bg'] = vars['--cms-bg'];
-    (css as Record<string, unknown>)['--cms-fg'] = vars['--cms-fg'];
-    (css as Record<string, unknown>)['--cms-bg-hover'] = vars['--cms-bg-hover'];
-    (css as Record<string, unknown>)['--cms-fg-hover'] = vars['--cms-fg-hover'];
-    (css as Record<string, unknown>)['--cms-border'] = vars['--cms-border'];
-  }
-
-  return css;
+  return css as React.CSSProperties;
 }
 
-/**
- * اطمینان از اینکه رنگ به فرمت قابل تفسیر مرورگر است.
- * ورودی‌هایی نظیر "#ff0", "rgb(...)", "hsl(...)" یا "var(--...)" را
- * همان‌طور برمی‌گرداند؛ اعداد hex کوتاه را می‌پذیرد.
- */
-export function normalizeColor(v: string): string {
-  if (!v) return v;
-  const t = v.trim();
-  if (
-    t.startsWith('#') ||
-    t.startsWith('rgb') ||
-    t.startsWith('hsl') ||
-    t.startsWith('var(') ||
-    t === 'transparent' ||
-    t === 'currentColor'
-  ) {
-    return t;
-  }
-  return t;
-}
-
-/**
- * برای بلوک‌های container مانند hero/cta/section که پس‌زمینه و پدینگ دارند.
- */
 export function containerStyleProps(s?: CmsBlockStyle) {
   return {
     className: styleToClasses(s),
     style: styleToCss(s),
+    themed: hasCustomColors(s),
   };
 }
