@@ -1,8 +1,8 @@
 # Architecture Governance Report
 
 > **Profile:** all  
-> **Generated:** 2026-08-02T10:52:04.661Z  
-> **Duration:** 765ms
+> **Generated:** 2026-08-18T02:51:57.213Z  
+> **Duration:** 355ms
 
 ## Overall Score
 
@@ -35,6 +35,7 @@
 | auth                          | 🟢 100 | 0          | 0        | 0    |
 | billing                       | 🟢 100 | 0          | 0        | 0    |
 | calculation-platform          | 🟢 100 | 0          | 0        | 0    |
+| cms                           | 🟢 100 | 0          | 0        | 0    |
 | consultations                 | 🟢 100 | 0          | 0        | 0    |
 | email                         | 🟢 100 | 0          | 0        | 0    |
 | engineering                   | 🟢 100 | 0          | 0        | 0    |

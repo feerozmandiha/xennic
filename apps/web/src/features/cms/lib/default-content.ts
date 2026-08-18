@@ -41,6 +41,14 @@ void _createBlock;
 export const DEFAULT_HEADER: CmsDocument = {
   schema: 'xennic-cms/v2',
   blocks: [
+    createBlock('branding', 'default-branding-1', {
+      name: 'Xennic',
+      href: '/',
+      logo: '',
+      logoDark: '',
+      tagline: '',
+      showShape: true,
+    }),
     createBlock('nav-links', 'default-nav-links-1', {
       links: [
         { label: 'صفحه اصلی', href: '/' },

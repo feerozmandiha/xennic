@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { Zap, Menu, X } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { UserStatus } from '@/components/layout/user-status';
 import { LanguageSwitcher } from '@/components/layout/language-switcher';
@@ -27,7 +27,9 @@ export function CmsHeader() {
   }, []);
 
   const doc = document ?? DEFAULT_HEADER;
-  const navLinks = (doc.blocks.find((b) => b.type === 'nav-links')?.props.links ?? []) as {
+  const brandingBlock = doc.blocks.find((b) => b.type === 'branding');
+  const navLinksBlock = doc.blocks.find((b) => b.type === 'nav-links');
+  const navLinks = (navLinksBlock?.props.links ?? []) as {
     label: string;
     href: string;
   }[];
@@ -49,14 +51,17 @@ export function CmsHeader() {
       )}
     >
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-5">
-        <Link href={`/${locale}`} className="flex shrink-0 items-center gap-2.5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--accent))] shadow-[0_0_16px_hsl(var(--primary)/0.3)]">
-            <Zap className="h-4 w-4 text-white" />
+        {brandingBlock ? (
+          <div className="[&>div]:!m-0 [&_a]:flex [&_a]:items-center">
+            <BlockRenderer key={brandingBlock.id} block={brandingBlock as CmsBlock} />
           </div>
-          <span className="text-lg font-bold tracking-wide text-[hsl(var(--foreground))]">
-            Xennic
-          </span>
-        </Link>
+        ) : (
+          <Link href={`/${locale}`} className="flex shrink-0 items-center gap-2.5">
+            <span className="text-lg font-bold tracking-wide text-[hsl(var(--foreground))]">
+              Xennic
+            </span>
+          </Link>
+        )}
 
         <nav className="hidden items-center gap-1 md:flex">
           {links.map((l) => (

@@ -439,6 +439,28 @@ export const BLOCK_LIBRARY: BlockDef[] = [
 
   // Buttons / navigation
   {
+    type: 'branding',
+    label: 'لوگو و برند',
+    category: 'navigation',
+    description: 'لوگو، نام برند و شعار هدر/فوتر',
+    defaultProps: {
+      name: 'Xennic',
+      href: '/',
+      logo: '',
+      logoDark: '',
+      tagline: '',
+      showShape: true,
+    },
+    fields: [
+      F.text('name', 'نام برند'),
+      F.url('href', 'لینک لوگو'),
+      F.image('logo', 'لوگو (روشن)'),
+      F.image('logoDark', 'لوگو (تیره — برای دارک‌مود)'),
+      F.text('tagline', 'شعار/زیرعنوان'),
+      F.boolean('showShape', 'نمایش شکل پیش‌فرض کنار نام'),
+    ],
+  },
+  {
     type: 'buttons',
     label: 'گروه دکمه',
     category: 'navigation',
