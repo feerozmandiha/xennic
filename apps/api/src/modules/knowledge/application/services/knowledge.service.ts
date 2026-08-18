@@ -5,11 +5,17 @@ import {
   ForbiddenException,
   ConflictException,
   Logger,
+  Optional,
 } from '@nestjs/common';
 import { prisma } from '@xennic/database';
 import type { IKnowledgeRepository } from '../../domain/interfaces/knowledge.repository.interface.js';
 import { KnowledgeEntity } from '../../domain/entities/knowledge.entity.js';
 import { extractKnowledgeText } from '../utils/extract-text.js';
+import { DomainEventPublisher } from '../../../semantic-integration/application/services/domain-event-publisher.service.js';
+import {
+  EventType,
+  createDomainEvent,
+} from '../../../semantic-integration/domain/events/domain-event.types.js';
 import type {
   CreateKnowledgeDto,
   UpdateKnowledgeDto,
@@ -40,6 +46,8 @@ export class KnowledgeService {
   constructor(
     @Inject('IKnowledgeRepository')
     private readonly knowledgeRepository: IKnowledgeRepository,
+    @Optional()
+    private readonly eventPublisher?: DomainEventPublisher,
   ) {}
 
   // ── findAll ─────────────────────────────────────────────────────────────────
@@ -234,6 +242,35 @@ export class KnowledgeService {
     await this._createVersionSnapshot(entity);
 
     await this.knowledgeRepository.save(entity);
+
+    await this.eventPublisher?.publish(
+      createDomainEvent(
+        EventType.KnowledgeArticlePublished,
+        {
+          articleId: entity.id,
+          workspaceId: entity.workspaceId,
+          slug: entity.slug,
+          title:
+            typeof entity.content.title === 'string' && entity.content.title.trim()
+              ? entity.content.title.trim()
+              : entity.slug,
+          language: entity.language,
+          visibility: entity.visibility,
+          version: entity.version,
+          readingTime: entity.readingTime,
+          difficulty: entity.difficulty,
+          authorId: entity.authorId,
+          publishedAt: (entity.publishedAt ?? new Date()).toISOString(),
+          contentProperties: Object.keys(entity.content),
+        },
+        {
+          workspaceId: entity.workspaceId,
+          userId: entity.authorId ?? undefined,
+          retryCount: 0,
+        },
+      ),
+    );
+
     return entity;
   }
 
@@ -252,6 +289,23 @@ export class KnowledgeService {
     const entity = await this.findOne(id, workspaceId);
     entity.archive();
     await this.knowledgeRepository.save(entity);
+
+    await this.eventPublisher?.publish(
+      createDomainEvent(
+        EventType.KnowledgeArticleArchived,
+        {
+          articleId: entity.id,
+          workspaceId: entity.workspaceId,
+          archivedAt: (entity.archivedAt ?? new Date()).toISOString(),
+        },
+        {
+          workspaceId: entity.workspaceId,
+          userId: entity.authorId ?? undefined,
+          retryCount: 0,
+        },
+      ),
+    );
+
     return entity;
   }
 

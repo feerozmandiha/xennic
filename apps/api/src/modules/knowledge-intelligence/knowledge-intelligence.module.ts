@@ -5,6 +5,7 @@ import { CitationsController } from './presentation/controllers/citations.contro
 import { GraphSearchController } from './presentation/controllers/graph-search.controller.js';
 import { MetricsController } from './presentation/controllers/metrics.controller.js';
 import { ClustersController } from './presentation/controllers/clusters.controller.js';
+import { GraphWorkspaceGuard } from './presentation/guards/graph-workspace.guard.js';
 
 import { GraphTraversalService } from './application/services/graph-traversal.service.js';
 import { SemanticExpansionService } from './application/services/semantic-expansion.service.js';
@@ -50,6 +51,7 @@ import { KnowledgeFactoryModule } from '../knowledge-factory/knowledge-factory.m
     ClustersController,
   ],
   providers: [
+    GraphWorkspaceGuard,
     GraphTraversalService,
     SemanticExpansionService,
     CitationExpansionService,
