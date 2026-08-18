@@ -524,8 +524,15 @@ export const BLOCK_LIBRARY: BlockDef[] = [
     type: 'footer-column',
     label: 'ستون فوتر',
     category: 'navigation',
-    defaultProps: { title: 'عنوان' },
-    fields: [F.text('title', 'عنوان')],
+    defaultProps: { title: 'عنوان', align: 'right' },
+    fields: [
+      F.text('title', 'عنوان'),
+      F.select('align', 'چیدمان', [
+        { label: 'راست', value: 'right' },
+        { label: 'وسط', value: 'center' },
+        { label: 'چپ', value: 'left' },
+      ]),
+    ],
   },
   {
     type: 'nav-links',
