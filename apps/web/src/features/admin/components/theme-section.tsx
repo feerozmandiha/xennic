@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/stores/toast.store';
 import { apiClient } from '@/lib/api/client';
+import { invalidateTheme } from '@/lib/theme/invalidate';
 
 type ThemeTokens = Record<string, string>;
 
@@ -75,9 +76,10 @@ export function ThemeSection() {
     mutationFn: async () => {
       return apiClient.put('/theme', draft);
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       toast.success('ذخیره شد', 'تم با موفقیت ذخیره شد');
       qc.invalidateQueries({ queryKey: ['theme'] });
+      await invalidateTheme();
     },
     onError: (e: any) => {
       toast.error('خطا', e?.message ?? 'ذخیره تم ناموفق بود');
@@ -87,10 +89,11 @@ export function ThemeSection() {
   const resetMut = useMutation({
     mutationFn: async () =>
       apiClient.put<{ success: boolean; data: ThemeTokens }>('/theme/reset', {}),
-    onSuccess: (res) => {
+    onSuccess: async (res) => {
       setDraft(res.data);
       toast.success('بازنشانی شد', 'تم به پیش‌فرض بازگشت');
       qc.invalidateQueries({ queryKey: ['theme'] });
+      await invalidateTheme();
     },
   });
 
