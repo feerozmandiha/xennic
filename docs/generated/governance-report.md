@@ -1,8 +1,8 @@
 # Architecture Governance Report
 
 > **Profile:** all  
-> **Generated:** 2026-08-18T08:21:09.894Z  
-> **Duration:** 462ms
+> **Generated:** 2026-08-18T16:29:21.820Z  
+> **Duration:** 321ms
 
 ## Overall Score
 
@@ -64,6 +64,7 @@
 | standards                     | 🟢 100 | 0          | 0        | 0    |
 | storage                       | 🟢 100 | 0          | 0        | 0    |
 | subscription                  | 🟢 100 | 0          | 0        | 0    |
+| theme                         | 🟢 100 | 0          | 0        | 0    |
 | user                          | 🟢 100 | 0          | 0        | 0    |
 | vision                        | 🟢 100 | 0          | 0        | 0    |
 | webhooks                      | 🟢 100 | 0          | 0        | 0    |
