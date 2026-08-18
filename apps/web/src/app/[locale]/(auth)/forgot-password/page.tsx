@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { ForgotPasswordForm } from '@/features/auth/components/forgot-password-form';
-import { BrandPanel } from '@/features/auth/components/brand-panel';
+import { AuthShell } from '@/features/auth/components/auth-shell';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('auth');
@@ -10,13 +10,11 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default function ForgotPasswordPage() {
   return (
-    <div className="min-h-screen flex">
-      <BrandPanel />
-      <div className="flex-1 flex items-center justify-center p-6 lg:p-10 bg-[hsl(var(--background))]">
-        <div className="w-full max-w-[380px] animate-fade-in">
-          <ForgotPasswordForm />
-        </div>
-      </div>
-    </div>
+    <AuthShell
+      title="بازیابی رمز عبور"
+      subtitle="ایمیل خود را وارد کنید تا لینک بازیابی برایتان ارسال شود"
+    >
+      <ForgotPasswordForm />
+    </AuthShell>
   );
 }

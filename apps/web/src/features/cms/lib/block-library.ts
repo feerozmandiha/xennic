@@ -439,6 +439,24 @@ export const BLOCK_LIBRARY: BlockDef[] = [
 
   // Buttons / navigation
   {
+    type: 'auth-brand',
+    label: 'پنل برند صفحات ورود',
+    category: 'marketing',
+    description: 'محتوای ستون چپ صفحات ورود/عضویت (تیتر، متن، تیرها و تصویر)',
+    defaultProps: {
+      title: 'پلتفرم تخصصی مهندسی برق',
+      subtitle: 'محاسبات استاندارد، کیفیت توان و هوش مصنوعی مهندسی در یک فضای کاری یکپارچه.',
+      bullets: ['۸۰+ محاسبه‌گر استاندارد IEC/IEEE', 'مشاور هوش مصنوعی', 'گزارش حرفه‌ای PDF'],
+      image: '',
+    },
+    fields: [
+      F.textarea('title', 'عنوان'),
+      F.textarea('subtitle', 'زیرعنوان'),
+      F.list('bullets', 'موارد', 'tags'),
+      F.image('image', 'تصویر (اختیاری)'),
+    ],
+  },
+  {
     type: 'branding',
     label: 'لوگو و برند',
     category: 'navigation',

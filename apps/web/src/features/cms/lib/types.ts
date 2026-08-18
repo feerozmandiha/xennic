@@ -6,6 +6,7 @@ export type CmsBlockType =
   | 'pricing-plan'
   | 'cta'
   | 'branding'
+  | 'auth-brand'
   | 'articles'
   | 'article'
   | 'logos'
