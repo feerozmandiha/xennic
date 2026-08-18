@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ArrowDown,
   ArrowUp,
@@ -10,9 +10,11 @@ import {
   GripVertical,
   Pencil,
   Plus,
+  Redo2,
   Save,
   Send,
   Trash2,
+  Undo2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -44,18 +46,98 @@ export function CmsEditor() {
   const [tab, setTab] = useState<Tab>('content');
   const [device, setDevice] = useState<'desktop' | 'mobile'>('desktop');
 
+  // ── Undo / Redo history ────────────────────────────────
+  const historyRef = useRef<CmsDocument[]>([]);
+  const futureRef = useRef<CmsDocument[]>([]);
+  const skipHistoryRef = useRef(false);
+  const [historyTick, setHistoryTick] = useState(0);
+
+  const pushHistory = useCallback((prev: CmsDocument) => {
+    if (skipHistoryRef.current) {
+      skipHistoryRef.current = false;
+      return;
+    }
+    historyRef.current.push(prev);
+    if (historyRef.current.length > 60) historyRef.current.shift();
+    futureRef.current = [];
+    setHistoryTick((t) => t + 1);
+  }, []);
+
+  const updateDoc = useCallback(
+    (updater: (d: CmsDocument) => CmsDocument, opts?: { skipHistory?: boolean }) => {
+      setDoc((d) => {
+        if (!opts?.skipHistory) pushHistory(d);
+        else skipHistoryRef.current = true;
+        return updater(d);
+      });
+    },
+    [pushHistory],
+  );
+
+  const undo = useCallback(() => {
+    const prev = historyRef.current.pop();
+    if (!prev) return;
+    futureRef.current.push(doc);
+    skipHistoryRef.current = true;
+    setDoc(prev);
+    setHistoryTick((t) => t + 1);
+  }, [doc]);
+
+  const redo = useCallback(() => {
+    const next = futureRef.current.pop();
+    if (!next) return;
+    historyRef.current.push(doc);
+    skipHistoryRef.current = true;
+    setDoc(next);
+    setHistoryTick((t) => t + 1);
+  }, [doc]);
+
+  // reset history whenever slot/locale/loaded doc changes
+  useEffect(() => {
+    historyRef.current = [];
+    futureRef.current = [];
+    setHistoryTick((t) => t + 1);
+  }, [slot, locale, record?.id]);
+
+  // keyboard shortcuts (Ctrl/Cmd+Z / Shift+Z)
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      const target = e.target as HTMLElement;
+      if (target && ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName)) return;
+      if (target?.isContentEditable) return;
+      const mod = e.ctrlKey || e.metaKey;
+      if (!mod) return;
+      if (e.key.toLowerCase() === 'z' && !e.shiftKey) {
+        e.preventDefault();
+        undo();
+      } else if ((e.key.toLowerCase() === 'z' && e.shiftKey) || e.key.toLowerCase() === 'y') {
+        e.preventDefault();
+        redo();
+      }
+    }
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [undo, redo]);
+
+  const canUndo = historyRef.current.length > 0;
+  const canRedo = futureRef.current.length > 0;
+  // historyTick forces re-render for canUndo/canRedo
+  void historyTick;
+
   const load = useCallback(async () => {
     setLoading(true);
     setMessage(null);
     try {
       const res = await cmsApi.getBySlot(slot, locale);
       setRecord(res.data);
+      skipHistoryRef.current = true;
       setDoc(normalizeDoc(res.data.document));
       return;
     } catch {
       /* not found */
     }
     setRecord(null);
+    skipHistoryRef.current = true;
     setDoc(getDefaultDocument(slot) ?? EMPTY_DOCUMENT);
     setLoading(false);
   }, [slot, locale]);
@@ -79,14 +161,14 @@ export function CmsEditor() {
   }
 
   function updateProps(id: string, props: Record<string, unknown>) {
-    setDoc((d) => ({
+    updateDoc((d) => ({
       ...d,
       blocks: mutateTree(d.blocks, id, (b) => ({ ...b, props: { ...b.props, ...props } })),
     }));
   }
 
   function updateStyle(id: string, style: CmsBlock['style']) {
-    setDoc((d) => ({
+    updateDoc((d) => ({
       ...d,
       blocks: mutateTree(d.blocks, id, (b) => ({ ...b, style })),
     }));
@@ -97,20 +179,20 @@ export function CmsEditor() {
       blocks
         .filter((b) => b.id !== id)
         .map((b) => (b.children ? { ...b, children: rm(b.children) } : b));
-    setDoc((d) => ({ ...d, blocks: rm(d.blocks) }));
+    updateDoc((d) => ({ ...d, blocks: rm(d.blocks) }));
     if (activeBlock === id) setActiveBlock(null);
   }
 
   function moveBlock(id: string, dir: -1 | 1) {
-    setDoc((d) => ({ ...d, blocks: reorderTree(d.blocks, id, dir) }));
+    updateDoc((d) => ({ ...d, blocks: reorderTree(d.blocks, id, dir) }));
   }
 
   function addBlock(parentId: string | null, type: string) {
     const block = instantiateBlock(type);
     if (!parentId) {
-      setDoc((d) => ({ ...d, blocks: [...d.blocks, block] }));
+      updateDoc((d) => ({ ...d, blocks: [...d.blocks, block] }));
     } else {
-      setDoc((d) => ({
+      updateDoc((d) => ({
         ...d,
         blocks: mutateTree(d.blocks, parentId, (b) => ({
           ...b,
@@ -143,7 +225,7 @@ export function CmsEditor() {
       return { next: blocks, newId: null };
     };
     let newId: string | null = null;
-    setDoc((d) => {
+    updateDoc((d) => {
       const r = clone(d.blocks);
       newId = r.newId;
       return { ...d, blocks: r.next };
@@ -198,12 +280,12 @@ export function CmsEditor() {
     if (topIdx >= 0 && pos !== 'inside') {
       const next = source.next.slice();
       next.splice(pos === 'before' ? topIdx : topIdx + 1, 0, source.node);
-      setDoc((d) => ({ ...d, blocks: next }));
+      updateDoc(() => ({ ...doc, blocks: next }));
       return;
     }
 
     const inserted = insertInTree(source.next, targetId, source.node, pos);
-    setDoc((d) => ({ ...d, blocks: inserted }));
+    updateDoc(() => ({ ...doc, blocks: inserted }));
   }
 
   async function handleUpload(file: File): Promise<string> {
@@ -259,6 +341,29 @@ export function CmsEditor() {
             { value: 'en', label: 'English' },
           ]}
         />
+
+        <div className="mx-1 h-6 w-px bg-[hsl(var(--border))]" />
+
+        <div className="flex items-center gap-0.5 rounded-md border border-[hsl(var(--border))] p-0.5">
+          <button
+            type="button"
+            onClick={undo}
+            disabled={!canUndo}
+            title="برگشت (Ctrl+Z)"
+            className="flex h-7 w-7 items-center justify-center rounded text-[hsl(var(--muted-foreground))] transition hover:bg-[hsl(var(--secondary))] hover:text-[hsl(var(--foreground))] disabled:opacity-30"
+          >
+            <Undo2 className="h-3.5 w-3.5" />
+          </button>
+          <button
+            type="button"
+            onClick={redo}
+            disabled={!canRedo}
+            title="جلو (Ctrl+Shift+Z)"
+            className="flex h-7 w-7 items-center justify-center rounded text-[hsl(var(--muted-foreground))] transition hover:bg-[hsl(var(--secondary))] hover:text-[hsl(var(--foreground))] disabled:opacity-30"
+          >
+            <Redo2 className="h-3.5 w-3.5" />
+          </button>
+        </div>
 
         <div className="mx-1 h-6 w-px bg-[hsl(var(--border))]" />
 
