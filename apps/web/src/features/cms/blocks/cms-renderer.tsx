@@ -342,13 +342,15 @@ function Columns({ block, children }: RenderProps) {
     <BlockShell
       block={block}
       className={cn(
-        'grid',
+        'grid w-full',
         gap === 'sm' && 'gap-3',
-        gap === 'md' && 'gap-6',
+        gap === 'md' && 'gap-6 md:gap-8',
         gap === 'lg' && 'gap-10',
-        cols === 2 && 'md:grid-cols-2',
-        cols === 3 && 'md:grid-cols-3',
-        cols === 4 && 'md:grid-cols-2 lg:grid-cols-4',
+        cols === 2 && 'grid-cols-1 sm:grid-cols-2',
+        cols === 3 && 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3',
+        cols === 4 && 'grid-cols-2 sm:grid-cols-2 lg:grid-cols-4',
+        cols === 5 && 'grid-cols-2 md:grid-cols-3 lg:grid-cols-5',
+        cols === 6 && 'grid-cols-2 md:grid-cols-3 lg:grid-cols-6',
       )}
     >
       {children}
@@ -968,8 +970,18 @@ function HtmlBlock({ block }: RenderProps) {
 }
 
 function FooterColumn({ block, children }: RenderProps) {
+  const align = (block.props.align as 'right' | 'center' | 'left') ?? 'right';
   return (
-    <div className="space-y-4">
+    <div
+      className={
+        'space-y-4 ' +
+        (align === 'center'
+          ? 'text-center [&_ul]:text-center [&_a]:justify-center'
+          : align === 'left'
+            ? 'text-left'
+            : 'text-right')
+      }
+    >
       {block.props.title ? (
         <h4 className="text-sm font-bold text-[hsl(var(--foreground))]">
           {block.props.title as string}
@@ -985,7 +997,7 @@ function NavLinks({ block }: RenderProps) {
     ? (block.props.links as { label: string; href: string }[])
     : [];
   return (
-    <ul className="space-y-2">
+    <ul className="space-y-2.5">
       {links.map((l) => (
         <li key={l.href}>
           {l.href.startsWith('http') ? (
@@ -993,14 +1005,14 @@ function NavLinks({ block }: RenderProps) {
               href={l.href}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-sm text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]"
+              className="inline-flex text-sm text-[hsl(var(--muted-foreground))] transition hover:text-[hsl(var(--foreground))]"
             >
               {l.label}
             </a>
           ) : (
             <Link
               href={l.href}
-              className="text-sm text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]"
+              className="inline-flex text-sm text-[hsl(var(--muted-foreground))] transition hover:text-[hsl(var(--foreground))]"
             >
               {l.label}
             </Link>
