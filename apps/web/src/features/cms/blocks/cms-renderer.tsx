@@ -163,6 +163,58 @@ function ButtonBlock({ block }: RenderProps) {
   );
 }
 
+function Branding({ block }: RenderProps) {
+  const name = (block.props.name as string) ?? 'Xennic';
+  const href = (block.props.href as string) ?? '/';
+  const logoLight = block.props.logoLight as string | undefined;
+  const logoDark = block.props.logoDark as string | undefined;
+  const logo = block.props.logo as string | undefined;
+  const tagline = block.props.tagline as string | undefined;
+  const showShape = (block.props.showShape as boolean) ?? true;
+
+  const logoSrc = logo ?? logoLight;
+
+  return (
+    <BlockShell block={block}>
+      <Link href={href} className="flex shrink-0 items-center gap-2.5">
+        {logoSrc ? (
+          <>
+            <img
+              src={logoSrc}
+              alt={name}
+              data-logo-dark={logoDark ? 'true' : undefined}
+              className={cn('h-9 w-auto object-contain', logoDark && 'dark:hidden')}
+            />
+            {logoDark ? (
+              <img
+                src={logoDark}
+                alt={name}
+                className="hidden h-9 w-auto object-contain dark:block"
+              />
+            ) : null}
+          </>
+        ) : (
+          <>
+            {showShape ? (
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--accent))] shadow-[0_0_16px_hsl(var(--primary)/0.3)]">
+                <Zap className="h-4 w-4 text-white" />
+              </div>
+            ) : null}
+            <span className="text-lg font-bold tracking-wide text-[hsl(var(--foreground))]">
+              {name}
+            </span>
+            {tagline ? (
+              <span className="hidden text-[10px] text-[hsl(var(--muted-foreground))] md:inline">
+                {tagline}
+              </span>
+            ) : null}
+          </>
+        )}
+      </Link>
+    </BlockShell>
+  );
+}
+
 function Buttons({ block, children }: RenderProps) {
   const justify = (block.props.justify as 'start' | 'center' | 'end') ?? 'center';
   return (
@@ -988,6 +1040,7 @@ const BLOCK_REGISTRY: Record<string, React.ComponentType<RenderProps>> = {
   'rich-text': RichText,
   button: ButtonBlock,
   buttons: Buttons,
+  branding: Branding,
   image: ImageBlock,
   video: VideoBlock,
   gallery: Gallery,

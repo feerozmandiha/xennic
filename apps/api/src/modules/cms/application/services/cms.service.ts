@@ -53,6 +53,7 @@ const ALLOWED_BLOCK_TYPES = new Set([
   'social-links',
   'social-link',
   'footer-column',
+  'branding',
   'html',
   'newsletter',
   'map',
