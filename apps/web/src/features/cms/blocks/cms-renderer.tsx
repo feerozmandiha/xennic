@@ -451,7 +451,7 @@ function Feature({ block }: RenderProps) {
   return (
     <BlockShell
       block={block}
-      className="group relative rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 transition-all hover:-translate-y-1 hover:shadow-xl"
+      className="group relative rounded-2xl border border-[hsl(var(--border))] cms-surface p-6 transition-all hover:-translate-y-1 hover:shadow-xl"
     >
       <div
         className={cn(
@@ -502,7 +502,7 @@ function PricingPlan({ block, children }: RenderProps) {
     <BlockShell
       block={block}
       className={cn(
-        'relative rounded-2xl border bg-[hsl(var(--card))] p-8 transition-all',
+        'relative rounded-2xl border cms-surface p-8 transition-all',
         highlighted
           ? 'border-[hsl(var(--primary))/0.5] shadow-2xl shadow-[hsl(var(--primary)/0.15)] md:scale-105'
           : 'border-[hsl(var(--border))]',
@@ -563,7 +563,7 @@ function FaqItem({ block }: RenderProps) {
     <BlockShell
       block={block}
       as="details"
-      className="group rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-5"
+      className="group rounded-xl border border-[hsl(var(--border))] cms-surface p-5"
     >
       <summary className="cursor-pointer list-none flex items-center justify-between font-semibold">
         {block.props.question as string}
@@ -636,7 +636,7 @@ function Testimonial({ block }: RenderProps) {
   return (
     <BlockShell
       block={block}
-      className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 space-y-4"
+      className="rounded-2xl border border-[hsl(var(--border))] cms-surface p-6 space-y-4"
     >
       <div className="flex gap-1">
         {Array.from({ length: 5 }).map((_, i) => (
@@ -682,7 +682,7 @@ function Article({ block }: RenderProps) {
     <BlockShell
       block={block}
       as="article"
-      className="overflow-hidden rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))]"
+      className="overflow-hidden rounded-2xl border border-[hsl(var(--border))] cms-surface"
     >
       {block.props.image ? (
         <div className="aspect-[16/9] overflow-hidden">
@@ -765,7 +765,7 @@ function Card({ block, children }: RenderProps) {
   return (
     <BlockShell
       block={block}
-      className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 space-y-3 h-full"
+      className="rounded-2xl border border-[hsl(var(--border))] cms-surface p-6 space-y-3 h-full"
     >
       {block.props.icon ? (
         <div className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[hsl(var(--primary)/0.1)] text-[hsl(var(--primary))]">
@@ -801,7 +801,7 @@ function Step({ block }: RenderProps) {
   return (
     <BlockShell
       block={block}
-      className="relative rounded-2xl border border-[hsl(var(--border))] p-6 bg-[hsl(var(--card))]"
+      className="relative rounded-2xl border border-[hsl(var(--border))] p-6 cms-surface"
     >
       <div className="absolute -top-4 right-6 flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--accent))] text-white font-bold shadow-lg">
         {n}
@@ -819,7 +819,7 @@ function QuoteBlock({ block }: RenderProps) {
     <BlockShell
       block={block}
       as="blockquote"
-      className="relative rounded-2xl border-r-4 border-[hsl(var(--primary))] bg-[hsl(var(--card))] p-6 md:p-8"
+      className="relative rounded-2xl border-r-4 border-[hsl(var(--primary))] cms-surface p-6 md:p-8"
     >
       <Quote className="h-6 w-6 text-[hsl(var(--primary))]/40 mb-3" />
       <p className="text-lg leading-9 italic">{block.props.text as string}</p>
@@ -868,7 +868,7 @@ function Newsletter({ block }: RenderProps) {
   return (
     <BlockShell
       block={block}
-      className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-8 space-y-4 text-center"
+      className="rounded-2xl border border-[hsl(var(--border))] cms-surface p-8 space-y-4 text-center"
     >
       <h3 className="text-xl font-bold">{block.props.title as string}</h3>
       {block.props.subtitle ? (
@@ -934,7 +934,7 @@ function Countdown({ block }: RenderProps) {
         ].map((x) => (
           <div
             key={x.l}
-            className="min-w-[72px] rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-3"
+            className="min-w-[72px] rounded-xl border border-[hsl(var(--border))] cms-surface p-3"
           >
             <div className="text-3xl font-extrabold tabular-nums">{x.v}</div>
             <div className="text-[10px] text-[hsl(var(--muted-foreground))]">{x.l}</div>
