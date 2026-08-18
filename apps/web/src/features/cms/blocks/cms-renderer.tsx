@@ -116,6 +116,8 @@ function BlockShell({
       className={cn(props.className, className)}
       style={props.style}
       data-block={block?.type}
+      data-cms-block={block ? '' : undefined}
+      data-cms-hover-scale={s?.hoverScale ? 'true' : undefined}
     >
       {children}
     </Tag>

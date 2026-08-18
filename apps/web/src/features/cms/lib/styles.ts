@@ -1,7 +1,13 @@
 import type { CmsBlockStyle } from './types';
 
 /**
- * ابزارهای تبدیل CmsBlockStyle به کلاس/استایل بومی
+ * تبدیل CmsBlockStyle به کلاس/استایل بومی
+ *
+ * استراتژی:
+ *  - از CSS Variables برای رنگ‌ها استفاده می‌کنیم تا همه‌ی فرزندان (از جمله
+ *    دکمه‌ها، لینک‌ها و ...) از رنگ بلوک پیروی کنند.
+ *  - هاور از طریق --cms-hover-* و یک گروه از پراپرتی‌های سفارشی پیاده می‌شود.
+ *  - transition بین حالت عادی و هاور اضافه می‌شود مگر اینکه خواسته نشده باشد.
  */
 
 const PADDING_Y: Record<NonNullable<CmsBlockStyle['paddingY']>, string> = {
@@ -96,17 +102,37 @@ export function styleToClasses(s?: CmsBlockStyle): string {
   if (s.fontWeight) classes.push(FONT_WEIGHT[s.fontWeight]);
   if (s.textAlign) classes.push(TEXT_ALIGN[s.textAlign]);
   if (s.align) classes.push(ALIGN[s.align]);
-  if (s.border) classes.push('border border-[hsl(var(--border))]');
+  if (s.border) classes.push(s.borderColor ? 'border' : 'border border-[hsl(var(--border))]');
   if (s.className) classes.push(s.className);
+
+  // Hover classes (Tailwind static)
+  if (s.hoverBackgroundColor) classes.push('transition-colors duration-200');
+  if (s.hoverTextColor) classes.push('transition-colors duration-200');
+  if (s.hoverShadow && s.hoverShadow !== 'none') {
+    classes.push(`hover:${SHADOW[s.hoverShadow]}`);
+  }
+  if (s.hoverScale) {
+    classes.push('transition-transform duration-200 hover:scale-[1.02]');
+  }
+
   return classes.join(' ');
 }
 
 export function styleToCss(s?: CmsBlockStyle): React.CSSProperties {
   if (!s) return {};
   const css: React.CSSProperties = {};
-  if (s.backgroundColor) css.backgroundColor = s.backgroundColor;
-  if (s.textColor) css.color = s.textColor;
-  if (s.gradient) css.backgroundImage = s.gradient;
+  const vars: Record<string, string> = {};
+
+  if (s.backgroundColor) vars['--cms-bg'] = normalizeColor(s.backgroundColor);
+  if (s.textColor) vars['--cms-fg'] = normalizeColor(s.textColor);
+  if (s.hoverBackgroundColor) vars['--cms-bg-hover'] = normalizeColor(s.hoverBackgroundColor);
+  if (s.hoverTextColor) vars['--cms-fg-hover'] = normalizeColor(s.hoverTextColor);
+
+  if (s.gradient) {
+    css.backgroundImage = s.gradient;
+  } else if (s.backgroundColor) {
+    css.backgroundColor = s.backgroundColor;
+  }
   if (s.backgroundImage) {
     css.backgroundImage = css.backgroundImage
       ? `${css.backgroundImage as string}, url(${s.backgroundImage})`
@@ -114,8 +140,42 @@ export function styleToCss(s?: CmsBlockStyle): React.CSSProperties {
     css.backgroundSize = 'cover';
     css.backgroundPosition = 'center';
   }
-  if (s.backgroundOverlay) css.position = 'relative';
+  if (s.textColor) {
+    css.color = s.textColor;
+  }
+
+  if (s.borderColor) vars['--cms-border'] = normalizeColor(s.borderColor);
+
+  if (Object.keys(vars).length > 0) {
+    (css as Record<string, unknown>)['--cms-bg'] = vars['--cms-bg'];
+    (css as Record<string, unknown>)['--cms-fg'] = vars['--cms-fg'];
+    (css as Record<string, unknown>)['--cms-bg-hover'] = vars['--cms-bg-hover'];
+    (css as Record<string, unknown>)['--cms-fg-hover'] = vars['--cms-fg-hover'];
+    (css as Record<string, unknown>)['--cms-border'] = vars['--cms-border'];
+  }
+
   return css;
+}
+
+/**
+ * اطمینان از اینکه رنگ به فرمت قابل تفسیر مرورگر است.
+ * ورودی‌هایی نظیر "#ff0", "rgb(...)", "hsl(...)" یا "var(--...)" را
+ * همان‌طور برمی‌گرداند؛ اعداد hex کوتاه را می‌پذیرد.
+ */
+export function normalizeColor(v: string): string {
+  if (!v) return v;
+  const t = v.trim();
+  if (
+    t.startsWith('#') ||
+    t.startsWith('rgb') ||
+    t.startsWith('hsl') ||
+    t.startsWith('var(') ||
+    t === 'transparent' ||
+    t === 'currentColor'
+  ) {
+    return t;
+  }
+  return t;
 }
 
 /**
