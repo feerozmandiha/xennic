@@ -56,11 +56,17 @@ export type CmsBlockType =
  */
 export interface CmsBlockStyle {
   // رنگ
-  backgroundColor?: string; // hex یا hsl(var(--...))
+  backgroundColor?: string;
   textColor?: string;
-  gradient?: string; // عبارت gradient آماده
-  backgroundImage?: string; // url(...)
-  backgroundOverlay?: string; // rgba overlay
+  gradient?: string;
+  backgroundImage?: string;
+  backgroundOverlay?: string;
+
+  // هاور
+  hoverBackgroundColor?: string;
+  hoverTextColor?: string;
+  hoverShadow?: 'none' | 'sm' | 'md' | 'lg' | 'xl';
+  hoverScale?: boolean;
 
   // فاصله
   paddingY?: 'none' | 'sm' | 'md' | 'lg' | 'xl';
@@ -76,7 +82,8 @@ export interface CmsBlockStyle {
   rounded?: 'none' | 'sm' | 'md' | 'lg' | 'xl' | 'full';
   shadow?: 'none' | 'sm' | 'md' | 'lg' | 'xl';
   border?: boolean;
-  className?: string; // کلاس دلخواه
+  borderColor?: string;
+  className?: string;
 
   // تایپوگرافی
   textSize?: 'xs' | 'sm' | 'base' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl' | '5xl';

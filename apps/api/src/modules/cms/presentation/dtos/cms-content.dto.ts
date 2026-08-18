@@ -25,6 +25,17 @@ export class CmsBlockStyleDto implements CmsBlockStyle {
   @ApiPropertyOptional() @IsOptional() @IsString() backgroundImage?: string;
   @ApiPropertyOptional() @IsOptional() @IsString() backgroundOverlay?: string;
 
+  @ApiPropertyOptional() @IsOptional() @IsString() hoverBackgroundColor?: string;
+  @ApiPropertyOptional() @IsOptional() @IsString() hoverTextColor?: string;
+  @ApiPropertyOptional({ enum: ['none', 'sm', 'md', 'lg', 'xl'] })
+  @IsOptional()
+  @IsString()
+  hoverShadow?: 'none' | 'sm' | 'md' | 'lg' | 'xl';
+  @ApiPropertyOptional()
+  @IsOptional()
+  @Transform(({ value }) => value === true || value === 'true')
+  hoverScale?: boolean;
+
   @ApiPropertyOptional({ enum: ['none', 'sm', 'md', 'lg', 'xl'] })
   @IsOptional()
   @IsString()
@@ -69,6 +80,8 @@ export class CmsBlockStyleDto implements CmsBlockStyle {
   @IsOptional()
   @Transform(({ value }) => value === true || value === 'true')
   border?: boolean;
+
+  @ApiPropertyOptional() @IsOptional() @IsString() borderColor?: string;
 
   @ApiPropertyOptional() @IsOptional() @IsString() className?: string;
 

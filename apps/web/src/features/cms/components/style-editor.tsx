@@ -54,6 +54,17 @@ export function StyleEditor({
           <label className={LABEL}>رنگ متن</label>
           <ColorInput value={s.textColor} onChange={(v) => set('textColor', v)} />
         </div>
+        <div>
+          <label className={LABEL}>پس‌زمینه (هاور)</label>
+          <ColorInput
+            value={s.hoverBackgroundColor}
+            onChange={(v) => set('hoverBackgroundColor', v)}
+          />
+        </div>
+        <div>
+          <label className={LABEL}>رنگ متن (هاور)</label>
+          <ColorInput value={s.hoverTextColor} onChange={(v) => set('hoverTextColor', v)} />
+        </div>
       </div>
 
       <div>
@@ -244,6 +255,36 @@ export function StyleEditor({
           </label>
         </div>
       </div>
+
+      <div>
+        <label className={LABEL}>رنگ حاشیه</label>
+        <ColorInput value={s.borderColor} onChange={(v) => set('borderColor', v)} />
+      </div>
+
+      <div>
+        <label className={LABEL}>سایه در هاور</label>
+        <select
+          value={s.hoverShadow ?? 'none'}
+          onChange={(e) => set('hoverShadow', e.target.value as CmsBlockStyle['hoverShadow'])}
+          className={SELECT}
+        >
+          <option value="none">هیچ</option>
+          <option value="sm">کم</option>
+          <option value="md">متوسط</option>
+          <option value="lg">زیاد</option>
+          <option value="xl">خیلی زیاد</option>
+        </select>
+      </div>
+
+      <label className="flex w-full cursor-pointer items-center gap-2 rounded-md border border-[hsl(var(--border))] bg-[hsl(var(--background))] px-2 py-1.5 text-xs">
+        <input
+          type="checkbox"
+          checked={s.hoverScale === true}
+          onChange={(e) => set('hoverScale', e.target.checked)}
+          className="h-3.5 w-3.5"
+        />
+        بزرگ‌نمایی ملایم در هاور
+      </label>
 
       <div>
         <label className={LABEL}>کلاس سفارشی (Tailwind)</label>

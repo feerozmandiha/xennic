@@ -407,3 +407,34 @@ html {
     display: none !important;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   CMS BLOCK STYLES
+   رنگ‌ها، هاور و بوردر از طریق CSS Variable توسط هر بلوک تنظیم
+   می‌شود. این قانون باعث می‌شود فرزندان هم به‌درستی رنگ را به
+   ارث ببرند.
+═══════════════════════════════════════════════════════════════ */
+[data-cms-block] {
+  background-color: var(--cms-bg, transparent);
+  color: var(--cms-fg, inherit);
+  border-color: var(--cms-border, hsl(var(--border)));
+  transition:
+    background-color 200ms ease,
+    color 200ms ease,
+    box-shadow 200ms ease,
+    transform 200ms ease,
+    border-color 200ms ease;
+}
+[data-cms-block]:hover {
+  background-color: var(--cms-bg-hover, var(--cms-bg, transparent));
+  color: var(--cms-fg-hover, var(--cms-fg, inherit));
+}
+/* For block with hoverScale */
+[data-cms-block][data-cms-hover-scale='true']:hover {
+  transform: scale(1.02);
+}
+/* Make sure child links/buttons use inherited text color unless they
+   specify their own. */
+[data-cms-block] a:not(.btn):not(button) {
+  color: inherit;
+}
