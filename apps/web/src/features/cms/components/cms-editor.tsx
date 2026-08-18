@@ -11,7 +11,9 @@ import {
   Pencil,
   Plus,
   Redo2,
+  RotateCcw,
   Save,
+  Search,
   Send,
   Trash2,
   Undo2,
@@ -45,6 +47,8 @@ export function CmsEditor() {
   const [activeBlock, setActiveBlock] = useState<string | null>(null);
   const [tab, setTab] = useState<Tab>('content');
   const [device, setDevice] = useState<'desktop' | 'mobile'>('desktop');
+  const [query, setQuery] = useState('');
+  const [confirmReset, setConfirmReset] = useState(false);
 
   // ── Undo / Redo history ────────────────────────────────
   const historyRef = useRef<CmsDocument[]>([]);
@@ -318,6 +322,71 @@ export function CmsEditor() {
     }
   }
 
+  async function resetToDefault() {
+    const def = getDefaultDocument(slot);
+    if (!def) {
+      setMessage({ kind: 'err', text: 'برای این slot پیش‌فرضی تعریف نشده است.' });
+      return;
+    }
+    setSaving(true);
+    setMessage(null);
+    try {
+      const payload: CmsDocument = { ...def, schema: 'xennic-cms/v2' };
+      if (record) {
+        const res = await cmsApi.patch(record.id, { document: payload, publish: false });
+        setRecord(res.data);
+        setDoc(normalizeDoc(res.data.document));
+      } else {
+        const res = await cmsApi.upsert({ slot, locale, document: payload, publish: false });
+        setRecord(res.data);
+        setDoc(normalizeDoc(res.data.document));
+      }
+      historyRef.current = [];
+      futureRef.current = [];
+      setMessage({ kind: 'ok', text: 'به محتوای پیش‌فرض بازنشانی شد ✓' });
+    } catch (err) {
+      setMessage({
+        kind: 'err',
+        text: err instanceof Error ? err.message : 'خطا در بازنشانی',
+      });
+    } finally {
+      setSaving(false);
+      setConfirmReset(false);
+    }
+  }
+
+  async function clearAll() {
+    const empty: CmsDocument = { schema: 'xennic-cms/v2', blocks: [] };
+    setSaving(true);
+    setMessage(null);
+    try {
+      if (record) {
+        const res = await cmsApi.patch(record.id, { document: empty, publish: false });
+        setRecord(res.data);
+        setDoc(res.data.document);
+      } else {
+        const res = await cmsApi.upsert({ slot, locale, document: empty, publish: false });
+        setRecord(res.data);
+        setDoc(res.data.document);
+      }
+      historyRef.current = [];
+      futureRef.current = [];
+      setMessage({ kind: 'ok', text: 'همه بلوک‌ها پاک شدند ✓' });
+    } catch (err) {
+      setMessage({ kind: 'err', text: err instanceof Error ? err.message : 'خطا' });
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  const filteredBlocks = useMemo(() => {
+    if (!query.trim()) return BLOCK_LIBRARY;
+    const q = query.trim().toLowerCase();
+    return BLOCK_LIBRARY.filter(
+      (b) => b.label.includes(q) || b.type.toLowerCase().includes(q) || b.category.includes(q),
+    );
+  }, [query]);
+
   if (loading) {
     return <div className="p-8 text-center text-sm text-muted-foreground">در حال بارگذاری…</div>;
   }
@@ -388,6 +457,32 @@ export function CmsEditor() {
             {record?.published ? 'منتشرشده' : record ? 'پیش‌نویس' : 'جدید'}
           </span>
           {dirty ? <span className="text-[10px] text-amber-600">ذخیره نشده</span> : null}
+          {record ? (
+            confirmReset ? (
+              <>
+                <span className="text-[10px] text-red-600">مطمئنی؟</span>
+                <Button size="sm" variant="destructive" onClick={clearAll} disabled={saving}>
+                  پاک کردن همه
+                </Button>
+                <Button size="sm" variant="outline" onClick={resetToDefault} disabled={saving}>
+                  پیش‌فرض
+                </Button>
+                <Button size="sm" variant="ghost" onClick={() => setConfirmReset(false)}>
+                  انصراف
+                </Button>
+              </>
+            ) : (
+              <Button
+                size="sm"
+                variant="ghost"
+                title="بازنشانی به محتوای پیش‌فرض یا پاک کردن"
+                onClick={() => setConfirmReset(true)}
+                disabled={saving}
+              >
+                <RotateCcw className="ml-1 h-3.5 w-3.5" /> بازنشانی
+              </Button>
+            )
+          ) : null}
           <Button
             variant="outline"
             size="sm"
@@ -419,22 +514,43 @@ export function CmsEditor() {
         {/* Left: block library */}
         <aside className="space-y-3 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-3 max-h-[80vh] overflow-y-auto">
           <h3 className="text-xs font-bold">افزودن بلوک</h3>
-          {(['layout', 'content', 'media', 'marketing', 'navigation'] as const).map((cat) => (
-            <div key={cat} className="space-y-1">
-              <p className="text-[10px] uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
-                {catLabel(cat)}
-              </p>
-              {BLOCK_LIBRARY.filter((b) => b.category === cat).map((b) => (
-                <button
-                  key={b.type}
-                  onClick={() => addBlock(null, b.type)}
-                  className="block w-full rounded-md px-2 py-1.5 text-right text-xs hover:bg-[hsl(var(--secondary))]"
-                >
-                  + {b.label}
-                </button>
-              ))}
-            </div>
-          ))}
+          <label className="flex items-center gap-2 rounded-md border border-[hsl(var(--border))] bg-[hsl(var(--background))] px-2 py-1.5">
+            <Search className="h-3.5 w-3.5 text-[hsl(var(--muted-foreground))]" />
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="جستجوی بلوک…"
+              className="w-full bg-transparent text-xs outline-none placeholder:text-[hsl(var(--muted-foreground))]"
+            />
+          </label>
+          {(['layout', 'content', 'media', 'marketing', 'navigation'] as const).map((cat) => {
+            const items = filteredBlocks.filter((b) => b.category === cat);
+            if (items.length === 0) return null;
+            return (
+              <div key={cat} className="space-y-1">
+                <p className="text-[10px] uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
+                  {catLabel(cat)}
+                </p>
+                {items.map((b) => (
+                  <button
+                    key={b.type}
+                    onClick={() => {
+                      addBlock(null, b.type);
+                      setQuery('');
+                    }}
+                    className="block w-full rounded-md px-2 py-1.5 text-right text-xs hover:bg-[hsl(var(--secondary))]"
+                  >
+                    + {b.label}
+                  </button>
+                ))}
+              </div>
+            );
+          })}
+          {filteredBlocks.length === 0 ? (
+            <p className="py-4 text-center text-[11px] text-[hsl(var(--muted-foreground))]">
+              موردی یافت نشد
+            </p>
+          ) : null}
         </aside>
 
         {/* Middle: preview */}
