@@ -158,6 +158,32 @@ pnpm validate:arch                              # Must pass (exit 0)
 - `infrastructure/` includes kubernetes and nginx configs
 - `.vscode/settings.json` configures Python (mypy, ruff, pytest) — matches CI-less local workflow
 
+## Knowledge Module — Rich Content (Phase K5)
+
+**Location:** `apps/api/src/modules/knowledge/`
+**DB tables:** `knowledge_translations`, `knowledge_media`, `knowledge_formulas`, `knowledge_examples`, `knowledge_comments.liked_by` (all pre-existing in `prisma/schema.prisma` — no migration)
+**Key classes:** `KnowledgeContentService`, `KnowledgeContentRepository`, `KnowledgeContentController`, `KnowledgeLocale` (value object)
+**Docs:** `docs/knowledge/knowledge-rich-content.md`
+
+### Architecture
+
+- Child collections of the existing `knowledge` aggregate — **no new aggregate root**
+- Every mutation resolves the root via `KnowledgeService.findOne()` (enforces `workspace_id` isolation + soft delete), then `_assertOwnedBy` verifies the child row belongs to that article
+- `KnowledgeLocale` owns locale normalization (`fa-IR` → `fa`) and the fallback chain: requested → default (`fa`) → remaining
+- Formula/example writes rebuild the article `search_text` via `KnowledgeService.updateSearchText()` (base content + LaTeX + example titles)
+- Comment likes are array-based (`liked_by`), so like/unlike are idempotent and `likes === liked_by.length`
+
+### Route ordering caveat
+
+In `public-knowledge.controller.ts`, `@Get(':slug/localized')` **must** stay declared before `@Get(':slug')` or the wildcard swallows it.
+
+### Verification
+
+```bash
+cd apps/api && npx jest --testPathPattern "modules/knowledge/"   # 158 tests
+pnpm validate:arch                                                # must exit 0
+```
+
 ## Semantic Integration Module
 
 **Phase K2** — Event-driven integration layer connecting Knowledge Factory, Knowledge Intelligence, AI Runtime, Workspace, RBAC, Storage, and Search.

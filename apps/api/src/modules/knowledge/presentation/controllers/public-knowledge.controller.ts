@@ -1,12 +1,18 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { KnowledgeService } from '../../application/services/knowledge.service.js';
+import { KnowledgeContentService } from '../../application/services/knowledge-content.service.js';
+import { SUPPORTED_KNOWLEDGE_LOCALES } from '../../domain/value-objects/knowledge-locale.vo.js';
 import { KnowledgeResponseDto } from '../dtos/knowledge.dto.js';
+import { LocalizedKnowledgeDto } from '../dtos/knowledge-content.dto.js';
 
 @ApiTags('knowledge-public')
 @Controller('public/knowledge')
 export class PublicKnowledgeController {
-  constructor(private readonly knowledgeService: KnowledgeService) {}
+  constructor(
+    private readonly knowledgeService: KnowledgeService,
+    private readonly contentService: KnowledgeContentService,
+  ) {}
 
   @Get()
   @ApiOperation({
@@ -37,6 +43,22 @@ export class PublicKnowledgeController {
       data: KnowledgeResponseDto.fromEntities(result.data),
       meta: result.meta,
     };
+  }
+
+  @Get(':slug/localized')
+  @ApiOperation({
+    summary: 'Public get localized article by slug',
+    description:
+      'Returns a published article resolved for the requested locale. ' +
+      'Falls back to the default locale when the translation is missing.',
+  })
+  @ApiParam({ name: 'slug', description: 'Article slug' })
+  @ApiQuery({ name: 'locale', required: false, enum: SUPPORTED_KNOWLEDGE_LOCALES })
+  @ApiResponse({ status: 200, description: 'Localized article', type: LocalizedKnowledgeDto })
+  @ApiResponse({ status: 404, description: 'Article not found' })
+  async findLocalizedBySlug(@Param('slug') slug: string, @Query('locale') locale?: string) {
+    const view = await this.contentService.getPublishedLocalizedBySlug(slug, locale);
+    return { success: true, data: view };
   }
 
   @Get(':slug')
