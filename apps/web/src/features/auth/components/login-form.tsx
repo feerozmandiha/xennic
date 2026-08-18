@@ -3,11 +3,9 @@
 import { useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { Eye, EyeOff, Zap, ArrowLeft } from 'lucide-react';
+import { Eye, EyeOff, Loader2, Lock, Mail } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useAuthStore } from '@/stores/auth.store';
 import { useToast } from '@/stores/toast.store';
 import { handlePostLogin } from '@/features/auth/hooks/use-post-login';
@@ -50,10 +48,7 @@ export function LoginForm({
     try {
       const response = await fetch(`${API_BASE}/auth/login`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'user-agent': 'xennic-web/1.0',
-        },
+        headers: { 'Content-Type': 'application/json', 'user-agent': 'xennic-web/1.0' },
         body: JSON.stringify({ email, password }),
       });
       const text = await response.text();
@@ -66,17 +61,14 @@ export function LoginForm({
         );
         setAuth(res.data.accessToken, res.data.refreshToken, res.data.user);
 
-        // ذخیره پلن از URL در localStorage اگر همراه login آمده
         if (initialPlan && initialPlan !== 'free') {
           localStorage.setItem('xennic_selected_plan', initialPlan);
         }
 
-        // بررسی پلن از props یا localStorage
         const effectivePlan =
           initialPlan ||
           (typeof window !== 'undefined' ? localStorage.getItem('xennic_selected_plan') : null);
 
-        // workspace setup
         await handlePostLogin(
           useAuthStore.getState().setWorkspace,
           API_BASE,
@@ -84,19 +76,12 @@ export function LoginForm({
           useAuthStore.getState().setIsAdmin,
         );
 
-        // پاک کردن پلن ذخیره شده
-        if (effectivePlan) {
-          localStorage.removeItem('xennic_selected_plan');
-        }
+        if (effectivePlan) localStorage.removeItem('xennic_selected_plan');
 
-        // تعیین مسیر نهایی
-        if (redirectTo) {
-          router.push(decodeURIComponent(redirectTo));
-        } else if (effectivePlan && effectivePlan !== 'free') {
+        if (redirectTo) router.push(decodeURIComponent(redirectTo));
+        else if (effectivePlan && effectivePlan !== 'free')
           router.push(`/${locale}/billing/checkout?plan=${effectivePlan}`);
-        } else {
-          router.push(`/${locale}/dashboard`);
-        }
+        else router.push(`/${locale}/dashboard`);
       } else {
         const msg = res.error?.message ?? '';
         if (msg.toLowerCase().includes('inactive')) {
@@ -106,7 +91,6 @@ export function LoginForm({
         }
       }
     } catch (err: any) {
-      // CORS یا connection error
       if (err?.code === 'NETWORK_ERROR' || err?.message?.includes('connect')) {
         setError('اتصال به سرور ممکن نیست');
       } else {
@@ -118,98 +102,140 @@ export function LoginForm({
   }
 
   return (
-    <>
-      <Link
-        href={`/${locale}`}
-        className="hidden lg:flex items-center gap-1.5 text-sm text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] transition-colors mb-3"
+    <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+      {error ? (
+        <div className="animate-fade-in rounded-xl border border-[hsl(var(--destructive)/0.25)] bg-[hsl(var(--destructive)/0.08)] px-3.5 py-2.5 text-center text-sm text-[hsl(var(--destructive))]">
+          {error}
+        </div>
+      ) : null}
+
+      <Field
+        icon={<Mail className="h-4 w-4" />}
+        type="email"
+        label={t('email')}
+        placeholder={t('emailPlaceholder')}
+        value={email}
+        onChange={setEmail}
+        autoComplete="email"
+        disabled={loading}
+      />
+
+      <Field
+        icon={<Lock className="h-4 w-4" />}
+        type={showPass ? 'text' : 'password'}
+        label={t('password')}
+        placeholder={t('passwordPlaceholder')}
+        value={password}
+        onChange={setPassword}
+        autoComplete="current-password"
+        disabled={loading}
+        endIcon={
+          <button
+            type="button"
+            onClick={() => setShowPass((p) => !p)}
+            tabIndex={-1}
+            className="text-[hsl(var(--muted-foreground))] transition hover:text-[hsl(var(--foreground))]"
+          >
+            {showPass ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+          </button>
+        }
+      />
+
+      <div className="flex items-center justify-between text-xs">
+        <label className="flex items-center gap-1.5 cursor-pointer select-none">
+          <input type="checkbox" className="h-3.5 w-3.5 rounded border-[hsl(var(--border))]" />
+          <span className="text-[hsl(var(--muted-foreground))]">مرا به خاطر بسپار</span>
+        </label>
+        <Link
+          href={`/${locale}/forgot-password`}
+          className="font-medium text-[hsl(var(--primary))] hover:underline"
+        >
+          {t('forgotPassword')}
+        </Link>
+      </div>
+
+      <Button
+        type="submit"
+        className="group relative w-full overflow-hidden"
+        size="lg"
+        loading={loading}
       >
-        <ArrowLeft className="h-4 w-4" />
-        بازگشت به صفحه اصلی
-      </Link>
-      <Card>
-        <CardHeader className="text-center space-y-2 pb-4">
-          <div className="flex justify-center">
-            <div className="w-11 h-11 rounded-[var(--radius-lg)] bg-[hsl(var(--primary)/0.1)] flex items-center justify-center">
-              <Zap className="h-5 w-5 text-[hsl(var(--primary))]" />
-            </div>
-          </div>
-          <CardTitle className="text-xl">{t('loginTitle')}</CardTitle>
-          <CardDescription>{t('loginSubtitle')}</CardDescription>
-        </CardHeader>
+        {loading ? (
+          <>
+            <Loader2 className="ml-2 h-4 w-4 animate-spin" />
+            در حال ورود…
+          </>
+        ) : (
+          t('loginButton')
+        )}
+      </Button>
 
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4" noValidate>
-            {/* Error */}
-            {error && (
-              <div className="rounded-[var(--radius)] bg-[hsl(var(--destructive)/0.08)] border border-[hsl(var(--destructive)/0.2)] px-3 py-2 text-sm text-[hsl(var(--destructive))] text-center animate-fade-in">
-                {error}
-              </div>
-            )}
+      <div className="relative py-2">
+        <div className="absolute inset-0 flex items-center">
+          <div className="w-full border-t border-[hsl(var(--border))]" />
+        </div>
+        <div className="relative flex justify-center text-[10px]">
+          <span className="bg-[hsl(var(--background))] px-3 text-[hsl(var(--muted-foreground))]">
+            یا
+          </span>
+        </div>
+      </div>
 
-            {/* Email */}
-            <Input
-              type="email"
-              label={t('email')}
-              placeholder={t('emailPlaceholder')}
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              autoComplete="email"
-              required
-              disabled={loading}
-              dir="ltr"
-            />
+      <p className="text-center text-sm text-[hsl(var(--muted-foreground))]">
+        {t('noAccount')}{' '}
+        <Link
+          href={`/${locale}/register`}
+          className="font-semibold text-[hsl(var(--primary))] hover:underline"
+        >
+          {t('register')}
+        </Link>
+      </p>
+    </form>
+  );
+}
 
-            {/* Password */}
-            <Input
-              type={showPass ? 'text' : 'password'}
-              label={t('password')}
-              placeholder={t('passwordPlaceholder')}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              autoComplete="current-password"
-              required
-              disabled={loading}
-              dir="ltr"
-              endIcon={
-                <button
-                  type="button"
-                  onClick={() => setShowPass((p) => !p)}
-                  tabIndex={-1}
-                  className="hover:text-[hsl(var(--foreground))] transition-colors"
-                >
-                  {showPass ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
-              }
-            />
-
-            {/* Forgot password */}
-            <div className="flex justify-end">
-              <a
-                href={`/${locale}/forgot-password`}
-                className="text-xs text-[hsl(var(--primary))] hover:underline"
-              >
-                {t('forgotPassword')}
-              </a>
-            </div>
-
-            {/* Submit */}
-            <Button type="submit" className="w-full" size="lg" loading={loading}>
-              {t('loginButton')}
-            </Button>
-
-            {/* Register link */}
-            <p className="text-center text-sm text-[hsl(var(--muted-foreground))]">
-              {t('noAccount')}{' '}
-              <a
-                href={`/${locale}/register`}
-                className="text-[hsl(var(--primary))] hover:underline font-medium"
-              >
-                {t('register')}
-              </a>
-            </p>
-          </form>
-        </CardContent>
-      </Card>
-    </>
+function Field({
+  icon,
+  endIcon,
+  label,
+  type,
+  placeholder,
+  value,
+  onChange,
+  autoComplete,
+  disabled,
+}: {
+  icon: React.ReactNode;
+  endIcon?: React.ReactNode;
+  label: string;
+  type: string;
+  placeholder: string;
+  value: string;
+  onChange: (v: string) => void;
+  autoComplete?: string;
+  disabled?: boolean;
+}) {
+  return (
+    <label className="block space-y-1.5">
+      <span className="text-xs font-medium text-[hsl(var(--foreground))]">{label}</span>
+      <div className="group relative">
+        <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-[hsl(var(--muted-foreground))] group-focus-within:text-[hsl(var(--primary))]">
+          {icon}
+        </span>
+        <input
+          type={type}
+          placeholder={placeholder}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          autoComplete={autoComplete}
+          disabled={disabled}
+          dir="ltr"
+          className="h-11 w-full rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--background))] px-10 text-sm outline-none transition placeholder:text-[hsl(var(--muted-foreground))] focus:border-[hsl(var(--primary))] focus:ring-2 focus:ring-[hsl(var(--primary)/0.2)] disabled:opacity-50"
+        />
+        {endIcon ? (
+          <span className="absolute inset-y-0 left-3 flex items-center">{endIcon}</span>
+        ) : null}
+      </div>
+    </label>
   );
 }

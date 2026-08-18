@@ -321,9 +321,27 @@ export const DEFAULT_LANDING: CmsDocument = {
   ],
 };
 
+export const DEFAULT_AUTH_BRAND: CmsDocument = {
+  schema: 'xennic-cms/v2',
+  blocks: [
+    createBlock('auth-brand', 'default-auth-brand-1', {
+      title: 'پلتفرم تخصصی مهندسی برق',
+      subtitle: 'محاسبات استاندارد، کیفیت توان و هوش مصنوعی مهندسی در یک فضای کاری یکپارچه.',
+      bullets: [
+        '۸۰+ محاسبه‌گر استاندارد IEC/IEEE',
+        'مشاور هوش مصنوعی برای طراحی و عیب‌یابی',
+        'مدیریت پروژه و همکاری تیمی',
+        'گزارش‌های حرفه‌ای PDF',
+      ],
+      image: '',
+    }),
+  ],
+};
+
 export const DEFAULT_CONTENT: Record<string, CmsDocument> = {
   'site/header': DEFAULT_HEADER,
   'site/footer': DEFAULT_FOOTER,
+  'auth/brand': DEFAULT_AUTH_BRAND,
   'landing/page': DEFAULT_LANDING,
 };
 
@@ -335,6 +353,7 @@ export const EDITABLE_SLOTS: { slot: string; label: string; description: string 
   { slot: 'landing/page', label: 'صفحه فرود', description: 'محتوای کامل صفحه اصلی' },
   { slot: 'site/header', label: 'هدر سایت', description: 'منو و دکمه‌های نوار بالا' },
   { slot: 'site/footer', label: 'فوتر سایت', description: 'ستون‌ها و لینک‌های پاورقی' },
+  { slot: 'auth/brand', label: 'پنل برند ورود', description: 'محتوای ستون کنار فرم ورود/عضویت' },
 ];
 
 // Back-compat: re-export BLOCK_LIBRARY consumers can import from this file.

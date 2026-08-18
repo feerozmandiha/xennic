@@ -63,6 +63,40 @@ function iconOf(name?: string): LucideIcon | null {
 
 /* ── shared components ──────────────────────────────────────── */
 
+function AuthBrand({ block }: RenderProps) {
+  const title = block.props.title as string | undefined;
+  const subtitle = block.props.subtitle as string | undefined;
+  const bullets = Array.isArray(block.props.bullets) ? (block.props.bullets as string[]) : [];
+  const image = block.props.image as string | undefined;
+  return (
+    <div className="space-y-6 text-white">
+      {title ? (
+        <h2 className="whitespace-pre-line text-3xl font-black leading-snug">{title}</h2>
+      ) : null}
+      {subtitle ? <p className="leading-8 text-white/80">{subtitle}</p> : null}
+      {bullets.length ? (
+        <ul className="space-y-3 text-sm text-white/90">
+          {bullets.map((b, i) => (
+            <li key={i} className="flex items-start gap-2">
+              <span className="mt-0.5 inline-flex h-5 w-5 items-center justify-center rounded-full bg-white/20 text-xs">
+                ✓
+              </span>
+              {b}
+            </li>
+          ))}
+        </ul>
+      ) : null}
+      {image ? (
+        <img
+          src={image}
+          alt=""
+          className="mt-4 w-full rounded-2xl border border-white/10 object-cover"
+        />
+      ) : null}
+    </div>
+  );
+}
+
 function BlockShell({
   block,
   className,
@@ -1041,6 +1075,7 @@ const BLOCK_REGISTRY: Record<string, React.ComponentType<RenderProps>> = {
   button: ButtonBlock,
   buttons: Buttons,
   branding: Branding,
+  'auth-brand': AuthBrand,
   image: ImageBlock,
   video: VideoBlock,
   gallery: Gallery,
