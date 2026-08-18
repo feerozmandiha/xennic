@@ -438,3 +438,17 @@ html {
 [data-cms-block] a:not(.btn):not(button) {
   color: inherit;
 }
+
+/* Surface (card-like) backgrounds for CMS blocks:
+   - Default uses the card surface color
+   - When the editor sets --cms-bg, it wins (even over Tailwind utilities)
+   - On hover, --cms-bg-hover takes over */
+[data-cms-block].cms-surface {
+  background-color: hsl(var(--card)) !important;
+}
+[data-cms-block][style*='--cms-bg'].cms-surface {
+  background-color: var(--cms-bg) !important;
+}
+[data-cms-block][style*='--cms-bg'].cms-surface:hover {
+  background-color: var(--cms-bg-hover, var(--cms-bg)) !important;
+}
