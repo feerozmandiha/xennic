@@ -1,12 +1,31 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { ArrowDown, ArrowUp, Eye, EyeOff, Pencil, Plus, Save, Send, Trash2 } from 'lucide-react';
+import {
+  ArrowDown,
+  ArrowUp,
+  Copy,
+  Eye,
+  EyeOff,
+  GripVertical,
+  Pencil,
+  Plus,
+  Save,
+  Send,
+  Trash2,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 import { cmsApi } from '../lib/api';
 import { EDITABLE_SLOTS, getDefaultDocument } from '../lib/default-content';
 import { instantiateBlock, BLOCK_LIBRARY, getBlockDef } from '../lib/block-library';
-import { EMPTY_DOCUMENT, type CmsBlock, type CmsContent, type CmsDocument } from '../lib/types';
+import {
+  EMPTY_DOCUMENT,
+  newBlockId,
+  type CmsBlock,
+  type CmsContent,
+  type CmsDocument,
+} from '../lib/types';
 import { CmsDocumentRenderer } from '../blocks/cms-renderer';
 import { StyleEditor } from './style-editor';
 import { PropsEditor } from './props-editor';
@@ -100,6 +119,91 @@ export function CmsEditor() {
       }));
     }
     setActiveBlock(block.id);
+  }
+
+  function duplicateBlock(id: string) {
+    const clone = (blocks: CmsBlock[]): { next: CmsBlock[]; newId: string | null } => {
+      for (let i = 0; i < blocks.length; i++) {
+        if (blocks[i].id === id) {
+          const copy = deepCloneBlock(blocks[i]);
+          const next = blocks.slice();
+          next.splice(i + 1, 0, copy);
+          return { next, newId: copy.id };
+        }
+        if (blocks[i].children) {
+          const r = clone(blocks[i].children!);
+          if (r.newId) {
+            return {
+              next: blocks.map((b, idx) => (idx === i ? { ...b, children: r.next } : b)),
+              newId: r.newId,
+            };
+          }
+        }
+      }
+      return { next: blocks, newId: null };
+    };
+    let newId: string | null = null;
+    setDoc((d) => {
+      const r = clone(d.blocks);
+      newId = r.newId;
+      return { ...d, blocks: r.next };
+    });
+    if (newId) setTimeout(() => setActiveBlock(newId), 0);
+  }
+
+  // ── Drag & drop ──────────────────────────────────────────
+  const [dragId, setDragId] = useState<string | null>(null);
+  const [dropTarget, setDropTarget] = useState<{
+    id: string;
+    pos: 'before' | 'after' | 'inside';
+  } | null>(null);
+
+  function onDragStart(id: string) {
+    setDragId(id);
+  }
+  function onDragEnd() {
+    setDragId(null);
+    setDropTarget(null);
+  }
+  function onDragOver(e: React.DragEvent, id: string, hasChildren: boolean) {
+    if (!dragId || dragId === id) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    const y = e.clientY - rect.top;
+    const h = rect.height;
+    let pos: 'before' | 'after' | 'inside' = 'before';
+    if (hasChildren && y > h * 0.25 && y < h * 0.75) pos = 'inside';
+    else if (y > h / 2) pos = 'after';
+    setDropTarget({ id, pos });
+  }
+  function onDrop(e: React.DragEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!dragId || !dropTarget) return;
+    moveBlockTo(dragId, dropTarget.id, dropTarget.pos);
+    setDragId(null);
+    setDropTarget(null);
+  }
+
+  function moveBlockTo(sourceId: string, targetId: string, pos: 'before' | 'after' | 'inside') {
+    if (sourceId === targetId) return;
+    if (isDescendant(sourceId, targetId, doc.blocks)) return;
+
+    const source = removeFromTree(doc.blocks, sourceId);
+    if (!source.node) return;
+
+    // Top-level before/after
+    const topIdx = source.next.findIndex((b) => b.id === targetId);
+    if (topIdx >= 0 && pos !== 'inside') {
+      const next = source.next.slice();
+      next.splice(pos === 'before' ? topIdx : topIdx + 1, 0, source.node);
+      setDoc((d) => ({ ...d, blocks: next }));
+      return;
+    }
+
+    const inserted = insertInTree(source.next, targetId, source.node, pos);
+    setDoc((d) => ({ ...d, blocks: inserted }));
   }
 
   async function handleUpload(file: File): Promise<string> {
@@ -257,6 +361,13 @@ export function CmsEditor() {
                   onRemove={removeBlock}
                   onMove={moveBlock}
                   onAddChild={addBlock}
+                  onDuplicate={duplicateBlock}
+                  onDragStart={onDragStart}
+                  onDragEnd={onDragEnd}
+                  onDragOver={onDragOver}
+                  onDrop={onDrop}
+                  dragId={dragId}
+                  dropTarget={dropTarget}
                 />
               ))}
               <AddBlockButton onAdd={(t) => addBlock(null, t)} />
@@ -430,6 +541,13 @@ function BlockTreeItem({
   onRemove,
   onMove,
   onAddChild,
+  onDuplicate,
+  onDragStart,
+  onDragEnd,
+  onDragOver,
+  onDrop,
+  dragId,
+  dropTarget,
 }: {
   block: CmsBlock;
   depth: number;
@@ -440,20 +558,48 @@ function BlockTreeItem({
   onRemove: (id: string) => void;
   onMove: (id: string, dir: -1 | 1) => void;
   onAddChild: (parentId: string, type: string) => void;
+  onDuplicate: (id: string) => void;
+  onDragStart: (id: string) => void;
+  onDragEnd: () => void;
+  onDragOver: (e: React.DragEvent, id: string, hasChildren: boolean) => void;
+  onDrop: (e: React.DragEvent) => void;
+  dragId: string | null;
+  dropTarget: { id: string; pos: 'before' | 'after' | 'inside' } | null;
 }) {
   const def = getBlockDef(block.type);
   const hasChildren = !!block.children?.length;
+  const isDragging = dragId === block.id;
+  const dropHere = dropTarget?.id === block.id;
+  const isContainerLike = isContainer(block.type) || hasChildren;
   return (
-    <div>
+    <div
+      onDragOver={(e) => onDragOver(e, block.id, isContainerLike)}
+      onDrop={onDrop}
+      className={cn(
+        'relative rounded-md',
+        dropHere && dropTarget!.pos === 'inside' && 'ring-2 ring-[hsl(var(--primary))]',
+      )}
+    >
+      {dropHere && dropTarget!.pos === 'before' ? (
+        <div className="absolute -top-0.5 right-0 left-0 h-0.5 rounded bg-[hsl(var(--primary))]" />
+      ) : null}
+      {dropHere && dropTarget!.pos === 'after' ? (
+        <div className="absolute -bottom-0.5 right-0 left-0 h-0.5 rounded bg-[hsl(var(--primary))]" />
+      ) : null}
       <div
+        draggable
+        onDragStart={() => onDragStart(block.id)}
+        onDragEnd={onDragEnd}
         className={
-          'group flex items-center gap-1 rounded-md py-1 pr-2 text-[11px] ' +
+          'group flex cursor-grab items-center gap-1 rounded-md py-1 pr-2 text-[11px] active:cursor-grabbing ' +
+          (isDragging ? 'opacity-50 ' : '') +
           (activeId === block.id
             ? 'bg-[hsl(var(--primary)/0.1)] text-[hsl(var(--primary))]'
             : 'hover:bg-[hsl(var(--secondary))]')
         }
         style={{ paddingRight: depth * 12 + 8 }}
       >
+        <GripVertical className="h-3 w-3 shrink-0 opacity-30" />
         <button
           onClick={() => onSelect(block.id)}
           className="flex flex-1 items-center gap-1.5 text-right"
@@ -468,6 +614,9 @@ function BlockTreeItem({
             {labelOf(block)}
           </span>
         </button>
+        <IconBtn title="تکثیر" onClick={() => onDuplicate(block.id)}>
+          <Copy className="h-3 w-3" />
+        </IconBtn>
         <IconBtn disabled={index === 0} title="بالا" onClick={() => onMove(block.id, -1)}>
           <ArrowUp className="h-3 w-3" />
         </IconBtn>
@@ -492,6 +641,13 @@ function BlockTreeItem({
               onRemove={onRemove}
               onMove={onMove}
               onAddChild={onAddChild}
+              onDuplicate={onDuplicate}
+              onDragStart={onDragStart}
+              onDragEnd={onDragEnd}
+              onDragOver={onDragOver}
+              onDrop={onDrop}
+              dragId={dragId}
+              dropTarget={dropTarget}
             />
           ))}
         </div>
@@ -558,6 +714,85 @@ function reorderTree(blocks: CmsBlock[], id: string, dir: -1 | 1): CmsBlock[] {
   }
   // recurse into children
   return blocks.map((b) => (b.children ? { ...b, children: reorderTree(b.children, id, dir) } : b));
+}
+
+function deepCloneBlock(b: CmsBlock): CmsBlock {
+  return {
+    ...b,
+    id: newBlockId(),
+    props: JSON.parse(JSON.stringify(b.props ?? {})),
+    style: b.style ? JSON.parse(JSON.stringify(b.style)) : undefined,
+    children: b.children?.map(deepCloneBlock),
+  };
+}
+
+function removeFromTree(
+  blocks: CmsBlock[],
+  id: string,
+): { next: CmsBlock[]; node: CmsBlock | null } {
+  let node: CmsBlock | null = null;
+  const next = blocks
+    .filter((b) => {
+      if (b.id === id) {
+        node = b;
+        return false;
+      }
+      return true;
+    })
+    .map((b) => {
+      if (b.children) {
+        const r = removeFromTree(b.children, id);
+        if (r.node) node = r.node;
+        return { ...b, children: r.next };
+      }
+      return b;
+    });
+  return { next, node };
+}
+
+function insertInTree(
+  blocks: CmsBlock[],
+  targetId: string,
+  node: CmsBlock,
+  pos: 'before' | 'after' | 'inside',
+): CmsBlock[] {
+  return blocks.map((b) => {
+    if (b.id === targetId) {
+      // handled at parent level below for before/after; inside handled here
+      if (pos === 'inside') {
+        return { ...b, children: [...(b.children ?? []), node] };
+      }
+      return b;
+    }
+    if (b.children) {
+      // check if target is in our children (for before/after we need parent map,
+      // but we can do it by mutating a copy at this level)
+      const childIdx = b.children.findIndex((c) => c.id === targetId);
+      if (childIdx >= 0) {
+        const newChildren = b.children.slice();
+        if (pos === 'before') newChildren.splice(childIdx, 0, node);
+        else if (pos === 'after') newChildren.splice(childIdx + 1, 0, node);
+        else
+          newChildren[childIdx] = {
+            ...newChildren[childIdx],
+            children: [...(newChildren[childIdx].children ?? []), node],
+          };
+        return { ...b, children: newChildren };
+      }
+      return { ...b, children: insertInTree(b.children, targetId, node, pos) };
+    }
+    return b;
+  });
+}
+
+function isDescendant(ancestorId: string, maybeDescendantId: string, blocks: CmsBlock[]): boolean {
+  const a = findBlock(blocks, ancestorId);
+  if (!a?.children) return false;
+  for (const c of a.children) {
+    if (c.id === maybeDescendantId) return true;
+    if (c.children && isDescendant(c.id, maybeDescendantId, c.children)) return true;
+  }
+  return false;
 }
 
 function isContainer(type: string): boolean {
