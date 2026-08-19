@@ -334,13 +334,18 @@ export function KnowledgeEditor({ content, onChange, placeholder, editable = tru
   useEffect(() => {
     if (!editor) return;
     if (!content || Object.keys(content).length === 0) return;
-    // Avoid resetting while the user is actively typing (the onUpdate fired
-    // by our own commands keeps the parent in sync).
+    // Avoid resetting while the user is actively typing (onUpdate keeps
+    // the parent in sync).
     if (editor.isFocused) return;
     const current = JSON.stringify(editor.getJSON());
     const next = JSON.stringify(content);
     if (current !== next) {
-      editor.commands.setContent(content, { emitUpdate: false });
+      // Replace the editor document AND notify the parent so its
+      // state is identical to what is displayed. The previous version
+      // used emitUpdate:false which meant the editor could show the
+      // loaded article while the parent kept an empty object — saving
+      // then persisted an empty body.
+      editor.commands.setContent(content, { emitUpdate: true });
     }
   }, [content, editor]);
 
