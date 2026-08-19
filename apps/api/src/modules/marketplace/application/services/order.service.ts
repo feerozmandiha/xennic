@@ -1,5 +1,6 @@
-import { Injectable, Inject, NotFoundException } from '@nestjs/common';
+import { Injectable, Inject, NotFoundException, ConflictException } from '@nestjs/common';
 import type { IMarketplaceRepository } from '../../domain/interfaces/marketplace.repository.interface.js';
+import type { IPaymentGateway } from '../../../billing/infrastructure/gateways/payment-gateway.interface.js';
 import { OrderEntity } from '../../domain/entities/order.entity.js';
 import type { CreateOrderDto, UpdateOrderStatusDto } from '../../presentation/dtos/order.dto.js';
 
@@ -8,6 +9,8 @@ export class OrderService {
   constructor(
     @Inject('IMarketplaceRepository')
     private readonly repo: IMarketplaceRepository,
+    @Inject('MARKETPLACE_PAYMENT_GATEWAY')
+    private readonly paymentGateway: IPaymentGateway,
   ) {}
 
   async findAll(workspaceId: string, status?: string, page = 1, limit = 20) {
@@ -64,5 +67,60 @@ export class OrderService {
     entity.updateStatus(dto.status);
     await this.repo.saveOrder(entity);
     return entity;
+  }
+
+  // ── Payment ───────────────────────────────────────────────
+
+  async requestPayment(
+    orderId: string,
+    workspaceId: string,
+    callbackUrl: string,
+  ): Promise<{ redirectUrl: string; authority: string }> {
+    const order = await this.findById(orderId, workspaceId);
+    if (order.isPaid() || order.status !== 'pending') {
+      throw new ConflictException('Order is not payable');
+    }
+
+    const result = await this.paymentGateway.requestPayment({
+      amount: this._toGatewayAmount(order),
+      currency: 'IRR',
+      description: `Marketplace order #${order.id}`,
+      callbackUrl,
+      orderId: order.id,
+      metadata: { orderId: order.id },
+    });
+
+    if (!result.success) {
+      throw new Error(`Payment gateway error: ${result.message}`);
+    }
+
+    order.setAuthority(result.authority);
+    await this.repo.saveOrder(order);
+
+    return { redirectUrl: result.redirectUrl!, authority: result.authority };
+  }
+
+  async verifyPayment(authority: string): Promise<OrderEntity> {
+    const order = await this.repo.findOrderByAuthority(authority);
+    if (!order) throw new NotFoundException('Order not found for this authority');
+    if (order.isPaid()) return order; // idempotent
+
+    const verification = await this.paymentGateway.verifyPayment(
+      authority,
+      this._toGatewayAmount(order),
+    );
+    if (!verification.success) {
+      throw new Error(`Payment verification failed: ${verification.message}`);
+    }
+
+    order.markPaid(verification.referenceId);
+    await this.repo.saveOrder(order);
+    return order;
+  }
+
+  private _toGatewayAmount(order: OrderEntity): number {
+    // سفارش‌های بازارگاه به دلار هستند؛ درگاه زرین‌پال مبلغ را به ریال نیاز دارد.
+    const rate = Number(process.env.MARKETPLACE_USD_TO_IRR_RATE ?? 500000);
+    return Math.round(order.totalAmount * rate);
   }
 }

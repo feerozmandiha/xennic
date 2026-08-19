@@ -336,7 +336,13 @@
     "noPaymentYet": "Online payment will be enabled in a later phase",
     "viewStore": "View store",
     "linkedFromCalc": "Linked from calculation",
-    "clearFilters": "Clear filters"
+    "clearFilters": "Clear filters",
+    "payOnline": "Pay online",
+    "payTestMode": "Payment gateway is in test mode — no real transaction is made",
+    "paymentSuccess": "Payment successful",
+    "paymentSuccessNote": "Your order has been paid and confirmed",
+    "paymentFailed": "Payment failed",
+    "paymentFailedNote": "You can retry the payment from the orders section"
   },
   "errors": {
     "required": "This field is required",

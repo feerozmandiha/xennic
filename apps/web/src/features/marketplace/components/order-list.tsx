@@ -12,6 +12,7 @@ import { apiClient } from '@/lib/api/client';
 
 const STATUS_VARIANT: Record<string, 'success' | 'secondary' | 'warning' | 'destructive'> = {
   pending: 'secondary',
+  paid: 'success',
   confirmed: 'warning',
   processing: 'warning',
   shipped: 'success',

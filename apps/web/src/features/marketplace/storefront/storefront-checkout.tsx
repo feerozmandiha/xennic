@@ -1,11 +1,11 @@
 'use client';
 
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
+import { useParams, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useMutation } from '@tanstack/react-query';
-import { ShoppingCart, CheckCircle2, Package } from 'lucide-react';
+import { ShoppingCart, CheckCircle2, Package, CreditCard, XCircle } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { apiClient } from '@/lib/api/client';
@@ -16,8 +16,11 @@ export function StorefrontCheckout() {
   const t = useTranslations('marketplace');
   const toast = useToast();
   const params = useParams();
+  const searchParams = useSearchParams();
   const locale = (params?.locale as string) ?? 'fa';
   const numberLocale = locale === 'fa' ? 'fa-IR' : 'en-US';
+
+  const paymentResult = searchParams.get('payment') ?? null;
 
   const { items, count, total } = useCartTotals();
   const clear = useCartStore((s) => s.clear);
@@ -37,6 +40,54 @@ export function StorefrontCheckout() {
     onError: () => toast.error(t('error')),
   });
 
+  const requestPayment = useMutation({
+    mutationFn: (id: string) =>
+      apiClient.post<{ redirectUrl: string }>(`/orders/${id}/request-payment`),
+    onSuccess: (res) => {
+      if (res.redirectUrl) window.location.href = res.redirectUrl;
+    },
+    onError: () => toast.error(t('error')),
+  });
+
+  // ── بازگشت از درگاه پرداخت ─────────────────────────────
+  if (paymentResult === 'success') {
+    return (
+      <div className="flex flex-col items-center justify-center py-24 text-center">
+        <CheckCircle2 className="mb-4 h-14 w-14 text-[hsl(var(--success))]" />
+        <h1 className="text-lg font-bold">{t('paymentSuccess')}</h1>
+        <p className="mt-2 text-sm text-[hsl(var(--muted-foreground))]">
+          {t('paymentSuccessNote')}
+        </p>
+        <div className="mt-6 flex gap-3">
+          <Button asChild>
+            <Link href={`/${locale}/marketplace/manage/orders`}>{t('viewOrders')}</Link>
+          </Button>
+          <Button asChild variant="outline">
+            <Link href={`/${locale}/marketplace`}>{t('continueShopping')}</Link>
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  if (paymentResult === 'failed') {
+    return (
+      <div className="flex flex-col items-center justify-center py-24 text-center">
+        <XCircle className="mb-4 h-14 w-14 text-[hsl(var(--destructive))]" />
+        <h1 className="text-lg font-bold">{t('paymentFailed')}</h1>
+        <p className="mt-2 text-sm text-[hsl(var(--muted-foreground))]">{t('paymentFailedNote')}</p>
+        <div className="mt-6 flex gap-3">
+          <Button asChild>
+            <Link href={`/${locale}/marketplace/manage/orders`}>{t('viewOrders')}</Link>
+          </Button>
+          <Button asChild variant="outline">
+            <Link href={`/${locale}/marketplace`}>{t('continueShopping')}</Link>
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   if (orderId) {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-center">
@@ -48,11 +99,20 @@ export function StorefrontCheckout() {
             {orderId}
           </span>
         </p>
+        <Button
+          className="mt-6"
+          onClick={() => requestPayment.mutate(orderId)}
+          loading={requestPayment.isPending}
+        >
+          <CreditCard className="h-4 w-4" />
+          {t('payOnline')}
+        </Button>
+        <p className="mt-2 text-xs text-[hsl(var(--muted-foreground))]">{t('payTestMode')}</p>
         <div className="mt-6 flex gap-3">
-          <Button asChild>
+          <Button asChild variant="outline">
             <Link href={`/${locale}/marketplace/manage/orders`}>{t('viewOrders')}</Link>
           </Button>
-          <Button asChild variant="outline">
+          <Button asChild variant="ghost">
             <Link href={`/${locale}/marketplace`}>{t('continueShopping')}</Link>
           </Button>
         </div>
@@ -119,9 +179,6 @@ export function StorefrontCheckout() {
           >
             {t('placeOrder')}
           </Button>
-          <p className="mt-3 text-center text-xs text-[hsl(var(--muted-foreground))]">
-            {t('noPaymentYet')}
-          </p>
         </CardContent>
       </Card>
     </div>

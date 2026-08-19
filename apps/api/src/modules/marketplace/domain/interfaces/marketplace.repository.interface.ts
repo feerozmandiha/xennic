@@ -108,6 +108,7 @@ export interface IMarketplaceRepository {
 
   // Orders
   findOrderById(id: string): Promise<OrderEntity | null>;
+  findOrderByAuthority(authority: string): Promise<OrderEntity | null>;
   searchOrders(params: OrderSearchParams): Promise<SearchResult<OrderEntity>>;
   saveOrder(entity: OrderEntity): Promise<void>;
 

@@ -1,7 +1,8 @@
 import { Test } from '@nestjs/testing';
-import { NotFoundException } from '@nestjs/common';
+import { NotFoundException, ConflictException } from '@nestjs/common';
 import { OrderService } from './order.service.js';
 import { ProductEntity } from '../../domain/entities/product.entity.js';
+import { OrderEntity } from '../../domain/entities/order.entity.js';
 
 const WS_ID = 'ws-123';
 const USER_ID = 'user-456';
@@ -24,6 +25,21 @@ function makeProduct(overrides: Record<string, any> = {}): ProductEntity {
   });
 }
 
+function makeOrder(overrides: Record<string, any> = {}): OrderEntity {
+  return OrderEntity.reconstitute({
+    id: 'order-1',
+    workspaceId: WS_ID,
+    userId: USER_ID,
+    status: 'pending',
+    currency: 'USD',
+    totalAmount: 250,
+    items: [{ productId: 'prod-1', quantity: 1, unitPrice: 250, totalPrice: 250 }],
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    ...overrides,
+  });
+}
+
 describe('OrderService', () => {
   let service: OrderService;
 
@@ -31,12 +47,23 @@ describe('OrderService', () => {
     findProductById: jest.fn(),
     saveOrder: jest.fn(),
     findOrderById: jest.fn(),
+    findOrderByAuthority: jest.fn(),
     searchOrders: jest.fn(),
+  };
+
+  const gateway = {
+    name: 'zarinpal',
+    requestPayment: jest.fn(),
+    verifyPayment: jest.fn(),
   };
 
   beforeEach(async () => {
     const module = await Test.createTestingModule({
-      providers: [OrderService, { provide: 'IMarketplaceRepository', useValue: repo }],
+      providers: [
+        OrderService,
+        { provide: 'IMarketplaceRepository', useValue: repo },
+        { provide: 'MARKETPLACE_PAYMENT_GATEWAY', useValue: gateway },
+      ],
     }).compile();
 
     service = module.get(OrderService);
@@ -104,5 +131,80 @@ describe('OrderService', () => {
     );
 
     expect(order.totalAmount).toBe(250);
+  });
+
+  // ── Payment ──────────────────────────────────────────
+
+  it('requestPayment stores authority and returns the redirect URL', async () => {
+    repo.findOrderById.mockResolvedValue(makeOrder());
+    gateway.requestPayment.mockResolvedValue({
+      success: true,
+      authority: 'auth-1',
+      redirectUrl: 'https://gw/StartPay/auth-1',
+    });
+
+    const res = await service.requestPayment('order-1', WS_ID, 'https://cb');
+
+    expect(gateway.requestPayment).toHaveBeenCalledWith(
+      expect.objectContaining({
+        orderId: 'order-1',
+        currency: 'IRR',
+        callbackUrl: 'https://cb',
+      }),
+    );
+    expect(repo.saveOrder).toHaveBeenCalled();
+    expect(res).toEqual({ redirectUrl: 'https://gw/StartPay/auth-1', authority: 'auth-1' });
+  });
+
+  it('requestPayment throws when the gateway fails', async () => {
+    repo.findOrderById.mockResolvedValue(makeOrder());
+    gateway.requestPayment.mockResolvedValue({ success: false, authority: '', message: 'boom' });
+
+    await expect(service.requestPayment('order-1', WS_ID, 'https://cb')).rejects.toThrow(
+      /Payment gateway error/,
+    );
+  });
+
+  it('requestPayment rejects an already paid order', async () => {
+    repo.findOrderById.mockResolvedValue(makeOrder({ paidAt: new Date(), status: 'paid' }));
+
+    await expect(service.requestPayment('order-1', WS_ID, 'https://cb')).rejects.toBeInstanceOf(
+      ConflictException,
+    );
+  });
+
+  it('verifyPayment marks the order as paid with the gateway reference', async () => {
+    const order = makeOrder({ authority: 'auth-1' });
+    repo.findOrderByAuthority.mockResolvedValue(order);
+    gateway.verifyPayment.mockResolvedValue({
+      success: true,
+      referenceId: 'REF-1',
+      message: 'ok',
+    });
+
+    const verified = await service.verifyPayment('auth-1');
+
+    expect(verified.status).toBe('paid');
+    expect(verified.gatewayReference).toBe('REF-1');
+    expect(verified.paidAt).not.toBeNull();
+    expect(repo.saveOrder).toHaveBeenCalled();
+  });
+
+  it('verifyPayment is idempotent for a paid order', async () => {
+    repo.findOrderByAuthority.mockResolvedValue(
+      makeOrder({ authority: 'auth-1', status: 'paid', paidAt: new Date() }),
+    );
+
+    const verified = await service.verifyPayment('auth-1');
+
+    expect(gateway.verifyPayment).not.toHaveBeenCalled();
+    expect(verified.status).toBe('paid');
+  });
+
+  it('verifyPayment throws when the gateway verification fails', async () => {
+    repo.findOrderByAuthority.mockResolvedValue(makeOrder({ authority: 'auth-1' }));
+    gateway.verifyPayment.mockResolvedValue({ success: false, referenceId: '', message: 'nok' });
+
+    await expect(service.verifyPayment('auth-1')).rejects.toThrow(/verification failed/);
   });
 });

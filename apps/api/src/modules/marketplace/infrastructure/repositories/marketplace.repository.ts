@@ -212,6 +212,15 @@ export class MarketplaceRepository implements IMarketplaceRepository {
     return this._orderToEntity(row as any);
   }
 
+  async findOrderByAuthority(authority: string): Promise<OrderEntity | null> {
+    const row = await prisma.orders.findFirst({
+      where: { authority },
+      include: { items: true },
+    });
+    if (!row) return null;
+    return this._orderToEntity(row as any);
+  }
+
   async searchOrders(params: OrderSearchParams): Promise<SearchResult<OrderEntity>> {
     const where: any = { workspace_id: params.workspaceId };
     if (params.status) where.status = params.status;
@@ -236,6 +245,10 @@ export class MarketplaceRepository implements IMarketplaceRepository {
       update: {
         status: entity.status,
         total_amount: entity.totalAmount,
+        authority: entity.authority,
+        gateway: entity.gateway,
+        gateway_reference: entity.gatewayReference,
+        paid_at: entity.paidAt,
         updated_at: entity.updatedAt,
       },
       create: {
@@ -245,6 +258,10 @@ export class MarketplaceRepository implements IMarketplaceRepository {
         status: entity.status,
         currency: entity.currency,
         total_amount: entity.totalAmount,
+        authority: entity.authority,
+        gateway: entity.gateway,
+        gateway_reference: entity.gatewayReference,
+        paid_at: entity.paidAt,
         created_at: entity.createdAt,
         updated_at: entity.updatedAt,
       },
@@ -551,6 +568,10 @@ export class MarketplaceRepository implements IMarketplaceRepository {
       items,
       createdAt: row.created_at,
       updatedAt: row.updated_at,
+      authority: row.authority ?? null,
+      gateway: row.gateway ?? null,
+      gatewayReference: row.gateway_reference ?? null,
+      paidAt: row.paid_at ?? null,
     });
   }
 }
