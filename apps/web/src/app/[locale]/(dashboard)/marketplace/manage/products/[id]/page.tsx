@@ -31,7 +31,7 @@ export default function ProductDetailPage() {
   return (
     <div>
       <Link
-        href={`/${locale}/marketplace`}
+        href={`/${locale}/marketplace/manage`}
         className="inline-flex items-center gap-1 text-sm text-[hsl(var(--primary))] hover:underline mb-6"
       >
         <ArrowLeft className="h-4 w-4" />

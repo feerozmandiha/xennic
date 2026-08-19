@@ -32,6 +32,60 @@ export interface SearchResult<T> {
   total: number;
 }
 
+// ── Public storefront (anonymous, read-only) ────────────────────────────
+
+export interface PublicProductSearchParams {
+  query?: string;
+  vendorId?: string;
+  type?: string;
+  category?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  locale?: string;
+  offset?: number;
+  limit?: number;
+}
+
+export interface PublicProductRecord {
+  id: string;
+  sku: string;
+  type: string;
+  category: string | null;
+  specifications: Record<string, any> | null;
+  price: number;
+  currency: string;
+  status: string;
+  vendorId: string;
+  vendorName: string;
+  vendorSlug: string;
+  title: string;
+  description: string | null;
+  locale: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface PublicVendorSearchParams {
+  query?: string;
+  offset?: number;
+  limit?: number;
+}
+
+export interface PublicVendorRecord {
+  id: string;
+  name: string;
+  slug: string;
+  status: string;
+  productCount: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface CategoryCount {
+  category: string;
+  count: number;
+}
+
 export interface IMarketplaceRepository {
   // Vendors
   findVendorById(id: string): Promise<VendorEntity | null>;
@@ -56,4 +110,13 @@ export interface IMarketplaceRepository {
   findOrderById(id: string): Promise<OrderEntity | null>;
   searchOrders(params: OrderSearchParams): Promise<SearchResult<OrderEntity>>;
   saveOrder(entity: OrderEntity): Promise<void>;
+
+  // Public storefront (anonymous, read-only)
+  searchPublicProducts(
+    params: PublicProductSearchParams,
+  ): Promise<SearchResult<PublicProductRecord>>;
+  findPublicProductById(id: string, locale: string): Promise<PublicProductRecord | null>;
+  searchPublicVendors(params: PublicVendorSearchParams): Promise<SearchResult<PublicVendorRecord>>;
+  findPublicVendorById(id: string): Promise<PublicVendorRecord | null>;
+  listCategories(): Promise<CategoryCount[]>;
 }

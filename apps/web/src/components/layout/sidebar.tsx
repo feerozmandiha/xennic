@@ -57,7 +57,7 @@ const NAV_ITEMS: readonly NavigationItem[] = [
     adminOnly: true,
     labelKey: 'knowledgeManage',
   },
-  { key: 'marketplace', icon: ShoppingCart, adminOnly: false },
+  { key: 'marketplace', route: 'marketplace/manage', icon: ShoppingCart, adminOnly: false },
   { key: 'consultations', icon: MessageSquare, adminOnly: false },
   { key: 'storage', icon: HardDrive, adminOnly: false },
   { key: 'notifications', icon: Bell, adminOnly: false },

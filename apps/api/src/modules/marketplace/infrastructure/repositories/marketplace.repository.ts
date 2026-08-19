@@ -7,6 +7,11 @@ import type {
   ProductSearchParams,
   OrderSearchParams,
   SearchResult,
+  PublicProductSearchParams,
+  PublicProductRecord,
+  PublicVendorSearchParams,
+  PublicVendorRecord,
+  CategoryCount,
 } from '../../domain/interfaces/marketplace.repository.interface.js';
 import { VendorEntity } from '../../domain/entities/vendor.entity.js';
 import { ProductEntity } from '../../domain/entities/product.entity.js';
@@ -309,7 +314,154 @@ export class MarketplaceRepository implements IMarketplaceRepository {
     }
   }
 
+  // ── Public storefront (anonymous, read-only) ──────────
+
+  async searchPublicProducts(
+    params: PublicProductSearchParams,
+  ): Promise<SearchResult<PublicProductRecord>> {
+    const where: any = { deleted_at: null, status: 'active' };
+    if (params.query) {
+      where.OR = [
+        { sku: { contains: params.query, mode: 'insensitive' } },
+        { category: { contains: params.query, mode: 'insensitive' } },
+        { translations: { some: { title: { contains: params.query, mode: 'insensitive' } } } },
+        {
+          translations: { some: { description: { contains: params.query, mode: 'insensitive' } } },
+        },
+      ];
+    }
+    if (params.vendorId) where.vendor_id = params.vendorId;
+    if (params.type) where.type = params.type;
+    if (params.category) where.category = params.category;
+    if (params.minPrice != null || params.maxPrice != null) {
+      where.price = {};
+      if (params.minPrice != null) where.price.gte = params.minPrice;
+      if (params.maxPrice != null) where.price.lte = params.maxPrice;
+    }
+
+    const [rows, total] = await Promise.all([
+      prisma.products.findMany({
+        where,
+        skip: params.offset ?? 0,
+        take: params.limit ?? 20,
+        orderBy: { created_at: 'desc' },
+        include: { translations: true, vendor: true },
+      }),
+      prisma.products.count({ where }),
+    ]);
+
+    return {
+      data: rows.map((r) => this._publicProductToRecord(r, params.locale ?? 'fa')),
+      total,
+    };
+  }
+
+  async findPublicProductById(id: string, locale: string): Promise<PublicProductRecord | null> {
+    const row = await prisma.products.findFirst({
+      where: { id, deleted_at: null, status: 'active' },
+      include: { translations: true, vendor: true },
+    });
+    return row ? this._publicProductToRecord(row, locale) : null;
+  }
+
+  async searchPublicVendors(
+    params: PublicVendorSearchParams,
+  ): Promise<SearchResult<PublicVendorRecord>> {
+    const where: any = { status: 'active' };
+    if (params.query) {
+      where.OR = [
+        { name: { contains: params.query, mode: 'insensitive' } },
+        { slug: { contains: params.query, mode: 'insensitive' } },
+      ];
+    }
+
+    const [rows, total] = await Promise.all([
+      prisma.vendors.findMany({
+        where,
+        skip: params.offset ?? 0,
+        take: params.limit ?? 20,
+        orderBy: { created_at: 'desc' },
+        include: {
+          _count: { select: { products: { where: { deleted_at: null, status: 'active' } } } },
+        },
+      }),
+      prisma.vendors.count({ where }),
+    ]);
+
+    return {
+      data: rows.map((r) => ({
+        id: r.id,
+        name: r.name,
+        slug: r.slug,
+        status: r.status,
+        productCount: r._count.products,
+        createdAt: r.created_at,
+        updatedAt: r.updated_at,
+      })),
+      total,
+    };
+  }
+
+  async findPublicVendorById(id: string): Promise<PublicVendorRecord | null> {
+    const row = await prisma.vendors.findFirst({
+      where: { id, status: 'active' },
+      include: {
+        _count: { select: { products: { where: { deleted_at: null, status: 'active' } } } },
+      },
+    });
+    if (!row) return null;
+    return {
+      id: row.id,
+      name: row.name,
+      slug: row.slug,
+      status: row.status,
+      productCount: row._count.products,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+    };
+  }
+
+  async listCategories(): Promise<CategoryCount[]> {
+    const grouped = await prisma.products.groupBy({
+      by: ['category'],
+      where: { deleted_at: null, status: 'active', category: { not: null } },
+      _count: { _all: true },
+      orderBy: { _count: { category: 'desc' } },
+    });
+    return grouped
+      .filter((g) => g.category)
+      .map((g) => ({ category: g.category as string, count: g._count._all }));
+  }
+
   // ── Mappers ─────────────────────────────────────
+
+  private _publicProductToRecord(row: any, locale: string): PublicProductRecord {
+    const translations: any[] = row.translations ?? [];
+    const find = (l: string) => translations.find((t) => t.locale === l);
+    const t = find(locale) ?? find('fa') ?? find('en') ?? translations[0];
+    return {
+      id: row.id,
+      sku: row.sku,
+      type: row.type,
+      category: row.category ?? null,
+      specifications: row.specifications
+        ? typeof row.specifications === 'string'
+          ? JSON.parse(row.specifications)
+          : row.specifications
+        : null,
+      price: Number(row.price),
+      currency: row.currency,
+      status: row.status,
+      vendorId: row.vendor_id,
+      vendorName: row.vendor?.name ?? '',
+      vendorSlug: row.vendor?.slug ?? '',
+      title: t?.title ?? row.sku,
+      description: t?.description ?? null,
+      locale: t?.locale ?? locale,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+    };
+  }
 
   private _vendorToEntity(row: any): VendorEntity {
     return VendorEntity.reconstitute({

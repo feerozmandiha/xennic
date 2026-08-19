@@ -74,7 +74,7 @@ export function OrderList() {
                     {o.status}
                   </Badge>
                   <a
-                    href={`/${locale}/marketplace/orders/${o.id}`}
+                    href={`/${locale}/marketplace/manage/orders/${o.id}`}
                     className="p-1.5 rounded-[var(--radius)] hover:bg-[hsl(var(--secondary))] text-[hsl(var(--muted-foreground))]"
                   >
                     <Eye className="h-3.5 w-3.5" />

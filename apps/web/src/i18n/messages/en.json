@@ -311,7 +311,14 @@
     "update": "Update",
     "cancel": "Cancel",
     "error": "Operation failed",
-    "selectVendorFirst": "Please select a vendor first"
+    "selectVendorFirst": "Please select a vendor first",
+    "storefrontDescription": "Electrical engineering equipment & products catalog — browse and view prices without signing in",
+    "all": "All",
+    "specifications": "Technical specifications",
+    "loginToBuy": "Sign in to purchase",
+    "registerNote": "Don't have an account?",
+    "register": "Register",
+    "store": "Store"
   },
   "errors": {
     "required": "This field is required",
