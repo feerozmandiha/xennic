@@ -36,8 +36,8 @@ export class GraphMetricsRepository implements IGraphMetricsRepository {
         freshness: data.freshness,
         authority: data.authority,
         completeness: data.completeness,
-        access_count: data.accessCount ?? 0,
-        last_accessed_at: data.lastAccessedAt ?? null,
+        ...(data.accessCount !== undefined && { access_count: data.accessCount }),
+        ...(data.lastAccessedAt !== undefined && { last_accessed_at: data.lastAccessedAt }),
         updated_at: new Date(),
       },
       create: {

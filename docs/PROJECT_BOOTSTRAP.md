@@ -60,7 +60,7 @@ To provide engineers and enterprises with an intelligent platform that orchestra
 
 ### Engineering Goals
 
-1. Event-driven microservices with guaranteed delivery (outbox pattern)
+1. Persistent event handoff through an outbox pattern, with runtime limitations documented in the Knowledge audit
 2. Domain-Driven Design across all modules
 3. Multi-tenant isolation at the database level
 4. Provider-neutral AI gateway (8 providers)
@@ -144,7 +144,7 @@ graph TB
     end
 
     subgraph "Integration Layer"
-        SEM[Semantic Integration<br/>Outbox + 12 Events]
+        SEM[Semantic Integration<br/>Outbox + 14 Events]
         EI[Enterprise Intelligence<br/>10 Sub-Modules]
         EO[Enterprise Orchestration<br/>9 Sub-Modules]
         EP[Enterprise Platform<br/>8 Backbone Modules]
@@ -230,7 +230,7 @@ graph TB
 | -------------------------- | ----------------------- | ----------------------------------------------------- |
 | Domain-Driven Design (DDD) | ✅ All modules          | domain/application/infrastructure/presentation layers |
 | CQRS                       | ✅ Enterprise Messaging | Command/Query bus separation                          |
-| Event-Driven               | ✅ Semantic Integration | 12 domain events, outbox pattern                      |
+| Event-Driven               | ✅ Semantic Integration | 14 domain-event contracts and an outbox relay         |
 | Outbox Pattern             | ✅ Implemented          | event_outbox table with 5s poll relay                 |
 | Saga Pattern               | ✅ Enterprise Saga      | Orchestrator + compensation                           |
 | Repository Pattern         | ✅ All modules          | Interface-based, tested                               |
@@ -440,10 +440,10 @@ graph TB
 | **Status**          | ✅ Complete (core CRUD + lifecycle)                                                                                                                                                                                                                                       |
 | **Dependencies**    | Workspace module, User module, Storage module                                                                                                                                                                                                                             |
 | **Owner**           | Knowledge Team                                                                                                                                                                                                                                                            |
-| **Public APIs**     | `CRUD /knowledge`, `GET/PUT /knowledge/:slug/publish`, `GET /knowledge/search`                                                                                                                                                                                            |
+| **Public APIs**     | `CRUD /knowledge`, lifecycle/workflow/rich-content routes, `GET /knowledge/search`, `GET /public/knowledge/:slug`                                                                                                                                                         |
 | **Internal APIs**   | `KnowledgeService`, `KnowledgeRepository`, `KnowledgeSearchService`                                                                                                                                                                                                       |
 | **Database tables** | `knowledge`, `knowledge_translations`, `knowledge_taxonomy`, `knowledge_media`, `knowledge_formulas`, `knowledge_examples`, `knowledge_standards`, `knowledge_versions`, `knowledge_comments`, `knowledge_workflows`, `knowledge_workflow_history`, `knowledge_analytics` |
-| **Events**          | None (planned: publish event)                                                                                                                                                                                                                                             |
+| **Events**          | Emits active `KnowledgeArticlePublished` and `KnowledgeArticleArchived` lifecycle events                                                                                                                                                                                  |
 | **Roadmap**         | AI-assisted article generation                                                                                                                                                                                                                                            |
 | **Known gaps**      | 12 knowledge tables but sparse usage                                                                                                                                                                                                                                      |
 
@@ -452,45 +452,45 @@ graph TB
 | Attribute           | Value                                                                                                                                                                 |
 | ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Purpose**         | Automated document ingestion pipeline (upload → classify → parse → chunk → embed → publish)                                                                           |
-| **Status**          | ✅ Complete (entities + repositories + services + controller)                                                                                                         |
-| **Dependencies**    | Workspace module, User module, AI Service, Vision Service                                                                                                             |
+| **Status**          | ⚠️ Dormant target architecture — module not imported; list/detail are stubbed; queue/worker activation blockers (see `docs/knowledge/knowledge-runtime-audit.md`)     |
+| **Dependencies**    | Intended: Workspace, User, AI, Vision, Redis/BullMQ; not active in the API runtime                                                                                    |
 | **Owner**           | Knowledge Team                                                                                                                                                        |
 | **Public APIs**     | `POST /knowledge-factory/documents/upload`, `GET /knowledge-factory/documents`, `GET /knowledge-factory/documents/:id`, `POST /knowledge-factory/documents/:id/retry` |
 | **Internal APIs**   | `IngestionService`, `ClassificationService`, `ChunkingService`, `PublishWorker`                                                                                       |
 | **Database tables** | `knowledge_documents`, `knowledge_document_chunks`, `knowledge_pipeline_runs`, `knowledge_extractions`                                                                |
-| **Events**          | Emits: DocumentUploaded, DocumentClassified, DocumentParsed, DocumentNormalized, DocumentChunked, EmbeddingsGenerated, DocumentPublished                              |
+| **Events**          | Event types/workers exist, but Factory is not an active runtime producer                                                                                              |
 | **Roadmap**         | OCR integration, table extraction, DWG support                                                                                                                        |
-| **Known gaps**      | Pipeline stages call ai-service/vision-service; no production hardening                                                                                               |
+| **Known gaps**      | Module dormant; stubbed document reads; inconsistent guards/permissions; incomplete analytics; unsafe queue/worker configuration                                      |
 
 #### Knowledge Intelligence
 
 | Attribute           | Value                                                                                                                                                                                                                                                                          |
 | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | **Purpose**         | Semantic reasoning layer — knowledge graph, metrics, citations, ontologies                                                                                                                                                                                                     |
-| **Status**          | ✅ Complete (entities + repositories + services + controller)                                                                                                                                                                                                                  |
-| **Dependencies**    | Workspace module, Knowledge module, Knowledge Factory                                                                                                                                                                                                                          |
+| **Status**          | ✅ Active — 28 guarded reasoning, metrics, citation, clustering, search, ontology, and taxonomy routes                                                                                                                                                                         |
+| **Dependencies**    | Workspace/RBAC and graph persistence; Knowledge Factory is not required for current HTTP operation                                                                                                                                                                             |
 | **Owner**           | Knowledge Team                                                                                                                                                                                                                                                                 |
-| **Public APIs**     | Graph CRUD, metrics, citations, similarity, clustering, ontologies                                                                                                                                                                                                             |
+| **Public APIs**     | Graph traversal/reasoning, metrics, citations, search, clustering/duplicates, ontologies, taxonomy (no generic graph CRUD controller)                                                                                                                                          |
 | **Internal APIs**   | `GraphNodeRepository`, `GraphEdgeRepository`, `GraphMetricsRepository`, `KnowledgeConfidenceService`, `KnowledgeFreshnessService`, `KnowledgeAuthorityService`, `KnowledgeCompletenessService`, `GraphTraversalService`, `ConflictDetectionService`, `OntologyRegistryService` |
 | **Database tables** | `knowledge_graph_nodes`, `knowledge_graph_edges`, `knowledge_graph_metrics`, `ontologies`, `ontology_classes`, `ontology_relations`, `knowledge_citations`, `document_similarities`, `knowledge_clusters`                                                                      |
-| **Events**          | Consumes: DocumentPublished → creates graph node + metrics. Emits: GraphNodeCreated, GraphEdgesCreated, OntologyUpdated, MetricsCalculated                                                                                                                                     |
+| **Events**          | Active CMS publish/archive handlers synchronize article graph projections; automatic Factory-originated creation remains unavailable                                                                                                                                           |
 | **Roadmap**         | Advanced reasoning, SPARQL-like query                                                                                                                                                                                                                                          |
-| **Known gaps**      | No vector store integration for hybrid search                                                                                                                                                                                                                                  |
+| **Known gaps**      | No vector store integration for hybrid search; shared `PermissionsGuard` fails open on unexpected authorization-service errors and must be hardened outside this Knowledge-only change                                                                                         |
 
 #### Semantic Integration
 
-| Attribute           | Value                                                                                                                    |
-| ------------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| **Purpose**         | Event-driven integration layer — outbox pattern, event bus, idempotent handlers                                          |
-| **Status**          | ✅ Complete                                                                                                              |
-| **Dependencies**    | All modules (via events)                                                                                                 |
-| **Owner**           | Architecture Team                                                                                                        |
-| **Public APIs**     | None (internal event infrastructure)                                                                                     |
-| **Internal APIs**   | `DomainEventPublisher`, `SemanticEventBus`, `OutboxRelayService`, `DocumentPublishedHandler`, `CacheInvalidationHandler` |
-| **Database tables** | `event_outbox`, `event_process_log`                                                                                      |
-| **Events**          | 12 domain events (see Section 11 — Event Topology)                                                                       |
-| **Roadmap**         | RabbitMQ adapter for distributed event bus                                                                               |
-| **Known gaps**      | In-memory event bus — not distributed; RabbitMQ adapter needed                                                           |
+| Attribute           | Value                                                                                                                                                         |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Purpose**         | Event-driven integration layer — persistent outbox, process-local event bus, and idempotency records                                                          |
+| **Status**          | ⚠️ Active with delivery limitations; see `docs/knowledge/semantic-integration-implementation.md`                                                              |
+| **Dependencies**    | Knowledge Intelligence and AI Runtime; globally exports the event publisher                                                                                   |
+| **Owner**           | Architecture Team                                                                                                                                             |
+| **Public APIs**     | None (internal event infrastructure)                                                                                                                          |
+| **Internal APIs**   | `DomainEventPublisher`, `SemanticEventBus`, `OutboxRelayService`, two Factory-document handlers, and two active CMS article handlers                          |
+| **Database tables** | `event_outbox`, `event_process_log`                                                                                                                           |
+| **Events**          | 14 contracts; CMS publish/archive are active, while Factory-originated contracts have no active Factory producer                                              |
+| **Roadmap**         | Atomic source/outbox transactions, propagated handler failures, safe relay claiming/backoff, dead-letter controls, and a distributed event bus                |
+| **Known gaps**      | Source/outbox writes are non-atomic; handler errors can be swallowed before relay delivery status; retries use fixed polling; subscriptions are process-local |
 
 #### Search
 
@@ -1369,81 +1369,73 @@ erDiagram
 
 ### Domain Events — Complete Registry
 
-12 immutable domain events with typed payloads, versioning, correlation/causation/tracing IDs:
+14 immutable domain-event contracts with typed payloads, versioning, and correlation/causation/tracing IDs:
 
-| #   | Event               | Source                 | Payload                                                | Version | Consumers                                          |
-| --- | ------------------- | ---------------------- | ------------------------------------------------------ | ------- | -------------------------------------------------- |
-| 1   | DocumentUploaded    | Knowledge Factory      | documentId, workspaceId, filename, mimeType, sizeBytes | 1       | (future)                                           |
-| 2   | DocumentClassified  | Knowledge Factory      | documentId, documentType, classification, confidence   | 1       | (future)                                           |
-| 3   | DocumentParsed      | Knowledge Factory      | documentId, textLength, pageCount, parsedAt            | 1       | (future)                                           |
-| 4   | DocumentNormalized  | Knowledge Factory      | documentId, normalizedLength, normalizationMethod      | 1       | (future)                                           |
-| 5   | DocumentChunked     | Knowledge Factory      | documentId, chunkCount, chunkStrategy                  | 1       | (future)                                           |
-| 6   | EmbeddingsGenerated | Knowledge Factory      | documentId, embeddingCount, embeddingModel, dimension  | 1       | (future)                                           |
-| 7   | DocumentPublished   | Knowledge Factory      | documentId, knowledgeId, publishedAt, workspaceId      | 1       | DocumentPublishedHandler, CacheInvalidationHandler |
-| 8   | GraphNodeCreated    | Semantic Integration   | nodeId, graphId, entityType, entityId, confidence      | 1       | (future)                                           |
-| 9   | GraphEdgesCreated   | Semantic Integration   | nodeId, edgeCount, edgeTypes                           | 1       | (future)                                           |
-| 10  | OntologyUpdated     | Knowledge Intelligence | ontologyId, ontologyName, version, changeType          | 1       | (future)                                           |
-| 11  | MetricsCalculated   | Semantic Integration   | nodeId, confidence, freshness, authority, completeness | 1       | (future)                                           |
-| 12  | SearchIndexUpdated  | Semantic Integration   | indexName, documentId, indexedAt                       | 1       | (future)                                           |
+| #   | Event                       | Source/runtime state            | Payload summary                                                                              | Version | Consumers                                              |
+| --- | --------------------------- | ------------------------------- | -------------------------------------------------------------------------------------------- | ------- | ------------------------------------------------------ |
+| 1   | `DocumentUploaded`          | Knowledge Factory, dormant      | document/workspace/file identity, type, size, creator                                        | 1       | None                                                   |
+| 2   | `DocumentClassified`        | Knowledge Factory, dormant      | document/workspace identity, classification                                                  | 1       | None                                                   |
+| 3   | `DocumentParsed`            | Knowledge Factory, dormant      | document/workspace identity                                                                  | 1       | None                                                   |
+| 4   | `DocumentNormalized`        | Knowledge Factory, dormant      | document/workspace identity                                                                  | 1       | None                                                   |
+| 5   | `DocumentChunked`           | Knowledge Factory, dormant      | document/workspace identity, chunk count                                                     | 1       | None                                                   |
+| 6   | `EmbeddingsGenerated`       | Knowledge Factory, dormant      | document/workspace identity, embedding count                                                 | 1       | None                                                   |
+| 7   | `DocumentPublished`         | Knowledge Factory, dormant      | document/workspace/knowledge identity and publication metadata                               | 1       | `DocumentPublishedHandler`, `CacheInvalidationHandler` |
+| 8   | `KnowledgeArticlePublished` | Knowledge CMS, active           | article/workspace identity, slug, title, locale, visibility, version, author, content traits | 1       | `KnowledgeArticlePublishedHandler`                     |
+| 9   | `KnowledgeArticleArchived`  | Knowledge CMS, active           | article/workspace identity, archive timestamp                                                | 1       | `KnowledgeArticleArchivedHandler`                      |
+| 10  | `GraphNodeCreated`          | Semantic Integration follow-up  | node/workspace/entity identity, type, label                                                  | 1       | None                                                   |
+| 11  | `GraphEdgesCreated`         | Semantic Integration follow-up  | node/workspace identity, edge count and IDs                                                  | 1       | None                                                   |
+| 12  | `OntologyUpdated`           | Knowledge Intelligence contract | ontology/workspace identity and action                                                       | 1       | None                                                   |
+| 13  | `MetricsCalculated`         | Semantic Integration follow-up  | node/workspace identity and four metrics/composite                                           | 1       | None                                                   |
+| 14  | `SearchIndexUpdated`        | Semantic Integration contract   | entity/workspace identity                                                                    | 1       | None                                                   |
 
 ### Event Flow
 
 ```mermaid
 flowchart LR
-    subgraph KF["Knowledge Factory"]
-        U[Document Uploaded]
-        C[Document Classified]
-        P[Document Parsed]
-        N[Document Normalized]
-        H[Document Chunked]
-        E[Embeddings Generated]
+    subgraph CMS["Knowledge CMS — active"]
+        AP[Article Published]
+        AA[Article Archived]
+    end
+
+    subgraph KF["Knowledge Factory — dormant"]
         PB[Document Published]
     end
 
     subgraph SI["Semantic Integration"]
-        OB[Event Outbox]
-        BUS[Semantic Event Bus]
-        DPH[DocumentPublished Handler]
+        OB[(Event Outbox)]
+        BUS[Process-local Event Bus]
+        APH[Article Published Handler]
+        AAH[Article Archived Handler]
+        DPH[Document Published Handler]
         CIH[Cache Invalidation Handler]
     end
 
     subgraph KI["Knowledge Intelligence"]
-        GN[Graph Node Created]
-        GE[Graph Edges Created]
-        MC[Metrics Calculated]
+        GN[Article Graph Projection]
+        MC[Graph Metrics]
     end
 
-    subgraph AIR["AI Runtime"]
-        CACHE[In-Memory Caches]
-    end
-
-    U --> OB
-    C --> OB
-    P --> OB
-    N --> OB
-    H --> OB
-    E --> OB
-    PB --> OB
-
-    OB -->|poll 5s| BUS
+    AP --> OB
+    AA --> OB
+    PB -. no active producer .-> OB
+    OB -->|poll every 5s| BUS
+    BUS --> APH
+    BUS --> AAH
     BUS --> DPH
     BUS --> CIH
-
-    DPH --> GN
-    DPH --> MC
-    DPH -->|creates node| KI
-    CIH -->|clears| CACHE
-
-    GN -.->|subsequent events| OB
-    MC -.->|subsequent events| OB
+    APH -->|create/update| GN
+    APH -->|calculate/save| MC
+    AAH -->|remove| GN
 ```
+
+The CMS article path is active. The Factory path is source-level architecture only while `KnowledgeFactoryModule` remains unregistered. For delivery limitations and detailed sequences, see `docs/knowledge/event-topology.md`.
 
 ### Event Schema
 
 ```typescript
 interface DomainEvent<T> {
   eventId: string; // UUID v4
-  eventType: EventType; // Enum: DocumentUploaded..SearchIndexUpdated
+  eventType: EventType; // 14 versioned event contracts
   eventVersion: number; // Schema version (starts at 1)
   correlationId: string; // Links all events from same document
   causationId: string; // Links to the causing event
@@ -1459,22 +1451,9 @@ interface DomainEvent<T> {
 }
 ```
 
-### Event Chaining
+### Event correlation
 
-```
-DocumentUploaded (correlationId: A)
-  └─ causationId: A
-  └─ tracingId: T
-
-DocumentPublished (correlationId: A, causationId: prev-event-id)
-  └─ tracingId: T
-
-GraphNodeCreated (correlationId: A, causationId: doc-published-event-id)
-  └─ tracingId: T
-
-MetricsCalculated (correlationId: A, causationId: doc-published-event-id)
-  └─ tracingId: T
-```
+Active CMS lifecycle events are root events: the event factory generates their correlation, causation, and tracing identifiers. The dormant `DocumentPublishedHandler` supplies the parent event ID as the causation input for `GraphNodeCreated` and `MetricsCalculated`; with the current factory this also becomes each follow-up event's `correlationId`. The implementation therefore does not preserve one original correlation ID across the full intended Factory chain.
 
 ### Outbox Table Schema
 
@@ -1502,13 +1481,15 @@ CREATE TABLE event_outbox (
 
 ### Idempotency
 
-Events are processed exactly-once via `event_process_log` table with unique constraint on `(event_id, handler_name)`.
+Completed handlers consult `event_process_log` before repeating work for the same event ID and handler name. This supports idempotent handling but is not a strict exactly-once guarantee.
 
 ### Retry Strategy
 
-- 3 max retries with exponential backoff
-- Status: `pending` → `processing` → `completed` / `failed`
-- After max retries: moves to `dead_letter` status
+- The outbox stores a maximum of 3 attempts and moves exhausted rows to `dead_letter`.
+- Relay-level failures return a row to `pending`; retries happen on the fixed five-second poll, not exponential backoff.
+- Repository types allow `pending`, `delivered`, `failed`, and `dead_letter`; the relay normally transitions `pending` to `delivered`, back to `pending`, or to `dead_letter` (it has no `processing` state).
+- `SemanticEventBus` catches handler errors, so a handler failure currently does not reach the relay retry branch and the row can still be marked `delivered`.
+- Source mutations and outbox inserts are separate operations rather than one atomic transaction.
 
 ### Future: Enterprise Event Streaming
 
@@ -1644,22 +1625,24 @@ graph TB
 
 ### AI Runtime
 
-| Component                    | Description                              | Status |
-| ---------------------------- | ---------------------------------------- | ------ |
-| **DomainEventPublisher**     | Publishes domain events to outbox        | ✅     |
-| **MemoryAbstractionService** | In-memory store for AI Runtime           | ✅     |
-| **PromptRegistryService**    | In-memory prompt template store          | ✅     |
-| **CacheInvalidationHandler** | Clears caches on DocumentPublished event | ✅     |
+| Component                            | Description                                       | Status              |
+| ------------------------------------ | ------------------------------------------------- | ------------------- |
+| **DomainEventPublisher**             | Publishes domain events to outbox                 | ✅                  |
+| **MemoryAbstractionService**         | In-memory store for AI Runtime                    | ✅                  |
+| **PromptRegistryService**            | In-memory prompt template store                   | ✅                  |
+| **CacheInvalidationHandler**         | Clears caches on dormant `DocumentPublished` flow | ⚠️ Producer dormant |
+| **KnowledgeArticlePublishedHandler** | Upserts CMS article graph projection + metrics    | ✅                  |
+| **KnowledgeArticleArchivedHandler**  | Removes archived CMS article graph projection     | ✅                  |
 
 ### Knowledge Factory
 
-| Component                 | Description                   | Status |
-| ------------------------- | ----------------------------- | ------ |
-| **Ingestion Workflow**    | Document intake pipeline      | ✅     |
-| **Classification Engine** | Document type classification  | ✅     |
-| **Chunking Engine**       | Document chunking strategies  | ✅     |
-| **Publishing Service**    | Publish to knowledge store    | ✅     |
-| **PublishWorker**         | Emits DocumentPublished event | ✅     |
+| Component                 | Description                     | Status     |
+| ------------------------- | ------------------------------- | ---------- |
+| **Ingestion Workflow**    | Target document intake pipeline | ⚠️ Dormant |
+| **Classification Engine** | Document type classification    | ⚠️ Dormant |
+| **Chunking Engine**       | Document chunking strategies    | ⚠️ Dormant |
+| **Publishing Service**    | Publish to knowledge store      | ⚠️ Dormant |
+| **PublishWorker**         | Intended event producer         | ⚠️ Dormant |
 
 ### Knowledge Intelligence
 

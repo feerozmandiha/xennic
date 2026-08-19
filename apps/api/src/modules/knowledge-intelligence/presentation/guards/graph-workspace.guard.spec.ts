@@ -60,4 +60,17 @@ describe('GraphWorkspaceGuard', () => {
     ).rejects.toBeInstanceOf(BadRequestException);
     expect(repository.findById).not.toHaveBeenCalled();
   });
+
+  it('rejects oversized graph-node identifiers before repository access', async () => {
+    await expect(
+      guard.canActivate(
+        contextFor({
+          workspaceId: 'workspace-1',
+          params: { nodeId: 'n'.repeat(129) },
+          query: {},
+        }),
+      ),
+    ).rejects.toBeInstanceOf(BadRequestException);
+    expect(repository.findById).not.toHaveBeenCalled();
+  });
 });

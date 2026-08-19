@@ -90,7 +90,11 @@ describe('Knowledge article semantic event handlers', () => {
 
       await createHandler().handle(event);
 
-      expect(nodeRepository.findByEntity).toHaveBeenCalledWith('knowledge', ARTICLE_ID);
+      expect(nodeRepository.findByEntity).toHaveBeenCalledWith(
+        'knowledge',
+        ARTICLE_ID,
+        WORKSPACE_ID,
+      );
       expect(nodeRepository.create).toHaveBeenCalledWith(
         expect.objectContaining({
           workspaceId: WORKSPACE_ID,
@@ -155,7 +159,11 @@ describe('Knowledge article semantic event handlers', () => {
 
       await createHandler().handle(event);
 
-      expect(nodeRepository.deleteByEntity).toHaveBeenCalledWith('knowledge', ARTICLE_ID);
+      expect(nodeRepository.deleteByEntity).toHaveBeenCalledWith(
+        'knowledge',
+        ARTICLE_ID,
+        WORKSPACE_ID,
+      );
       expect(processLogRepository.log).toHaveBeenCalledWith(
         expect.objectContaining({
           eventId: event.eventId,

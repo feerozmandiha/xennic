@@ -36,6 +36,7 @@ import { useToast } from '@/stores/toast.store';
 import { apiClient } from '@/lib/api/client';
 import { cn } from '@/lib/utils';
 import { KnowledgeRenderer } from './knowledge-editor';
+import { KnowledgeRichContentManager } from './knowledge-rich-content-manager';
 
 const STATUS_VARIANT: Record<string, 'success' | 'secondary' | 'warning' | 'destructive'> = {
   published: 'success',
@@ -328,7 +329,7 @@ export function KnowledgeDetailClient({ articleId }: Props) {
         action={
           <div className="flex items-center gap-2 flex-wrap">
             <a
-              href={`/${locale}/knowledge/${articleId}/edit`}
+              href={`/${locale}/knowledge-manage/${articleId}/edit`}
               className="inline-flex items-center gap-1.5 h-9 px-3 rounded-[var(--radius)] border border-[hsl(var(--border))] text-sm hover:bg-[hsl(var(--secondary))] transition-colors"
             >
               <Edit3 className="h-3.5 w-3.5" />
@@ -394,6 +395,10 @@ export function KnowledgeDetailClient({ articleId }: Props) {
           </div>
         }
       />
+
+      <div className="mb-6">
+        <KnowledgeRichContentManager articleId={articleId} />
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
@@ -1107,7 +1112,7 @@ export function KnowledgeDetailClient({ articleId }: Props) {
             </CardHeader>
             <CardContent className="space-y-2">
               <a
-                href={`/${locale}/knowledge/${articleId}/edit`}
+                href={`/${locale}/knowledge-manage/${articleId}/edit`}
                 className="flex items-center gap-2 px-3 py-2 rounded-[var(--radius)] text-sm hover:bg-[hsl(var(--secondary))] transition-colors"
               >
                 <Edit3 className="h-4 w-4 text-[hsl(var(--primary))]" />

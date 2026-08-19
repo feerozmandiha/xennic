@@ -58,7 +58,11 @@ export class KnowledgeArticlePublishedHandler implements IEventHandler {
         contentProperties: data.contentProperties,
       };
 
-      const existing = await this.graphNodeRepository.findByEntity('knowledge', data.articleId);
+      const existing = await this.graphNodeRepository.findByEntity(
+        'knowledge',
+        data.articleId,
+        data.workspaceId,
+      );
       if (existing && existing.workspaceId !== data.workspaceId) {
         throw new Error('Existing knowledge graph node belongs to another workspace');
       }

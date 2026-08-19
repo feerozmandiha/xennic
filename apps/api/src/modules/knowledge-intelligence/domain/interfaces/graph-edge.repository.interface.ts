@@ -3,8 +3,16 @@ import type { KnowledgeGraphEdge } from '../../domain/entities/graph-edge.entity
 export interface IGraphEdgeRepository {
   findById(id: string): Promise<KnowledgeGraphEdge | null>;
   findByNodes(sourceId: string, targetId: string, type: string): Promise<KnowledgeGraphEdge | null>;
-  findAllBySource(sourceId: string, type?: string): Promise<KnowledgeGraphEdge[]>;
-  findAllByTarget(targetId: string, type?: string): Promise<KnowledgeGraphEdge[]>;
+  findAllBySource(
+    sourceId: string,
+    type?: string,
+    workspaceId?: string,
+  ): Promise<KnowledgeGraphEdge[]>;
+  findAllByTarget(
+    targetId: string,
+    type?: string,
+    workspaceId?: string,
+  ): Promise<KnowledgeGraphEdge[]>;
   findAllByWorkspace(workspaceId: string, type?: string): Promise<KnowledgeGraphEdge[]>;
   create(edge: {
     workspaceId: string;

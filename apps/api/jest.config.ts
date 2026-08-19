@@ -14,6 +14,10 @@ const config: Config = {
   setupFiles: ['<rootDir>/../test/setup-env.ts'],
   moduleNameMapper: {
     '^(\\.{1,2}/.*)\\.js$': '$1',
+    // Map @xennic/database to its TS sources so Jest doesn't try to parse
+    // the built ESM in packages/database/dist (which uses `export *`).
+    '^@xennic/database$': '<rootDir>/../../../packages/database/src/index.ts',
+    '^@xennic/database/(.*)$': '<rootDir>/../../../packages/database/src/$1',
   },
 };
 

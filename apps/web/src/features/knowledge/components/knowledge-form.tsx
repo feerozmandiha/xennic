@@ -46,7 +46,7 @@ export function NewKnowledgeDialog({ open, onClose }: Props) {
       queryClient.invalidateQueries({ queryKey: ['knowledge', wsId] });
       toast.success('مقاله ایجاد شد');
       handleClose();
-      router.push(`/${locale}/knowledge/${res.data.id}/edit`);
+      router.push(`/${locale}/knowledge-manage/${res.data.id}/edit`);
     },
     onError: (err: any) => {
       setError(err?.message ?? 'خطا در ایجاد مقاله');

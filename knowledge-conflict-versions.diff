@@ -1,0 +1,1416 @@
+]633;E;IFS= read -r file;cdbc8b7a-a112-4129-bdbe-d08e70bc8b28]633;C
+
+===== apps/api/src/modules/knowledge-intelligence/knowledge-intelligence.module.ts =====
+--- dev/apps/api/src/modules/knowledge-intelligence/knowledge-intelligence.module.ts
++++ knowledge-patch/apps/api/src/modules/knowledge-intelligence/knowledge-intelligence.module.ts
+@@ -37,10 +37,9 @@
+ 
+ import { WorkspaceModule } from '../workspace/workspace.module.js';
+ import { RbacModule } from '../rbac/rbac.module.js';
+-import { KnowledgeModule } from '../knowledge/knowledge.module.js';
+ 
+ @Module({
+-  imports: [WorkspaceModule, RbacModule, KnowledgeModule],
++  imports: [WorkspaceModule, RbacModule],
+   controllers: [
+     GraphController,
+     OntologyController,
+
+
+===== apps/api/src/modules/knowledge-intelligence/presentation/controllers/citations.controller.ts =====
+--- dev/apps/api/src/modules/knowledge-intelligence/presentation/controllers/citations.controller.ts
++++ knowledge-patch/apps/api/src/modules/knowledge-intelligence/presentation/controllers/citations.controller.ts
+@@ -25,16 +25,21 @@
+   ) {
+     const graph = await this.citationExpansionService.getCitationGraph(
+       req.workspaceId,
+-      sourceId,
+-      targetId,
++      sourceId?.trim() || undefined,
++      targetId?.trim() || undefined,
+     );
+     return { success: true, data: graph };
+   }
+ 
+   @Get('citations/expand/:nodeId')
+   @ApiOperation({ summary: 'Expand citations from a node' })
+-  async expandCitations(@Param('nodeId') nodeId: string, @Query('maxDepth') maxDepth?: string) {
++  async expandCitations(
++    @Request() req: any,
++    @Param('nodeId') nodeId: string,
++    @Query('maxDepth') maxDepth?: string,
++  ) {
+     const expanded = await this.citationExpansionService.expand(
++      req.workspaceId,
+       nodeId,
+       boundedInteger(maxDepth, 3, 1, 10),
+     );
+
+
+===== apps/api/src/modules/knowledge-intelligence/presentation/controllers/clusters.controller.ts =====
+--- dev/apps/api/src/modules/knowledge-intelligence/presentation/controllers/clusters.controller.ts
++++ knowledge-patch/apps/api/src/modules/knowledge-intelligence/presentation/controllers/clusters.controller.ts
+@@ -5,6 +5,7 @@
+ import { PermissionsGuard } from '../../../rbac/infrastructure/guards/permissions.guard.js';
+ import { WorkspaceGuard } from '../../../rbac/infrastructure/guards/workspace.guard.js';
+ import { GraphWorkspaceGuard } from '../guards/graph-workspace.guard.js';
++import { boundedNumber } from '../query-parameters.js';
+ import { KnowledgeClusteringService } from '../../application/services/knowledge-clustering.service.js';
+ import { DuplicateDetectionService } from '../../application/services/duplicate-detection.service.js';
+ 
+@@ -22,8 +23,11 @@
+   @Post('clusters/compute')
+   @RequirePermissions('knowledge.update')
+   @ApiOperation({ summary: 'Auto-compute knowledge clusters' })
+-  async computeClusters(@Request() req: any, @Query('threshold') threshold = 0.6) {
+-    const clusters = await this.clusteringService.computeClusters(req.workspaceId, threshold);
++  async computeClusters(@Request() req: any, @Query('threshold') threshold?: string) {
++    const clusters = await this.clusteringService.computeClusters(
++      req.workspaceId,
++      boundedNumber(threshold, 0.6, 0, 1),
++    );
+     return { success: true, data: clusters };
+   }
+ 
+
+
+===== apps/api/src/modules/knowledge-intelligence/presentation/controllers/graph-search.controller.ts =====
+--- dev/apps/api/src/modules/knowledge-intelligence/presentation/controllers/graph-search.controller.ts
++++ knowledge-patch/apps/api/src/modules/knowledge-intelligence/presentation/controllers/graph-search.controller.ts
+@@ -5,6 +5,7 @@
+ import { PermissionsGuard } from '../../../rbac/infrastructure/guards/permissions.guard.js';
+ import { WorkspaceGuard } from '../../../rbac/infrastructure/guards/workspace.guard.js';
+ import { GraphWorkspaceGuard } from '../guards/graph-workspace.guard.js';
++import { GraphSearchQueryDto } from '../dtos/graph-query.dto.js';
+ import { boundedInteger } from '../query-parameters.js';
+ import { GraphSearchService } from '../../application/services/graph-search.service.js';
+ 
+@@ -18,8 +19,11 @@
+ 
+   @Get('search/graph')
+   @ApiOperation({ summary: 'Semantic search over the knowledge graph' })
+-  async searchGraph(@Request() req: any, @Query('query') query: string) {
+-    const results = await this.graphSearchService.semanticSearch(req.workspaceId, query);
++  async searchGraph(@Request() req: any, @Query() query: GraphSearchQueryDto) {
++    const results = await this.graphSearchService.semanticSearch(
++      req.workspaceId,
++      query.query.trim(),
++    );
+     return { success: true, data: results };
+   }
+ 
+
+
+===== apps/api/src/modules/knowledge-intelligence/presentation/controllers/graph.controller.ts =====
+--- dev/apps/api/src/modules/knowledge-intelligence/presentation/controllers/graph.controller.ts
++++ knowledge-patch/apps/api/src/modules/knowledge-intelligence/presentation/controllers/graph.controller.ts
+@@ -5,6 +5,7 @@
+ import { PermissionsGuard } from '../../../rbac/infrastructure/guards/permissions.guard.js';
+ import { WorkspaceGuard } from '../../../rbac/infrastructure/guards/workspace.guard.js';
+ import { GraphWorkspaceGuard } from '../guards/graph-workspace.guard.js';
++import { NeighborQueryDto, SubgraphQueryDto } from '../dtos/graph-query.dto.js';
+ import { boundedInteger } from '../query-parameters.js';
+ import { GraphTraversalService } from '../../application/services/graph-traversal.service.js';
+ import { KnowledgeProvenanceService } from '../../application/services/knowledge-provenance.service.js';
+@@ -42,20 +43,22 @@
+ 
+   @Get('graph/neighbors/:nodeId')
+   @ApiOperation({ summary: 'Get neighbors of a graph node' })
+-  async neighbors(
+-    @Request() req: any,
+-    @Param('nodeId') nodeId: string,
+-    @Query('direction') direction: 'in' | 'out' | 'both' = 'both',
+-    @Query('edgeType') edgeType?: string,
+-  ) {
+-    const neighbors = await this.traversalService.getNeighbors(nodeId, direction, edgeType);
++  async neighbors(@Param('nodeId') nodeId: string, @Query() query: NeighborQueryDto) {
++    const neighbors = await this.traversalService.getNeighbors(
++      nodeId,
++      query.direction ?? 'both',
++      query.edgeType?.trim(),
++    );
+     return { success: true, data: neighbors };
+   }
+ 
+   @Get('graph/subgraph')
+   @ApiOperation({ summary: 'Get subgraph for a set of node IDs' })
+-  async subgraph(@Query('nodeIds') nodeIds: string) {
+-    const ids = nodeIds.split(',').filter(Boolean);
++  async subgraph(@Query() query: SubgraphQueryDto) {
++    const ids = query.nodeIds
++      .split(',')
++      .map((id) => id.trim())
++      .filter(Boolean);
+     const subgraph = await this.traversalService.getSubgraph(ids);
+     return { success: true, data: subgraph };
+   }
+
+
+===== apps/api/src/modules/knowledge-intelligence/presentation/controllers/metrics.controller.ts =====
+--- dev/apps/api/src/modules/knowledge-intelligence/presentation/controllers/metrics.controller.ts
++++ knowledge-patch/apps/api/src/modules/knowledge-intelligence/presentation/controllers/metrics.controller.ts
+@@ -73,9 +73,9 @@
+   }
+ 
+   @Get('metrics/workspace/freshness')
+-  @ApiOperation({ summary: 'Refresh freshness scores for stale nodes' })
+-  async refreshFreshness(@Request() req: any, @Query('thresholdDays') thresholdDays?: string) {
+-    const stale = await this.freshnessService.refreshStaleNodes(
++  @ApiOperation({ summary: 'Analyze workspace knowledge freshness' })
++  async analyzeFreshness(@Request() req: any, @Query('thresholdDays') thresholdDays?: string) {
++    const stale = await this.freshnessService.analyzeWorkspaceFreshness(
+       req.workspaceId,
+       boundedInteger(thresholdDays, 30, 1, 3650),
+     );
+
+
+===== apps/api/src/modules/knowledge-intelligence/presentation/controllers/ontology.controller.ts =====
+--- dev/apps/api/src/modules/knowledge-intelligence/presentation/controllers/ontology.controller.ts
++++ knowledge-patch/apps/api/src/modules/knowledge-intelligence/presentation/controllers/ontology.controller.ts
+@@ -5,6 +5,7 @@
+ import { PermissionsGuard } from '../../../rbac/infrastructure/guards/permissions.guard.js';
+ import { WorkspaceGuard } from '../../../rbac/infrastructure/guards/workspace.guard.js';
+ import { GraphWorkspaceGuard } from '../guards/graph-workspace.guard.js';
++import { ClassifyGraphNodeDto, RegisterOntologyDto } from '../dtos/ontology.dto.js';
+ import { OntologyRegistryService } from '../../application/services/ontology-registry.service.js';
+ import { DomainTaxonomyService } from '../../application/services/domain-taxonomy.service.js';
+ 
+@@ -29,16 +30,13 @@
+   @Post('ontologies')
+   @RequirePermissions('knowledge.update')
+   @ApiOperation({ summary: 'Register a new ontology' })
+-  async registerOntology(
+-    @Request() req: any,
+-    @Body() body: { name: string; slug: string; version: string; description?: string },
+-  ) {
++  async registerOntology(@Request() req: any, @Body() body: RegisterOntologyDto) {
+     const ontology = await this.ontologyService.registerOntology({
+       workspaceId: req.workspaceId,
+-      name: body.name,
+-      slug: body.slug,
+-      version: body.version,
+-      description: body.description,
++      name: body.name.trim(),
++      slug: body.slug.trim(),
++      version: body.version.trim(),
++      description: body.description?.trim() || undefined,
+     });
+     return { success: true, data: ontology };
+   }
+@@ -60,8 +58,8 @@
+   @Post('taxonomy/classify/:nodeId')
+   @RequirePermissions('knowledge.update')
+   @ApiOperation({ summary: 'Classify a graph node into an ontology class' })
+-  async classifyNode(@Param('nodeId') nodeId: string, @Body() body: { classUri: string }) {
+-    const result = await this.taxonomyService.classifyNode(nodeId, body.classUri);
++  async classifyNode(@Param('nodeId') nodeId: string, @Body() body: ClassifyGraphNodeDto) {
++    const result = await this.taxonomyService.classifyNode(nodeId, body.classUri.trim());
+     return { success: true, data: result };
+   }
+ }
+
+
+===== apps/api/src/modules/knowledge-intelligence/presentation/guards/graph-workspace.guard.spec.ts =====
+--- dev/apps/api/src/modules/knowledge-intelligence/presentation/guards/graph-workspace.guard.spec.ts
++++ knowledge-patch/apps/api/src/modules/knowledge-intelligence/presentation/guards/graph-workspace.guard.spec.ts
+@@ -60,4 +60,17 @@
+     ).rejects.toBeInstanceOf(BadRequestException);
+     expect(repository.findById).not.toHaveBeenCalled();
+   });
++
++  it('rejects oversized graph-node identifiers before repository access', async () => {
++    await expect(
++      guard.canActivate(
++        contextFor({
++          workspaceId: 'workspace-1',
++          params: { nodeId: 'n'.repeat(129) },
++          query: {},
++        }),
++      ),
++    ).rejects.toBeInstanceOf(BadRequestException);
++    expect(repository.findById).not.toHaveBeenCalled();
++  });
+ });
+
+
+===== apps/api/src/modules/knowledge-intelligence/presentation/guards/graph-workspace.guard.ts =====
+--- dev/apps/api/src/modules/knowledge-intelligence/presentation/guards/graph-workspace.guard.ts
++++ knowledge-patch/apps/api/src/modules/knowledge-intelligence/presentation/guards/graph-workspace.guard.ts
+@@ -32,7 +32,11 @@
+     ]) {
+       if (typeof value !== 'string') continue;
+       for (const id of value.split(',')) {
+-        if (id.trim()) identifiers.add(id.trim());
++        const normalizedId = id.trim();
++        if (normalizedId.length > 128) {
++          throw new BadRequestException('Graph node identifiers must not exceed 128 characters');
++        }
++        if (normalizedId) identifiers.add(normalizedId);
+       }
+     }
+ 
+
+
+===== apps/api/src/modules/knowledge-intelligence/presentation/query-parameters.ts =====
+--- dev/apps/api/src/modules/knowledge-intelligence/presentation/query-parameters.ts
++++ knowledge-patch/apps/api/src/modules/knowledge-intelligence/presentation/query-parameters.ts
+@@ -1,4 +1,4 @@
+-export function boundedInteger(
++export function boundedNumber(
+   value: unknown,
+   fallback: number,
+   minimum: number,
+@@ -6,5 +6,14 @@
+ ): number {
+   const parsed = Number(value);
+   if (!Number.isFinite(parsed)) return fallback;
+-  return Math.max(minimum, Math.min(Math.trunc(parsed), maximum));
++  return Math.max(minimum, Math.min(parsed, maximum));
++}
++
++export function boundedInteger(
++  value: unknown,
++  fallback: number,
++  minimum: number,
++  maximum: number,
++): number {
++  return Math.trunc(boundedNumber(value, fallback, minimum, maximum));
+ }
+
+
+===== apps/api/src/modules/semantic-integration/application/event-handlers/knowledge-article-archived.handler.ts =====
+--- dev/apps/api/src/modules/semantic-integration/application/event-handlers/knowledge-article-archived.handler.ts
++++ knowledge-patch/apps/api/src/modules/semantic-integration/application/event-handlers/knowledge-article-archived.handler.ts
+@@ -35,13 +35,21 @@
+         throw new Error('Knowledge article event workspace does not match its metadata');
+       }
+ 
+-      const existing = await this.graphNodeRepository.findByEntity('knowledge', data.articleId);
++      const existing = await this.graphNodeRepository.findByEntity(
++        'knowledge',
++        data.articleId,
++        data.workspaceId,
++      );
+       if (existing && existing.workspaceId !== data.workspaceId) {
+         throw new Error('Existing knowledge graph node belongs to another workspace');
+       }
+ 
+       if (existing) {
+-        await this.graphNodeRepository.deleteByEntity('knowledge', data.articleId);
++        await this.graphNodeRepository.deleteByEntity(
++          'knowledge',
++          data.articleId,
++          data.workspaceId,
++        );
+       }
+ 
+       await this.processLogRepository.log({
+
+
+===== apps/api/src/modules/semantic-integration/application/event-handlers/knowledge-article-handlers.spec.ts =====
+--- dev/apps/api/src/modules/semantic-integration/application/event-handlers/knowledge-article-handlers.spec.ts
++++ knowledge-patch/apps/api/src/modules/semantic-integration/application/event-handlers/knowledge-article-handlers.spec.ts
+@@ -90,7 +90,11 @@
+ 
+       await createHandler().handle(event);
+ 
+-      expect(nodeRepository.findByEntity).toHaveBeenCalledWith('knowledge', ARTICLE_ID);
++      expect(nodeRepository.findByEntity).toHaveBeenCalledWith(
++        'knowledge',
++        ARTICLE_ID,
++        WORKSPACE_ID,
++      );
+       expect(nodeRepository.create).toHaveBeenCalledWith(
+         expect.objectContaining({
+           workspaceId: WORKSPACE_ID,
+@@ -155,7 +159,11 @@
+ 
+       await createHandler().handle(event);
+ 
+-      expect(nodeRepository.deleteByEntity).toHaveBeenCalledWith('knowledge', ARTICLE_ID);
++      expect(nodeRepository.deleteByEntity).toHaveBeenCalledWith(
++        'knowledge',
++        ARTICLE_ID,
++        WORKSPACE_ID,
++      );
+       expect(processLogRepository.log).toHaveBeenCalledWith(
+         expect.objectContaining({
+           eventId: event.eventId,
+
+
+===== apps/api/src/modules/semantic-integration/application/event-handlers/knowledge-article-published.handler.ts =====
+--- dev/apps/api/src/modules/semantic-integration/application/event-handlers/knowledge-article-published.handler.ts
++++ knowledge-patch/apps/api/src/modules/semantic-integration/application/event-handlers/knowledge-article-published.handler.ts
+@@ -58,7 +58,11 @@
+         contentProperties: data.contentProperties,
+       };
+ 
+-      const existing = await this.graphNodeRepository.findByEntity('knowledge', data.articleId);
++      const existing = await this.graphNodeRepository.findByEntity(
++        'knowledge',
++        data.articleId,
++        data.workspaceId,
++      );
+       if (existing && existing.workspaceId !== data.workspaceId) {
+         throw new Error('Existing knowledge graph node belongs to another workspace');
+       }
+
+
+===== apps/web/src/features/knowledge/admin/knowledge-admin-console.tsx =====
+--- dev/apps/web/src/features/knowledge/admin/knowledge-admin-console.tsx
++++ knowledge-patch/apps/web/src/features/knowledge/admin/knowledge-admin-console.tsx
+@@ -1,89 +1,163 @@
+ 'use client';
+ 
+ import { useState } from 'react';
+-import { BookOpen, BrainCircuit } from 'lucide-react';
+-import { cn } from '@/lib/utils';
++import {
++  Activity,
++  BookOpen,
++  Boxes,
++  BrainCircuit,
++  FileText,
++  FolderTree,
++  Network,
++  ShieldCheck,
++  Sparkles,
++} from 'lucide-react';
++import { Badge } from '@/components/ui/badge';
+ import { KnowledgeClient } from '../components/knowledge-client';
+ import { KnowledgeIntelligenceDashboard } from './knowledge-intelligence-dashboard';
+-
+-type AdminTab = 'articles' | 'intelligence';
+-
+-const TABS: Array<{
+-  id: AdminTab;
+-  label: string;
++import { KnowledgeGraphExplorer } from './knowledge-graph-explorer';
++import { KnowledgeClusterWorkbench } from './knowledge-cluster-workbench';
++import { KnowledgeOntologyWorkspace } from './knowledge-ontology-workspace';
++
++type KnowledgeArea = 'articles' | 'quality' | 'graph' | 'clusters' | 'ontology';
++
++const areas: Array<{
++  id: KnowledgeArea;
++  title: string;
++  shortTitle: string;
+   description: string;
+   icon: typeof BookOpen;
+ }> = [
+   {
+     id: 'articles',
+-    label: 'مقالات',
+-    description: 'تولید و مدیریت محتوای دانشنامه',
+-    icon: BookOpen,
++    title: 'محتوا و چرخه انتشار',
++    shortTitle: 'محتوا',
++    description: 'مقاله‌ها، بازبینی، نسخه‌ها، طبقه‌بندی و استانداردها',
++    icon: FileText,
++  },
++  {
++    id: 'quality',
++    title: 'کیفیت و سنجه‌ها',
++    shortTitle: 'کیفیت',
++    description: 'کامل‌بودن، تازگی، اعتماد، اعتبار و پیوستگی',
++    icon: Activity,
++  },
++  {
++    id: 'graph',
++    title: 'کاوشگر گراف',
++    shortTitle: 'گراف',
++    description: 'جست‌وجو، مسیرها، منشأ، ارجاع‌ها، وابستگی و تعارض',
++    icon: Network,
++  },
++  {
++    id: 'clusters',
++    title: 'خوشه‌ها و تکرار',
++    shortTitle: 'خوشه‌ها',
++    description: 'گروه‌بندی معنایی و تحلیل محتوای تکراری',
++    icon: Boxes,
+   },
+   {
+-    id: 'intelligence',
+-    label: 'هوش دانش',
+-    description: 'کیفیت، ارتباطات و سلامت گراف دانش',
+-    icon: BrainCircuit,
++    id: 'ontology',
++    title: 'هستی‌شناسی و دامنه',
++    shortTitle: 'هستی‌شناسی',
++    description: 'دفتر مدل‌های مفهومی، سلسله‌مراتب و طبقه‌بندی گره',
++    icon: FolderTree,
+   },
+ ];
+ 
+ export function KnowledgeAdminConsole() {
+-  const [activeTab, setActiveTab] = useState<AdminTab>('articles');
++  const [activeArea, setActiveArea] = useState<KnowledgeArea>('articles');
++  const currentArea = areas.find((area) => area.id === activeArea) ?? areas[0];
++  const CurrentAreaIcon = currentArea.icon;
+ 
+   return (
+-    <div>
+-      <div
+-        role="tablist"
+-        aria-label="بخش‌های مدیریت دانشنامه"
+-        className="mb-6 grid w-full max-w-2xl grid-cols-2 gap-1 rounded-[var(--radius-lg)] border border-[hsl(var(--border))] bg-[hsl(var(--secondary)/0.5)] p-1"
+-      >
+-        {TABS.map((tab) => {
+-          const Icon = tab.icon;
+-          const selected = activeTab === tab.id;
+-          return (
+-            <button
+-              key={tab.id}
+-              type="button"
+-              role="tab"
+-              aria-selected={selected}
+-              aria-controls={`knowledge-${tab.id}-panel`}
+-              onClick={() => setActiveTab(tab.id)}
+-              className={cn(
+-                'flex min-w-0 items-center gap-3 rounded-[var(--radius)] px-3 py-2.5 text-start transition-all',
+-                selected
+-                  ? 'bg-[hsl(var(--card))] text-[hsl(var(--foreground))] shadow-[var(--shadow-xs)]'
+-                  : 'text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]',
+-              )}
+-            >
+-              <span
+-                className={cn(
+-                  'flex h-9 w-9 shrink-0 items-center justify-center rounded-[var(--radius)]',
+-                  selected
+-                    ? 'bg-[hsl(var(--primary)/0.1)] text-[hsl(var(--primary))]'
+-                    : 'bg-[hsl(var(--muted)/0.6)]',
+-                )}
+-              >
+-                <Icon className="h-4 w-4" />
++    <div className="min-h-screen bg-muted/20" dir="rtl">
++      <div className="border-b bg-background">
++        <div className="container mx-auto max-w-[1600px] px-4 py-6 lg:px-6">
++          <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
++            <div className="flex items-start gap-4">
++              <span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-blue-600 to-violet-600 text-white shadow-lg shadow-blue-600/15">
++                <BrainCircuit className="size-6" />
+               </span>
+-              <span className="min-w-0">
+-                <span className="block text-sm font-semibold">{tab.label}</span>
+-                <span className="hidden truncate text-[11px] text-[hsl(var(--muted-foreground))] sm:block">
+-                  {tab.description}
+-                </span>
++              <div>
++                <div className="flex flex-wrap items-center gap-2">
++                  <h1 className="text-2xl font-black tracking-tight sm:text-3xl">مرکز دانش</h1>
++                  <Badge variant="secondary" className="gap-1.5">
++                    <span className="size-1.5 rounded-full bg-emerald-500" />
++                    فضای کاری ایزوله
++                  </Badge>
++                </div>
++                <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground sm:text-base">
++                  محیط یکپارچه مدیریت محتوا و هوشمندی معنایی؛ از نگارش و انتشار تا ردیابی منشأ، سنجش
++                  کیفیت و سازمان‌دهی دانش دامنه.
++                </p>
++              </div>
++            </div>
++            <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
++              <span className="flex items-center gap-1.5 rounded-full border bg-background px-3 py-1.5">
++                <ShieldCheck className="size-3.5 text-emerald-600" />
++                دسترسی مبتنی بر مجوز
+               </span>
+-            </button>
+-          );
+-        })}
++              <span className="flex items-center gap-1.5 rounded-full border bg-background px-3 py-1.5">
++                <Sparkles className="size-3.5 text-violet-600" />
++                تحلیل معنایی فعال
++              </span>
++            </div>
++          </div>
++        </div>
++      </div>
++
++      <div className="sticky top-0 z-20 border-b bg-background/95 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-background/80">
++        <nav
++          className="container mx-auto flex max-w-[1600px] gap-1 overflow-x-auto px-4 py-2 lg:px-6"
++          aria-label="بخش‌های مرکز دانش"
++        >
++          {areas.map((area) => {
++            const Icon = area.icon;
++            const active = area.id === activeArea;
++            return (
++              <button
++                key={area.id}
++                type="button"
++                onClick={() => setActiveArea(area.id)}
++                className={`group min-w-max rounded-xl px-3 py-2.5 text-start transition sm:px-4 ${
++                  active
++                    ? 'bg-primary text-primary-foreground shadow-sm'
++                    : 'text-muted-foreground hover:bg-muted hover:text-foreground'
++                }`}
++                aria-current={active ? 'page' : undefined}
++              >
++                <span className="flex items-center gap-2 text-sm font-semibold">
++                  <Icon className="size-4" />
++                  <span className="sm:hidden">{area.shortTitle}</span>
++                  <span className="hidden sm:inline">{area.title}</span>
++                </span>
++                <span
++                  className={`mt-1 hidden text-[11px] lg:block ${active ? 'text-primary-foreground/75' : 'text-muted-foreground'}`}
++                >
++                  {area.description}
++                </span>
++              </button>
++            );
++          })}
++        </nav>
+       </div>
+ 
+-      <section
+-        id={`knowledge-${activeTab}-panel`}
+-        role="tabpanel"
+-        aria-label={TABS.find((tab) => tab.id === activeTab)?.label}
+-      >
+-        {activeTab === 'articles' ? <KnowledgeClient /> : <KnowledgeIntelligenceDashboard />}
+-      </section>
++      <main className="container mx-auto max-w-[1600px] px-4 py-5 lg:px-6 lg:py-7">
++        <div className="mb-5 flex items-center gap-3 lg:hidden">
++          <CurrentAreaIcon className="size-5 text-primary" />
++          <div>
++            <h2 className="font-bold">{currentArea.title}</h2>
++            <p className="text-xs text-muted-foreground">{currentArea.description}</p>
++          </div>
++        </div>
++
++        {activeArea === 'articles' ? <KnowledgeClient /> : null}
++        {activeArea === 'quality' ? <KnowledgeIntelligenceDashboard /> : null}
++        {activeArea === 'graph' ? <KnowledgeGraphExplorer /> : null}
++        {activeArea === 'clusters' ? <KnowledgeClusterWorkbench /> : null}
++        {activeArea === 'ontology' ? <KnowledgeOntologyWorkspace /> : null}
++      </main>
+     </div>
+   );
+ }
+
+
+===== apps/web/src/features/knowledge/admin/knowledge-intelligence-dashboard.tsx =====
+--- dev/apps/web/src/features/knowledge/admin/knowledge-intelligence-dashboard.tsx
++++ knowledge-patch/apps/web/src/features/knowledge/admin/knowledge-intelligence-dashboard.tsx
+@@ -1,439 +1,424 @@
+ 'use client';
+ 
+-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
++import { useCallback, useEffect, useMemo, useState } from 'react';
+ import {
+   Activity,
+-  BrainCircuit,
++  Award,
++  BarChart3,
+   CheckCircle2,
+-  GitBranch,
++  Clock3,
+   Network,
+   RefreshCw,
++  ShieldCheck,
+   Sparkles,
+-  TimerReset,
+-  TriangleAlert,
+ } from 'lucide-react';
++import {
++  Bar,
++  BarChart,
++  CartesianGrid,
++  Cell,
++  ResponsiveContainer,
++  Tooltip,
++  XAxis,
++  YAxis,
++} from 'recharts';
++import { knowledgeApi } from './knowledge-api';
+ import { Badge } from '@/components/ui/badge';
+ import { Button } from '@/components/ui/button';
+ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+-import { PageHeader } from '@/components/ui/page-header';
+-import { Skeleton } from '@/components/ui/skeleton';
+-import { apiClient } from '@/lib/api/client';
+-import { cn } from '@/lib/utils';
+-import { useAuthStore } from '@/stores/auth.store';
+-import { useToast } from '@/stores/toast.store';
+-
+-interface CompletenessAnalysis {
+-  average: number;
+-  nodes: number;
+-  completeNodes: number;
+-  incompleteNodes: number;
+-}
+-
+-interface FreshnessResult {
+-  nodeId: string;
+-  stale: boolean;
+-  daysSinceUpdate: number;
+-}
+-
+-interface RankedNode {
+-  nodeId: string;
+-  label: string | null;
+-  score: number;
+-}
+-
+-interface KnowledgeCluster {
+-  id: string;
+-  name: string;
+-  description: string | null;
+-  nodeIds: string[];
+-  properties: Record<string, unknown>;
+-}
+-
+-interface IntelligenceOverview {
+-  completeness: CompletenessAnalysis;
+-  freshness: FreshnessResult[];
+-  confidence: RankedNode[];
+-  clusters: KnowledgeCluster[];
+-  components: string[][];
+-}
+-
+-type ApiResponse<T> = { success: true; data: T };
+-
+-const EMPTY_COMPLETENESS: CompletenessAnalysis = {
+-  average: 0,
+-  nodes: 0,
+-  completeNodes: 0,
+-  incompleteNodes: 0,
+-};
+-
+-function percent(value: number): string {
+-  return `${Math.round(Math.max(0, Math.min(1, value)) * 100).toLocaleString('fa-IR')}٪`;
+-}
+-
+-function shortId(id: string): string {
+-  return `${id.slice(0, 8)}…`;
+-}
+-
+-function StatCard({
+-  title,
+-  value,
+-  hint,
+-  icon: Icon,
+-  tone = 'primary',
+-}: {
+-  title: string;
+-  value: string;
+-  hint: string;
+-  icon: typeof Activity;
+-  tone?: 'primary' | 'success' | 'warning';
+-}) {
+-  const toneClass = {
+-    primary: 'bg-[hsl(var(--primary)/0.1)] text-[hsl(var(--primary))]',
+-    success: 'bg-[hsl(var(--success)/0.1)] text-[hsl(var(--success))]',
+-    warning: 'bg-[hsl(var(--warning)/0.1)] text-[hsl(var(--warning))]',
+-  }[tone];
+-
+-  return (
+-    <Card>
+-      <CardContent className="flex items-start justify-between gap-3 p-4">
+-        <div className="min-w-0">
+-          <p className="text-xs text-[hsl(var(--muted-foreground))]">{title}</p>
+-          <p className="mt-2 text-2xl font-bold tabular-nums">{value}</p>
+-          <p className="mt-1 truncate text-[11px] text-[hsl(var(--muted-foreground))]">{hint}</p>
+-        </div>
+-        <span
+-          className={cn(
+-            'flex h-10 w-10 shrink-0 items-center justify-center rounded-full',
+-            toneClass,
+-          )}
+-        >
+-          <Icon className="h-5 w-5" />
+-        </span>
+-      </CardContent>
+-    </Card>
+-  );
+-}
+-
+-function DashboardSkeleton() {
+-  return (
+-    <div className="space-y-5">
+-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+-        {Array.from({ length: 4 }).map((_, index) => (
+-          <Skeleton key={index} className="h-28" />
+-        ))}
+-      </div>
+-      <div className="grid gap-4 lg:grid-cols-2">
+-        <Skeleton className="h-72" />
+-        <Skeleton className="h-72" />
+-      </div>
+-    </div>
+-  );
++import { KnowledgeQueryState, InlineError } from './knowledge-query-state';
++import type {
++  CompletenessAnalysis,
++  ConfidenceRecomputeResult,
++  ConnectedComponentsResult,
++  FreshnessResult,
++  RankedNode,
++  WorkspaceMetric,
++} from './knowledge-intelligence.types';
++
++const metricOptions: Array<{ value: WorkspaceMetric; label: string }> = [
++  { value: 'confidence', label: 'اعتماد' },
++  { value: 'freshness', label: 'تازگی' },
++  { value: 'authority', label: 'اعتبار' },
++  { value: 'completeness', label: 'کامل‌بودن' },
++];
++
++const chartColors = ['#10b981', '#3b82f6', '#8b5cf6', '#f59e0b'];
++
++function toPercent(value: number | null | undefined) {
++  if (value == null || Number.isNaN(value)) return '—';
++  const normalized = value <= 1 ? value * 100 : value;
++  return `${Math.round(normalized)}٪`;
+ }
+ 
+ export function KnowledgeIntelligenceDashboard() {
+-  const workspaceId = useAuthStore((state) => state.workspaceId);
+-  const queryClient = useQueryClient();
+-  const toast = useToast();
+-
+-  const overviewQuery = useQuery({
+-    queryKey: ['knowledge-intelligence', 'overview', workspaceId],
+-    queryFn: async (): Promise<IntelligenceOverview> => {
+-      const [completeness, freshness, confidence, clusters, components] = await Promise.all([
+-        apiClient.get<ApiResponse<CompletenessAnalysis>>(
++  const [completeness, setCompleteness] = useState<CompletenessAnalysis | null>(null);
++  const [freshness, setFreshness] = useState<FreshnessResult[]>([]);
++  const [components, setComponents] = useState<ConnectedComponentsResult | null>(null);
++  const [ranking, setRanking] = useState<RankedNode[]>([]);
++  const [metric, setMetric] = useState<WorkspaceMetric>('confidence');
++  const [loading, setLoading] = useState(true);
++  const [error, setError] = useState<string | null>(null);
++  const [actionError, setActionError] = useState<string | null>(null);
++  const [recomputing, setRecomputing] = useState(false);
++  const [refreshingFreshness, setRefreshingFreshness] = useState(false);
++  const [lastComputed, setLastComputed] = useState<number | null>(null);
++
++  const loadOverview = useCallback(async () => {
++    setLoading(true);
++    setError(null);
++    try {
++      const [completenessData, freshnessData, componentsData, rankingData] = await Promise.all([
++        knowledgeApi.get<CompletenessAnalysis>(
+           '/knowledge-intelligence/metrics/workspace/completeness',
+         ),
+-        apiClient.get<ApiResponse<FreshnessResult[]>>(
++        knowledgeApi.get<FreshnessResult[]>(
+           '/knowledge-intelligence/metrics/workspace/freshness?thresholdDays=30',
+         ),
+-        apiClient.get<ApiResponse<RankedNode[]>>(
+-          '/knowledge-intelligence/metrics/workspace/top/confidence?limit=8',
+-        ),
+-        apiClient.get<ApiResponse<KnowledgeCluster[]>>('/knowledge-intelligence/clusters'),
+-        apiClient.get<ApiResponse<{ components: string[][]; count: number }>>(
++        knowledgeApi.get<ConnectedComponentsResult>(
+           '/knowledge-intelligence/graph/connected-components',
+         ),
++        knowledgeApi.get<RankedNode[]>(
++          `/knowledge-intelligence/metrics/workspace/top/${metric}?limit=10`,
++        ),
+       ]);
+-
+-      return {
+-        completeness: completeness.data ?? EMPTY_COMPLETENESS,
+-        freshness: freshness.data ?? [],
+-        confidence: confidence.data ?? [],
+-        clusters: clusters.data ?? [],
+-        components: components.data?.components ?? [],
+-      };
+-    },
+-    enabled: Boolean(workspaceId),
+-    retry: false,
+-    staleTime: 60_000,
+-  });
+-
+-  const recomputeMutation = useMutation({
+-    mutationFn: () =>
+-      apiClient.post('/knowledge-intelligence/metrics/workspace/confidence/recompute'),
+-    onSuccess: async () => {
+-      await queryClient.invalidateQueries({ queryKey: ['knowledge-intelligence'] });
+-      toast.success('امتیازهای اطمینان دوباره محاسبه شد');
+-    },
+-    onError: () => toast.error('محاسبه دوباره امتیازها انجام نشد'),
+-  });
+-
+-  const clusterMutation = useMutation({
+-    mutationFn: () => apiClient.post('/knowledge-intelligence/clusters/compute?threshold=0.6'),
+-    onSuccess: async () => {
+-      await queryClient.invalidateQueries({ queryKey: ['knowledge-intelligence'] });
+-      toast.success('خوشه‌های دانش به‌روزرسانی شد');
+-    },
+-    onError: () => toast.error('به‌روزرسانی خوشه‌های دانش انجام نشد'),
+-  });
+-
+-  const data = overviewQuery.data;
+-  const staleNodes = data?.freshness.filter((item) => item.stale) ?? [];
+-  const averageConfidence = data?.confidence.length
+-    ? data.confidence.reduce((sum, item) => sum + item.score, 0) / data.confidence.length
+-    : 0;
++      setCompleteness(completenessData);
++      setFreshness(freshnessData);
++      setComponents(componentsData);
++      setRanking(rankingData);
++    } catch (requestError) {
++      setError(
++        requestError instanceof Error ? requestError.message : 'دریافت نمای کیفیت ناموفق بود.',
++      );
++    } finally {
++      setLoading(false);
++    }
++  }, [metric]);
++
++  useEffect(() => {
++    void loadOverview();
++  }, [loadOverview]);
++
++  const distribution = useMemo(() => {
++    if (!completeness) return [];
++    return [
++      { label: 'کامل', value: completeness.completeNodes },
++      { label: 'نیازمند تکمیل', value: completeness.incompleteNodes },
++    ];
++  }, [completeness]);
++
++  const staleNodes = useMemo(() => freshness.filter((item) => item.stale), [freshness]);
++
++  const handleRecompute = async () => {
++    setRecomputing(true);
++    setActionError(null);
++    try {
++      const result = await knowledgeApi.post<ConfidenceRecomputeResult>(
++        '/knowledge-intelligence/metrics/workspace/confidence/recompute',
++        {},
++      );
++      setLastComputed(result.computed);
++      await loadOverview();
++    } catch (requestError) {
++      setActionError(
++        requestError instanceof Error ? requestError.message : 'محاسبه دوباره اعتماد ناموفق بود.',
++      );
++    } finally {
++      setRecomputing(false);
++    }
++  };
++
++  const handleFreshnessRefresh = async () => {
++    setRefreshingFreshness(true);
++    setActionError(null);
++    try {
++      const result = await knowledgeApi.get<FreshnessResult[]>(
++        '/knowledge-intelligence/metrics/workspace/freshness?thresholdDays=30',
++      );
++      setFreshness(result);
++    } catch (requestError) {
++      setActionError(
++        requestError instanceof Error ? requestError.message : 'به‌روزرسانی تازگی ناموفق بود.',
++      );
++    } finally {
++      setRefreshingFreshness(false);
++    }
++  };
++
++  if (loading && !completeness) {
++    return <KnowledgeQueryState kind="loading" />;
++  }
++
++  if (error && !completeness) {
++    return (
++      <KnowledgeQueryState kind="error" description={error} onRetry={() => void loadOverview()} />
++    );
++  }
+ 
+   return (
+-    <div>
+-      <PageHeader
+-        title="هوش دانش"
+-        description="نمای زنده‌ای از کیفیت، تازگی و ساختار معنایی دانشنامه"
+-        badge={<Badge variant="outline">گراف دانش</Badge>}
+-        action={
+-          <div className="flex flex-wrap gap-2">
+-            <Button
+-              type="button"
+-              variant="outline"
+-              size="sm"
+-              loading={overviewQuery.isFetching}
+-              disabled={!workspaceId}
+-              onClick={() => overviewQuery.refetch()}
+-            >
+-              <RefreshCw />
+-              تازه‌سازی
+-            </Button>
+-            <Button
+-              type="button"
+-              variant="outline"
+-              size="sm"
+-              loading={recomputeMutation.isPending}
+-              disabled={!workspaceId}
+-              onClick={() => recomputeMutation.mutate()}
+-            >
+-              <Sparkles />
+-              محاسبه اطمینان
+-            </Button>
+-            <Button
+-              type="button"
+-              size="sm"
+-              loading={clusterMutation.isPending}
+-              disabled={!workspaceId}
+-              onClick={() => clusterMutation.mutate()}
+-            >
+-              <GitBranch />
+-              خوشه‌بندی
+-            </Button>
++    <div className="space-y-5">
++      <section className="flex flex-col gap-3 rounded-2xl border bg-card p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
++        <div>
++          <div className="flex items-center gap-2">
++            <span className="grid size-9 place-items-center rounded-xl bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">
++              <Activity className="size-5" />
++            </span>
++            <div>
++              <h2 className="font-bold">مرکز کیفیت دانش</h2>
++              <p className="text-sm text-muted-foreground">
++                پایش کامل‌بودن، تازگی، اعتماد و پیوستگی گراف فضای کاری
++              </p>
++            </div>
+           </div>
+-        }
+-      />
++        </div>
++        <div className="flex flex-wrap gap-2">
++          <Button
++            variant="outline"
++            size="sm"
++            className="gap-2"
++            disabled={refreshingFreshness}
++            onClick={() => void handleFreshnessRefresh()}
++          >
++            <Clock3 className={refreshingFreshness ? 'size-4 animate-spin' : 'size-4'} />
++            محاسبه تازگی
++          </Button>
++          <Button
++            size="sm"
++            className="gap-2"
++            disabled={recomputing}
++            onClick={() => void handleRecompute()}
++          >
++            <RefreshCw className={recomputing ? 'size-4 animate-spin' : 'size-4'} />
++            باز‌محاسبه اعتماد
++          </Button>
++        </div>
++      </section>
++
++      {actionError ? <InlineError message={actionError} /> : null}
++      {lastComputed != null ? (
++        <div className="flex items-center gap-2 rounded-xl border border-emerald-500/25 bg-emerald-500/5 px-3 py-2 text-sm text-emerald-700 dark:text-emerald-300">
++          <CheckCircle2 className="size-4" />
++          امتیاز اعتماد {lastComputed.toLocaleString('fa-IR')} گره دوباره محاسبه شد.
++        </div>
++      ) : null}
+ 
+-      {!workspaceId ? (
+-        <Card className="border-dashed">
+-          <CardContent className="flex min-h-48 flex-col items-center justify-center text-center">
+-            <Network className="mb-3 h-8 w-8 text-[hsl(var(--muted-foreground))]" />
+-            <p className="font-medium">ابتدا یک فضای کاری انتخاب کنید</p>
+-            <p className="mt-1 text-sm text-[hsl(var(--muted-foreground))]">
+-              داده‌های هوش دانش برای فضای کاری فعال نمایش داده می‌شوند.
+-            </p>
++      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
++        <MetricCard
++          icon={BarChart3}
++          label="میانگین کامل‌بودن"
++          value={toPercent(completeness?.average)}
++          detail={`${(completeness?.completeNodes ?? 0).toLocaleString('fa-IR')} گره کامل`}
++          tone="emerald"
++        />
++        <MetricCard
++          icon={Clock3}
++          label="گره‌های نیازمند تازگی"
++          value={staleNodes.length.toLocaleString('fa-IR')}
++          detail="آستانه ۳۰ روز"
++          tone="amber"
++        />
++        <MetricCard
++          icon={Network}
++          label="اجزای متصل گراف"
++          value={(components?.count ?? 0).toLocaleString('fa-IR')}
++          detail={`${components?.components.reduce((sum, group) => sum + group.length, 0).toLocaleString('fa-IR') ?? '۰'} گره`}
++          tone="blue"
++        />
++        <MetricCard
++          icon={ShieldCheck}
++          label="پوشش سنجه‌ها"
++          value={(completeness?.nodes ?? 0).toLocaleString('fa-IR')}
++          detail="کل گره‌های تحلیل‌شده"
++          tone="violet"
++        />
++      </div>
++
++      <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(360px,0.8fr)]">
++        <Card>
++          <CardHeader className="pb-3">
++            <CardTitle className="flex items-center gap-2 text-base">
++              <BarChart3 className="size-5 text-emerald-600" />
++              توزیع کامل‌بودن محتوا
++            </CardTitle>
++            <CardDescription>تعداد گره‌ها در چهار سطح کیفیت محتوایی</CardDescription>
++          </CardHeader>
++          <CardContent>
++            {distribution.every((item) => item.value === 0) ? (
++              <KnowledgeQueryState
++                kind="empty"
++                compact
++                title="هنوز سنجه‌ای محاسبه نشده"
++                description="پس از انتشار اسناد و ایجاد گره‌های گراف، توزیع کیفیت در این بخش دیده می‌شود."
++              />
++            ) : (
++              <div className="h-72 w-full" dir="ltr">
++                <ResponsiveContainer width="100%" height="100%">
++                  <BarChart data={distribution} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
++                    <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.25} />
++                    <XAxis dataKey="label" tickLine={false} axisLine={false} />
++                    <YAxis allowDecimals={false} tickLine={false} axisLine={false} width={34} />
++                    <Tooltip
++                      cursor={{ fill: 'hsl(var(--muted) / 0.45)' }}
++                      contentStyle={{
++                        borderRadius: 12,
++                        borderColor: 'hsl(var(--border))',
++                        background: 'hsl(var(--background))',
++                      }}
++                    />
++                    <Bar dataKey="value" radius={[8, 8, 2, 2]}>
++                      {distribution.map((entry, index) => (
++                        <Cell key={entry.label} fill={chartColors[index]} />
++                      ))}
++                    </Bar>
++                  </BarChart>
++                </ResponsiveContainer>
++              </div>
++            )}
+           </CardContent>
+         </Card>
+-      ) : overviewQuery.isLoading ? (
+-        <DashboardSkeleton />
+-      ) : overviewQuery.isError ? (
+-        <Card className="border-[hsl(var(--destructive)/0.35)]">
+-          <CardContent className="flex min-h-48 flex-col items-center justify-center text-center">
+-            <TriangleAlert className="mb-3 h-8 w-8 text-[hsl(var(--destructive))]" />
+-            <p className="font-medium">دریافت داده‌های هوش دانش انجام نشد</p>
+-            <p className="mt-1 max-w-md text-sm text-[hsl(var(--muted-foreground))]">
+-              دسترسی خود به مدیریت دانشنامه و اتصال سرویس را بررسی کنید.
+-            </p>
+-            <Button
+-              className="mt-4"
+-              variant="outline"
+-              size="sm"
+-              onClick={() => overviewQuery.refetch()}
+-            >
+-              تلاش دوباره
+-            </Button>
++
++        <Card>
++          <CardHeader className="pb-3">
++            <div className="flex flex-wrap items-start justify-between gap-3">
++              <div>
++                <CardTitle className="flex items-center gap-2 text-base">
++                  <Award className="size-5 text-violet-600" />
++                  برترین گره‌ها
++                </CardTitle>
++                <CardDescription>رتبه‌بندی عملیاتی بر اساس سنجه انتخاب‌شده</CardDescription>
++              </div>
++              <select
++                value={metric}
++                onChange={(event) => setMetric(event.target.value as WorkspaceMetric)}
++                className="h-9 rounded-lg border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring"
++                aria-label="انتخاب سنجه رتبه‌بندی"
++              >
++                {metricOptions.map((option) => (
++                  <option key={option.value} value={option.value}>
++                    {option.label}
++                  </option>
++                ))}
++              </select>
++            </div>
++          </CardHeader>
++          <CardContent>
++            {ranking.length === 0 ? (
++              <KnowledgeQueryState
++                kind="empty"
++                compact
++                title="رتبه‌بندی خالی است"
++                description="برای این سنجه هنوز امتیازی در فضای کاری ثبت نشده است."
++              />
++            ) : (
++              <div className="space-y-2">
++                {ranking.map((node, index) => (
++                  <div
++                    key={node.nodeId}
++                    className="flex items-center gap-3 rounded-xl border bg-muted/15 p-3"
++                  >
++                    <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-background text-sm font-bold shadow-sm ring-1 ring-border">
++                      {(index + 1).toLocaleString('fa-IR')}
++                    </span>
++                    <div className="min-w-0 flex-1">
++                      <p className="truncate text-sm font-medium">{node.label || node.nodeId}</p>
++                      <p className="truncate font-mono text-[11px] text-muted-foreground" dir="ltr">
++                        {node.nodeId}
++                      </p>
++                    </div>
++                    <Badge variant="secondary">{toPercent(node.score)}</Badge>
++                  </div>
++                ))}
++              </div>
++            )}
+           </CardContent>
+         </Card>
+-      ) : (
+-        <div className="space-y-5">
+-          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+-            <StatCard
+-              title="گره‌های دانش"
+-              value={(data?.completeness.nodes ?? 0).toLocaleString('fa-IR')}
+-              hint="گره‌های ثبت‌شده در فضای کاری"
+-              icon={BrainCircuit}
+-            />
+-            <StatCard
+-              title="کامل بودن"
+-              value={percent(data?.completeness.average ?? 0)}
+-              hint={`${(data?.completeness.completeNodes ?? 0).toLocaleString('fa-IR')} گره کامل`}
+-              icon={CheckCircle2}
+-              tone="success"
+-            />
+-            <StatCard
+-              title="میانگین اطمینان"
+-              value={percent(averageConfidence)}
+-              hint="بر پایه برترین گره‌های رتبه‌بندی‌شده"
+-              icon={Activity}
+-            />
+-            <StatCard
+-              title="نیازمند بازبینی"
+-              value={staleNodes.length.toLocaleString('fa-IR')}
+-              hint="گره بدون به‌روزرسانی در ۳۰ روز"
+-              icon={TimerReset}
+-              tone={staleNodes.length ? 'warning' : 'success'}
+-            />
+-          </div>
++      </div>
+ 
+-          <div className="grid gap-4 lg:grid-cols-2">
+-            <Card>
+-              <CardHeader>
+-                <div className="flex items-center justify-between gap-3">
+-                  <div>
+-                    <CardTitle>رتبه‌بندی اطمینان</CardTitle>
+-                    <CardDescription>دانش‌های دارای بالاترین امتیاز اعتبار ساختاری</CardDescription>
++      <Card>
++        <CardHeader className="pb-3">
++          <CardTitle className="flex items-center gap-2 text-base">
++            <Network className="size-5 text-blue-600" />
++            اجزای متصل فضای کاری
++          </CardTitle>
++          <CardDescription>
++            گروه‌های جدا از هم در گراف؛ اجزای کوچک می‌توانند نشان‌دهنده محتوای منزوی باشند.
++          </CardDescription>
++        </CardHeader>
++        <CardContent>
++          {!components || components.components.length === 0 ? (
++            <KnowledgeQueryState kind="empty" compact title="گراف متصلی ثبت نشده است" />
++          ) : (
++            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
++              {components.components.slice(0, 12).map((group, index) => (
++                <div key={`${index}-${group[0] ?? 'empty'}`} className="rounded-xl border p-3">
++                  <div className="mb-2 flex items-center justify-between gap-2">
++                    <span className="text-sm font-semibold">
++                      جزء {(index + 1).toLocaleString('fa-IR')}
++                    </span>
++                    <Badge variant={group.length === 1 ? 'outline' : 'secondary'}>
++                      {group.length.toLocaleString('fa-IR')} گره
++                    </Badge>
+                   </div>
+-                  <Badge variant="secondary">{data?.confidence.length ?? 0}</Badge>
+-                </div>
+-              </CardHeader>
+-              <CardContent>
+-                {data?.confidence.length ? (
+-                  <div className="space-y-4">
+-                    {data.confidence.map((node) => (
+-                      <div key={node.nodeId}>
+-                        <div className="mb-1.5 flex items-center justify-between gap-3 text-xs">
+-                          <span className="truncate font-medium" title={node.label ?? node.nodeId}>
+-                            {node.label ?? shortId(node.nodeId)}
+-                          </span>
+-                          <span className="shrink-0 tabular-nums text-[hsl(var(--muted-foreground))]">
+-                            {percent(node.score)}
+-                          </span>
+-                        </div>
+-                        <div className="h-1.5 overflow-hidden rounded-full bg-[hsl(var(--secondary))]">
+-                          <div
+-                            className="h-full rounded-full bg-[hsl(var(--primary))] transition-all"
+-                            style={{ width: `${Math.max(0, Math.min(1, node.score)) * 100}%` }}
+-                          />
+-                        </div>
+-                      </div>
++                  <div className="space-y-1">
++                    {group.slice(0, 3).map((nodeId) => (
++                      <p
++                        key={nodeId}
++                        className="truncate font-mono text-[11px] text-muted-foreground"
++                        dir="ltr"
++                      >
++                        {nodeId}
++                      </p>
+                     ))}
++                    {group.length > 3 ? (
++                      <p className="text-xs text-muted-foreground">
++                        و {(group.length - 3).toLocaleString('fa-IR')} گره دیگر
++                      </p>
++                    ) : null}
+                   </div>
+-                ) : (
+-                  <EmptyState text="هنوز امتیاز اطمینانی محاسبه نشده است." />
+-                )}
+-              </CardContent>
+-            </Card>
+-
+-            <Card>
+-              <CardHeader>
+-                <div className="flex items-center justify-between gap-3">
+-                  <div>
+-                    <CardTitle>اجزای متصل گراف</CardTitle>
+-                    <CardDescription>پیوستگی گره‌ها در شبکه معنایی دانش</CardDescription>
+-                  </div>
+-                  <Badge variant="secondary">{data?.components.length ?? 0}</Badge>
+                 </div>
+-              </CardHeader>
+-              <CardContent>
+-                {data?.components.length ? (
+-                  <div className="space-y-3">
+-                    {data.components.slice(0, 8).map((component, index) => {
+-                      const largest = Math.max(...data.components.map((item) => item.length), 1);
+-                      return (
+-                        <div
+-                          key={`${component[0] ?? 'component'}-${index}`}
+-                          className="flex items-center gap-3"
+-                        >
+-                          <span className="w-16 shrink-0 text-xs text-[hsl(var(--muted-foreground))]">
+-                            جزء {(index + 1).toLocaleString('fa-IR')}
+-                          </span>
+-                          <div className="h-7 flex-1 overflow-hidden rounded-[var(--radius)] bg-[hsl(var(--secondary))]">
+-                            <div
+-                              className="flex h-full min-w-10 items-center justify-end rounded-[var(--radius)] bg-[hsl(var(--primary)/0.15)] px-2 text-[10px] font-semibold text-[hsl(var(--primary))]"
+-                              style={{
+-                                width: `${Math.max(12, (component.length / largest) * 100)}%`,
+-                              }}
+-                            >
+-                              {component.length.toLocaleString('fa-IR')}
+-                            </div>
+-                          </div>
+-                        </div>
+-                      );
+-                    })}
+-                  </div>
+-                ) : (
+-                  <EmptyState text="برای نمایش ارتباطات، گره‌های بیشتری لازم است." />
+-                )}
+-              </CardContent>
+-            </Card>
+-          </div>
+-
+-          <Card>
+-            <CardHeader>
+-              <div className="flex items-center justify-between gap-3">
+-                <div>
+-                  <CardTitle>خوشه‌های معنایی</CardTitle>
+-                  <CardDescription>گروه‌های خودکار دانش با شباهت محتوایی</CardDescription>
+-                </div>
+-                <Badge variant="outline">{data?.clusters.length ?? 0} خوشه</Badge>
+-              </div>
+-            </CardHeader>
+-            <CardContent>
+-              {data?.clusters.length ? (
+-                <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+-                  {data.clusters.slice(0, 9).map((cluster) => (
+-                    <div
+-                      key={cluster.id}
+-                      className="rounded-[var(--radius-lg)] border border-[hsl(var(--border))] bg-[hsl(var(--secondary)/0.25)] p-4"
+-                    >
+-                      <div className="flex items-start justify-between gap-3">
+-                        <div className="min-w-0">
+-                          <p className="truncate text-sm font-semibold">{cluster.name}</p>
+-                          <p className="mt-1 line-clamp-2 text-xs text-[hsl(var(--muted-foreground))]">
+-                            {cluster.description ?? 'خوشه‌ی معنایی خودکار'}
+-                          </p>
+-                        </div>
+-                        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[hsl(var(--primary)/0.1)] text-[hsl(var(--primary))]">
+-                          <GitBranch className="h-4 w-4" />
+-                        </span>
+-                      </div>
+-                      <div className="mt-4 flex items-center justify-between border-t border-[hsl(var(--border))] pt-3 text-xs">
+-                        <span className="text-[hsl(var(--muted-foreground))]">اندازه خوشه</span>
+-                        <span className="font-semibold tabular-nums">
+-                          {cluster.nodeIds.length.toLocaleString('fa-IR')} گره
+-                        </span>
+-                      </div>
+-                    </div>
+-                  ))}
+-                </div>
+-              ) : (
+-                <EmptyState text="هنوز خوشه‌ای ساخته نشده؛ عملیات خوشه‌بندی را اجرا کنید." />
+-              )}
+-            </CardContent>
+-          </Card>
+-        </div>
+-      )}
++              ))}
++            </div>
++          )}
++        </CardContent>
++      </Card>
+     </div>
+   );
+ }
+ 
+-function EmptyState({ text }: { text: string }) {
++function MetricCard({
++  icon: Icon,
++  label,
++  value,
++  detail,
++  tone,
++}: {
++  icon: typeof Sparkles;
++  label: string;
++  value: string;
++  detail: string;
++  tone: 'emerald' | 'amber' | 'blue' | 'violet';
++}) {
++  const tones = {
++    emerald: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300',
++    amber: 'bg-amber-500/10 text-amber-700 dark:text-amber-300',
++    blue: 'bg-blue-500/10 text-blue-700 dark:text-blue-300',
++    violet: 'bg-violet-500/10 text-violet-700 dark:text-violet-300',
++  };
++
+   return (
+-    <div className="flex min-h-36 flex-col items-center justify-center rounded-[var(--radius-lg)] border border-dashed border-[hsl(var(--border))] px-4 text-center">
+-      <Network className="mb-2 h-6 w-6 text-[hsl(var(--muted-foreground)/0.7)]" />
+-      <p className="text-xs text-[hsl(var(--muted-foreground))]">{text}</p>
+-    </div>
++    <Card className="overflow-hidden">
++      <CardContent className="p-4">
++        <div className="flex items-start justify-between gap-4">
++          <div>
++            <p className="text-sm text-muted-foreground">{label}</p>
++            <p className="mt-2 text-2xl font-black tracking-tight">{value}</p>
++            <p className="mt-1 text-xs text-muted-foreground">{detail}</p>
++          </div>
++          <span className={`grid size-10 shrink-0 place-items-center rounded-xl ${tones[tone]}`}>
++            <Icon className="size-5" />
++          </span>
++        </div>
++      </CardContent>
++    </Card>
+   );
+ }

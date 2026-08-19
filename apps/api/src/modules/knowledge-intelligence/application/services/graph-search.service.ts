@@ -30,39 +30,57 @@ export class GraphSearchService {
     query: string,
     _userContext?: { userId?: string; permissions?: string[] },
   ): Promise<any[]> {
-    const { nodes } = await this.nodeRepo.findAllByWorkspace(workspaceId, undefined, 0, 100);
-    const scoredNodes = await Promise.all(
-      nodes.map(async (node) => {
-        const neighbors = await this.traversalRepo.neighbors(node.id, 'both', undefined);
-        const citations = await this.citationRepo.findBySource(node.id);
-        const metrics = await this.metricsRepo.findByNodeId(node.id);
+    const terms = [...new Set(query.toLocaleLowerCase().match(/[\p{L}\p{N}]+/gu) ?? [])];
+    if (terms.length === 0) return [];
 
-        let score = 0;
-        if (
-          node.label &&
-          query.split(' ').some((term) => node.label!.toLowerCase().includes(term.toLowerCase()))
-        ) {
-          score += 0.5;
-        }
-        score += neighbors.length * 0.05;
-        score += citations.length * 0.1;
-        score += metrics?.compositeScore() ?? 0.5;
+    const { nodes } = await this.nodeRepo.findAllByWorkspace(workspaceId, undefined, 0, 100);
+    const candidates = nodes
+      .map((node) => {
+        const searchableText = [
+          node.label,
+          node.type,
+          node.entityType,
+          node.entityId,
+          ...Object.values(node.properties),
+        ]
+          .filter((value) => typeof value === 'string' || typeof value === 'number')
+          .join(' ')
+          .toLocaleLowerCase();
+        const matchingTerms = terms.filter((term) => searchableText.includes(term)).length;
+        return { node, textRelevance: matchingTerms / terms.length };
+      })
+      .filter((candidate) => candidate.textRelevance > 0);
+
+    const scoredNodes = await Promise.all(
+      candidates.map(async ({ node, textRelevance }) => {
+        const [neighbors, citations, metrics] = await Promise.all([
+          this.traversalRepo.neighbors(node.id, 'both', undefined),
+          this.citationRepo.findBySource(node.id, undefined, workspaceId),
+          this.metricsRepo.findByNodeId(node.id),
+        ]);
+        const score =
+          textRelevance * 0.7 +
+          Math.min(neighbors.length / 20, 1) * 0.1 +
+          Math.min(citations.length / 10, 1) * 0.05 +
+          Math.max(0, Math.min(metrics?.compositeScore() ?? 0, 1)) * 0.15;
 
         return { node, score, neighbors, citations };
       }),
     );
 
-    const filtered = scoredNodes.filter((r) => r.score > 0.3).sort((a, b) => b.score - a.score);
-    return filtered.slice(0, 20).map((r) => ({
-      id: r.node.id,
-      label: r.node.label,
-      type: r.node.type,
-      entityType: r.node.entityType,
-      entityId: r.node.entityId,
-      score: r.score,
-      neighbors: r.neighbors.length,
-      citations: r.citations.length,
-    }));
+    return scoredNodes
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 20)
+      .map((result) => ({
+        id: result.node.id,
+        label: result.node.label,
+        type: result.node.type,
+        entityType: result.node.entityType,
+        entityId: result.node.entityId,
+        score: result.score,
+        neighbors: result.neighbors.length,
+        citations: result.citations.length,
+      }));
   }
 
   async relatedDocuments(nodeId: string, maxResults = 10): Promise<any[]> {

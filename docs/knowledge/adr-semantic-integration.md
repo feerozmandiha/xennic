@@ -5,6 +5,8 @@
 **Deciders:** Architecture Team  
 **Tags:** events, integration, outbox, domain-events
 
+> **Implementation audit — 2026-08-19:** the original decision below described 12 contracts and stronger delivery semantics than the runtime provides. The registry now has 14 contracts after adding active Knowledge CMS publish/archive events. Source mutations and outbox inserts are not atomic, relay retries use a fixed polling interval, and handler errors are currently swallowed before the relay decides delivery status. Treat “same transaction”, “exactly-once”, exponential backoff, and guaranteed end-to-end delivery below as design goals rather than current guarantees. Knowledge Factory remains dormant. See `knowledge-runtime-audit.md` and `semantic-integration-implementation.md`.
+
 ## Context
 
 The Xennic platform has 8 independently-operating modules (Knowledge Factory, Knowledge Intelligence, Knowledge CMS, AI Runtime, Storage, RBAC, Workspace, Search) with no automated cross-module orchestration. When a document is published in Knowledge Factory, there is no mechanism to:
@@ -22,26 +24,28 @@ Implement a **Semantic Integration Layer** using the following patterns:
 
 ### 1. Domain Events (Immutable)
 
-Define 12 domain events as frozen TypeScript objects with typed payloads, event versioning, and correlation/tracing IDs:
+Define 14 domain events as frozen TypeScript objects with typed payloads, event versioning, and correlation/tracing IDs:
 
-| Event               | Source | Description                         |
-| ------------------- | ------ | ----------------------------------- |
-| DocumentUploaded    | KF     | Raw file ingested                   |
-| DocumentClassified  | KF     | Document type classified            |
-| DocumentParsed      | KF     | Text extracted                      |
-| DocumentNormalized  | KF     | Content normalized                  |
-| DocumentChunked     | KF     | Document split into chunks          |
-| EmbeddingsGenerated | KF     | Vector embeddings created           |
-| DocumentPublished   | KF     | Document published with knowledgeId |
-| GraphNodeCreated    | SI     | Graph node created in KI            |
-| GraphEdgesCreated   | SI     | Graph edges connected               |
-| OntologyUpdated     | KI     | Ontology changed                    |
-| MetricsCalculated   | SI     | Metrics computed for a node         |
-| SearchIndexUpdated  | SI     | Search index refreshed              |
+| Event                     | Source | Description                                |
+| ------------------------- | ------ | ------------------------------------------ |
+| DocumentUploaded          | KF     | Raw file ingested                          |
+| DocumentClassified        | KF     | Document type classified                   |
+| DocumentParsed            | KF     | Text extracted                             |
+| DocumentNormalized        | KF     | Content normalized                         |
+| DocumentChunked           | KF     | Document split into chunks                 |
+| EmbeddingsGenerated       | KF     | Vector embeddings created                  |
+| DocumentPublished         | KF     | Document published with knowledgeId        |
+| KnowledgeArticlePublished | CMS    | Knowledge article published or republished |
+| KnowledgeArticleArchived  | CMS    | Knowledge article archived                 |
+| GraphNodeCreated          | SI     | Graph node created in KI                   |
+| GraphEdgesCreated         | SI     | Graph edges connected                      |
+| OntologyUpdated           | KI     | Ontology changed                           |
+| MetricsCalculated         | SI     | Metrics computed for a node                |
+| SearchIndexUpdated        | SI     | Search index refreshed                     |
 
 ### 2. Outbox Pattern
 
-Events are written to an `event_outbox` PostgreSQL table in the same transaction as the source operation (eventual consistency). A background relay polls the table and delivers events to the Semantic Event Bus.
+The decision intended events to be written to an `event_outbox` PostgreSQL table in the same transaction as the source operation. The current producers enqueue after the source mutation in a separate database call. A background relay polls the table and delivers successfully inserted rows to the Semantic Event Bus.
 
 ### 3. Semantic Event Bus
 
@@ -49,11 +53,11 @@ An in-memory publish/subscribe bus that routes events to registered handlers. Ha
 
 ### 4. Idempotent Handlers
 
-Each handler records its processing status in the `event_process_log` table. Before processing, handlers check if the event+handler combination has already been completed. This ensures exactly-once processing semantics even with retries.
+Each handler records its processing status in the `event_process_log` table. Before processing, handlers check if the event+handler combination has already been completed. This prevents a completed handler from repeating work for the same event ID; it does not by itself ensure exactly-once processing.
 
 ### 5. Retry & Dead Letter
 
-Failed events are retried up to 3 times with exponential backoff, then moved to `dead_letter` status in the outbox table.
+The outbox stores a maximum of three attempts and a `dead_letter` state. In the current relay, only exceptions propagated to the relay increment this counter, retries occur on the fixed polling cadence rather than exponential backoff, and event-bus handler errors do not propagate.
 
 ### 6. Module Architecture
 
@@ -70,8 +74,10 @@ semantic-integration/
  │   │   ├── semantic-event-bus.service.ts    # In-memory pub/sub
  │   │   └── outbox-relay.service.ts          # Polls + dispatches
  │   └── event-handlers/
- │       ├── document-published.handler.ts    # Creates graph + metrics
- │       └── cache-invalidation.handler.ts    # Clears AI Runtime caches
+ │       ├── document-published.handler.ts          # Factory document graph + metrics
+ │       ├── cache-invalidation.handler.ts          # Clears AI Runtime caches
+ │       ├── knowledge-article-published.handler.ts # CMS article graph + metrics
+ │       └── knowledge-article-archived.handler.ts  # Removes CMS article projection
  ├── infrastructure/
  │   └── persistence/
  │       ├── event-outbox.repository.ts       # Outbox CRUD
@@ -82,7 +88,9 @@ semantic-integration/
 
 ### 7. Wiring
 
-**Knowledge Factory → Domain Events:** `PublishWorker` injects `DomainEventPublisher` and emits `DocumentPublished` after successful publish.
+**Knowledge CMS → Domain Events:** active lifecycle methods enqueue `KnowledgeArticlePublished` and `KnowledgeArticleArchived` after the article mutation succeeds. Publish upserts a graph projection and metrics; archive removes the projection.
+
+**Knowledge Factory → Domain Events:** `PublishWorker` contains a `DocumentPublished` producer, but the Factory module is dormant and this is not a current runtime flow.
 
 **Event Bus → Handlers:** `OutboxRelayService` polls every 5s, delivers to `SemanticEventBus`, which routes to registered handlers.
 
@@ -95,8 +103,8 @@ semantic-integration/
 ### Positive
 
 - **Decoupled integration:** No module needs to import another for event processing
-- **Guaranteed delivery:** Outbox pattern ensures events survive crashes
-- **Idempotent processing:** Duplicate events are safe
+- **Persistent enqueue:** Successfully inserted outbox rows survive process crashes; current handler error propagation does not guarantee end-to-end delivery
+- **Idempotent handlers:** Completed handler records allow registered handlers to skip duplicate event IDs
 - **Observable:** All events logged in `event_process_log` table
 - **Extensible:** New handlers can be added by registering with the event bus
 - **Tracing:** Each event chain has a `tracingId` for end-to-end debugging
@@ -105,7 +113,9 @@ semantic-integration/
 
 - **Polling latency:** Up to 5s delay between event emission and handler execution
 - **Database load:** Outbox polling adds read load on PostgreSQL
-- **In-memory bus:** Handlers are lost on process restart (but events survive in outbox)
+- **In-memory bus:** subscriptions are process-local and are not distributed across replicas
+- **Non-atomic producer writes:** source mutations and outbox inserts are separate database operations
+- **Handler failure gap:** handler exceptions are caught by the bus, so the relay can mark a partially failed dispatch as delivered
 
 ### Neutral
 

@@ -30,7 +30,14 @@ import { useAuthStore } from '@/stores/auth.store';
 import { apiClient } from '@/lib/api/client';
 import { cn } from '@/lib/utils';
 
-const NAV_ITEMS = [
+interface NavigationItem {
+  key: string;
+  route?: string;
+  icon: React.ElementType;
+  adminOnly: boolean;
+}
+
+const NAV_ITEMS: readonly NavigationItem[] = [
   { key: 'search', icon: Search, adminOnly: false },
   { key: 'dashboard', icon: LayoutDashboard, adminOnly: false },
   { key: 'projects', icon: FolderKanban, adminOnly: false },
@@ -40,7 +47,7 @@ const NAV_ITEMS = [
   { key: 'ai', icon: Cpu, adminOnly: false },
   { key: 'vision', icon: ScanEye, adminOnly: false },
   { key: 'energy', icon: FileBarChart, adminOnly: false },
-  { key: 'knowledge', icon: Library, adminOnly: false },
+  { key: 'knowledge', route: 'knowledge-manage', icon: Library, adminOnly: false },
   { key: 'marketplace', icon: ShoppingCart, adminOnly: false },
   { key: 'consultations', icon: MessageSquare, adminOnly: false },
   { key: 'storage', icon: HardDrive, adminOnly: false },
@@ -68,6 +75,7 @@ function useUnreadCount() {
 
 function NavItem({
   navKey,
+  route,
   icon: Icon,
   locale,
   pathname,
@@ -75,6 +83,7 @@ function NavItem({
   badge,
 }: {
   navKey: string;
+  route?: string;
   icon: React.ElementType;
   locale: string;
   pathname: string;
@@ -82,9 +91,10 @@ function NavItem({
   badge?: number;
 }) {
   const t = useTranslations('nav');
+  const routeSegment = route ?? navKey;
   // admin به route جداگانه می‌رود (خارج از dashboard layout)
-  const href = navKey === 'admin' ? `/${locale}/admin` : `/${locale}/${navKey}`;
-  const isActive = pathname.includes(`/${navKey}`);
+  const href = navKey === 'admin' ? `/${locale}/admin` : `/${locale}/${routeSegment}`;
+  const isActive = pathname.includes(`/${routeSegment}`);
 
   return (
     <Link
@@ -162,15 +172,16 @@ function SidebarContent({
 
       {/* ── Nav ──────────────────────────────────────────────── */}
       <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
-        {NAV_ITEMS.filter((item) => !item.adminOnly || isAdmin).map(({ key, icon }) => (
+        {NAV_ITEMS.filter((item) => !item.adminOnly || isAdmin).map((item) => (
           <NavItem
-            key={key}
-            navKey={key}
-            icon={icon}
+            key={item.key}
+            navKey={item.key}
+            route={item.route}
+            icon={item.icon}
             locale={locale}
             pathname={pathname}
             onClick={onNavClick}
-            badge={key === 'notifications' ? unread : undefined}
+            badge={item.key === 'notifications' ? unread : undefined}
           />
         ))}
       </nav>

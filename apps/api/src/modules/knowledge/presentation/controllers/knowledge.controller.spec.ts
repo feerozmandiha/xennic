@@ -1,30 +1,39 @@
-jest.mock('@xennic/database', () => ({
-  prisma: {
-    $queryRaw: jest.fn(),
-    $queryRawUnsafe: jest.fn(),
-    $executeRawUnsafe: jest.fn(),
-    knowledge_taxonomy: {
-      findFirst: jest.fn(),
-      findMany: jest.fn(),
-      create: jest.fn(),
-      createMany: jest.fn(),
-      delete: jest.fn(),
+jest.mock(
+  '@xennic/database',
+  () => ({
+    prisma: {
+      $queryRaw: jest.fn(),
+      $queryRawUnsafe: jest.fn(),
+      $executeRawUnsafe: jest.fn(),
+      knowledge_taxonomy: {
+        findFirst: jest.fn(),
+        findMany: jest.fn(),
+        create: jest.fn(),
+        createMany: jest.fn(),
+        delete: jest.fn(),
+      },
+      knowledge_analytics: { upsert: jest.fn() },
+      knowledge_versions: { create: jest.fn() },
+      workspaces: {
+        findUnique: jest.fn(),
+        findMany: jest.fn(),
+        upsert: jest.fn(),
+        count: jest.fn(),
+      },
+      workspace_members: {
+        findFirst: jest.fn(),
+        findMany: jest.fn(),
+        create: jest.fn(),
+        delete: jest.fn(),
+        count: jest.fn(),
+      },
+      roles: { findUnique: jest.fn(), findMany: jest.fn() },
+      role_permissions: { findMany: jest.fn(), deleteMany: jest.fn(), createMany: jest.fn() },
+      users: { findUnique: jest.fn(), findMany: jest.fn(), count: jest.fn() },
     },
-    knowledge_analytics: { upsert: jest.fn() },
-    knowledge_versions: { create: jest.fn() },
-    workspaces: { findUnique: jest.fn(), findMany: jest.fn(), upsert: jest.fn(), count: jest.fn() },
-    workspace_members: {
-      findFirst: jest.fn(),
-      findMany: jest.fn(),
-      create: jest.fn(),
-      delete: jest.fn(),
-      count: jest.fn(),
-    },
-    roles: { findUnique: jest.fn(), findMany: jest.fn() },
-    role_permissions: { findMany: jest.fn(), deleteMany: jest.fn(), createMany: jest.fn() },
-    users: { findUnique: jest.fn(), findMany: jest.fn(), count: jest.fn() },
-  },
-}));
+  }),
+  { virtual: true },
+);
 
 import { Test, TestingModule } from '@nestjs/testing';
 import { KnowledgeController } from './knowledge.controller.js';

@@ -25,16 +25,21 @@ export class CitationsController {
   ) {
     const graph = await this.citationExpansionService.getCitationGraph(
       req.workspaceId,
-      sourceId,
-      targetId,
+      sourceId?.trim() || undefined,
+      targetId?.trim() || undefined,
     );
     return { success: true, data: graph };
   }
 
   @Get('citations/expand/:nodeId')
   @ApiOperation({ summary: 'Expand citations from a node' })
-  async expandCitations(@Param('nodeId') nodeId: string, @Query('maxDepth') maxDepth?: string) {
+  async expandCitations(
+    @Request() req: any,
+    @Param('nodeId') nodeId: string,
+    @Query('maxDepth') maxDepth?: string,
+  ) {
     const expanded = await this.citationExpansionService.expand(
+      req.workspaceId,
       nodeId,
       boundedInteger(maxDepth, 3, 1, 10),
     );

@@ -1,6 +1,6 @@
 // `@xennic/database` is an ESM package that jest cannot transform; the real
 // KnowledgeService is only used here as a DI token and is always mocked.
-jest.mock('@xennic/database', () => ({ prisma: {} }));
+jest.mock('@xennic/database', () => ({ prisma: {} }), { virtual: true });
 
 import { Test, TestingModule } from '@nestjs/testing';
 import { NotFoundException, BadRequestException } from '@nestjs/common';

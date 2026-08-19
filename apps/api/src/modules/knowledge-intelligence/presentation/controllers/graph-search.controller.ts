@@ -5,6 +5,7 @@ import { RequirePermissions } from '../../../rbac/infrastructure/decorators/perm
 import { PermissionsGuard } from '../../../rbac/infrastructure/guards/permissions.guard.js';
 import { WorkspaceGuard } from '../../../rbac/infrastructure/guards/workspace.guard.js';
 import { GraphWorkspaceGuard } from '../guards/graph-workspace.guard.js';
+import { GraphSearchQueryDto } from '../dtos/graph-query.dto.js';
 import { boundedInteger } from '../query-parameters.js';
 import { GraphSearchService } from '../../application/services/graph-search.service.js';
 
@@ -18,8 +19,11 @@ export class GraphSearchController {
 
   @Get('search/graph')
   @ApiOperation({ summary: 'Semantic search over the knowledge graph' })
-  async searchGraph(@Request() req: any, @Query('query') query: string) {
-    const results = await this.graphSearchService.semanticSearch(req.workspaceId, query);
+  async searchGraph(@Request() req: any, @Query() query: GraphSearchQueryDto) {
+    const results = await this.graphSearchService.semanticSearch(
+      req.workspaceId,
+      query.query.trim(),
+    );
     return { success: true, data: results };
   }
 
