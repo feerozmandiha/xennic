@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
-import { KnowledgeAdminConsole } from '@/features/knowledge/admin';
+import { KnowledgeAdminConsole, KnowledgeAdminGuard } from '@/features/knowledge/admin';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('nav');
@@ -8,5 +8,9 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default function KnowledgePage() {
-  return <KnowledgeAdminConsole />;
+  return (
+    <KnowledgeAdminGuard>
+      <KnowledgeAdminConsole />
+    </KnowledgeAdminGuard>
+  );
 }
