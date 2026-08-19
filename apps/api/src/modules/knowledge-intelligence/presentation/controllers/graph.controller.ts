@@ -5,10 +5,7 @@ import { RequirePermissions } from '../../../rbac/infrastructure/decorators/perm
 import { PermissionsGuard } from '../../../rbac/infrastructure/guards/permissions.guard.js';
 import { WorkspaceGuard } from '../../../rbac/infrastructure/guards/workspace.guard.js';
 import { GraphWorkspaceGuard } from '../guards/graph-workspace.guard.js';
-<<<<<<< ours
-=======
 import { NeighborQueryDto, SubgraphQueryDto } from '../dtos/graph-query.dto.js';
->>>>>>> theirs
 import { boundedInteger } from '../query-parameters.js';
 import { GraphTraversalService } from '../../application/services/graph-traversal.service.js';
 import { KnowledgeProvenanceService } from '../../application/services/knowledge-provenance.service.js';

@@ -73,15 +73,9 @@ export class MetricsController {
   }
 
   @Get('metrics/workspace/freshness')
-<<<<<<< ours
-  @ApiOperation({ summary: 'Refresh freshness scores for stale nodes' })
-  async refreshFreshness(@Request() req: any, @Query('thresholdDays') thresholdDays?: string) {
-    const stale = await this.freshnessService.refreshStaleNodes(
-=======
   @ApiOperation({ summary: 'Analyze workspace knowledge freshness' })
   async analyzeFreshness(@Request() req: any, @Query('thresholdDays') thresholdDays?: string) {
     const stale = await this.freshnessService.analyzeWorkspaceFreshness(
->>>>>>> theirs
       req.workspaceId,
       boundedInteger(thresholdDays, 30, 1, 3650),
     );

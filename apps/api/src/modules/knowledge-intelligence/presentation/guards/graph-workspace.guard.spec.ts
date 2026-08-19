@@ -60,8 +60,6 @@ describe('GraphWorkspaceGuard', () => {
     ).rejects.toBeInstanceOf(BadRequestException);
     expect(repository.findById).not.toHaveBeenCalled();
   });
-<<<<<<< ours
-=======
 
   it('rejects oversized graph-node identifiers before repository access', async () => {
     await expect(
@@ -75,5 +73,4 @@ describe('GraphWorkspaceGuard', () => {
     ).rejects.toBeInstanceOf(BadRequestException);
     expect(repository.findById).not.toHaveBeenCalled();
   });
->>>>>>> theirs
 });

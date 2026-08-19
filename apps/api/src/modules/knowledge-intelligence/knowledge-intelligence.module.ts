@@ -37,16 +37,9 @@ import { ClusterRepository } from './infrastructure/repositories/cluster.reposit
 
 import { WorkspaceModule } from '../workspace/workspace.module.js';
 import { RbacModule } from '../rbac/rbac.module.js';
-<<<<<<< ours
-import { KnowledgeModule } from '../knowledge/knowledge.module.js';
-
-@Module({
-  imports: [WorkspaceModule, RbacModule, KnowledgeModule],
-=======
 
 @Module({
   imports: [WorkspaceModule, RbacModule],
->>>>>>> theirs
   controllers: [
     GraphController,
     OntologyController,

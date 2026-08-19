@@ -5,10 +5,7 @@ import { RequirePermissions } from '../../../rbac/infrastructure/decorators/perm
 import { PermissionsGuard } from '../../../rbac/infrastructure/guards/permissions.guard.js';
 import { WorkspaceGuard } from '../../../rbac/infrastructure/guards/workspace.guard.js';
 import { GraphWorkspaceGuard } from '../guards/graph-workspace.guard.js';
-<<<<<<< ours
-=======
 import { boundedNumber } from '../query-parameters.js';
->>>>>>> theirs
 import { KnowledgeClusteringService } from '../../application/services/knowledge-clustering.service.js';
 import { DuplicateDetectionService } from '../../application/services/duplicate-detection.service.js';
 
@@ -26,16 +23,11 @@ export class ClustersController {
   @Post('clusters/compute')
   @RequirePermissions('knowledge.update')
   @ApiOperation({ summary: 'Auto-compute knowledge clusters' })
-<<<<<<< ours
-  async computeClusters(@Request() req: any, @Query('threshold') threshold = 0.6) {
-    const clusters = await this.clusteringService.computeClusters(req.workspaceId, threshold);
-=======
   async computeClusters(@Request() req: any, @Query('threshold') threshold?: string) {
     const clusters = await this.clusteringService.computeClusters(
       req.workspaceId,
       boundedNumber(threshold, 0.6, 0, 1),
     );
->>>>>>> theirs
     return { success: true, data: clusters };
   }
 
