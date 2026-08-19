@@ -30,6 +30,8 @@ import { VisionModule } from './modules/vision/vision.module.js'; // ✅ بین�
 import { AiProviderManagementModule } from './modules/ai-provider-management/ai-provider-management.module.js'; // ✅ مدیریت ارائه‌دهندگان AI
 import { MonitoringModule } from './modules/monitoring/monitoring.module.js'; // ✅ مانیتورینگ
 import { CalculationPlatformModule } from './modules/calculation-platform/calculation-platform.module.js'; // ✅ Sprint C1
+import { CmsModule } from './modules/cms/cms.module.js'; // ✅ Landing CMS
+import { ThemeModule } from './modules/theme/theme.module.js';
 
 @Module({
   imports: [
@@ -61,6 +63,8 @@ import { CalculationPlatformModule } from './modules/calculation-platform/calcul
     AiProviderManagementModule, // ✅ مدیریت ارائه‌دهندگان AI
     MonitoringModule, // ✅ مانیتورینگ (OpenTelemetry + Prometheus + logging)
     CalculationPlatformModule, // ✅ Sprint C1 — Enterprise Calculation Platform
+    CmsModule, // ✅ Landing CMS
+    ThemeModule,
     // ✅ SEC-001C: Rate Limiting
     ThrottlerModule.forRoot([
       {

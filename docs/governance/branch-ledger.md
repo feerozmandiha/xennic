@@ -19,23 +19,23 @@
 
 ## 2. جدول کامل شاخه‌ها (۱۵ Remote Head)
 
-| Branch                              | SHA      | آخرین فعالیت (UTC)     | Owner        | وضعیت vs `dev` | رابطه / محتوا                                                     | تصمیم پیشنهادی |
-| ----------------------------------- | -------- | ---------------------- | ------------ | -------------- | ----------------------------------------------------------------- | -------------- |
-| `main`                              | e3a2dff  | 2026-08-07T19:36:47Z   | feerozmandiha | `behind` (0/1) | Production؛ Freeze توسعه مستقیم                                   | نگهداری + Protection |
-| `dev`                               | 650c2dd  | 2026-08-15T08:40:07Z   | arena-bot    | `identical`    | Integration/Staging؛ از `main@e3a2dff` + `650c2dd`                | نگهداری + Protection |
-| `arena/01a004a5-xennic`             | 4e535c8  | 2026-08-15T09:21:46Z   | feerozmandiha | `ahead` (2/0)  | شاخه کاری سشن جاری (Ledger + بستن #4)                             | حذف پس از Squash-Merge PRها |
-| `arena/019f75f0-xennic`             | 78504fb  | 2026-08-07T06:37:49Z   | feerozmandiha | `behind` (0/6) | در Ancestry `dev`؛ محتوای PR #1 (AI provider + storage + admin UI) | کاندید Cleanup پس از تأیید Owner |
-| `arena/019ff14a-xennic`             | faf9cbc  | 2026-08-14T17:27:20Z   | feerozmandiha | `diverged` (9/1) | سند Governance در `dev` است (PR #3، Squash)؛ ۹ Commit میانی باقی است | کاندید Cleanup پس از تأیید Owner |
-| `arena/019f76cd-xennic`             | 1613466  | 2026-07-18T20:39:03Z   | feerozmandiha | `diverged` (1/25) | Storage phase 0 — audit + design                                   | Issue مستقل → انتقال انتخابی |
-| `arena/019f7a82-xennic`             | 3bfd420  | 2026-07-19T13:49:43Z   | feerozmandiha | `diverged` (1/25) | Bill Bot؛ بخشی در `main` (merge `25f29aa`)؛ باقی نیاز به Review      | Issue مستقل → انتقال انتخابی |
-| `arena/019fdffb-xennic`             | b627e95  | 2026-08-09T13:07:28Z   | feerozmandiha | `diverged` (22/1) | Admin/Knowledge؛ Ancestor در `feat/landing-cms-merged`             | در خوشه Landing Consolidate شود |
-| `feat/landing-cms`                  | 1aae683  | 2026-08-08T20:02:00Z   | feerozmandiha | `diverged` (6/1) | Landing CMS؛ ۱ Commit پس از Merge-point دارد                       | منبع قطعی نیست؛ Consolidate |
-| `feat/landing-cms-merged`           | 15e2584  | 2026-08-09T19:15:35Z   | feerozmandiha | `diverged` (25/1) | ادغام Admin/Knowledge + Landing؛ مرجع Consolidation                | Issue مستقل → انتقال انتخابی |
-| `feat/knowledge-factory-fastify-upload` | ea8b0ab | 2026-08-07T09:33:36Z | feerozmandiha | `diverged` (1/25) | Knowledge Factory — Upload                                        | خوشه Knowledge → Issue مستقل |
-| `feat/knowledge-factory-pipeline`    | 46b5ef2  | 2026-08-07T11:35:17Z   | feerozmandiha | `diverged` (1/25) | Knowledge Factory — Pipeline                                      | خوشه Knowledge → Issue مستقل |
-| `feat/knowledge-pipeline-e2e`        | 5acaead  | 2026-08-07T15:47:22Z   | feerozmandiha | `diverged` (2/25) | Knowledge Pipeline — E2E + CI services                            | خوشه Knowledge → Issue مستقل |
-| `feat/activate-dormant-platform-modules` | 525d1c3 | 2026-08-06T14:13:21Z | feerozmandiha | `diverged` (1/25) | فعال‌سازی ۱۴ Module خاموش                                         | شکستن به چند PR کوچک وابسته |
-| `feat/redis-single-config`           | c6f7ce7  | 2026-08-07T09:03:58Z   | feerozmandiha | `diverged` (1/25) | Redis — پیکربندی واحد                                            | Security/Runtime review + تست اتصال → PR مستقل |
+| Branch                                   | SHA     | آخرین فعالیت (UTC)   | Owner         | وضعیت vs `dev`    | رابطه / محتوا                                                        | تصمیم پیشنهادی                                 |
+| ---------------------------------------- | ------- | -------------------- | ------------- | ----------------- | -------------------------------------------------------------------- | ---------------------------------------------- |
+| `main`                                   | e3a2dff | 2026-08-07T19:36:47Z | feerozmandiha | `behind` (0/1)    | Production؛ Freeze توسعه مستقیم                                      | نگهداری + Protection                           |
+| `dev`                                    | 650c2dd | 2026-08-15T08:40:07Z | arena-bot     | `identical`       | Integration/Staging؛ از `main@e3a2dff` + `650c2dd`                   | نگهداری + Protection                           |
+| `arena/01a004a5-xennic`                  | 4e535c8 | 2026-08-15T09:21:46Z | feerozmandiha | `ahead` (2/0)     | شاخه کاری سشن جاری (Ledger + بستن #4)                                | حذف پس از Squash-Merge PRها                    |
+| `arena/019f75f0-xennic`                  | 78504fb | 2026-08-07T06:37:49Z | feerozmandiha | `behind` (0/6)    | در Ancestry `dev`؛ محتوای PR #1 (AI provider + storage + admin UI)   | کاندید Cleanup پس از تأیید Owner               |
+| `arena/019ff14a-xennic`                  | faf9cbc | 2026-08-14T17:27:20Z | feerozmandiha | `diverged` (9/1)  | سند Governance در `dev` است (PR #3، Squash)؛ ۹ Commit میانی باقی است | کاندید Cleanup پس از تأیید Owner               |
+| `arena/019f76cd-xennic`                  | 1613466 | 2026-07-18T20:39:03Z | feerozmandiha | `diverged` (1/25) | Storage phase 0 — audit + design                                     | Issue مستقل → انتقال انتخابی                   |
+| `arena/019f7a82-xennic`                  | 3bfd420 | 2026-07-19T13:49:43Z | feerozmandiha | `diverged` (1/25) | Bill Bot؛ بخشی در `main` (merge `25f29aa`)؛ باقی نیاز به Review      | Issue مستقل → انتقال انتخابی                   |
+| `arena/019fdffb-xennic`                  | b627e95 | 2026-08-09T13:07:28Z | feerozmandiha | `diverged` (22/1) | Admin/Knowledge؛ Ancestor در `feat/landing-cms-merged`               | در خوشه Landing Consolidate شود                |
+| `feat/landing-cms`                       | 1aae683 | 2026-08-08T20:02:00Z | feerozmandiha | `diverged` (6/1)  | Landing CMS؛ ۱ Commit پس از Merge-point دارد                         | منبع قطعی نیست؛ Consolidate                    |
+| `feat/landing-cms-merged`                | 15e2584 | 2026-08-09T19:15:35Z | feerozmandiha | `diverged` (25/1) | ادغام Admin/Knowledge + Landing؛ مرجع Consolidation                  | Issue مستقل → انتقال انتخابی                   |
+| `feat/knowledge-factory-fastify-upload`  | ea8b0ab | 2026-08-07T09:33:36Z | feerozmandiha | `diverged` (1/25) | Knowledge Factory — Upload                                           | خوشه Knowledge → Issue مستقل                   |
+| `feat/knowledge-factory-pipeline`        | 46b5ef2 | 2026-08-07T11:35:17Z | feerozmandiha | `diverged` (1/25) | Knowledge Factory — Pipeline                                         | خوشه Knowledge → Issue مستقل                   |
+| `feat/knowledge-pipeline-e2e`            | 5acaead | 2026-08-07T15:47:22Z | feerozmandiha | `diverged` (2/25) | Knowledge Pipeline — E2E + CI services                               | خوشه Knowledge → Issue مستقل                   |
+| `feat/activate-dormant-platform-modules` | 525d1c3 | 2026-08-06T14:13:21Z | feerozmandiha | `diverged` (1/25) | فعال‌سازی ۱۴ Module خاموش                                            | شکستن به چند PR کوچک وابسته                    |
+| `feat/redis-single-config`               | c6f7ce7 | 2026-08-07T09:03:58Z | feerozmandiha | `diverged` (1/25) | Redis — پیکربندی واحد                                                | Security/Runtime review + تست اتصال → PR مستقل |
 
 ## 3. گروه‌بندی و تصمیم
 
@@ -50,8 +50,8 @@
 
 ### 3.3 کاندیدهای Cleanup (فقط پس از تأیید Owner)
 
-| Branch                | دلیل                                         |
-| --------------------- | -------------------------------------------- |
+| Branch                  | دلیل                                        |
+| ----------------------- | ------------------------------------------- |
 | `arena/019f75f0-xennic` | محتوا در Ancestry `dev` است (PR #1)         |
 | `arena/019ff14a-xennic` | محتوا (سند Governance) در `dev` است (PR #3) |
 

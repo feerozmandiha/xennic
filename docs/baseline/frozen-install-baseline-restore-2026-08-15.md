@@ -61,12 +61,12 @@ Jobهای Python (`engineering-service` و `ai-service`) مستقل از pnpm ه
 
 ## شواهد CI (بدون Skip/Bypass)
 
-| Gate                                   | Run                                                                                  | نتیجه      |
-| -------------------------------------- | ------------------------------------------------------------------------------------ | ---------- |
+| Gate                                         | Run                                                                                         | نتیجه      |
+| -------------------------------------------- | ------------------------------------------------------------------------------------------- | ---------- |
 | CI (node) — `pnpm install --frozen-lockfile` | push `dev`: [31875046006](https://github.com/feerozmandiha/xennic/actions/runs/31875046006) | ✅ success |
-| API E2E Gate                           | push `dev`: [31875046036](https://github.com/feerozmandiha/xennic/actions/runs/31875046036) | ✅ success |
-| Release Gate (Architecture Validation) | PR #5: [31876613141](https://github.com/feerozmandiha/xennic/actions/runs/31876613141) | ✅ success |
-| CI (node + Python)                     | PR #5: [31876613142](https://github.com/feerozmandiha/xennic/actions/runs/31876613142) | ✅ success |
+| API E2E Gate                                 | push `dev`: [31875046036](https://github.com/feerozmandiha/xennic/actions/runs/31875046036) | ✅ success |
+| Release Gate (Architecture Validation)       | PR #5: [31876613141](https://github.com/feerozmandiha/xennic/actions/runs/31876613141)      | ✅ success |
+| CI (node + Python)                           | PR #5: [31876613142](https://github.com/feerozmandiha/xennic/actions/runs/31876613142)      | ✅ success |
 
 - مرحله `Install dependencies` در همه Workflowها همچنان `pnpm install --frozen-lockfile` است؛
   هیچ Gateای با skip/bypass به‌عنوان موفق پذیرفته نشده است.

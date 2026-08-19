@@ -11,19 +11,19 @@
 
 ## 1. چه چیزی بالا می‌آید
 
-| سرویس                  | نقش                             | پورت داخلی | توضیح                         |
-| ---------------------- | ------------------------------- | ---------- | ----------------------------- |
-| `nginx`                | Reverse proxy / TLS             | 80, 443    | تنها سرویس عمومی               |
-| `web`                  | Frontend (Next.js standalone)   | 3001       |                              |
-| `api`                  | Backend (NestJS/Fastify)        | 3000       | مهاجرت Prisma در startup      |
-| `postgres`             | دیتابیس                         | 5432       |                              |
-| `redis`                | Cache + Queue                   | 6379       |                              |
-| `rabbitmq`             | Message broker                  | 5672       | UI مدیریت روی 15672          |
-| `minio`                | Object storage (S3-compatible)  | 9000/9001  | Bucketها توسط API ساخته می‌شوند |
-| `qdrant`               | Vector database                 | 6333/6334  | برای AI / RAG                |
-| `engineering-service`  | محاسبات مهندسی (Python/FastAPI) | 8001       |                              |
-| `ai-service`           | ارکستراسیون LLM (Python)        | 8002       |                              |
-| `vision-service`       | OCR / تحلیل تصویر (Python)      | 8003       |                              |
+| سرویس                 | نقش                             | پورت داخلی | توضیح                           |
+| --------------------- | ------------------------------- | ---------- | ------------------------------- |
+| `nginx`               | Reverse proxy / TLS             | 80, 443    | تنها سرویس عمومی                |
+| `web`                 | Frontend (Next.js standalone)   | 3001       |                                 |
+| `api`                 | Backend (NestJS/Fastify)        | 3000       | مهاجرت Prisma در startup        |
+| `postgres`            | دیتابیس                         | 5432       |                                 |
+| `redis`               | Cache + Queue                   | 6379       |                                 |
+| `rabbitmq`            | Message broker                  | 5672       | UI مدیریت روی 15672             |
+| `minio`               | Object storage (S3-compatible)  | 9000/9001  | Bucketها توسط API ساخته می‌شوند |
+| `qdrant`              | Vector database                 | 6333/6334  | برای AI / RAG                   |
+| `engineering-service` | محاسبات مهندسی (Python/FastAPI) | 8001       |                                 |
+| `ai-service`          | ارکستراسیون LLM (Python)        | 8002       |                                 |
+| `vision-service`      | OCR / تحلیل تصویر (Python)      | 8003       |                                 |
 
 مسیرهای عمومی (پشت `nginx`):
 
@@ -68,15 +68,15 @@ cp infrastructure/docker/compose/production/.env.production.example \
 
 سپس همه‌ی مقادیر `CHANGE_ME` را پر کنید. حداقل‌های حیاتی:
 
-| متغیر             | توضیح                                                        |
-| ----------------- | ------------------------------------------------------------ |
+| متغیر                                                          | توضیح                                                    |
+| -------------------------------------------------------------- | -------------------------------------------------------- |
 | `POSTGRES_PASSWORD`, `REDIS_PASSWORD`, `RABBITMQ_DEFAULT_PASS` | رمزهای قوی بدون کاراکتر خاص URL (در URL استفاده می‌شوند) |
-| `MINIO_ROOT_USER` / `MINIO_ROOT_PASSWORD` | دسترسی Object Storage                                        |
-| `ADMIN_EMAIL`, `ADMIN_PASSWORD` | ادمین اولیه (برای seed)                                      |
-| `FRONTEND_URL`    | آدرس عمومی Frontend (برای CORS و build وب)                   |
-| `API_PUBLIC_URL`  | آدرس عمومی API                                               |
-| `AI_MASTER_KEY`   | کلید رمزنگاری اعتبارنامه‌های AI                              |
-| `CORS_ORIGINS`    | اوریجین‌های مجاز (کاما جدا)                                   |
+| `MINIO_ROOT_USER` / `MINIO_ROOT_PASSWORD`                      | دسترسی Object Storage                                    |
+| `ADMIN_EMAIL`, `ADMIN_PASSWORD`                                | ادمین اولیه (برای seed)                                  |
+| `FRONTEND_URL`                                                 | آدرس عمومی Frontend (برای CORS و build وب)               |
+| `API_PUBLIC_URL`                                               | آدرس عمومی API                                           |
+| `AI_MASTER_KEY`                                                | کلید رمزنگاری اعتبارنامه‌های AI                          |
+| `CORS_ORIGINS`                                                 | اوریجین‌های مجاز (کاما جدا)                              |
 
 تولید رمز قوی:
 
@@ -206,18 +206,18 @@ docker compose -f infrastructure/docker/compose/production/docker-compose.yml do
 
 ## 10. عیب‌یابی متداول
 
-| نشانه | علت | راه‌حل |
-| ----- | ---- | ------ |
-| `./…/deploy.sh: Permission denied` | بیت اجرا روی فایل‌سیستم (WSL/NTFS) اعمال نشده | `bash infrastructure/docker/scripts/deploy.sh` یا `chmod +x …` |
-| `Conflict. The container name "/xennic-…" is already in use` | استک توسعهٔ محلی با همان نام‌ها بالاست | از نسخهٔ فعلی استفاده کنید؛ کانتینرها `xennic-prod-*` هستند و تداخل ندارند |
-| `Bind for 0.0.0.0:80 failed: port is already allocated` | پورت 80 اشغال است | `NGINX_HTTP_PORT=8080` (به‌همراه `FRONTEND_URL`/`API_PUBLIC_URL`/`CORS_ORIGINS`) |
-| `curl` → `000` روی `$BASE/...` | استک اصلاً بالا نیامده (deploy با خطا متوقف شده) | ابتدا `deploy.sh` را با موفقیت اجرا کنید، سپس smoke test |
-| `docker compose … logs` خروجی خالی | هیچ کانتینری از این پروژه ساخته نشده | همان مورد بالا |
-| Seed پیش از بالا آمدن استک | `run --rm api` تلاش می‌کند وابستگی‌ها را بسازد | ابتدا `deploy.sh`، سپس `deploy.sh --seed` یا دستور seed |
-| `dependency failed to start: container xennic-prod-api is unhealthy` | `Cannot find module …` — ایمیج API فقط `node_modules` ریشه را داشت | رفع شد؛ ایمیج حالا `apps/api/node_modules` و `packages/database/node_modules` را هم می‌برد و در زمان build صحت graph را چک می‌کند |
-| لاگ API پر از `ECONNREFUSED …:4318` | OpenTelemetry بدون collector فعال می‌شد | رفع شد؛ SDK فقط با `OTEL_EXPORTER_ENABLED=true` بالا می‌آید |
-| همهٔ `curl`ها `000` اما `docker ps` همه‌چیز را healthy نشان می‌دهد | `BASE` با `NGINX_HTTP_PORT` واقعی در `.env` نمی‌خواند | `BASE` را طبق بخش ۶ از `.env` بسازید |
-| `deploy.sh` با پیام `secrets are still empty or set to a CHANGE_ME placeholder` متوقف می‌شود | رمزهای الزامی در `.env` پر نشده‌اند | مقادیر را پر کنید؛ این گارد عمدی است |
+| نشانه                                                                                        | علت                                                                | راه‌حل                                                                                                                            |
+| -------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------- |
+| `./…/deploy.sh: Permission denied`                                                           | بیت اجرا روی فایل‌سیستم (WSL/NTFS) اعمال نشده                      | `bash infrastructure/docker/scripts/deploy.sh` یا `chmod +x …`                                                                    |
+| `Conflict. The container name "/xennic-…" is already in use`                                 | استک توسعهٔ محلی با همان نام‌ها بالاست                             | از نسخهٔ فعلی استفاده کنید؛ کانتینرها `xennic-prod-*` هستند و تداخل ندارند                                                        |
+| `Bind for 0.0.0.0:80 failed: port is already allocated`                                      | پورت 80 اشغال است                                                  | `NGINX_HTTP_PORT=8080` (به‌همراه `FRONTEND_URL`/`API_PUBLIC_URL`/`CORS_ORIGINS`)                                                  |
+| `curl` → `000` روی `$BASE/...`                                                               | استک اصلاً بالا نیامده (deploy با خطا متوقف شده)                   | ابتدا `deploy.sh` را با موفقیت اجرا کنید، سپس smoke test                                                                          |
+| `docker compose … logs` خروجی خالی                                                           | هیچ کانتینری از این پروژه ساخته نشده                               | همان مورد بالا                                                                                                                    |
+| Seed پیش از بالا آمدن استک                                                                   | `run --rm api` تلاش می‌کند وابستگی‌ها را بسازد                     | ابتدا `deploy.sh`، سپس `deploy.sh --seed` یا دستور seed                                                                           |
+| `dependency failed to start: container xennic-prod-api is unhealthy`                         | `Cannot find module …` — ایمیج API فقط `node_modules` ریشه را داشت | رفع شد؛ ایمیج حالا `apps/api/node_modules` و `packages/database/node_modules` را هم می‌برد و در زمان build صحت graph را چک می‌کند |
+| لاگ API پر از `ECONNREFUSED …:4318`                                                          | OpenTelemetry بدون collector فعال می‌شد                            | رفع شد؛ SDK فقط با `OTEL_EXPORTER_ENABLED=true` بالا می‌آید                                                                       |
+| همهٔ `curl`ها `000` اما `docker ps` همه‌چیز را healthy نشان می‌دهد                           | `BASE` با `NGINX_HTTP_PORT` واقعی در `.env` نمی‌خواند              | `BASE` را طبق بخش ۶ از `.env` بسازید                                                                                              |
+| `deploy.sh` با پیام `secrets are still empty or set to a CHANGE_ME placeholder` متوقف می‌شود | رمزهای الزامی در `.env` پر نشده‌اند                                | مقادیر را پر کنید؛ این گارد عمدی است                                                                                              |
 
 بررسی دستی سلامت API وقتی unhealthy است:
 

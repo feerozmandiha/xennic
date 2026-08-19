@@ -12,29 +12,29 @@
 با موفقیت انجام شد. هر ۱۱ سرویس بالا آمدند، مهاجرت‌های Prisma اعمال شدند و seed کامل
 اجرا شد. این نقطه، معیار پذیرش Phase-0/Alpha را برآورده می‌کند.
 
-| معیار پذیرش | وضعیت |
-| --- | --- |
-| بالا آمدن کل استک با یک دستور، بدون Node/pnpm روی host | ✅ |
-| اعمال خودکار مهاجرت‌های Prisma در startup | ✅ (۱۱ مهاجرت) |
-| Healthcheck همهٔ سرویس‌های برنامه | ✅ |
-| Seed داده‌های پایه و ادمین | ✅ |
-| هم‌زیستی با استک توسعهٔ محلی روی همان ماشین | ✅ |
+| معیار پذیرش                                            | وضعیت          |
+| ------------------------------------------------------ | -------------- |
+| بالا آمدن کل استک با یک دستور، بدون Node/pnpm روی host | ✅             |
+| اعمال خودکار مهاجرت‌های Prisma در startup              | ✅ (۱۱ مهاجرت) |
+| Healthcheck همهٔ سرویس‌های برنامه                      | ✅             |
+| Seed داده‌های پایه و ادمین                             | ✅             |
+| هم‌زیستی با استک توسعهٔ محلی روی همان ماشین            | ✅             |
 
 ## ۲. وضعیت سرویس‌ها (`docker ps --filter name=xennic-prod`)
 
-| کانتینر | ایمیج | وضعیت |
-| --- | --- | --- |
-| `xennic-prod-nginx` | `nginx:1.27-alpine` | Up — `0.0.0.0:80->80`, `0.0.0.0:443->443` |
-| `xennic-prod-web` | `xennic-prod-web` | Up (healthy) — 3001/tcp |
-| `xennic-prod-api` | `xennic-prod-api` | Up (healthy) — 3000/tcp |
-| `xennic-prod-engineering-service` | build محلی | Up (healthy) — 8001/tcp |
-| `xennic-prod-ai-service` | build محلی | Up (healthy) — 8002/tcp |
-| `xennic-prod-vision-service` | build محلی | Up (healthy) — 8003/tcp |
-| `xennic-prod-postgres` | `postgres:17-alpine` | Up (healthy) — 5432/tcp |
-| `xennic-prod-redis` | `redis:8-alpine` | Up (healthy) — 6379/tcp |
-| `xennic-prod-rabbitmq` | `rabbitmq:4-management` | Up (healthy) — 5672/tcp |
-| `xennic-prod-qdrant` | `qdrant/qdrant:latest` | Up (healthy) — 6333-6334/tcp |
-| `xennic-prod-minio` | `minio/minio:RELEASE.2025-09-07T16-13-09Z` | Up — 9000/tcp |
+| کانتینر                           | ایمیج                                      | وضعیت                                     |
+| --------------------------------- | ------------------------------------------ | ----------------------------------------- |
+| `xennic-prod-nginx`               | `nginx:1.27-alpine`                        | Up — `0.0.0.0:80->80`, `0.0.0.0:443->443` |
+| `xennic-prod-web`                 | `xennic-prod-web`                          | Up (healthy) — 3001/tcp                   |
+| `xennic-prod-api`                 | `xennic-prod-api`                          | Up (healthy) — 3000/tcp                   |
+| `xennic-prod-engineering-service` | build محلی                                 | Up (healthy) — 8001/tcp                   |
+| `xennic-prod-ai-service`          | build محلی                                 | Up (healthy) — 8002/tcp                   |
+| `xennic-prod-vision-service`      | build محلی                                 | Up (healthy) — 8003/tcp                   |
+| `xennic-prod-postgres`            | `postgres:17-alpine`                       | Up (healthy) — 5432/tcp                   |
+| `xennic-prod-redis`               | `redis:8-alpine`                           | Up (healthy) — 6379/tcp                   |
+| `xennic-prod-rabbitmq`            | `rabbitmq:4-management`                    | Up (healthy) — 5672/tcp                   |
+| `xennic-prod-qdrant`              | `qdrant/qdrant:latest`                     | Up (healthy) — 6333-6334/tcp              |
+| `xennic-prod-minio`               | `minio/minio:RELEASE.2025-09-07T16-13-09Z` | Up — 9000/tcp                             |
 
 تأیید ایزولاسیون: هیچ سرویس زیرساختی پورتی روی host منتشر نکرده است؛ تنها `nginx`
 پورت‌های ۸۰ و ۴۴۳ را در اختیار دارد. استک توسعهٔ محلی موجود (`xennic-postgres`,
@@ -50,47 +50,47 @@ No pending migrations to apply.
 [api-entrypoint] Executing command: node prisma/seed.js
 ```
 
-| بخش | نتیجه |
-| --- | --- |
-| Plans | ۳ (Free / Pro / Enterprise) |
-| Roles | ۱۲ |
-| Permissions | ۶۲ |
+| بخش                        | نتیجه                           |
+| -------------------------- | ------------------------------- |
+| Plans                      | ۳ (Free / Pro / Enterprise)     |
+| Roles                      | ۱۲                              |
+| Permissions                | ۶۲                              |
 | Role → Permission bindings | ۱۲ نقش (SUPER_ADMIN با ۶۲ مجوز) |
-| System settings | ۷ |
-| Engineering standards | ۱۵ |
-| AI agents | ۷ |
-| Admin + Workspace | ✅ Workspace «Xennic» |
-| Marketplace vendors | ۷ |
-| Marketplace products | ۳۸ |
-| Feature flags | ۱۶ |
+| System settings            | ۷                               |
+| Engineering standards      | ۱۵                              |
+| AI agents                  | ۷                               |
+| Admin + Workspace          | ✅ Workspace «Xennic»           |
+| Marketplace vendors        | ۷                               |
+| Marketplace products       | ۳۸                              |
+| Feature flags              | ۱۶                              |
 
 ## ۴. زمان build
 
-| اجرا | مدت |
-| --- | --- |
-| build کامل (cold cache) | ~۹۷۴ ثانیه |
+| اجرا                                   | مدت        |
+| -------------------------------------- | ---------- |
+| build کامل (cold cache)                | ~۹۷۴ ثانیه |
 | rebuild بعد از اصلاح لایهٔ runtime API | ~۲۳۴ ثانیه |
-| اجرای مجدد بدون تغییر (cache کامل) | ~۹ ثانیه |
+| اجرای مجدد بدون تغییر (cache کامل)     | ~۹ ثانیه   |
 
 ## ۵. اشکالات یافته و رفع‌شده در جریان این راستی‌آزمایی
 
-| # | نشانه | ریشه | Commit رفع |
-| --- | --- | --- | --- |
-| ۱ | `deploy.sh: Permission denied` | فایل با mode `100644` در Git ثبت شده بود | `6d59214` |
-| ۲ | `Conflict. container name "/xennic-minio" is already in use` | تداخل نام با استک توسعهٔ محلی | `6d59214` |
-| ۳ | تداخل پورت‌های زیرساخت با استک محلی | انتشار پورت‌های infra روی host | `6d59214` |
-| ۴ | `dependency failed to start: xennic-prod-api is unhealthy` | ایمیج فقط `node_modules` ریشه را داشت؛ ۲۷ وابستگی runtime از `apps/api/node_modules` (چیدمان isolated در pnpm) گم شده بود | `399e70d` |
-| ۵ | تلاش مکرر OTLP روی `:4318` | OpenTelemetry بدون collector فعال می‌شد | `399e70d` |
+| #   | نشانه                                                        | ریشه                                                                                                                      | Commit رفع |
+| --- | ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------- | ---------- |
+| ۱   | `deploy.sh: Permission denied`                               | فایل با mode `100644` در Git ثبت شده بود                                                                                  | `6d59214`  |
+| ۲   | `Conflict. container name "/xennic-minio" is already in use` | تداخل نام با استک توسعهٔ محلی                                                                                             | `6d59214`  |
+| ۳   | تداخل پورت‌های زیرساخت با استک محلی                          | انتشار پورت‌های infra روی host                                                                                            | `6d59214`  |
+| ۴   | `dependency failed to start: xennic-prod-api is unhealthy`   | ایمیج فقط `node_modules` ریشه را داشت؛ ۲۷ وابستگی runtime از `apps/api/node_modules` (چیدمان isolated در pnpm) گم شده بود | `399e70d`  |
+| ۵   | تلاش مکرر OTLP روی `:4318`                                   | OpenTelemetry بدون collector فعال می‌شد                                                                                   | `399e70d`  |
 
 ## ۶. یافته‌های باز (اقدام لازم پیش از استقرار عمومی)
 
-| # | یافته | شدت | اقدام |
-| --- | --- | --- | --- |
-| ۱ | `POSTGRES_PASSWORD` در محیط آزمون روی مقدار پیش‌فرض `CHANGE_ME_STRONG_PASSWORD` مانده بود | **بالا** | گارد اعتبارسنجی به `deploy.sh` اضافه شد و اجرا را با placeholder متوقف می‌کند |
-| ۲ | `ADMIN_EMAIL` روی `admin@xennic.example.com` (مقدار نمونه) مانده بود | متوسط | باید به ایمیل واقعی تغییر کند و ادمین دوباره seed شود |
-| ۳ | HTTPS هنوز فعال نیست (فقط HTTP روی ۸۰) | **بالا برای استقرار عمومی** | صدور گواهی و فعال‌سازی بلاک `listen 443 ssl` طبق بخش ۸ Runbook |
-| ۴ | ایمیج‌ها روی سرور ساخته می‌شوند | پایین | انتشار به GHCR در فاز بعد |
-| ۵ | PgBouncer، Meilisearch و Monitoring خارج از استک پایه | پایین | فازهای بعدی |
+| #   | یافته                                                                                     | شدت                         | اقدام                                                                         |
+| --- | ----------------------------------------------------------------------------------------- | --------------------------- | ----------------------------------------------------------------------------- |
+| ۱   | `POSTGRES_PASSWORD` در محیط آزمون روی مقدار پیش‌فرض `CHANGE_ME_STRONG_PASSWORD` مانده بود | **بالا**                    | گارد اعتبارسنجی به `deploy.sh` اضافه شد و اجرا را با placeholder متوقف می‌کند |
+| ۲   | `ADMIN_EMAIL` روی `admin@xennic.example.com` (مقدار نمونه) مانده بود                      | متوسط                       | باید به ایمیل واقعی تغییر کند و ادمین دوباره seed شود                         |
+| ۳   | HTTPS هنوز فعال نیست (فقط HTTP روی ۸۰)                                                    | **بالا برای استقرار عمومی** | صدور گواهی و فعال‌سازی بلاک `listen 443 ssl` طبق بخش ۸ Runbook                |
+| ۴   | ایمیج‌ها روی سرور ساخته می‌شوند                                                           | پایین                       | انتشار به GHCR در فاز بعد                                                     |
+| ۵   | PgBouncer، Meilisearch و Monitoring خارج از استک پایه                                     | پایین                       | فازهای بعدی                                                                   |
 
 > نکته: مقدار `AI_MASTER_KEY` که در جریان این آزمون تولید شد در کانال گفتگو افشا شد و
 > باید پیش از هر استفادهٔ غیرآزمایشی چرخانده شود.

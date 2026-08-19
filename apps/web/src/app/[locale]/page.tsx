@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { LandingPage } from '@/features/landing/components/landing-page';
+import { CmsLandingPage } from '@/features/cms/components/cms-landing-page';
 
 export const metadata: Metadata = {
   title: 'Xennic — پلتفرم تخصصی مهندسی برق',
@@ -21,6 +21,8 @@ export const metadata: Metadata = {
   },
 };
 
-export default function HomePage() {
-  return <LandingPage />;
+export default async function HomePage(props: { params?: Promise<{ locale: string }> }) {
+  const params = await props.params;
+  const locale = params?.locale ?? 'fa';
+  return <CmsLandingPage locale={locale} />;
 }

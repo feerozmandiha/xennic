@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation';
 import localFont from 'next/font/local';
 import { ThemeProvider } from '@/components/providers/theme-provider';
 import { QueryProvider } from '@/components/providers/query-provider';
+import { fetchThemeCss } from '@/lib/theme/fetch-theme';
 import { routing } from '@/i18n/routing';
 // CSS در root layout.tsx import شده است
 
@@ -69,6 +70,7 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
   }
 
   const messages = await getMessages();
+  const themeCss = await fetchThemeCss();
 
   // direction بر اساس locale
   const dir = locale === 'fa' ? 'rtl' : 'ltr';
@@ -80,6 +82,11 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
       className={`${iranSans.variable} ${inter.variable}`}
       suppressHydrationWarning
     >
+      <head>
+        {themeCss ? (
+          <style id="xennic-theme" dangerouslySetInnerHTML={{ __html: themeCss }} />
+        ) : null}
+      </head>
       <body className="min-h-screen bg-[hsl(var(--background))] font-sans antialiased">
         <ThemeProvider
           attribute="class"

@@ -97,3 +97,9 @@ infrastructure/docker/secrets/jwtRS256.key
 # Phase-0 Alpha deployment secrets & TLS material (generated locally by deploy.sh)
 infrastructure/docker/compose/production/secrets/
 infrastructure/docker/compose/production/certs/
+<<<<<<< HEAD
+
+# CMS local file storage
+/storage/cms/
+=======
+>>>>>>> origin/dev
