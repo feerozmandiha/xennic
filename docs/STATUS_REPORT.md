@@ -29,6 +29,29 @@ Sprint I1 — Enterprise Intelligence Platform — **۱۰ فاز کامل** ✅
 | Engineering-service test bugs fixed                  | ✅     |
 | DI errors fixed (pnpm dev startup)                   | ✅     |
 
+## ✅ Phase K5 — Knowledge Rich Content (کامل)
+
+فعال‌سازی جداول دانشنامه که در schema تعریف شده بودند ولی هیچ API نداشتند.
+
+| Component                                          | Status         |
+| -------------------------------------------------- | -------------- |
+| `KnowledgeLocale` value object (fa/en + fallback)  | ✅             |
+| `IKnowledgeContentRepository` (domain contract)    | ✅             |
+| `KnowledgeContentRepository` (Prisma)              | ✅             |
+| `KnowledgeContentService`                          | ✅             |
+| `KnowledgeContentController` (۱۹ endpoint)         | ✅             |
+| ترجمه‌ها — `knowledge_translations`                | ✅             |
+| رسانه — `knowledge_media`                          | ✅             |
+| فرمول‌ها — `knowledge_formulas`                    | ✅             |
+| مثال‌های حل‌شده — `knowledge_examples`             | ✅             |
+| لایک نظرات — `knowledge_comments.liked_by`         | ✅             |
+| بازسازی خودکار `search_text`                       | ✅             |
+| endpoint عمومی `/public/knowledge/:slug/localized` | ✅             |
+| تست‌های واحد                                       | ✅ ۸۶ تست جدید |
+
+**نتیجه:** ۱۵۸ تست ماژول Knowledge — ۱۵۸ قبول (۱۰۰٪). صفر خطای TypeScript، صفر نقض معماری.
+جزئیات کامل: `docs/knowledge/knowledge-rich-content.md`
+
 ## ✅ Phase K2 — Semantic Integration Layer (کامل)
 
 | Component                                  | Status |
@@ -62,7 +85,7 @@ Sprint I1 — Enterprise Intelligence Platform — **۱۰ فاز کامل** ✅
 | Engineering            | —      | ✅      | —          | —          | ⚠️ Gateway نیاز دارد           |
 | AI                     | ✅     | ✅      | —          | ✅         | ✅ کامل                        |
 | AI Runtime             | —      | ✅      | —          | ✅         | ✅ کامل                        |
-| Knowledge              | ✅     | ✅      | —          | —          | ✅ کامل                        |
+| Knowledge              | ✅     | ✅      | ✅         | ✅         | ✅ کامل (+Rich Content K5)     |
 | Knowledge Factory      | ✅     | ✅      | ✅         | ✅         | ✅ کامل                        |
 | Knowledge Intelligence | ✅     | ✅      | ✅         | ✅         | ✅ کامل                        |
 | Semantic Integration   | ✅     | ✅      | ✅         | —          | ✅ کامل                        |

@@ -34,11 +34,11 @@ type FlowState =
   | { name: 'awaiting_manual' }
   | { name: 'consult_message' }
   | { name: 'consult_name'; channel: 'pv' | 'call'; message?: string }
-  | { name: 'consult_phone'; message?: string; name?: string }
+  | { name: 'consult_phone'; message?: string; userName?: string }
   | {
       name: 'consult_window';
       message?: string;
-      name?: string;
+      userName?: string;
       phone?: string;
     };
 
@@ -180,7 +180,7 @@ export class Flow {
             name: text,
           });
         } else {
-          s.state = { name: 'consult_phone', message: st.message, name: text };
+          s.state = { name: 'consult_phone', message: st.message, userName: text };
           await api.sendMessage(chatId, 'شماره تماس را بفرستید (مثال: ۰۹۱۲۳۴۵۶۷۸۹):', {
             replyMarkup: phoneKeyboard(platform.capabilities.requestContact),
           });
@@ -200,7 +200,7 @@ export class Flow {
         s.state = {
           name: 'consult_window',
           message: st.message,
-          name: st.name,
+          userName: st.userName,
           phone,
         };
         await api.sendMessage(chatId, 'بازه زمانی ترجیحی تماس؟', {
@@ -616,7 +616,7 @@ export class Flow {
       const st = s.state;
       await this.finalizeConsultation(platform, api, chatId, s, {
         channel: 'call',
-        name: st.name,
+        name: st.userName,
         phone: st.phone,
         window: win as 'morning' | 'noon' | 'evening',
       });

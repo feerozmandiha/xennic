@@ -8,6 +8,8 @@ export enum EventType {
   DocumentChunked = 'DocumentChunked',
   EmbeddingsGenerated = 'EmbeddingsGenerated',
   DocumentPublished = 'DocumentPublished',
+  KnowledgeArticlePublished = 'KnowledgeArticlePublished',
+  KnowledgeArticleArchived = 'KnowledgeArticleArchived',
   GraphNodeCreated = 'GraphNodeCreated',
   GraphEdgesCreated = 'GraphEdgesCreated',
   OntologyUpdated = 'OntologyUpdated',
@@ -23,6 +25,8 @@ export const EVENT_VERSIONS: Record<EventType, number> = {
   [EventType.DocumentChunked]: 1,
   [EventType.EmbeddingsGenerated]: 1,
   [EventType.DocumentPublished]: 1,
+  [EventType.KnowledgeArticlePublished]: 1,
+  [EventType.KnowledgeArticleArchived]: 1,
   [EventType.GraphNodeCreated]: 1,
   [EventType.GraphEdgesCreated]: 1,
   [EventType.OntologyUpdated]: 1,
@@ -61,6 +65,27 @@ export interface DocumentPublishedPayload {
   classification: Record<string, unknown>;
   chunkCount: number;
   createdBy: string | null;
+}
+
+export interface KnowledgeArticlePublishedPayload {
+  articleId: string;
+  workspaceId: string;
+  slug: string;
+  title: string;
+  language: string;
+  visibility: string;
+  version: number;
+  readingTime: number | null;
+  difficulty: string | null;
+  authorId: string | null;
+  publishedAt: string;
+  contentProperties: string[];
+}
+
+export interface KnowledgeArticleArchivedPayload {
+  articleId: string;
+  workspaceId: string;
+  archivedAt: string;
 }
 
 export interface GraphNodeCreatedPayload {
@@ -146,6 +171,8 @@ export type EventPayloads = {
   [EventType.DocumentChunked]: DocumentChunkedPayload;
   [EventType.EmbeddingsGenerated]: EmbeddingsGeneratedPayload;
   [EventType.DocumentPublished]: DocumentPublishedPayload;
+  [EventType.KnowledgeArticlePublished]: KnowledgeArticlePublishedPayload;
+  [EventType.KnowledgeArticleArchived]: KnowledgeArticleArchivedPayload;
   [EventType.GraphNodeCreated]: GraphNodeCreatedPayload;
   [EventType.GraphEdgesCreated]: GraphEdgesCreatedPayload;
   [EventType.OntologyUpdated]: OntologyUpdatedPayload;

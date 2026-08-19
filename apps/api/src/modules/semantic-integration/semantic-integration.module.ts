@@ -6,6 +6,8 @@ import { SemanticEventBus } from './application/services/semantic-event-bus.serv
 import { OutboxRelayService } from './application/services/outbox-relay.service.js';
 import { DocumentPublishedHandler } from './application/event-handlers/document-published.handler.js';
 import { CacheInvalidationHandler } from './application/event-handlers/cache-invalidation.handler.js';
+import { KnowledgeArticlePublishedHandler } from './application/event-handlers/knowledge-article-published.handler.js';
+import { KnowledgeArticleArchivedHandler } from './application/event-handlers/knowledge-article-archived.handler.js';
 import { KnowledgeIntelligenceModule } from '../knowledge-intelligence/knowledge-intelligence.module.js';
 import { AiRuntimeModule } from '../ai-runtime/ai-runtime.module.js';
 
@@ -20,6 +22,8 @@ import { AiRuntimeModule } from '../ai-runtime/ai-runtime.module.js';
     OutboxRelayService,
     DocumentPublishedHandler,
     CacheInvalidationHandler,
+    KnowledgeArticlePublishedHandler,
+    KnowledgeArticleArchivedHandler,
   ],
   exports: [DomainEventPublisher, SemanticEventBus],
 })
@@ -31,11 +35,15 @@ export class SemanticIntegrationModule implements OnModuleInit {
     private readonly outboxRelay: OutboxRelayService,
     private readonly documentPublishedHandler: DocumentPublishedHandler,
     private readonly cacheInvalidationHandler: CacheInvalidationHandler,
+    private readonly knowledgeArticlePublishedHandler: KnowledgeArticlePublishedHandler,
+    private readonly knowledgeArticleArchivedHandler: KnowledgeArticleArchivedHandler,
   ) {}
 
   onModuleInit(): void {
     this.eventBus.register(this.documentPublishedHandler);
     this.eventBus.register(this.cacheInvalidationHandler);
+    this.eventBus.register(this.knowledgeArticlePublishedHandler);
+    this.eventBus.register(this.knowledgeArticleArchivedHandler);
     this.outboxRelay.start();
     this.logger.log(
       'Semantic Integration Layer initialized: handlers registered, outbox relay started',

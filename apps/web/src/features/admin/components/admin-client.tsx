@@ -33,6 +33,7 @@ import {
   Key,
   Webhook,
   Flag,
+  Palette,
 } from 'lucide-react';
 import { useAuthStore } from '@/stores/auth.store';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -41,6 +42,8 @@ import { useToast } from '@/stores/toast.store';
 import { apiClient } from '@/lib/api/client';
 import { cn } from '@/lib/utils';
 import { AiProviderManagement } from './ai-provider-management';
+import { CmsEditor } from '@/features/cms/components/cms-editor';
+import { ThemeSection } from './theme-section';
 
 // ─────────────────────────────────────────────────────────────
 // types
@@ -71,6 +74,8 @@ const SECTIONS = [
   { key: 'ai-providers', label: 'ارائه‌دهندگان AI', icon: Zap },
   { key: 'webhooks', label: 'Webhook ها', icon: Webhook },
   { key: 'feature-flags', label: 'Feature Flag ها', icon: Flag },
+  { key: 'cms', label: 'مدیریت محتوا (CMS)', icon: Edit3 },
+  { key: 'theme', label: 'رنگ‌ها و تم', icon: Palette },
 ] as const;
 
 type Section = (typeof SECTIONS)[number]['key'];
@@ -2879,6 +2884,15 @@ export function AdminClient() {
     'ai-providers': <AiProviderManagement />,
     webhooks: <WebhooksSection />,
     'feature-flags': <FeatureFlagsSection />,
+    cms: (
+      <div className="space-y-4">
+        <p className="text-sm text-[hsl(var(--muted-foreground))]">
+          ویرایش هدر، فوتر و صفحه‌ی فرود سایت. تغییرات پس از انتشار عمومی می‌شود.
+        </p>
+        <CmsEditor />
+      </div>
+    ),
+    theme: <ThemeSection />,
   };
 
   const current = SECTIONS.find((s) => s.key === section);

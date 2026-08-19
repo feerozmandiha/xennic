@@ -1,5 +1,11 @@
-import { Controller, Get, Post, Param, Query, Request } from '@nestjs/common';
+import { Controller, Get, Post, Param, Query, Request, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
+import { JwtAuthGuard } from '../../../auth/infrastructure/guards/jwt-auth.guard.js';
+import { RequirePermissions } from '../../../rbac/infrastructure/decorators/permissions.decorator.js';
+import { PermissionsGuard } from '../../../rbac/infrastructure/guards/permissions.guard.js';
+import { WorkspaceGuard } from '../../../rbac/infrastructure/guards/workspace.guard.js';
+import { GraphWorkspaceGuard } from '../guards/graph-workspace.guard.js';
+import { boundedInteger } from '../query-parameters.js';
 import { KnowledgeMetricsService } from '../../application/services/knowledge-metrics.service.js';
 import { KnowledgeAuthorityService } from '../../application/services/knowledge-authority.service.js';
 import { KnowledgeCompletenessService } from '../../application/services/knowledge-completeness.service.js';
@@ -8,6 +14,8 @@ import { KnowledgeConfidenceService } from '../../application/services/knowledge
 
 @ApiTags('knowledge-intelligence')
 @ApiBearerAuth('JWT-auth')
+@UseGuards(JwtAuthGuard, WorkspaceGuard, PermissionsGuard, GraphWorkspaceGuard)
+@RequirePermissions('knowledge.read')
 @Controller('knowledge-intelligence')
 export class MetricsController {
   constructor(
@@ -34,41 +42,51 @@ export class MetricsController {
 
   @Get('metrics/workspace/top/:metric')
   @ApiOperation({ summary: 'Get top nodes by metric for workspace' })
-  async topNodes(@Request() req: any, @Param('metric') metric: string, @Query('limit') limit = 10) {
-    const top = await this.metricsService.getTopNodes(req.user?.workspaceId, metric, limit);
+  async topNodes(
+    @Request() req: any,
+    @Param('metric') metric: string,
+    @Query('limit') limit?: string,
+  ) {
+    const top = await this.metricsService.getTopNodes(
+      req.workspaceId,
+      metric,
+      boundedInteger(limit, 10, 1, 100),
+    );
     return { success: true, data: top };
   }
 
   @Get('metrics/workspace/authority')
   @ApiOperation({ summary: 'Rank nodes by authority' })
-  async rankAuthority(@Request() req: any, @Query('limit') limit = 20) {
-    const ranked = await this.authorityService.rankNodes(req.user?.workspaceId, limit);
+  async rankAuthority(@Request() req: any, @Query('limit') limit?: string) {
+    const ranked = await this.authorityService.rankNodes(
+      req.workspaceId,
+      boundedInteger(limit, 20, 1, 100),
+    );
     return { success: true, data: ranked };
   }
 
   @Get('metrics/workspace/completeness')
   @ApiOperation({ summary: 'Analyze workspace knowledge completeness' })
   async analyzeCompleteness(@Request() req: any) {
-    const analysis = await this.completenessService.analyzeWorkspaceCompleteness(
-      req.user?.workspaceId,
-    );
+    const analysis = await this.completenessService.analyzeWorkspaceCompleteness(req.workspaceId);
     return { success: true, data: analysis };
   }
 
   @Get('metrics/workspace/freshness')
   @ApiOperation({ summary: 'Refresh freshness scores for stale nodes' })
-  async refreshFreshness(@Request() req: any, @Query('thresholdDays') thresholdDays = 30) {
+  async refreshFreshness(@Request() req: any, @Query('thresholdDays') thresholdDays?: string) {
     const stale = await this.freshnessService.refreshStaleNodes(
-      req.user?.workspaceId,
-      thresholdDays,
+      req.workspaceId,
+      boundedInteger(thresholdDays, 30, 1, 3650),
     );
     return { success: true, data: stale };
   }
 
   @Post('metrics/workspace/confidence/recompute')
+  @RequirePermissions('knowledge.update')
   @ApiOperation({ summary: 'Batch recompute confidence scores' })
   async recomputeConfidence(@Request() req: any) {
-    const results = await this.confidenceService.batchComputeConfidence(req.user?.workspaceId);
+    const results = await this.confidenceService.batchComputeConfidence(req.workspaceId);
     return { success: true, data: { computed: results.length, results: results.slice(0, 100) } };
   }
 }

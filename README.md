@@ -17,9 +17,15 @@
   - `engineering-service`
   - `ai-service`
   - `vision-service`
-- اما Backend اصلی و Frontend فعلاً Dockerfile رسمی ندارند:
-  - API از مسیر `apps/api` با `pnpm` روی host اجرا می‌شود.
-  - Web از مسیر `apps/web` با `pnpm` روی host اجرا می‌شود.
+- Backend و Frontend برای **استقرار تولید** اکنون Dockerfile رسمی دارند:
+  - `apps/api/Dockerfile` → سرویس `api` (NestJS/Fastify)
+  - `apps/web/Dockerfile` → سرویس `web` (Next.js standalone)
+  - استک کامل تولید: `infrastructure/docker/compose/production/docker-compose.yml`
+    و اسکریپت `infrastructure/docker/scripts/deploy.sh`
+  - راهنمای استقرار فاز صفر/آلفا: `docs/deployment/phase-0-alpha-launch.md`
+- اما برای **توسعه روزمره**، API و Web همچنان با `pnpm` روی host اجرا می‌شوند:
+  - API از مسیر `apps/api` با `pnpm --filter @xennic/api dev`
+  - Web از مسیر `apps/web` با `pnpm --filter @xennic/web dev`
 
 بنابراین برای توسعه روزمره، همه چیز را یکجا بالا نیاورید. سرویس‌های Python سنگین هستند و ممکن است باعث کندی یا هنگ سیستم شوند.
 
@@ -323,7 +329,7 @@ docker compose -f workspace/docker-compose.yml down
 ### بررسی اینکه چیزی از Xennic روشن نمانده باشد
 
 ```bash
-docker ps --filter "name=xennic"
+docker ps --filter "name=xennic-prod"
 ```
 
 ---

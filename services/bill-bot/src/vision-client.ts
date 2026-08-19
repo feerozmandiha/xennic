@@ -71,7 +71,9 @@ export async function readBillViaVision(
 ): Promise<VisionReadResult | null> {
   try {
     const form = new FormData();
-    form.append('file', new Blob([fileBytes]), filename);
+    const blobBytes = new Uint8Array(fileBytes.byteLength);
+    blobBytes.set(fileBytes);
+    form.append('file', new Blob([blobBytes]), filename);
     form.append('mode', 'read');
     const res = await fetch(`${baseUrl}/vision/bill/read`, {
       method: 'POST',

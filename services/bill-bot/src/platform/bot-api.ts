@@ -128,8 +128,10 @@ export class BotApi {
     caption?: string,
   ): Promise<TgMessage> {
     const form = new FormData();
+    const blobBytes = new Uint8Array(bytes.byteLength);
+    blobBytes.set(bytes);
     form.append('chat_id', String(chatId));
-    form.append('document', new Blob([bytes]), filename);
+    form.append('document', new Blob([blobBytes]), filename);
     if (caption) form.append('caption', caption);
     const res = await fetch(`${this.base}/sendDocument`, {
       method: 'POST',
