@@ -31,12 +31,16 @@ export class OrderService {
     const items = await Promise.all(
       dto.items.map(async (item) => {
         const product = await this.repo.findProductById(item.productId);
-        if (!product) throw new NotFoundException(`Product ${item.productId} not found`);
+        if (!product || product.deletedAt || product.status !== 'active') {
+          throw new NotFoundException(`Product ${item.productId} not found or unavailable`);
+        }
+        // قیمت از سمت سرور خوانده می‌شود تا امکان دستکاری قیمت توسط کلاینت وجود نداشته باشد.
+        const unitPrice = product.price;
         return {
           productId: item.productId,
           quantity: item.quantity,
-          unitPrice: item.unitPrice,
-          totalPrice: item.unitPrice * item.quantity,
+          unitPrice,
+          totalPrice: unitPrice * item.quantity,
         };
       }),
     );

@@ -10,6 +10,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { apiClient } from '@/lib/api/client';
+import { useCartStore, useCartTotals } from '@/stores/cart.store';
+import { useToast } from '@/stores/toast.store';
 
 interface StorefrontProductDetail {
   id: string;
@@ -31,6 +33,10 @@ export function StorefrontProductDetail({ id }: { id: string }) {
   const locale = (params?.locale as string) ?? 'fa';
   const numberLocale = locale === 'fa' ? 'fa-IR' : 'en-US';
 
+  const toast = useToast();
+  const addItem = useCartStore((s) => s.addItem);
+  const { count } = useCartTotals();
+
   const { data, isLoading } = useQuery({
     queryKey: ['storefront', 'product', id, locale],
     queryFn: () =>
@@ -38,6 +44,19 @@ export function StorefrontProductDetail({ id }: { id: string }) {
     enabled: !!id,
     retry: false,
   });
+
+  const handleAddToCart = () => {
+    if (!data) return;
+    addItem({
+      productId: data.id,
+      sku: data.sku,
+      title: data.title,
+      price: data.price,
+      currency: data.currency,
+      vendorName: data.vendorName,
+    });
+    toast.success(t('addedToCart'));
+  };
 
   if (isLoading) return <Skeleton className="h-72" />;
   if (!data) return <p className="text-sm text-[hsl(var(--muted-foreground))]">{t('notFound')}</p>;
@@ -110,21 +129,17 @@ export function StorefrontProductDetail({ id }: { id: string }) {
             </p>
 
             <div className="space-y-2">
-              <Button asChild className="w-full">
-                <Link href={`/${locale}/login`}>
-                  <ShoppingCart className="h-4 w-4" />
-                  {t('loginToBuy')}
-                </Link>
+              <Button className="w-full" onClick={handleAddToCart}>
+                <ShoppingCart className="h-4 w-4" />
+                {t('addToCart')}
               </Button>
-              <p className="text-center text-xs text-[hsl(var(--muted-foreground))]">
-                {t('registerNote')}{' '}
-                <Link
-                  href={`/${locale}/register`}
-                  className="text-[hsl(var(--primary))] hover:underline"
-                >
-                  {t('register')}
-                </Link>
-              </p>
+              {count > 0 ? (
+                <Button asChild variant="outline" className="w-full">
+                  <Link href={`/${locale}/marketplace/cart`}>
+                    {t('viewCart')} ({count})
+                  </Link>
+                </Button>
+              ) : null}
             </div>
           </CardContent>
         </Card>
