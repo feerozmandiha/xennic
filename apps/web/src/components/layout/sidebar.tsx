@@ -50,13 +50,6 @@ const NAV_ITEMS: readonly NavigationItem[] = [
   { key: 'vision', icon: ScanEye, adminOnly: false },
   { key: 'energy', icon: FileBarChart, adminOnly: false },
   { key: 'knowledge', route: 'knowledge', icon: Library, adminOnly: false },
-  {
-    key: 'knowledge-manage',
-    route: 'knowledge-manage',
-    icon: Library,
-    adminOnly: true,
-    labelKey: 'knowledgeManage',
-  },
   { key: 'marketplace', route: 'marketplace/manage', icon: ShoppingCart, adminOnly: false },
   { key: 'consultations', icon: MessageSquare, adminOnly: false },
   { key: 'storage', icon: HardDrive, adminOnly: false },
@@ -105,15 +98,7 @@ function NavItem({
   const routeSegment = route ?? navKey;
   // admin به route جداگانه می‌رود (خارج از dashboard layout)
   const href = navKey === 'admin' ? `/${locale}/admin` : `/${locale}/${routeSegment}`;
-  // برای جلوگیری از تداخل دو آیتم دانشنامه (عمومی و مدیریت)، فعال بودن
-  // آیتم مدیریت را فقط وقتی true کن که path دقیقاً با knowledge-manage شروع شود.
-  const isActive =
-    navKey === 'knowledge-manage'
-      ? pathname.startsWith(`/${locale}/knowledge-manage`)
-      : navKey === 'knowledge'
-        ? pathname.startsWith(`/${locale}/knowledge`) &&
-          !pathname.startsWith(`/${locale}/knowledge-manage`)
-        : pathname.includes(`/${routeSegment}`);
+  const isActive = pathname.includes(`/${routeSegment}`);
 
   return (
     <Link

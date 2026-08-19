@@ -3,7 +3,7 @@
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
-import { BookOpen, ArrowRight, Clock, Calendar } from 'lucide-react';
+import { BookOpen, ArrowRight, Clock, Calendar, Sparkles } from 'lucide-react';
 import { apiClient } from '@/lib/api/client';
 import { Badge } from '@/components/ui/badge';
 import { KnowledgeRenderer } from './knowledge-editor';
@@ -119,6 +119,22 @@ export function PublicKnowledgeDetailClient({ slug }: Props) {
             </span>
           </div>
         </header>
+
+        <div className="mb-8 flex justify-end">
+          <Link
+            href={`/${locale}/ai?prompt=${encodeURIComponent(
+              'این مقاله دانشنامه را به‌طور کامل تجزیه و تحلیل کن: خلاصه‌ای از محتوا، مفاهیم کلیدی، نکات کاربردی برای مهندسان برق، و پیش‌نیازها و ادامه‌ی پیشنهادی برای یادگیری بیشتر ارائه بده.',
+            )}&title=${encodeURIComponent(title as string)}&ref=${encodeURIComponent(
+              typeof window !== 'undefined'
+                ? window.location.pathname
+                : `/${locale}/knowledge/${article.slug}`,
+            )}`}
+            className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-l from-[hsl(var(--primary))] to-[hsl(var(--accent))] px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-[hsl(var(--primary)/0.25)] transition-all hover:shadow-xl hover:-translate-y-0.5"
+          >
+            <Sparkles className="h-4 w-4" />
+            تجزیه و تحلیل با هوش مصنوعی
+          </Link>
+        </div>
 
         <div className="prose prose-sm max-w-none dark:prose-invert">
           {article.content && Object.keys(article.content).length > 0 ? (

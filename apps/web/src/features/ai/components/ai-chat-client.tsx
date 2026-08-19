@@ -389,14 +389,26 @@ const API_BASE =
     ? `${process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000'}/api/v1`
     : `http://localhost:3000/api/v1`;
 
-export function AiChatClient() {
+export function AiChatClient({
+  initialPrompt,
+  initialContext,
+}: {
+  initialPrompt?: string;
+  initialContext?: { title?: string; url?: string };
+} = {}) {
   const user = useAuthStore((s) => s.user);
   const wsId = useAuthStore((s) => s.workspaceId);
   const toast = useToast();
   const queryClient = useQueryClient();
 
   const [activeConvId, setActiveConvId] = useState<string | null>(null);
-  const [input, setInput] = useState('');
+  const [input, setInput] = useState(
+    initialPrompt
+      ? initialContext?.title
+        ? `لطفاً مقاله/دانشنامه «${initialContext.title}» را تجزیه و تحلیل کن.\n\n${initialPrompt}`
+        : initialPrompt
+      : '',
+  );
   const [isTyping, setIsTyping] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [useStream, setUseStream] = useState(false); // streaming endpoint در دست توسعه
