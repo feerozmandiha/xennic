@@ -16,7 +16,7 @@ import TableHeader from '@tiptap/extension-table-header';
 import TextAlign from '@tiptap/extension-text-align';
 import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight';
 import { common, createLowlight } from 'lowlight';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Bold,
   Italic,
@@ -326,6 +326,23 @@ export function KnowledgeEditor({ content, onChange, placeholder, editable = tru
       onChange(editor.getJSON() as Record<string, unknown>);
     },
   });
+
+  // When the external `content` prop changes (e.g. article data loads after
+  // the editor has mounted), replace the editor content. Tiptap only reads
+  // the initial `content` once, so without this the editor stays empty even
+  // though the parent state was populated.
+  useEffect(() => {
+    if (!editor) return;
+    if (!content || Object.keys(content).length === 0) return;
+    // Avoid resetting while the user is actively typing (the onUpdate fired
+    // by our own commands keeps the parent in sync).
+    if (editor.isFocused) return;
+    const current = JSON.stringify(editor.getJSON());
+    const next = JSON.stringify(content);
+    if (current !== next) {
+      editor.commands.setContent(content, { emitUpdate: false });
+    }
+  }, [content, editor]);
 
   const setLink = useCallback(() => {
     if (!editor) return;
