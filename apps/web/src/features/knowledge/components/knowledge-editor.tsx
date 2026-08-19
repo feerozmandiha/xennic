@@ -34,6 +34,7 @@ import {
   Redo2,
   Link,
   Image,
+  FileText,
   Table as TableIcon,
   AlignLeft,
   AlignCenter,
@@ -48,6 +49,7 @@ import {
 } from 'lucide-react';
 import { apiClient } from '@/lib/api/client';
 import { useToast } from '@/stores/toast.store';
+import { MediaPicker } from './media/media-picker';
 import katex from 'katex';
 
 const lowlight = createLowlight(common);
@@ -295,6 +297,7 @@ export function KnowledgeEditor({ content, onChange, placeholder, editable = tru
   const toast = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
+  const [mediaPicker, setMediaPicker] = useState<null | 'image' | 'file'>(null);
 
   const editor = useEditor({
     extensions: [
@@ -384,6 +387,28 @@ export function KnowledgeEditor({ content, onChange, placeholder, editable = tru
       }
     },
     [editor, toast],
+  );
+
+  const insertMedia = useCallback(
+    (src: string) => {
+      if (!editor) return;
+      if (/\.(png|jpe?g|gif|webp|svg|avif)(\?.*)?$/i.test(src)) {
+        editor.chain().focus().setImage({ src }).run();
+      } else {
+        const label = src.split('/').pop() ?? 'فایل پیوست';
+        editor
+          .chain()
+          .focus()
+          .setLink({ href: src })
+          .command(({ commands }) =>
+            commands.insertContent(
+              `<a href="${src}" target="_blank" rel="noreferrer">📎 ${label}</a> `,
+            ),
+          )
+          .run();
+      }
+    },
+    [editor],
   );
 
   const addTable = useCallback(() => {
@@ -581,12 +606,18 @@ export function KnowledgeEditor({ content, onChange, placeholder, editable = tru
           <ToolbarButton onClick={addImageFromUrl} title="تصویر از آدرس">
             <Image className="h-4 w-4" />
           </ToolbarButton>
-          <ToolbarButton onClick={() => fileInputRef.current?.click()} title="آپلود تصویر">
+          <ToolbarButton onClick={() => fileInputRef.current?.click()} title="آپلود سریع تصویر">
             {uploading ? (
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
               <Upload className="h-4 w-4" />
             )}
+          </ToolbarButton>
+          <ToolbarButton onClick={() => setMediaPicker('image')} title="کتابخانه رسانه">
+            <Image className="h-4 w-4" />
+          </ToolbarButton>
+          <ToolbarButton onClick={() => setMediaPicker('file')} title="افزودن فایل/PDF">
+            <FileText className="h-4 w-4" />
           </ToolbarButton>
           <input
             ref={fileInputRef}
@@ -679,6 +710,12 @@ export function KnowledgeEditor({ content, onChange, placeholder, editable = tru
       <div className="p-4">
         <EditorContent editor={editor} className={PROSE_CLASSES_EDITOR} />
       </div>
+      <MediaPicker
+        open={mediaPicker !== null}
+        onClose={() => setMediaPicker(null)}
+        accept={mediaPicker ?? 'image'}
+        onSelect={(src) => insertMedia(src)}
+      />
     </div>
   );
 }
