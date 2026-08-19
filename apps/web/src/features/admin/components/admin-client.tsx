@@ -43,6 +43,7 @@ import { apiClient } from '@/lib/api/client';
 import { cn } from '@/lib/utils';
 import { AiProviderManagement } from './ai-provider-management';
 import { CmsEditor } from '@/features/cms/components/cms-editor';
+import { KnowledgeAdminConsole } from '@/features/knowledge/admin';
 import { ThemeSection } from './theme-section';
 
 // ─────────────────────────────────────────────────────────────
@@ -66,7 +67,7 @@ const SECTIONS = [
   { key: 'workspaces', label: 'Workspace ها', icon: Building2 },
   { key: 'plans', label: 'پلن‌ها و تعرفه', icon: CreditCard },
   { key: 'consultations', label: 'تیکت‌ها', icon: MessageSquare },
-  { key: 'articles', label: 'مقالات', icon: BookOpen },
+  { key: 'knowledge', label: 'دانشنامه', icon: BookOpen },
   { key: 'notifications', label: 'اعلان‌ها', icon: Bell },
   { key: 'settings', label: 'تنظیمات', icon: Settings },
   { key: 'taxonomy', label: 'تاکسونومی', icon: Tags },
@@ -1247,221 +1248,10 @@ function SettingsSection() {
 // ─────────────────────────────────────────────────────────────
 // articles admin section
 // ─────────────────────────────────────────────────────────────
-function ArticlesAdminSection() {
-  const toast = useToast();
-  const qc = useQueryClient();
-  const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({
-    title: '',
-    titleEn: '',
-    summary: '',
-    content: '',
-    category: 'general',
-    tags: '',
-    status: 'draft',
-    readMinutes: '5',
-  });
-
-  const { data } = useQuery({
-    queryKey: ['admin', 'articles-list'],
-    queryFn: () => apiClient.get<any>('/articles?limit=50&status=all'),
-  });
-
-  const create = useMutation({
-    mutationFn: () =>
-      apiClient.post<any>('/admin/articles', {
-        ...form,
-        tags: form.tags
-          .split(',')
-          .map((t) => t.trim())
-          .filter(Boolean),
-        readMinutes: Number(form.readMinutes),
-      }),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['admin', 'articles-list'] });
-      toast.success('مقاله ایجاد شد');
-      setShowForm(false);
-      setForm({
-        title: '',
-        titleEn: '',
-        summary: '',
-        content: '',
-        category: 'general',
-        tags: '',
-        status: 'draft',
-        readMinutes: '5',
-      });
-    },
-    onError: () => toast.error('خطا'),
-  });
-
-  const articles: any[] = data?.data ?? [];
-  const inputCls =
-    'w-full px-3 py-2 rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--background))] text-sm outline-none focus:border-[hsl(var(--primary))]';
-
-  if (showForm)
-    return (
-      <div className="max-w-3xl space-y-4">
-        <div className="flex items-center justify-between">
-          <h3 className="font-bold">مقاله جدید</h3>
-          <button
-            onClick={() => setShowForm(false)}
-            className="text-sm text-[hsl(var(--muted-foreground))]"
-          >
-            ← بازگشت
-          </button>
-        </div>
-        <div className="space-y-3">
-          <input
-            value={form.title}
-            onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
-            placeholder="عنوان فارسی *"
-            className={inputCls}
-          />
-          <input
-            value={form.titleEn}
-            onChange={(e) => setForm((f) => ({ ...f, titleEn: e.target.value }))}
-            placeholder="عنوان انگلیسی"
-            className={inputCls}
-          />
-          <textarea
-            value={form.summary}
-            onChange={(e) => setForm((f) => ({ ...f, summary: e.target.value }))}
-            rows={2}
-            placeholder="خلاصه مقاله *"
-            className={cn(inputCls, 'resize-none')}
-          />
-          <textarea
-            value={form.content}
-            onChange={(e) => setForm((f) => ({ ...f, content: e.target.value }))}
-            rows={15}
-            placeholder="محتوای مقاله (Markdown) *"
-            className={cn(inputCls, 'resize-none font-mono text-xs')}
-          />
-          <div className="grid grid-cols-3 gap-3">
-            <select
-              value={form.category}
-              onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}
-              className={inputCls}
-            >
-              {[
-                'general',
-                'cable',
-                'transformer',
-                'protection',
-                'power_quality',
-                'grounding',
-                'renewable',
-                'motor',
-              ].map((c) => (
-                <option key={c} value={c}>
-                  {c}
-                </option>
-              ))}
-            </select>
-            <select
-              value={form.status}
-              onChange={(e) => setForm((f) => ({ ...f, status: e.target.value }))}
-              className={inputCls}
-            >
-              <option value="draft">پیش‌نویس</option>
-              <option value="published">منتشر شده</option>
-            </select>
-            <input
-              value={form.readMinutes}
-              onChange={(e) => setForm((f) => ({ ...f, readMinutes: e.target.value }))}
-              type="number"
-              placeholder="زمان مطالعه (دقیقه)"
-              className={inputCls}
-            />
-          </div>
-          <input
-            value={form.tags}
-            onChange={(e) => setForm((f) => ({ ...f, tags: e.target.value }))}
-            placeholder="تگ‌ها با کاما: کابل، IEC 60364، سایزینگ"
-            className={inputCls}
-          />
-          <div className="flex justify-end gap-2">
-            <button
-              onClick={() => setShowForm(false)}
-              className="h-8 px-4 text-xs rounded border border-[hsl(var(--border))] hover:bg-[hsl(var(--secondary))]"
-            >
-              لغو
-            </button>
-            <button
-              onClick={() => create.mutate()}
-              disabled={create.isPending || !form.title || !form.content}
-              className="h-8 px-5 text-xs rounded flex items-center gap-2 bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] disabled:opacity-50"
-            >
-              {create.isPending ? (
-                <Loader2 className="h-3.5 w-3.5 animate-spin" />
-              ) : (
-                <Plus className="h-3.5 w-3.5" />
-              )}
-              ذخیره مقاله
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-
-  return (
-    <div className="space-y-4">
-      <div className="flex justify-end">
-        <button
-          onClick={() => setShowForm(true)}
-          className="flex items-center gap-2 h-9 px-4 rounded-lg bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] text-sm hover:opacity-90"
-        >
-          <Plus className="h-4 w-4" />
-          مقاله جدید
-        </button>
-      </div>
-      <div className="rounded-xl border border-[hsl(var(--border))] overflow-hidden">
-        <table className="w-full text-sm">
-          <thead className="bg-[hsl(var(--secondary)/0.5)]">
-            <tr>
-              {['عنوان', 'دسته', 'وضعیت', 'بازدید', 'لایک'].map((h) => (
-                <th
-                  key={h}
-                  className="text-right text-xs font-semibold text-[hsl(var(--muted-foreground))] px-4 py-3"
-                >
-                  {h}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-[hsl(var(--border)/0.5)]">
-            {articles.map((a: any) => (
-              <tr key={a.id} className="hover:bg-[hsl(var(--secondary)/0.3)]">
-                <td className="px-4 py-3 font-medium max-w-xs truncate">{a.title}</td>
-                <td className="px-4 py-3 text-xs text-[hsl(var(--muted-foreground))]">
-                  {a.category}
-                </td>
-                <td className="px-4 py-3">
-                  <span
-                    className={cn(
-                      'text-[10px] px-2 py-0.5 rounded-full font-semibold',
-                      a.status === 'published'
-                        ? 'bg-green-100 text-green-700'
-                        : 'bg-gray-100 text-gray-600',
-                    )}
-                  >
-                    {a.status === 'published' ? 'منتشر' : 'پیش‌نویس'}
-                  </span>
-                </td>
-                <td className="px-4 py-3 text-xs text-[hsl(var(--muted-foreground))]">
-                  {a.viewCount ?? 0}
-                </td>
-                <td className="px-4 py-3 text-xs text-[hsl(var(--muted-foreground))]">
-                  {a.likeCount ?? 0}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
+function KnowledgeAdminSection() {
+  // Embedded Knowledge Center — full article CRUD, quality, graph,
+  // clusters and ontology management for platform admins.
+  return <KnowledgeAdminConsole />;
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -2876,7 +2666,7 @@ export function AdminClient() {
     workspaces: <WorkspacesSection />,
     plans: <PlansSection />,
     consultations: <ConsultationsSection />,
-    articles: <ArticlesAdminSection />,
+    knowledge: <KnowledgeAdminSection />,
     notifications: <NotificationsSection />,
     settings: <SettingsSection />,
     taxonomy: <TaxonomySection />,
