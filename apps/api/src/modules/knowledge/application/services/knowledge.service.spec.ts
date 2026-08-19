@@ -23,6 +23,8 @@ import { NotFoundException, ForbiddenException, ConflictException } from '@nestj
 import { KnowledgeService } from './knowledge.service.js';
 import { KnowledgeEntity } from '../../domain/entities/knowledge.entity.js';
 import type { IKnowledgeRepository } from '../../domain/interfaces/knowledge.repository.interface.js';
+import { EventType } from '../../../semantic-integration/domain/events/domain-event.types.js';
+import type { DomainEventPublisher } from '../../../semantic-integration/application/services/domain-event-publisher.service.js';
 import type {
   CreateKnowledgeDto,
   UpdateKnowledgeDto,
@@ -261,6 +263,39 @@ describe('KnowledgeService', () => {
       expect(repo.save).toHaveBeenCalled();
     });
 
+    it('should publish a typed lifecycle event after persistence', async () => {
+      const entity = makeEntity();
+      entity.update({ content: { title: 'راهنمای آزمون', doc: { type: 'doc' } } });
+      entity.requestReview('reviewer-id');
+      repo.findById.mockResolvedValue(entity);
+      const publisher = { publish: jest.fn().mockResolvedValue(undefined) };
+      const serviceWithEvents = new KnowledgeService(
+        repo,
+        publisher as unknown as DomainEventPublisher,
+      );
+
+      await serviceWithEvents.publish(ARTICLE_ID, WS_ID);
+
+      expect(publisher.publish).toHaveBeenCalledWith(
+        expect.objectContaining({
+          eventType: EventType.KnowledgeArticlePublished,
+          eventVersion: 1,
+          data: expect.objectContaining({
+            articleId: ARTICLE_ID,
+            workspaceId: WS_ID,
+            slug: 'test-article',
+            title: 'راهنمای آزمون',
+            version: 2,
+            contentProperties: ['title', 'doc'],
+          }),
+          metadata: expect.objectContaining({ workspaceId: WS_ID, userId: USER_ID }),
+        }),
+      );
+      expect(repo.save.mock.invocationCallOrder[0]).toBeLessThan(
+        publisher.publish.mock.invocationCallOrder[0]!,
+      );
+    });
+
     it('should reject invalid transitions', async () => {
       const entity = makeEntity();
       repo.findById.mockResolvedValue(entity);
@@ -295,6 +330,35 @@ describe('KnowledgeService', () => {
 
       expect(result.status).toBe('archived');
       expect(repo.save).toHaveBeenCalled();
+    });
+
+    it('should publish a typed archived event after persistence', async () => {
+      const entity = makeEntity();
+      entity.requestReview('reviewer-id');
+      entity.publish();
+      repo.findById.mockResolvedValue(entity);
+      const publisher = { publish: jest.fn().mockResolvedValue(undefined) };
+      const serviceWithEvents = new KnowledgeService(
+        repo,
+        publisher as unknown as DomainEventPublisher,
+      );
+
+      await serviceWithEvents.archive(ARTICLE_ID, WS_ID);
+
+      expect(publisher.publish).toHaveBeenCalledWith(
+        expect.objectContaining({
+          eventType: EventType.KnowledgeArticleArchived,
+          eventVersion: 1,
+          data: expect.objectContaining({
+            articleId: ARTICLE_ID,
+            workspaceId: WS_ID,
+            archivedAt: expect.any(String),
+          }),
+        }),
+      );
+      expect(repo.save.mock.invocationCallOrder[0]).toBeLessThan(
+        publisher.publish.mock.invocationCallOrder[0]!,
+      );
     });
   });
 

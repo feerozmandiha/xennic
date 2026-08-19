@@ -1,5 +1,11 @@
-import { Controller, Get, Param, Query, Request } from '@nestjs/common';
+import { Controller, Get, Param, Query, Request, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
+import { JwtAuthGuard } from '../../../auth/infrastructure/guards/jwt-auth.guard.js';
+import { RequirePermissions } from '../../../rbac/infrastructure/decorators/permissions.decorator.js';
+import { PermissionsGuard } from '../../../rbac/infrastructure/guards/permissions.guard.js';
+import { WorkspaceGuard } from '../../../rbac/infrastructure/guards/workspace.guard.js';
+import { GraphWorkspaceGuard } from '../guards/graph-workspace.guard.js';
+import { boundedInteger } from '../query-parameters.js';
 import { GraphTraversalService } from '../../application/services/graph-traversal.service.js';
 import { KnowledgeProvenanceService } from '../../application/services/knowledge-provenance.service.js';
 import { DependencyResolutionService } from '../../application/services/dependency-resolution.service.js';
@@ -7,6 +13,8 @@ import { ConflictDetectionService } from '../../application/services/conflict-de
 
 @ApiTags('knowledge-intelligence')
 @ApiBearerAuth('JWT-auth')
+@UseGuards(JwtAuthGuard, WorkspaceGuard, PermissionsGuard, GraphWorkspaceGuard)
+@RequirePermissions('knowledge.read')
 @Controller('knowledge-intelligence')
 export class GraphController {
   constructor(
@@ -22,9 +30,13 @@ export class GraphController {
     @Request() req: any,
     @Param('sourceId') sourceId: string,
     @Param('targetId') targetId: string,
-    @Query('_maxDepth') _maxDepth = 10,
+    @Query('maxDepth') maxDepth?: string,
   ) {
-    const result = await this.traversalService.findShortestPath(sourceId, targetId, _maxDepth);
+    const result = await this.traversalService.findShortestPath(
+      sourceId,
+      targetId,
+      boundedInteger(maxDepth, 10, 1, 20),
+    );
     return { success: true, data: result };
   }
 
@@ -53,9 +65,12 @@ export class GraphController {
   async ancestors(
     @Request() req: any,
     @Param('nodeId') nodeId: string,
-    @Query('maxDepth') maxDepth = 10,
+    @Query('maxDepth') maxDepth?: string,
   ) {
-    const ancestors = await this.traversalService.getAncestors(nodeId, maxDepth);
+    const ancestors = await this.traversalService.getAncestors(
+      nodeId,
+      boundedInteger(maxDepth, 10, 1, 20),
+    );
     return { success: true, data: ancestors };
   }
 
@@ -64,9 +79,12 @@ export class GraphController {
   async descendants(
     @Request() req: any,
     @Param('nodeId') nodeId: string,
-    @Query('maxDepth') maxDepth = 10,
+    @Query('maxDepth') maxDepth?: string,
   ) {
-    const descendants = await this.traversalService.getDescendants(nodeId, maxDepth);
+    const descendants = await this.traversalService.getDescendants(
+      nodeId,
+      boundedInteger(maxDepth, 10, 1, 20),
+    );
     return { success: true, data: descendants };
   }
 
@@ -75,16 +93,22 @@ export class GraphController {
   async provenance(
     @Request() req: any,
     @Param('nodeId') nodeId: string,
-    @Query('maxDepth') maxDepth = 10,
+    @Query('maxDepth') maxDepth?: string,
   ) {
-    const provenance = await this.provenanceService.buildProvenanceChain(nodeId, maxDepth);
+    const provenance = await this.provenanceService.buildProvenanceChain(
+      nodeId,
+      boundedInteger(maxDepth, 10, 1, 20),
+    );
     return { success: true, data: provenance };
   }
 
   @Get('graph/dependencies/:nodeId')
   @ApiOperation({ summary: 'Resolve dependency tree for a node' })
-  async resolveDependencies(@Param('nodeId') nodeId: string, @Query('maxDepth') maxDepth = 5) {
-    const deps = await this.dependencyService.resolveFullDependencyGraph(nodeId, maxDepth);
+  async resolveDependencies(@Param('nodeId') nodeId: string, @Query('maxDepth') maxDepth?: string) {
+    const deps = await this.dependencyService.resolveFullDependencyGraph(
+      nodeId,
+      boundedInteger(maxDepth, 5, 1, 20),
+    );
     return { success: true, data: deps };
   }
 
@@ -102,7 +126,7 @@ export class GraphController {
   @Get('graph/connected-components')
   @ApiOperation({ summary: 'Find connected components in workspace graph' })
   async connectedComponents(@Request() req: any) {
-    const workspaceId = req.user?.workspaceId;
+    const workspaceId = req.workspaceId;
     const components = await this.traversalService.getConnectedComponents(workspaceId);
     return { success: true, data: { components, count: components.length } };
   }

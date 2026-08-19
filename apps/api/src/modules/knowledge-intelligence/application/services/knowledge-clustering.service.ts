@@ -20,10 +20,14 @@ export class KnowledgeClusteringService {
   ) {}
 
   async computeClusters(workspaceId: string, threshold = 0.6): Promise<any[]> {
+    const parsedThreshold = Number(threshold);
+    const boundedThreshold = Number.isFinite(parsedThreshold)
+      ? Math.max(0, Math.min(parsedThreshold, 1))
+      : 0.6;
     const similarities = await this.similarityRepo.findByWorkspace(
       workspaceId,
       'semantic',
-      threshold,
+      boundedThreshold,
       200,
     );
     const clusters: Map<string, Set<string>> = new Map();
@@ -66,11 +70,15 @@ export class KnowledgeClusteringService {
         name,
         description: `Auto-detected cluster with ${nodeIds.size} nodes`,
         nodeIds: [...nodeIds],
-        properties: { algorithm: 'semantic_threshold', threshold },
+        properties: { algorithm: 'semantic_threshold', threshold: boundedThreshold },
       });
       results.push(cluster);
     }
     return results;
+  }
+
+  async listClusters(workspaceId: string): Promise<any[]> {
+    return this.clusterRepo.findByWorkspace(workspaceId);
   }
 
   async getRelatedClusters(clusterId: string, _workspaceId: string): Promise<any[]> {

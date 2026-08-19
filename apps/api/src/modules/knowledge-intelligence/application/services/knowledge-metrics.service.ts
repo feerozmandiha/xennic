@@ -1,4 +1,4 @@
-import { Injectable, Logger, Inject } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, Inject } from '@nestjs/common';
 import type { IGraphMetricsRepository } from '../../domain/interfaces/graph-metrics.repository.interface.js';
 
 @Injectable()
@@ -48,7 +48,16 @@ export class KnowledgeMetricsService {
     workspaceId: string,
     metric: string,
     limit = 10,
-  ): Promise<{ nodeId: string; score: number }[]> {
-    return this.metricsRepo.topNodesByMetric(workspaceId, metric as any, limit);
+  ): Promise<{ nodeId: string; score: number; label: string | null }[]> {
+    const allowedMetrics = ['confidence', 'freshness', 'authority', 'completeness'] as const;
+    if (!allowedMetrics.includes(metric as (typeof allowedMetrics)[number])) {
+      throw new BadRequestException(`Unsupported knowledge metric: ${metric}`);
+    }
+
+    return this.metricsRepo.topNodesByMetric(
+      workspaceId,
+      metric as (typeof allowedMetrics)[number],
+      limit,
+    );
   }
 }
