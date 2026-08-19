@@ -35,6 +35,8 @@ interface NavigationItem {
   route?: string;
   icon: React.ElementType;
   adminOnly: boolean;
+  /** Optional override for the i18n label key in `nav` namespace */
+  labelKey?: string;
 }
 
 const NAV_ITEMS: readonly NavigationItem[] = [
@@ -47,7 +49,14 @@ const NAV_ITEMS: readonly NavigationItem[] = [
   { key: 'ai', icon: Cpu, adminOnly: false },
   { key: 'vision', icon: ScanEye, adminOnly: false },
   { key: 'energy', icon: FileBarChart, adminOnly: false },
-  { key: 'knowledge', route: 'knowledge-manage', icon: Library, adminOnly: false },
+  { key: 'knowledge', route: 'knowledge', icon: Library, adminOnly: false },
+  {
+    key: 'knowledge-manage',
+    route: 'knowledge-manage',
+    icon: Library,
+    adminOnly: true,
+    labelKey: 'knowledgeManage',
+  },
   { key: 'marketplace', icon: ShoppingCart, adminOnly: false },
   { key: 'consultations', icon: MessageSquare, adminOnly: false },
   { key: 'storage', icon: HardDrive, adminOnly: false },
@@ -81,6 +90,7 @@ function NavItem({
   pathname,
   onClick,
   badge,
+  labelKey,
 }: {
   navKey: string;
   route?: string;
@@ -89,12 +99,21 @@ function NavItem({
   pathname: string;
   onClick?: () => void;
   badge?: number;
+  labelKey?: string;
 }) {
   const t = useTranslations('nav');
   const routeSegment = route ?? navKey;
   // admin به route جداگانه می‌رود (خارج از dashboard layout)
   const href = navKey === 'admin' ? `/${locale}/admin` : `/${locale}/${routeSegment}`;
-  const isActive = pathname.includes(`/${routeSegment}`);
+  // برای جلوگیری از تداخل دو آیتم دانشنامه (عمومی و مدیریت)، فعال بودن
+  // آیتم مدیریت را فقط وقتی true کن که path دقیقاً با knowledge-manage شروع شود.
+  const isActive =
+    navKey === 'knowledge-manage'
+      ? pathname.startsWith(`/${locale}/knowledge-manage`)
+      : navKey === 'knowledge'
+        ? pathname.startsWith(`/${locale}/knowledge`) &&
+          !pathname.startsWith(`/${locale}/knowledge-manage`)
+        : pathname.includes(`/${routeSegment}`);
 
   return (
     <Link
@@ -127,7 +146,7 @@ function NavItem({
           </span>
         )}
       </div>
-      <span className="truncate flex-1">{t(navKey as any)}</span>
+      <span className="truncate flex-1">{labelKey ? t(labelKey as any) : t(navKey as any)}</span>
       {isActive && <ChevronLeft className="h-3 w-3 opacity-40 rtl:rotate-180 shrink-0" />}
     </Link>
   );
@@ -182,6 +201,7 @@ function SidebarContent({
             pathname={pathname}
             onClick={onNavClick}
             badge={item.key === 'notifications' ? unread : undefined}
+            labelKey={item.labelKey}
           />
         ))}
       </nav>
