@@ -11,6 +11,7 @@ describe('PublicMarketplaceController', () => {
     searchVendors: jest.fn(),
     getVendor: jest.fn(),
     listCategories: jest.fn(),
+    suggest: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -94,5 +95,21 @@ describe('PublicMarketplaceController', () => {
     service.listCategories.mockResolvedValue([{ category: 'cable', count: 1 }]);
 
     await expect(controller.listCategories()).resolves.toEqual([{ category: 'cable', count: 1 }]);
+  });
+
+  it('suggest parses resultParams JSON and forwards defaults', async () => {
+    service.suggest.mockResolvedValue({ data: [], category: 'cable', meta: {} });
+
+    await controller.suggest('CABLE-001', encodeURIComponent(JSON.stringify({ size: 35 })));
+
+    expect(service.suggest).toHaveBeenCalledWith('CABLE-001', { size: 35 }, 'fa', 10);
+  });
+
+  it('suggest tolerates an invalid resultParams payload', async () => {
+    service.suggest.mockResolvedValue({ data: [], category: null, meta: {} });
+
+    await controller.suggest('CABLE-001', 'not-json%zz');
+
+    expect(service.suggest).toHaveBeenCalledWith('CABLE-001', {}, 'fa', 10);
   });
 });

@@ -334,7 +334,9 @@
     "orderId": "Order ID",
     "viewOrders": "View orders",
     "noPaymentYet": "Online payment will be enabled in a later phase",
-    "viewStore": "View store"
+    "viewStore": "View store",
+    "linkedFromCalc": "Linked from calculation",
+    "clearFilters": "Clear filters"
   },
   "errors": {
     "required": "This field is required",

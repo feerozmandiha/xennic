@@ -8,6 +8,7 @@ describe('PublicMarketplaceService', () => {
   const repo = {
     searchPublicProducts: jest.fn(),
     findPublicProductById: jest.fn(),
+    suggestPublicProducts: jest.fn(),
     searchPublicVendors: jest.fn(),
     findPublicVendorById: jest.fn(),
     listCategories: jest.fn(),
@@ -67,5 +68,32 @@ describe('PublicMarketplaceService', () => {
     repo.listCategories.mockResolvedValue([{ category: 'cable', count: 3 }]);
 
     await expect(service.listCategories()).resolves.toEqual([{ category: 'cable', count: 3 }]);
+  });
+
+  it('suggest maps a known calc type to category and returns ranked products', async () => {
+    repo.suggestPublicProducts.mockResolvedValue({ data: [{ id: 'p1' }, { id: 'p2' }], total: 2 });
+
+    const res = await service.suggest('CABLE-001', { recommended_cable_size: 35 }, 'fa', 6);
+
+    expect(repo.suggestPublicProducts).toHaveBeenCalledWith({
+      category: 'cable',
+      specs: { recommended_cable_size: 35 },
+      locale: 'fa',
+      limit: 6,
+    });
+    expect(res.category).toBe('cable');
+    expect(res.data).toEqual([{ id: 'p1' }, { id: 'p2' }]);
+    expect(res.meta).toEqual({ page: 1, limit: 6, total: 2, totalPages: 1 });
+  });
+
+  it('suggest returns empty result for unknown calc type without hitting the repository', async () => {
+    const res = await service.suggest('UNKNOWN-999', {}, 'fa', 6);
+
+    expect(repo.suggestPublicProducts).not.toHaveBeenCalled();
+    expect(res).toEqual({
+      data: [],
+      category: null,
+      meta: { page: 1, limit: 6, total: 0, totalPages: 0 },
+    });
   });
 });

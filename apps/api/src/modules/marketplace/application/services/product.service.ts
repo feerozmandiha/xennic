@@ -2,37 +2,7 @@ import { Injectable, Inject, NotFoundException } from '@nestjs/common';
 import type { IMarketplaceRepository } from '../../domain/interfaces/marketplace.repository.interface.js';
 import { ProductEntity } from '../../domain/entities/product.entity.js';
 import type { CreateProductDto, UpdateProductDto } from '../../presentation/dtos/product.dto.js';
-
-// Maps calculation types to product categories
-const CALC_TO_CATEGORY: Record<string, string> = {
-  'CABLE-001': 'cable',
-  'CABLE-002': 'cable',
-  'CABLE-003': 'cable',
-  'CABLE-004': 'cable',
-  'CABLE-005': 'cable',
-  'TRF-001': 'transformer',
-  'TRF-002': 'transformer',
-  'TRF-003': 'transformer',
-  'TRF-004': 'transformer',
-  'TRF-005': 'transformer',
-  'PROT-001': 'mccb',
-  'PROT-004': 'fuse',
-  'PROT-005': 'mccb',
-  'SC-001': 'mccb',
-  'SWT-001': 'switchgear',
-  'LIGHT-001': 'lighting',
-  'LIGHT-002': 'lighting',
-  'PV-001': 'solar',
-  'SOLAR-002': 'solar',
-  'SOLAR-003': 'solar',
-  'BAT-001': 'battery',
-  'BAT-BU-001': 'battery',
-  'BATTERY-002': 'battery',
-  'GND-001': 'grounding',
-  'GND-002': 'grounding',
-  'MOT-001': 'motor',
-  'MOT-002': 'motor',
-};
+import { calcCategory } from '../calc-category.map.js';
 
 @Injectable()
 export class ProductService {
@@ -100,7 +70,7 @@ export class ProductService {
   }
 
   async suggest(calculationType: string, resultParams: Record<string, any>, page = 1, limit = 10) {
-    const category = CALC_TO_CATEGORY[calculationType];
+    const category = calcCategory(calculationType);
     if (!category) {
       return { data: [], meta: { page, limit, total: 0, totalPages: 0 } };
     }

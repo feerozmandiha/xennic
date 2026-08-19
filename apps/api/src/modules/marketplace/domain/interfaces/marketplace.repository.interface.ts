@@ -116,6 +116,12 @@ export interface IMarketplaceRepository {
     params: PublicProductSearchParams,
   ): Promise<SearchResult<PublicProductRecord>>;
   findPublicProductById(id: string, locale: string): Promise<PublicProductRecord | null>;
+  suggestPublicProducts(params: {
+    category: string;
+    specs: Record<string, any>;
+    locale?: string;
+    limit?: number;
+  }): Promise<SearchResult<PublicProductRecord>>;
   searchPublicVendors(params: PublicVendorSearchParams): Promise<SearchResult<PublicVendorRecord>>;
   findPublicVendorById(id: string): Promise<PublicVendorRecord | null>;
   listCategories(): Promise<CategoryCount[]>;

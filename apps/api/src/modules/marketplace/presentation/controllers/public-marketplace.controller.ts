@@ -2,10 +2,44 @@ import { Controller, Get, Param, Query } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiQuery } from '@nestjs/swagger';
 import { PublicMarketplaceService } from '../../application/services/public-marketplace.service.js';
 
+function parseResultParams(raw?: string): Record<string, any> {
+  if (!raw) return {};
+  try {
+    return JSON.parse(raw);
+  } catch {
+    /* ignore */
+  }
+  try {
+    return JSON.parse(decodeURIComponent(raw));
+  } catch {
+    return {};
+  }
+}
+
 @ApiTags('public-marketplace')
 @Controller('public/marketplace')
 export class PublicMarketplaceController {
   constructor(private readonly publicMarketplaceService: PublicMarketplaceService) {}
+
+  @Get('suggest')
+  @ApiOperation({ summary: 'Suggest products matching a calculation result (public)' })
+  @ApiQuery({ name: 'calculationType', required: true, example: 'CABLE-001' })
+  @ApiQuery({ name: 'resultParams', required: false })
+  @ApiQuery({ name: 'locale', required: false })
+  @ApiQuery({ name: 'limit', required: false })
+  async suggest(
+    @Query('calculationType') calculationType: string,
+    @Query('resultParams') resultParams?: string,
+    @Query('locale') locale?: string,
+    @Query('limit') limit?: string,
+  ) {
+    return this.publicMarketplaceService.suggest(
+      calculationType,
+      parseResultParams(resultParams),
+      locale ?? 'fa',
+      limit ? parseInt(limit, 10) : 10,
+    );
+  }
 
   @Get('products')
   @ApiOperation({ summary: 'Public list of active products' })

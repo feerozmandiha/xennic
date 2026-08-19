@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
+import { Suspense } from 'react';
 import { getTranslations } from 'next-intl/server';
 import { StorefrontClient } from '@/features/marketplace/storefront/storefront-client';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('marketplace');
@@ -20,7 +22,17 @@ export default async function PublicMarketplacePage() {
           {t('storefrontDescription')}
         </p>
       </div>
-      <StorefrontClient />
+      <Suspense
+        fallback={
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <Skeleton key={i} className="h-44" />
+            ))}
+          </div>
+        }
+      >
+        <StorefrontClient />
+      </Suspense>
     </div>
   );
 }

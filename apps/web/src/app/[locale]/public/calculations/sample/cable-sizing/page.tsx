@@ -1,9 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { Zap, ArrowRight, Calculator, Lock } from 'lucide-react';
+import { Zap, ArrowRight, Calculator, Lock, Store } from 'lucide-react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
+import { storeLink } from '@/lib/marketplace';
 
 export default function CableSizingSamplePage() {
   const locale = useParams().locale as string;
@@ -80,6 +81,13 @@ export default function CableSizingSamplePage() {
               <p className="text-[10px] text-white/40 mt-1">
                 تخمین ساده — محاسبه دقیق نیاز به عضویت دارد
               </p>
+              <Link
+                href={storeLink(locale, { category: 'cable', calc: 'CABLE-001' })}
+                className="inline-flex items-center gap-1.5 mt-3 text-xs text-[#3b82f6] hover:text-white transition-colors"
+              >
+                <Store className="h-3.5 w-3.5" />
+                مشاهده کابل‌های مرتبط در فروشگاه
+              </Link>
             </div>
           )}
         </div>

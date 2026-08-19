@@ -4,6 +4,7 @@ import type {
   PublicProductSearchParams,
   PublicVendorSearchParams,
 } from '../../domain/interfaces/marketplace.repository.interface.js';
+import { calcCategory } from '../calc-category.map.js';
 
 @Injectable()
 export class PublicMarketplaceService {
@@ -44,5 +45,33 @@ export class PublicMarketplaceService {
 
   async listCategories() {
     return this.repo.listCategories();
+  }
+
+  async suggest(
+    calculationType: string,
+    resultParams: Record<string, any>,
+    locale = 'fa',
+    limit = 10,
+  ) {
+    const category = calcCategory(calculationType);
+    if (!category) {
+      return {
+        data: [],
+        category: null,
+        meta: { page: 1, limit, total: 0, totalPages: 0 },
+      };
+    }
+
+    const result = await this.repo.suggestPublicProducts({
+      category,
+      specs: resultParams,
+      locale,
+      limit,
+    });
+    return {
+      data: result.data,
+      category,
+      meta: { page: 1, limit, total: result.total, totalPages: Math.ceil(result.total / limit) },
+    };
   }
 }

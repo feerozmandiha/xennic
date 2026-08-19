@@ -2,9 +2,9 @@
 
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { useParams } from 'next/navigation';
+import { useParams, useSearchParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
-import { Search, Package, SlidersHorizontal } from 'lucide-react';
+import { Search, Package, SlidersHorizontal, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { apiClient } from '@/lib/api/client';
@@ -16,10 +16,12 @@ export function StorefrontClient() {
   const tCommon = useTranslations('common');
   const params = useParams();
   const locale = (params?.locale as string) ?? 'fa';
+  const searchParams = useSearchParams();
 
-  const [search, setSearch] = useState('');
-  const [category, setCategory] = useState('');
+  const [search, setSearch] = useState(searchParams.get('q') ?? '');
+  const [category, setCategory] = useState(searchParams.get('category') ?? '');
   const [vendorId, setVendorId] = useState('');
+  const calc = searchParams.get('calc') ?? null;
 
   const { data, isLoading } = useQuery({
     queryKey: ['storefront', 'products', locale, search, category, vendorId],
@@ -61,6 +63,31 @@ export function StorefrontClient() {
 
   return (
     <div>
+      {(calc || category) && (
+        <div className="mb-4 flex flex-wrap items-center gap-2 rounded-[var(--radius)] border border-[hsl(var(--primary)/0.25)] bg-[hsl(var(--primary)/0.05)] px-3 py-2 text-xs">
+          {calc ? (
+            <span className="font-medium">
+              {t('linkedFromCalc')}: {calc}
+            </span>
+          ) : null}
+          {category ? (
+            <span className="inline-flex items-center gap-1 rounded-full bg-[hsl(var(--primary)/0.1)] px-2 py-0.5 text-[hsl(var(--primary))]">
+              {category}
+            </span>
+          ) : null}
+          <button
+            onClick={() => {
+              setCategory('');
+              setSearch('');
+            }}
+            className="inline-flex items-center gap-1 text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]"
+          >
+            <X className="h-3 w-3" />
+            {t('clearFilters')}
+          </button>
+        </div>
+      )}
+
       <div className="mb-6 flex flex-col gap-3">
         <Input
           placeholder={tCommon('search')}

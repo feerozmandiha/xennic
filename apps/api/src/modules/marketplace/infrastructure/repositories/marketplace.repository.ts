@@ -142,7 +142,7 @@ export class MarketplaceRepository implements IMarketplaceRepository {
     offset?: number;
     limit?: number;
   }): Promise<SearchResult<ProductEntity>> {
-    const where: any = { deleted_at: null, category: params.category };
+    const where: any = { deleted_at: null, status: 'active', category: params.category };
 
     const [data, total] = await Promise.all([
       prisma.products.findMany({
@@ -155,61 +155,13 @@ export class MarketplaceRepository implements IMarketplaceRepository {
     ]);
 
     const entities = data.map((r) => this._productToEntity(r));
-
-    // Score and rank by spec match
-    const rules = SPEC_MATCH_RULES[params.category];
-    if (rules && Object.keys(params.specs).length > 0) {
-      const scored = entities.map((e) => {
-        const prodSpecs = e.specifications ?? {};
-        let score = 0;
-        let totalChecks = 0;
-
-        for (const [specKey, matchType] of Object.entries(rules)) {
-          const prodVal = prodSpecs[specKey];
-          if (prodVal == null) continue;
-
-          const [resultKey] = matchType;
-          if (!resultKey) {
-            // No result key mapping — can only match if product spec exists (bonus)
-            score += 0.5;
-            totalChecks++;
-            continue;
-          }
-
-          const resultVal = params.specs[resultKey];
-          if (resultVal == null) continue;
-
-          totalChecks++;
-          const pv = parseFloat(String(prodVal));
-          const rv = parseFloat(String(resultVal));
-
-          if (isNaN(pv) || isNaN(rv)) continue;
-
-          const [, matchTypeOp] = matchType;
-          switch (matchTypeOp) {
-            case 'exact':
-              if (Math.abs(pv - rv) / Math.max(rv, 1) < 0.05) score += 1;
-              break;
-            case 'min':
-              if (pv >= rv) score += 1;
-              break;
-            case 'max':
-              if (pv <= rv) score += 1;
-              break;
-          }
-        }
-
-        return { entity: e, score: totalChecks > 0 ? score / totalChecks : 0 };
-      });
-
-      scored.sort((a, b) => b.score - a.score);
-      return {
-        data: scored.map((s) => s.entity),
-        total,
-      };
-    }
-
-    return { data: entities, total };
+    const scored = this._scoreBySpecs(
+      entities,
+      params.specs,
+      params.category,
+      (e) => e.specifications,
+    );
+    return { data: scored.map((s) => s.item), total };
   }
 
   async saveProduct(entity: ProductEntity): Promise<void> {
@@ -364,6 +316,35 @@ export class MarketplaceRepository implements IMarketplaceRepository {
     return row ? this._publicProductToRecord(row, locale) : null;
   }
 
+  async suggestPublicProducts(params: {
+    category: string;
+    specs: Record<string, any>;
+    locale?: string;
+    limit?: number;
+  }): Promise<SearchResult<PublicProductRecord>> {
+    const where: any = { deleted_at: null, status: 'active', category: params.category };
+
+    const rows = await prisma.products.findMany({
+      where,
+      take: 500,
+      orderBy: { created_at: 'desc' },
+      include: { translations: true, vendor: true },
+    });
+
+    const records = rows.map((r) => this._publicProductToRecord(r, params.locale ?? 'fa'));
+    const scored = this._scoreBySpecs(
+      records,
+      params.specs,
+      params.category,
+      (rec) => rec.specifications,
+    );
+
+    return {
+      data: scored.slice(0, params.limit ?? 10).map((s) => s.item),
+      total: records.length,
+    };
+  }
+
   async searchPublicVendors(
     params: PublicVendorSearchParams,
   ): Promise<SearchResult<PublicVendorRecord>> {
@@ -434,6 +415,64 @@ export class MarketplaceRepository implements IMarketplaceRepository {
   }
 
   // ── Mappers ─────────────────────────────────────
+
+  private _scoreBySpecs<T>(
+    items: T[],
+    specs: Record<string, any>,
+    category: string,
+    getSpecs: (item: T) => Record<string, any> | null,
+  ): { item: T; score: number }[] {
+    const rules = SPEC_MATCH_RULES[category];
+    if (!rules || Object.keys(specs).length === 0) {
+      return items.map((item) => ({ item, score: 0 }));
+    }
+
+    const scored = items.map((item) => {
+      const prodSpecs = getSpecs(item) ?? {};
+      let score = 0;
+      let totalChecks = 0;
+
+      for (const [specKey, matchType] of Object.entries(rules)) {
+        const prodVal = prodSpecs[specKey];
+        if (prodVal == null) continue;
+
+        const [resultKey] = matchType;
+        if (!resultKey) {
+          // No result key mapping — can only match if product spec exists (bonus)
+          score += 0.5;
+          totalChecks++;
+          continue;
+        }
+
+        const resultVal = specs[resultKey];
+        if (resultVal == null) continue;
+
+        totalChecks++;
+        const pv = parseFloat(String(prodVal));
+        const rv = parseFloat(String(resultVal));
+
+        if (isNaN(pv) || isNaN(rv)) continue;
+
+        const [, matchTypeOp] = matchType;
+        switch (matchTypeOp) {
+          case 'exact':
+            if (Math.abs(pv - rv) / Math.max(rv, 1) < 0.05) score += 1;
+            break;
+          case 'min':
+            if (pv >= rv) score += 1;
+            break;
+          case 'max':
+            if (pv <= rv) score += 1;
+            break;
+        }
+      }
+
+      return { item, score: totalChecks > 0 ? score / totalChecks : 0 };
+    });
+
+    scored.sort((a, b) => b.score - a.score);
+    return scored;
+  }
 
   private _publicProductToRecord(row: any, locale: string): PublicProductRecord {
     const translations: any[] = row.translations ?? [];

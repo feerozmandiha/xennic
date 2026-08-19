@@ -334,7 +334,9 @@
     "orderId": "شماره سفارش",
     "viewOrders": "مشاهده سفارشات",
     "noPaymentYet": "پرداخت آنلاین در فاز بعدی فعال می‌شود",
-    "viewStore": "مشاهده فروشگاه"
+    "viewStore": "مشاهده فروشگاه",
+    "linkedFromCalc": "مرتبط با محاسبه",
+    "clearFilters": "پاک کردن فیلترها"
   },
   "errors": {
     "required": "این فیلد الزامی است",
