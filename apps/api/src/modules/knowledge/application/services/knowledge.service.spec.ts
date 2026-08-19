@@ -1,22 +1,26 @@
-jest.mock('@xennic/database', () => ({
-  prisma: {
-    knowledge_taxonomy: {
-      findFirst: jest.fn(),
-      findMany: jest.fn(),
-      create: jest.fn(),
-      createMany: jest.fn(),
-      delete: jest.fn(),
+jest.mock(
+  '@xennic/database',
+  () => ({
+    prisma: {
+      knowledge_taxonomy: {
+        findFirst: jest.fn(),
+        findMany: jest.fn(),
+        create: jest.fn(),
+        createMany: jest.fn(),
+        delete: jest.fn(),
+      },
+      knowledge_analytics: {
+        upsert: jest.fn(),
+        findUnique: jest.fn(),
+        findMany: jest.fn(),
+      },
+      knowledge_versions: {
+        create: jest.fn(),
+      },
     },
-    knowledge_analytics: {
-      upsert: jest.fn(),
-      findUnique: jest.fn(),
-      findMany: jest.fn(),
-    },
-    knowledge_versions: {
-      create: jest.fn(),
-    },
-  },
-}));
+  }),
+  { virtual: true },
+);
 
 import { Test, TestingModule } from '@nestjs/testing';
 import { NotFoundException, ForbiddenException, ConflictException } from '@nestjs/common';

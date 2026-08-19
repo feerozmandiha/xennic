@@ -1,7 +1,7 @@
 export interface ICitationRepository {
   findById(id: string): Promise<any | null>;
-  findBySource(sourceId: string, method?: string): Promise<any[]>;
-  findByTarget(targetId: string): Promise<any[]>;
+  findBySource(sourceId: string, method?: string, workspaceId?: string): Promise<any[]>;
+  findByTarget(targetId: string, workspaceId?: string): Promise<any[]>;
   findByWorkspace(workspaceId: string, sourceId?: string, targetId?: string): Promise<any[]>;
   create(citation: {
     workspaceId: string;

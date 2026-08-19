@@ -175,7 +175,7 @@ export function KnowledgeEditClient({ articleId }: Props) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['knowledge'] });
       toast.success('مقاله به‌روزرسانی شد');
-      router.push(`/${locale}/knowledge/${articleId}`);
+      router.push(`/${locale}/knowledge-manage/${articleId}`);
     },
     onError: (err: any) => {
       toast.error(err?.message ?? 'خطا در به‌روزرسانی مقاله');

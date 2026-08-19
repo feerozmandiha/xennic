@@ -1,10 +1,114 @@
 # Event Topology — Semantic Integration Layer
 
-## Event Pipeline
+> **Runtime status (audited 2026-08-19):** the Knowledge CMS publish/archive flow is active. The Knowledge Factory document path shown below is dormant because `KnowledgeFactoryModule` is not registered. The current registry contains 14 event contracts and four registered handlers.
+
+## Active Knowledge CMS flow
 
 ```mermaid
 flowchart LR
-    subgraph KF["Knowledge Factory"]
+    subgraph CMS["Knowledge CMS"]
+        P[Publish article]
+        A[Archive article]
+    end
+
+    subgraph SI["Semantic Integration"]
+        OB[(event_outbox)]
+        R[Outbox relay<br/>poll every 5s]
+        BUS[Process-local event bus]
+        PH[Article Published Handler]
+        AH[Article Archived Handler]
+        LOG[(event_process_log)]
+    end
+
+    subgraph KI["Knowledge Intelligence"]
+        NODE[Article graph projection]
+        METRIC[Graph metrics]
+    end
+
+    P -->|KnowledgeArticlePublished| OB
+    A -->|KnowledgeArticleArchived| OB
+    OB --> R --> BUS
+    BUS --> PH
+    BUS --> AH
+    PH -->|create/update| NODE
+    PH -->|calculate/save| METRIC
+    AH -->|delete projection| NODE
+    PH --> LOG
+    AH --> LOG
+```
+
+### Publish sequence
+
+```mermaid
+sequenceDiagram
+    participant API as Knowledge lifecycle endpoint
+    participant KS as KnowledgeService
+    participant DB as Knowledge persistence
+    participant DP as DomainEventPublisher
+    participant OB as event_outbox
+    participant OR as OutboxRelay
+    participant BUS as SemanticEventBus
+    participant H as KnowledgeArticlePublishedHandler
+    participant KI as Graph repositories and metrics services
+
+    API->>KS: publish(articleId, workspaceId, userId)
+    KS->>DB: update status and version history
+    KS->>DP: publish(KnowledgeArticlePublished)
+    DP->>OB: insert pending row
+    Note over DB,OB: The article update and outbox insert are separate operations
+
+    loop every 5 seconds
+        OR->>OB: findPending(50)
+        OB-->>OR: pending rows
+    end
+    OR->>BUS: publish(event)
+    BUS->>H: handle(event)
+    H->>H: verify metadata workspace and idempotency
+    H->>KI: find existing article projection
+    alt projection exists
+        H->>KI: update label and properties
+    else projection absent
+        H->>KI: create workspace-bound node
+    end
+    H->>KI: calculate and save four metrics
+    H->>H: log completed process
+    OR->>OB: mark delivered
+```
+
+### Archive sequence
+
+```mermaid
+sequenceDiagram
+    participant API as Knowledge lifecycle endpoint
+    participant KS as KnowledgeService
+    participant DP as DomainEventPublisher
+    participant OB as event_outbox
+    participant OR as OutboxRelay
+    participant H as KnowledgeArticleArchivedHandler
+    participant KI as GraphNodeRepository
+
+    API->>KS: archive(articleId, workspaceId, userId)
+    KS->>KS: update status and version history
+    KS->>DP: publish(KnowledgeArticleArchived)
+    DP->>OB: insert pending row
+    OR->>H: dispatch through SemanticEventBus
+    H->>H: verify metadata workspace and idempotency
+    H->>KI: findByEntity(knowledge, articleId, workspaceId)
+    alt scoped projection exists
+        H->>KI: deleteByEntity(knowledge, articleId, workspaceId)
+        Note over KI: one transaction explicitly deletes citations, then the node; edges and metrics cascade
+    end
+    H->>H: log completed process
+    OR->>OB: mark delivered
+```
+
+## Dormant Knowledge Factory flow
+
+The following source path exists but does not run in the current API module graph:
+
+```mermaid
+flowchart LR
+    subgraph KF["Knowledge Factory — dormant"]
         U[Document Uploaded]
         C[Document Classified]
         P[Document Parsed]
@@ -14,115 +118,66 @@ flowchart LR
         PB[Document Published]
     end
 
-    subgraph SI["Semantic Integration"]
-        OB[Event Outbox]
+    subgraph SI["Semantic Integration — active infrastructure"]
+        OB[(Event Outbox)]
         BUS[Semantic Event Bus]
         DPH[DocumentPublished Handler]
         CIH[Cache Invalidation Handler]
     end
 
     subgraph KI["Knowledge Intelligence"]
-        GN[Graph Node Created]
-        GE[Graph Edges Created]
-        MC[Metrics Calculated]
+        GN[Graph Node]
+        MC[Metrics]
     end
 
-    subgraph AIR["AI Runtime"]
-        CACHE[In-Memory Caches]
-    end
-
-    U --> OB
-    C --> OB
-    P --> OB
-    N --> OB
-    H --> OB
-    E --> OB
-    PB --> OB
-
-    OB -->|poll 5s| BUS
+    U -. intended .-> OB
+    C -. intended .-> OB
+    P -. intended .-> OB
+    N -. intended .-> OB
+    H -. intended .-> OB
+    E -. intended .-> OB
+    PB -. intended .-> OB
+    OB --> BUS
     BUS --> DPH
     BUS --> CIH
-
     DPH --> GN
     DPH --> MC
-    DPH -->|creates node| KI
-    CIH -->|clears| CACHE
-
-    GN -.->|subsequent events| OB
-    MC -.->|subsequent events| OB
 ```
 
-## Document Published Event Flow
+`DocumentPublishedHandler` and `CacheInvalidationHandler` are registered, but there is no active Factory producer while `KnowledgeFactoryModule` remains unimported.
 
-```mermaid
-sequenceDiagram
-    participant PW as PublishWorker
-    participant DP as DomainEventPublisher
-    participant OB as Event Outbox (DB)
-    participant OR as OutboxRelay
-    participant BUS as SemanticEventBus
-    participant DPH as DocumentPublishedHandler
-    participant GNR as GraphNodeRepository
-    participant GMR as GraphMetricsRepository
-    participant CCS as ConfidenceService
-    participant ATS as AuthorityService
-    participant FRS as FreshnessService
-    participant CPS as CompletenessService
-    participant CIH as CacheInvalidationHandler
-    participant AIR as AI Runtime Caches
+## Event registry
 
-    PW->>DP: publish(DocumentPublished)
-    DP->>OB: INSERT event_outbox (status=pending)
+| #   | Event                       | Intended/active source          | Current consumer                                       |
+| --- | --------------------------- | ------------------------------- | ------------------------------------------------------ |
+| 1   | `DocumentUploaded`          | Factory, dormant                | None                                                   |
+| 2   | `DocumentClassified`        | Factory, dormant                | None                                                   |
+| 3   | `DocumentParsed`            | Factory, dormant                | None                                                   |
+| 4   | `DocumentNormalized`        | Factory, dormant                | None                                                   |
+| 5   | `DocumentChunked`           | Factory, dormant                | None                                                   |
+| 6   | `EmbeddingsGenerated`       | Factory, dormant                | None                                                   |
+| 7   | `DocumentPublished`         | Factory, dormant                | `DocumentPublishedHandler`, `CacheInvalidationHandler` |
+| 8   | `KnowledgeArticlePublished` | Knowledge CMS, active           | `KnowledgeArticlePublishedHandler`                     |
+| 9   | `KnowledgeArticleArchived`  | Knowledge CMS, active           | `KnowledgeArticleArchivedHandler`                      |
+| 10  | `GraphNodeCreated`          | Semantic Integration follow-up  | None                                                   |
+| 11  | `GraphEdgesCreated`         | Semantic Integration follow-up  | None                                                   |
+| 12  | `OntologyUpdated`           | Knowledge Intelligence contract | None                                                   |
+| 13  | `MetricsCalculated`         | Semantic Integration follow-up  | None                                                   |
+| 14  | `SearchIndexUpdated`        | Semantic Integration contract   | None                                                   |
 
-    loop every 5s
-        OR->>OB: SELECT pending events
-        OB-->>OR: [DocumentPublished]
-        OR->>BUS: publish(event)
-    end
-
-    BUS->>DPH: handle(event)
-    DPH->>DPH: check event_process_log (idempotency)
-
-    DPH->>GNR: findByEntity('knowledge_document', docId)
-    alt Node doesn't exist
-        DPH->>GNR: create(graph node)
-        GNR-->>DPH: node
-    end
-
-    DPH->>CCS: calculateConfidence(nodeId)
-    DPH->>FRS: calculateFreshness(nodeId)
-    DPH->>ATS: calculateAuthority(nodeId)
-    DPH->>CPS: calculateCompleteness(nodeId)
-    CCS-->>DPH: 0.85
-    FRS-->>DPH: 0.92
-    ATS-->>DPH: 0.78
-    CPS-->>DPH: 0.65
-
-    DPH->>GMR: save({nodeId, confidence, freshness, authority, completeness})
-    DPH->>DP: publish(GraphNodeCreated)
-    DPH->>DP: publish(MetricsCalculated)
-    DPH->>OR: log completion in event_process_log
-
-    BUS->>CIH: handle(event)
-    CIH->>CIH: check event_process_log (idempotency)
-    CIH->>AIR: clearSession('*')
-    CIH->>AIR: remove('*')
-    CIH->>OR: log completion
-```
-
-## Domain Event Schema
+## Domain event schema
 
 ```typescript
 interface DomainEvent<T> {
-  eventId: string; // UUID v4
-  eventType: EventType; // Enum: DocumentUploaded..SearchIndexUpdated
-  eventVersion: number; // Schema version (starts at 1)
-  correlationId: string; // Links all events from same document
-  causationId: string; // Links to the causing event
-  tracingId: string; // End-to-end trace
-  timestamp: string; // ISO 8601
-  source: string; // Module name
-  data: T; // Typed payload
+  eventId: string;
+  eventType: EventType;
+  eventVersion: number;
+  correlationId: string;
+  causationId: string;
+  tracingId: string;
+  timestamp: string;
+  source: string;
+  data: T;
   metadata: {
     userId?: string;
     workspaceId: string;
@@ -131,53 +186,14 @@ interface DomainEvent<T> {
 }
 ```
 
-## Outbox Table Schema
+## Delivery qualification
 
-```sql
-CREATE TABLE event_outbox (
-  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  event_id        UUID NOT NULL UNIQUE,
-  event_type      VARCHAR(50) NOT NULL,
-  event_version   INT DEFAULT 1,
-  correlation_id  UUID NOT NULL,
-  causation_id    UUID,
-  tracing_id      UUID NOT NULL,
-  source          VARCHAR(50) NOT NULL,
-  payload         JSONB NOT NULL,
-  metadata        JSONB DEFAULT '{}',
-  workspace_id    UUID NOT NULL,
-  status          VARCHAR(20) DEFAULT 'pending',
-  retry_count     INT DEFAULT 0,
-  max_retries     INT DEFAULT 3,
-  last_error      TEXT,
-  created_at      TIMESTAMPTZ DEFAULT NOW(),
-  last_attempt_at TIMESTAMPTZ
-);
+- `event_outbox` persists pending, delivered, failed, and dead-letter state.
+- The relay polls up to 50 pending rows every five seconds.
+- Relay-level exceptions are retried on a later fixed poll up to three attempts; exponential backoff is not implemented.
+- Handlers maintain idempotency records in `event_process_log`.
+- `SemanticEventBus` catches handler errors rather than propagating them. A failed handler can therefore be logged while the relay still marks the event delivered.
+- Source updates and outbox inserts are separate operations.
+- The bus is process-local; multiple API replicas do not share subscriptions.
 
-CREATE INDEX idx_outbox_status ON event_outbox(status, created_at);
-CREATE INDEX idx_outbox_correlation ON event_outbox(correlation_id);
-CREATE INDEX idx_outbox_workspace ON event_outbox(workspace_id);
-```
-
-## Event Chaining (Correlation)
-
-When a document is processed through the pipeline, events form a chain:
-
-```
-DocumentUploaded (correlationId: A)
-  └─ causationId: A
-  └─ tracingId: T
-
-DocumentPublished (correlationId: A, causationId: prev-event-id)
-  └─ tracingId: T
-
-GraphNodeCreated (correlationId: A, causationId: doc-published-event-id)
-  └─ tracingId: T
-
-MetricsCalculated (correlationId: A, causationId: doc-published-event-id)
-  └─ tracingId: T
-```
-
-- All events for one document share the same `correlationId`
-- Each event records what caused it via `causationId`
-- `tracingId` is preserved end-to-end for distributed tracing
+These constraints mean the runtime is not currently a strict exactly-once or guaranteed-delivery implementation.

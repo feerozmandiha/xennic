@@ -58,6 +58,7 @@ export class DocumentPublishedHandler implements IEventHandler {
       const existingNode = await this.graphNodeRepository.findByEntity(
         'knowledge_document',
         data.documentId,
+        workspaceId,
       );
       let nodeId: string;
 

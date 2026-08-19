@@ -32,7 +32,15 @@ export class GraphWorkspaceGuard implements CanActivate {
     ]) {
       if (typeof value !== 'string') continue;
       for (const id of value.split(',')) {
+<<<<<<< ours
         if (id.trim()) identifiers.add(id.trim());
+=======
+        const normalizedId = id.trim();
+        if (normalizedId.length > 128) {
+          throw new BadRequestException('Graph node identifiers must not exceed 128 characters');
+        }
+        if (normalizedId) identifiers.add(normalizedId);
+>>>>>>> theirs
       }
     }
 

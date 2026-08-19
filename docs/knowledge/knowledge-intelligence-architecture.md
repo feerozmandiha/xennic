@@ -1,5 +1,7 @@
 # Knowledge Intelligence Layer Architecture
 
+> **Runtime qualification (audited 2026-08-19):** Knowledge Intelligence is active with 28 guarded HTTP routes and a management console. Knowledge CMS publish/archive events now synchronize article graph projections. Knowledge Factory remains dormant, there is no generic graph-node/edge CRUD controller, and the graph-search endpoint does not execute the target FTS/Qdrant/RRF pipeline shown below. Treat target diagrams separately from the source-backed inventory in [knowledge-runtime-audit.md](./knowledge-runtime-audit.md).
+
 **Document ID:** XEN-ARCH-KIL-001  
 **Date:** 2026-07-04  
 **Status:** Approved  
@@ -23,12 +25,12 @@ It is a **semantic reasoning layer** that transforms raw data and documents into
 
 ```
 ┌─────────────────────┐
-│   Knowledge Factory │───▶ Graph Node Extraction ──▶ Knowledge Graph
-│  (Ingestion/Publish)│                               │
+│   Knowledge Factory │╌╌╌▶ Target extraction flow ╌╌▶ Knowledge Graph
+│     (Dormant)       │                               │
 └─────────────────────┘                               ▼
                                                       ┌─────────────────────┐
 ┌─────────────────────┐                               │  Knowledge           │
-│   Knowledge CMS     │───▶ Manual/API Node Creation ─▶│  Intelligence Layer │
+│   Knowledge CMS     │───▶ Lifecycle event projection ▶│  Intelligence Layer │
 │  (Articles/Taxonomy)│                               │                     │
 └─────────────────────┘                               │  • Graph Traversal  │
                                                       │  • Reasoning        │
@@ -92,10 +94,10 @@ It is a **semantic reasoning layer** that transforms raw data and documents into
 
 ## 5. Search Integration: Hybrid Graph Search
 
-The Knowledge Intelligence Layer transforms search from keyword-only to a true hybrid:
+The following is the **target** fusion pipeline, not the current HTTP implementation:
 
 ```typescript
-// Search pipeline
+// Target search pipeline
 keywordResults = keywordSearch(query); // PostgreSQL FTS
 vectorResults = vectorSearch(query); // Qdrant via ai-service
 graphResults = graphSearch(query); // Graph traversal + scoring
@@ -103,6 +105,8 @@ citationResults = citationExpand(query); // Citation graph expansion
 ranked = fuseAll(keyword, vector, graph, citation); // RRF + authority weighting
 filtered = applyPermissions(ranked, userContext); // RBAC enforcement
 ```
+
+At runtime, `GET /search/graph` loads up to 100 recent workspace nodes; text-filters labels, entity fields, types, and scalar properties; then ranks only matching candidates using bounded text relevance, graph neighbors, citations, and persisted metrics. It returns at most 20 results with scores in `[0, 1]`. It does not call PostgreSQL FTS, Qdrant, or `HybridSearchService`. `HybridSearchService` can merge caller-supplied result arrays but is not wired to this controller. Endpoint guards declare JWT, workspace, and `knowledge.read`; the service-level `userContext` parameter is currently unused. The shared `PermissionsGuard` also has a pre-existing fail-open path for unexpected authorization-service exceptions, so guard declaration must not be read as fail-closed assurance until that shared behavior is corrected.
 
 **Endpoints:**
 
@@ -115,13 +119,15 @@ filtered = applyPermissions(ranked, userContext); // RBAC enforcement
 
 ### Score Components
 
-| Metric           | Formula                                                                        | Range    |
-| ---------------- | ------------------------------------------------------------------------------ | -------- |
-| **Confidence**   | `min(1, 0.5 + props_count * 0.1 + hasEmbedding * 0.1 + incoming_edges * 0.05)` | [0, 1]   |
-| **Freshness**    | `f(age_days)`: 1.0 (<7d), 0.9 (<30d), 0.7 (<90d), 0.5 (<365d), 0.3 (>365d)     | [0.1, 1] |
-| **Authority**    | `min(1, 0.5 + citations * 0.1 + regulates * 0.05)`                             | [0, 1]   |
-| **Completeness** | `label(0.2) + props(0.3) + embedding(0.2) + rich_props(0.2)`                   | [0, 1]   |
-| **Composite**    | `(confidence + freshness + authority + completeness) / 4`                      | [0, 1]   |
+| Metric           | Formula                                                                                             | Range    |
+| ---------------- | --------------------------------------------------------------------------------------------------- | -------- |
+| **Confidence**   | `min(1, 0.5 + hasAtLeast3Props * 0.1 + hasEmbedding * 0.1 + min(0.3, incomingAverageWeight * 0.1))` | [0, 1]   |
+| **Freshness**    | `f(age_days)`: 1.0 (<7d), 0.9 (<30d), 0.7 (<90d), 0.5 (<365d), 0.3 (≥365d)                          | [0.3, 1] |
+| **Authority**    | `min(1, 0.5 + citationsOrReferences * 0.1 + regulates * 0.05)`                                      | [0, 1]   |
+| **Completeness** | `label(0.2) + hasProps(0.3) + embedding(0.2) + entityId(0.1) + atLeast5Props(0.2)`                  | [0, 1]   |
+| **Composite**    | `(confidence + freshness + authority + completeness) / 4`                                           | [0, 1]   |
+
+When an authority metric already exists, `calculateAuthority()` persists and returns the average of the existing authority and the newly calculated value. The workspace completeness and freshness GET endpoints calculate current reports without persisting derived metrics; metric persistence remains in explicit mutation and lifecycle-projection workflows.
 
 ### Endpoints
 
@@ -297,15 +303,15 @@ Filters edges by type (`depends_on`, `references`, `derived_from`) and extracts 
 
 ### Metrics Controller (`/knowledge-intelligence/metrics/*`)
 
-| Method | Path                                      | Description                |
-| ------ | ----------------------------------------- | -------------------------- |
-| `GET`  | `/metrics/:nodeId`                        | Get node metrics           |
-| `POST` | `/metrics/:nodeId/access`                 | Record node access         |
-| `GET`  | `/metrics/workspace/top/:metric`          | Top nodes by metric        |
-| `GET`  | `/metrics/workspace/authority`            | Authority rankings         |
-| `GET`  | `/metrics/workspace/completeness`         | Completeness analysis      |
-| `GET`  | `/metrics/workspace/freshness`            | Freshness scores           |
-| `POST` | `/metrics/workspace/confidence/recompute` | Batch confidence recompute |
+| Method | Path                                      | Description                  |
+| ------ | ----------------------------------------- | ---------------------------- |
+| `GET`  | `/metrics/:nodeId`                        | Get node metrics             |
+| `POST` | `/metrics/:nodeId/access`                 | Record node access           |
+| `GET`  | `/metrics/workspace/top/:metric`          | Top nodes by metric          |
+| `GET`  | `/metrics/workspace/authority`            | Authority rankings           |
+| `GET`  | `/metrics/workspace/completeness`         | Completeness analysis        |
+| `GET`  | `/metrics/workspace/freshness`            | Freshness/staleness analysis |
+| `POST` | `/metrics/workspace/confidence/recompute` | Batch confidence recompute   |
 
 ### Clusters Controller (`/knowledge-intelligence/clusters/*`)
 
@@ -334,28 +340,30 @@ The AI Runtime **must never** access raw vector storage directly. It consumes on
 
 ## 12. Remaining Gaps
 
-| Gap                             | Priority | Description                                                                                                                                              |
-| ------------------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **OCR/Extraction Integration**  | High     | Knowledge Factory parsing pipeline is stubbed; nodes are not auto-created from ingested documents                                                        |
-| **Real RAG Pipeline Wiring**    | High     | Qdrant embeddings exist in factory but graph nodes don't auto-link to vector IDs                                                                         |
-| **AI Runtime Persistence**      | Medium   | AI Runtime stores sessions in-memory; needs DB-backed session store                                                                                      |
-| **Streaming RAG**               | Medium   | AI Runtime streaming is simulated; needs real SSE from LLM provider                                                                                      |
-| **Implementation Completeness** | Medium   | `GraphNodeRepository` and `GraphEdgeRepository` are implemented; graph traversal relies on raw SQL CTEs which are correct but need load testing at scale |
-| **Admin Dashboard**             | Low      | No UI for graph visualization, ontology management, or cluster exploration                                                                               |
-| **Security/Sandboxing**         | Low      | Module workspace isolation is enforced at repository level but needs RBAC permission names defined                                                       |
+| Gap                             | Priority | Description                                                                                                                                                                                                                               |
+| ------------------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **OCR/Extraction Integration**  | High     | Knowledge Factory parsing pipeline is stubbed; nodes are not auto-created from ingested documents                                                                                                                                         |
+| **Real RAG Pipeline Wiring**    | High     | Qdrant embeddings exist in factory but graph nodes don't auto-link to vector IDs                                                                                                                                                          |
+| **AI Runtime Persistence**      | Medium   | AI Runtime stores sessions in-memory; needs DB-backed session store                                                                                                                                                                       |
+| **Streaming RAG**               | Medium   | AI Runtime streaming is simulated; needs real SSE from LLM provider                                                                                                                                                                       |
+| **Implementation Completeness** | Medium   | `GraphNodeRepository` and `GraphEdgeRepository` are implemented; graph traversal relies on raw SQL CTEs which are correct but need load testing at scale                                                                                  |
+| **Graph Visualization**         | Low      | Management workspaces now cover exploration, ontology, metrics, clusters, and duplicates; a dedicated interactive graph canvas is still absent                                                                                            |
+| **Security/Sandboxing**         | High     | Controllers use JWT/workspace/permission guards and graph IDs use `GraphWorkspaceGuard`, but the shared permission guard can fail open on unexpected authorization-service errors; repositories are not uniformly workspace-parameterized |
 
 ---
 
 ## 13. Enterprise AI Readiness Assessment
 
-| Factor                  | Score | Notes                                                                  |
-| ----------------------- | ----- | ---------------------------------------------------------------------- |
-| **Semantic Foundation** | 85%   | Graph schema, ontology, and reasoning primitives are production-ready  |
-| **API Completeness**    | 90%   | REST endpoints expose all core capabilities for AI Runtime             |
-| **Data Pipeline**       | 50%   | Factory → graph node creation is not yet automated                     |
-| **Persistence**         | 70%   | PostgreSQL graph model is solid; AI Runtime still needs DB persistence |
-| **Observability**       | 60%   | Metrics and scoring exist; graph analytics dashboard is missing        |
-| **Security**            | 75%   | Workspace isolation + RBAC guards are in place                         |
+> The percentages below are historical architecture estimates, not measured release criteria. Use the runtime audit and test results for operational decisions.
+
+| Factor                  | Score | Notes                                                                                                                  |
+| ----------------------- | ----- | ---------------------------------------------------------------------------------------------------------------------- |
+| **Semantic Foundation** | 85%   | Graph schema, ontology, and reasoning primitives are production-ready                                                  |
+| **API Completeness**    | 90%   | REST endpoints expose all core capabilities for AI Runtime                                                             |
+| **Data Pipeline**       | 50%   | Factory → graph node creation is not yet automated                                                                     |
+| **Persistence**         | 70%   | PostgreSQL graph model is solid; AI Runtime still needs DB persistence                                                 |
+| **Observability**       | 60%   | Metrics and management views exist; operational telemetry is limited                                                   |
+| **Security**            | 60%   | Workspace/RBAC/resource guards exist, but shared authorization must fail closed and repositories need defense-in-depth |
 
 ### Estimated Completion Percentage
 
@@ -375,12 +383,13 @@ The AI Runtime **must never** access raw vector storage directly. It consumes on
 
 ### Next Steps to Production Quality
 
-1. Wire Knowledge Factory pipeline to auto-create graph nodes on document publish
-2. Implement AI Runtime DB-backed session store
-3. Add RBAC permission definitions for Knowledge Intelligence endpoints
-4. Load-test recursive CTEs with 100K+ nodes
-5. Build graph visualization frontend components
-6. Implement real RAG pipeline: graph expansion → prompt context → LLM → response with citations
+1. Change the shared `PermissionsGuard` to fail closed on unexpected authorization-service errors
+2. Complete and safely activate Knowledge Factory before enabling its document-to-graph producer
+3. Implement AI Runtime DB-backed session storage
+4. Add repository-level workspace constraints as defense in depth behind controller/resource guards
+5. Load-test recursive CTEs with 100K+ nodes
+6. Add a dedicated interactive graph canvas to the existing management console if required
+7. Wire a real hybrid/RAG pipeline: FTS/vector/graph/citation retrieval → fusion → cited LLM response
 
 ---
 

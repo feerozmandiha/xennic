@@ -11,9 +11,10 @@ import { KnowledgeRepository } from './infrastructure/repositories/knowledge.rep
 import { KnowledgeContentRepository } from './infrastructure/repositories/knowledge-content.repository.js';
 import { WorkspaceModule } from '../workspace/workspace.module.js';
 import { RbacModule } from '../rbac/rbac.module.js';
+import { SemanticIntegrationModule } from '../semantic-integration/semantic-integration.module.js';
 
 @Module({
-  imports: [WorkspaceModule, RbacModule],
+  imports: [WorkspaceModule, RbacModule, SemanticIntegrationModule],
   controllers: [
     KnowledgeController,
     KnowledgeContentController,

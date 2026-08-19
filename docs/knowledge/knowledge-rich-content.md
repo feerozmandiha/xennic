@@ -1,5 +1,10 @@
 # Knowledge Rich Content — Phase K5
 
+> **نوع سند:** گزارش تاریخی تحویل K5، نه گزارش وضعیت کل سامانه. مسیرها و رفتارهای این سند در
+> بازبینی منبع در ۲۰۲۶-۰۸-۱۹ دوباره تطبیق داده شده‌اند؛ تعداد تست‌ها و خروجی‌های بخش‌های ۶ و ۷
+> snapshot زمان تحویل K5 هستند. برای وضعیت runtime فعلی CMS، Intelligence و Factory به
+> [`knowledge-runtime-audit.md`](./knowledge-runtime-audit.md) مراجعه کنید.
+
 > فعال‌سازی جداول دانشنامه که در `prisma/schema.prisma` تعریف شده بودند اما هیچ API نداشتند.
 
 ## ۱. مسئله
@@ -79,7 +84,9 @@ knowledge/
 
 ## ۴. Endpointها
 
-پایه: `/api/v1/knowledge/:id` — همه با `JwtAuthGuard + WorkspaceGuard + PermissionsGuard`.
+پایهٔ مسیرهای مدیریتی: `/api/v1/knowledge/:id` — همه با
+`JwtAuthGuard + WorkspaceGuard + PermissionsGuard`. مسیر عمومی انتهای این بخش از این قاعده
+مستثنا و عمداً بدون احراز هویت است.
 
 ### ترجمه‌ها
 
@@ -138,13 +145,14 @@ knowledge/
 چون API با `whitelist: true, forbidNonWhitelisted: true` اجرا می‌شود، همهٔ DTOها
 با `class-validator` کاملاً پوشش داده شده‌اند:
 
-- `language` محدود به enum زبان‌های پشتیبانی‌شده
-- `type` رسانه محدود به ۹ نوع مجاز schema
-- `difficulty` مثال محدود به `basic | intermediate | advanced`
-- `url` با `IsUrl({ require_tld: false })` تا آدرس‌های داخلی CDN هم بپذیرد
-- کران بالای طول برای همهٔ فیلدهای متنی
+- `language` در DTO ترجمه محدود به enum زبان‌های پشتیبانی‌شده است؛ پارامتر زبان مسیر نیز در
+  service نرمال‌سازی و در صورت نامعتبر بودن با `400` رد می‌شود.
+- `type` رسانه محدود به ۹ نوع مجاز schema است.
+- `difficulty` مثال محدود به `basic | intermediate | advanced` است.
+- `url` با `IsUrl({ require_tld: false })` اعتبارسنجی می‌شود تا آدرس‌های داخلی CDN هم پذیرفته شوند.
+- برای فیلدهای متنی مرتبط کران طول تعریف شده است.
 
-## ۶. تست‌ها
+## ۶. تست‌ها (snapshot تحویل K5)
 
 | فایل                                   | تعداد  |
 | -------------------------------------- | ------ |
@@ -157,16 +165,17 @@ knowledge/
 پوشش شامل: نرمال‌سازی زبان، زنجیرهٔ fallback، ایزولاسیون workspace، رد رکورد متعلق به
 مقالهٔ دیگر، ممانعت از حذف زبان اصلی، idempotent بودن لایک/آنلایک، و بازسازی `search_text`.
 
-```bash
-cd apps/api && npx jest --testPathPattern "modules/knowledge/"
-```
-
-## ۷. اعتبارسنجی
+فرمان معادل در workspace فعلی:
 
 ```bash
-pnpm validate:arch                          # ۰ نقض
-cd apps/api && npx tsc --noEmit             # ۰ خطا
-npx eslint apps/api/src/modules/knowledge   # تمیز
+corepack pnpm --filter @xennic/api exec jest --runInBand src/modules/knowledge
 ```
 
-بدون migration — همهٔ جداول از قبل در `prisma/schema.prisma` موجود بودند.
+## ۷. اعتبارسنجی ثبت‌شده در زمان تحویل K5
+
+در گزارش اولیهٔ K5، `validate:arch` بدون نقض، typecheck بدون خطا و lint ماژول Knowledge تمیز
+ثبت شده بود. این موارد شواهد تاریخی همان تحویل‌اند و نباید به‌عنوان نتیجهٔ اجرای فعلی کل API
+تفسیر شوند؛ محدودیت‌ها و نتایج اعتبارسنجی فعلی در
+[`knowledge-runtime-audit.md`](./knowledge-runtime-audit.md) ثبت می‌شوند.
+
+این فاز migration جدیدی نداشت؛ جداول مربوط از قبل در `prisma/schema.prisma` موجود بودند.

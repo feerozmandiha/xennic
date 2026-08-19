@@ -5,6 +5,10 @@ import { RequirePermissions } from '../../../rbac/infrastructure/decorators/perm
 import { PermissionsGuard } from '../../../rbac/infrastructure/guards/permissions.guard.js';
 import { WorkspaceGuard } from '../../../rbac/infrastructure/guards/workspace.guard.js';
 import { GraphWorkspaceGuard } from '../guards/graph-workspace.guard.js';
+<<<<<<< ours
+=======
+import { NeighborQueryDto, SubgraphQueryDto } from '../dtos/graph-query.dto.js';
+>>>>>>> theirs
 import { boundedInteger } from '../query-parameters.js';
 import { GraphTraversalService } from '../../application/services/graph-traversal.service.js';
 import { KnowledgeProvenanceService } from '../../application/services/knowledge-provenance.service.js';
@@ -42,20 +46,22 @@ export class GraphController {
 
   @Get('graph/neighbors/:nodeId')
   @ApiOperation({ summary: 'Get neighbors of a graph node' })
-  async neighbors(
-    @Request() req: any,
-    @Param('nodeId') nodeId: string,
-    @Query('direction') direction: 'in' | 'out' | 'both' = 'both',
-    @Query('edgeType') edgeType?: string,
-  ) {
-    const neighbors = await this.traversalService.getNeighbors(nodeId, direction, edgeType);
+  async neighbors(@Param('nodeId') nodeId: string, @Query() query: NeighborQueryDto) {
+    const neighbors = await this.traversalService.getNeighbors(
+      nodeId,
+      query.direction ?? 'both',
+      query.edgeType?.trim(),
+    );
     return { success: true, data: neighbors };
   }
 
   @Get('graph/subgraph')
   @ApiOperation({ summary: 'Get subgraph for a set of node IDs' })
-  async subgraph(@Query('nodeIds') nodeIds: string) {
-    const ids = nodeIds.split(',').filter(Boolean);
+  async subgraph(@Query() query: SubgraphQueryDto) {
+    const ids = query.nodeIds
+      .split(',')
+      .map((id) => id.trim())
+      .filter(Boolean);
     const subgraph = await this.traversalService.getSubgraph(ids);
     return { success: true, data: subgraph };
   }

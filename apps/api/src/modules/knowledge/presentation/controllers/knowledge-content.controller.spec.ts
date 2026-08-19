@@ -1,4 +1,4 @@
-jest.mock('@xennic/database', () => ({ prisma: {} }));
+jest.mock('@xennic/database', () => ({ prisma: {} }), { virtual: true });
 
 import { Test, TestingModule } from '@nestjs/testing';
 import { KnowledgeContentController } from './knowledge-content.controller.js';

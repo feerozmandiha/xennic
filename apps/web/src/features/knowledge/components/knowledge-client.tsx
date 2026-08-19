@@ -172,7 +172,7 @@ function ArticleCard({
             )}
           </div>
           <a
-            href={`/${locale}/knowledge/${article.id}`}
+            href={`/${locale}/knowledge-manage/${article.id}`}
             className="inline-flex items-center gap-1 text-[10px] text-[hsl(var(--primary))] hover:underline font-medium"
           >
             جزئیات <ArrowUpRight className="h-3 w-3" />
