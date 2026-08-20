@@ -15,6 +15,8 @@ import { apiClient } from '@/lib/api/client';
 import { KnowledgeEditor } from './knowledge-editor';
 import { TaxonomySelect } from './taxonomy-select';
 import { StandardsManager } from './standards-manager';
+import { TierSelect } from './tier-select';
+import type { AccessTier } from '../lib/access-tiers';
 
 const DIFFICULTIES = [
   { value: 'beginner', label: 'مبتدی' },
@@ -54,6 +56,7 @@ export function KnowledgeEditClient({ articleId }: Props) {
   const [difficulty, setDifficulty] = useState('');
   const [visibility, setVisibility] = useState('public');
   const [articleStatus, setArticleStatus] = useState<string>('draft');
+  const [accessTier, setAccessTier] = useState<AccessTier>('free');
   const [selectedTaxonomy, setSelectedTaxonomy] = useState<Record<string, string[]>>({
     category: [],
     topic: [],
@@ -91,6 +94,7 @@ export function KnowledgeEditClient({ articleId }: Props) {
       setDifficulty(data.data.difficulty ?? '');
       setVisibility(data.data.visibility ?? 'public');
       setArticleStatus(data.data.status ?? 'draft');
+      setAccessTier((data.data as any).accessTier ?? 'free');
     }
   }, [data]);
 
@@ -119,6 +123,7 @@ export function KnowledgeEditClient({ articleId }: Props) {
       content: Record<string, unknown>;
       difficulty: string;
       visibility: string;
+      accessTier: AccessTier;
       taxonomy: Record<string, string[]>;
       existingTaxonomy: TaxonomyEntry[];
     }) => {
@@ -127,6 +132,7 @@ export function KnowledgeEditClient({ articleId }: Props) {
         content: { title: variables.title.trim(), doc: variables.content },
         difficulty: variables.difficulty || null,
         visibility: variables.visibility,
+        accessTier: variables.accessTier,
       });
 
       const current: Record<string, string[]> = {
@@ -193,6 +199,7 @@ export function KnowledgeEditClient({ articleId }: Props) {
         content,
         difficulty,
         visibility,
+        accessTier,
         taxonomy: selectedTaxonomy,
         existingTaxonomy: taxonomyQuery.data?.data ?? [],
       });
@@ -226,6 +233,7 @@ export function KnowledgeEditClient({ articleId }: Props) {
       content,
       difficulty,
       visibility,
+      accessTier,
       taxonomy: selectedTaxonomy,
       existingTaxonomy: taxonomyQuery.data?.data ?? [],
     });
@@ -397,6 +405,23 @@ export function KnowledgeEditClient({ articleId }: Props) {
                     ))}
                   </select>
                 </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">سطح دسترسی</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <TierSelect
+                  value={accessTier}
+                  onChange={setAccessTier}
+                  disabled={mutation.isPending}
+                />
+                <p className="mt-3 text-[11px] leading-relaxed text-[hsl(var(--muted-foreground))]">
+                  مقالات <span className="font-semibold">بسیار ساده</span> بدون ورود در سایت قابل
+                  مشاهده‌اند. سطوح دیگر پس از ورود و بر اساس پلن کاربر قابل دسترسی هستند.
+                </p>
               </CardContent>
             </Card>
 
