@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 
 export type OrderStatus =
   | 'pending'
+  | 'paid'
   | 'confirmed'
   | 'processing'
   | 'shipped'
@@ -27,6 +28,10 @@ export class OrderEntity {
     private _items: OrderItemData[],
     private _createdAt: Date,
     private _updatedAt: Date,
+    private _authority: string | null = null,
+    private _gateway: string | null = null,
+    private _gatewayReference: string | null = null,
+    private _paidAt: Date | null = null,
   ) {}
 
   static create(data: {
@@ -59,6 +64,10 @@ export class OrderEntity {
     items: OrderItemData[];
     createdAt: Date;
     updatedAt: Date;
+    authority?: string | null;
+    gateway?: string | null;
+    gatewayReference?: string | null;
+    paidAt?: Date | null;
   }): OrderEntity {
     return new OrderEntity(
       data.id,
@@ -70,6 +79,10 @@ export class OrderEntity {
       data.items,
       data.createdAt,
       data.updatedAt,
+      data.authority ?? null,
+      data.gateway ?? null,
+      data.gatewayReference ?? null,
+      data.paidAt ?? null,
     );
   }
 
@@ -97,9 +110,38 @@ export class OrderEntity {
   get updatedAt(): Date {
     return this._updatedAt;
   }
+  get authority(): string | null {
+    return this._authority;
+  }
+  get gateway(): string | null {
+    return this._gateway;
+  }
+  get gatewayReference(): string | null {
+    return this._gatewayReference;
+  }
+  get paidAt(): Date | null {
+    return this._paidAt;
+  }
+
+  isPaid(): boolean {
+    return this._paidAt != null;
+  }
 
   updateStatus(status: OrderStatus): void {
     this._status = status;
+    this._updatedAt = new Date();
+  }
+
+  setAuthority(authority: string, gateway = 'zarinpal'): void {
+    this._authority = authority;
+    this._gateway = gateway;
+    this._updatedAt = new Date();
+  }
+
+  markPaid(gatewayReference: string): void {
+    this._status = 'paid';
+    this._gatewayReference = gatewayReference;
+    this._paidAt = new Date();
     this._updatedAt = new Date();
   }
 }

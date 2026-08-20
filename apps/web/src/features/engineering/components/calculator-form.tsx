@@ -1,11 +1,14 @@
 'use client';
 
 import { useState, useRef, useCallback, useEffect } from 'react';
+import Link from 'next/link';
+import { useParams } from 'next/navigation';
 import { useMutation } from '@tanstack/react-query';
 import { CheckCircle2, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { apiClient } from '@/lib/api/client';
+import { storeLink } from '@/lib/marketplace';
 import { TCCChart, HarmonicChart, CableChart } from './charts';
 import { downloadPdfReport } from './pdf-report';
 import { CALC_META } from '../utils/calc-meta';
@@ -1584,7 +1587,10 @@ function ChartsSection({ charts }: { charts: any[] }) {
 // ── Suggested Products ────────────────────────────────────────────────────────
 
 function SuggestedProducts({ code, result }: { code: string; result: any }) {
+  const params = useParams();
+  const locale = (params?.locale as string) ?? 'fa';
   const [products, setProducts] = useState<any[]>([]);
+  const [category, setCategory] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [shown, setShown] = useState(false);
 
@@ -1595,18 +1601,19 @@ function SuggestedProducts({ code, result }: { code: string; result: any }) {
       const raw = result?.data?.result ?? result?.result;
       const data =
         raw.data && typeof raw.data === 'object' && !Array.isArray(raw.data) ? raw.data : raw;
-      const params = encodeURIComponent(JSON.stringify(data.results ?? data));
+      const resultParams = encodeURIComponent(JSON.stringify(data.results ?? data));
       const res = await apiClient.get<any>(
-        `/products/suggest?calculationType=${code}&resultParams=${params}&limit=6`,
+        `/public/marketplace/suggest?calculationType=${code}&resultParams=${resultParams}&locale=${locale}&limit=6`,
       );
       setProducts(res?.data ?? []);
+      setCategory(res?.category ?? null);
       setShown(true);
     } catch {
       // silently ignore — marketplace integration is optional
     } finally {
       setLoading(false);
     }
-  }, [code, loading, result, shown]);
+  }, [code, loading, locale, result, shown]);
 
   useEffect(() => {
     void fetchSuggestions();
@@ -1659,13 +1666,14 @@ function SuggestedProducts({ code, result }: { code: string; result: any }) {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {products.map((p: any) => (
-              <div
+              <Link
                 key={p.id}
+                href={`/${locale}/marketplace/products/${p.id}`}
                 className="rounded-[var(--radius)] border border-[hsl(var(--border))] p-2.5 hover:bg-[hsl(var(--accent)/0.04)] transition-colors"
               >
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
-                    <p className="text-xs font-semibold truncate">{p.sku}</p>
+                    <p className="text-xs font-semibold truncate">{p.title ?? p.sku}</p>
                     {p.category && (
                       <span className="inline-block mt-0.5 rounded-md bg-[hsl(var(--accent)/0.08)] px-1.5 py-0.5 text-[10px] text-[hsl(var(--accent))]">
                         {p.category}
@@ -1678,16 +1686,16 @@ function SuggestedProducts({ code, result }: { code: string; result: any }) {
                     </p>
                   </div>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
           {products.length > 0 && (
-            <a
-              href={`/${window.location.pathname.split('/')[1] ?? 'fa'}/marketplace`}
+            <Link
+              href={storeLink(locale, { category: category ?? undefined, calc: code })}
               className="inline-block mt-2 text-xs text-[hsl(var(--accent))] hover:underline"
             >
-              مشاهده همه محصولات در بازارچه →
-            </a>
+              مشاهده همه محصولات مرتبط در فروشگاه ←
+            </Link>
           )}
         </div>
       )}

@@ -7,6 +7,7 @@ import {
   ValidateNested,
   IsEnum,
   Min,
+  ArrayMinSize,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
@@ -21,10 +22,12 @@ class OrderItemDto {
   @Type(() => Number)
   quantity!: number;
 
-  @ApiProperty()
+  // قیمت واحد از سمت سرور محاسبه می‌شود؛ در صورت ارسال نادیده گرفته می‌شود.
+  @ApiPropertyOptional()
+  @IsOptional()
   @IsNumber()
   @Type(() => Number)
-  unitPrice!: number;
+  unitPrice?: number;
 }
 
 export class CreateOrderDto {
@@ -35,6 +38,7 @@ export class CreateOrderDto {
 
   @ApiProperty({ type: [OrderItemDto] })
   @IsArray()
+  @ArrayMinSize(1)
   @ValidateNested({ each: true })
   @Type(() => OrderItemDto)
   items!: OrderItemDto[];

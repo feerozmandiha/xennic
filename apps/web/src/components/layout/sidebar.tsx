@@ -50,7 +50,7 @@ const NAV_ITEMS: readonly NavigationItem[] = [
   { key: 'vision', icon: ScanEye, adminOnly: false },
   { key: 'energy', icon: FileBarChart, adminOnly: false },
   { key: 'knowledge', route: 'knowledge', icon: Library, adminOnly: false },
-  { key: 'marketplace', icon: ShoppingCart, adminOnly: false },
+  { key: 'marketplace', route: 'marketplace/manage', icon: ShoppingCart, adminOnly: false },
   { key: 'consultations', icon: MessageSquare, adminOnly: false },
   { key: 'storage', icon: HardDrive, adminOnly: false },
   { key: 'notifications', icon: Bell, adminOnly: false },

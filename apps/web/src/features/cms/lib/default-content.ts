@@ -52,6 +52,7 @@ export const DEFAULT_HEADER: CmsDocument = {
     createBlock('nav-links', 'default-nav-links-1', {
       links: [
         { label: 'صفحه اصلی', href: '/' },
+        { label: 'فروشگاه', href: '/marketplace' },
         { label: 'امکانات', href: '/#features' },
         { label: 'قیمت‌ها', href: '/#pricing' },
         { label: 'سوالات', href: '/#faq' },
