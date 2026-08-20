@@ -14,7 +14,7 @@ export async function fetchThemeCss(): Promise<string> {
   try {
     const controller = new AbortController();
     const t = setTimeout(() => controller.abort(), 1500);
-    const res = await fetch(`${base.replace(/\/$/, '')}/theme/css`, {
+    const res = await fetch(`${base.replace(/\/$/, '')}/api/v1/theme/css`, {
       signal: controller.signal,
       next: { revalidate: 30, tags: ['theme'] },
     });
