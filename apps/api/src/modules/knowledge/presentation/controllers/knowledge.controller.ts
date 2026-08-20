@@ -26,6 +26,7 @@ import { WorkspaceGuard } from '../../../rbac/infrastructure/guards/workspace.gu
 import { RequirePermissions } from '../../../rbac/infrastructure/decorators/permissions.decorator.js';
 import { PermissionsGuard } from '../../../rbac/infrastructure/guards/permissions.guard.js';
 import { KnowledgeService } from '../../application/services/knowledge.service.js';
+import { PlanEntitlementService } from '../../../billing/application/services/plan-entitlement.service.js';
 import {
   CreateKnowledgeDto,
   UpdateKnowledgeDto,
@@ -43,7 +44,25 @@ import {
 @UseGuards(JwtAuthGuard, WorkspaceGuard, PermissionsGuard)
 @Controller('knowledge')
 export class KnowledgeController {
-  constructor(private readonly knowledgeService: KnowledgeService) {}
+  constructor(
+    private readonly knowledgeService: KnowledgeService,
+    private readonly planEntitlements: PlanEntitlementService,
+  ) {}
+
+  // ── GET /knowledge/my-tier ────────────────────────────────────────────────
+
+  @Get('my-tier')
+  @ApiOperation({
+    summary: 'Knowledge access tier for the current user/workspace',
+    description:
+      'Returns the highest knowledge access tier the current user is entitled to ' +
+      'based on their active subscription. Unauthenticated callers receive free.',
+  })
+  @ApiResponse({ status: 200, description: 'Current tier' })
+  async myTier(@Req() req: any) {
+    const tier = await this.planEntitlements.getWorkspaceKnowledgeTier(req.workspaceId ?? null);
+    return { success: true, data: { tier: tier ?? 'free' } };
+  }
 
   // ─── GET /knowledge ────────────────────────────────────────────────────────
 

@@ -4,6 +4,7 @@ import { INestApplication } from '@nestjs/common';
 import { JwtAuthGuard } from '../src/modules/auth/infrastructure/guards/jwt-auth.guard.js';
 import { WorkspaceGuard } from '../src/modules/rbac/infrastructure/guards/workspace.guard.js';
 import { PermissionsGuard } from '../src/modules/rbac/infrastructure/guards/permissions.guard.js';
+import { PlanEntitlementService } from '../src/modules/billing/application/services/plan-entitlement.service.js';
 import { KnowledgeController } from '../src/modules/knowledge/presentation/controllers/knowledge.controller.js';
 import { KnowledgeService } from '../src/modules/knowledge/application/services/knowledge.service.js';
 import { IKnowledgeRepository } from '../src/modules/knowledge/domain/interfaces/knowledge.repository.interface.js';
@@ -115,6 +116,10 @@ describe('Knowledge Lifecycle (integration)', () => {
       providers: [
         KnowledgeService,
         { provide: 'IKnowledgeRepository', useValue: mockKnowledgeRepository },
+        {
+          provide: PlanEntitlementService,
+          useValue: { getWorkspaceKnowledgeTier: jest.fn().mockResolvedValue('enterprise') },
+        },
       ],
     })
       .overrideGuard(JwtAuthGuard)
