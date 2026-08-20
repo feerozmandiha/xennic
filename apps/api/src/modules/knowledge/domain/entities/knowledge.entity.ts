@@ -1,3 +1,4 @@
+import type { KnowledgeAccessTier } from '../value-objects/knowledge-access-tier.vo.js';
 export type KnowledgeStatus = 'draft' | 'review' | 'published' | 'archived';
 export type KnowledgeVisibility = 'public' | 'private' | 'workspace';
 export type KnowledgeDifficulty = 'beginner' | 'intermediate' | 'advanced' | 'expert';
@@ -23,6 +24,7 @@ export class KnowledgeEntity {
     private _searchText: string | null,
     private _readingTime: number | null,
     private _difficulty: KnowledgeDifficulty | null,
+    private _accessTier: KnowledgeAccessTier = 'free',
     private _authorId: string | null,
     private _reviewerId: string | null,
     private _createdAt: Date,
@@ -39,6 +41,7 @@ export class KnowledgeEntity {
     language?: string;
     visibility?: KnowledgeVisibility;
     difficulty?: KnowledgeDifficulty;
+    accessTier?: KnowledgeAccessTier;
     authorId?: string;
   }): KnowledgeEntity {
     const now = new Date();
@@ -57,6 +60,7 @@ export class KnowledgeEntity {
       null,
       null,
       data.difficulty ?? null,
+      data.accessTier ?? 'free',
       data.authorId ?? null,
       null,
       now,
@@ -80,6 +84,7 @@ export class KnowledgeEntity {
     searchText: string | null;
     readingTime: number | null;
     difficulty: string | null;
+    accessTier?: string | null;
     authorId: string | null;
     reviewerId: string | null;
     createdAt: Date;
@@ -101,6 +106,7 @@ export class KnowledgeEntity {
       data.searchText,
       data.readingTime,
       data.difficulty as KnowledgeDifficulty | null,
+      (data.accessTier as KnowledgeAccessTier) ?? 'free',
       data.authorId,
       data.reviewerId,
       data.createdAt,
@@ -143,6 +149,10 @@ export class KnowledgeEntity {
   get difficulty(): KnowledgeDifficulty | null {
     return this._difficulty;
   }
+
+  get accessTier(): KnowledgeAccessTier {
+    return this._accessTier;
+  }
   get authorId(): string | null {
     return this._authorId;
   }
@@ -181,6 +191,7 @@ export class KnowledgeEntity {
     language?: string;
     visibility?: KnowledgeVisibility;
     difficulty?: KnowledgeDifficulty;
+    accessTier?: KnowledgeAccessTier;
     readingTime?: number | null;
   }): void {
     if (data.slug !== undefined) this._slug = data.slug;
@@ -188,6 +199,7 @@ export class KnowledgeEntity {
     if (data.language !== undefined) this._language = data.language;
     if (data.visibility !== undefined) this._visibility = data.visibility;
     if (data.difficulty !== undefined) this._difficulty = data.difficulty;
+    if (data.accessTier !== undefined) this._accessTier = data.accessTier;
     if (data.readingTime !== undefined) this._readingTime = data.readingTime;
     this._updatedAt = new Date();
   }

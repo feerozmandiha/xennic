@@ -77,6 +77,7 @@ export class KnowledgeService {
       status: 'published',
       visibility: 'public',
       is_active: true,
+      access_tier: 'free',
     };
     if (locale) where.language = locale;
 
@@ -105,6 +106,7 @@ export class KnowledgeService {
           searchText: r.search_text ?? null,
           readingTime: r.reading_time ?? null,
           difficulty: r.difficulty ?? null,
+          accessTier: r.access_tier ?? 'free',
           authorId: r.author_id ?? null,
           reviewerId: r.reviewer_id ?? null,
           createdAt: r.created_at,
@@ -120,7 +122,13 @@ export class KnowledgeService {
 
   async findPublishedBySlug(slug: string): Promise<KnowledgeEntity> {
     const row = await prisma.knowledge.findFirst({
-      where: { slug, status: 'published', visibility: 'public', is_active: true },
+      where: {
+        slug,
+        status: 'published',
+        visibility: 'public',
+        is_active: true,
+        access_tier: 'free',
+      },
     });
     if (!row) throw new NotFoundException('Article not found');
     return KnowledgeEntity.reconstitute({
@@ -183,6 +191,7 @@ export class KnowledgeService {
       language: dto.language,
       visibility: dto.visibility,
       difficulty: dto.difficulty,
+      accessTier: (dto as any).accessTier ?? 'free',
       authorId: userId,
     });
 
@@ -208,6 +217,7 @@ export class KnowledgeService {
       content: dto.content,
       visibility: dto.visibility,
       difficulty: dto.difficulty,
+      accessTier: (dto as any).accessTier,
       readingTime: dto.readingTime,
     });
 

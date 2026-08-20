@@ -32,6 +32,7 @@ interface Article {
   content?: { title?: string; doc?: unknown };
   readingTime?: number | null;
   difficulty?: string | null;
+  accessTier?: 'free' | 'basic' | 'pro' | 'enterprise';
   publishedAt?: string | null;
 }
 

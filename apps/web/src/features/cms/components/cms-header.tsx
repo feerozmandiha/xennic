@@ -48,7 +48,15 @@ export function CmsHeader() {
   const hasStoreLink = links.some(
     (l) => l.href === storeHref || l.href === '/marketplace' || l.href.endsWith('/marketplace'),
   );
-  const navItems = hasStoreLink ? links : [...links, { label: tMarket('store'), href: storeHref }];
+  const knowledgeHref = `/${locale}/knowledge`;
+  const linksWithKnowledge = links.some(
+    (l) => l.href === knowledgeHref || l.href === '/knowledge' || l.href.endsWith('/knowledge'),
+  )
+    ? links
+    : [...links, { label: 'دانشنامه', href: knowledgeHref }];
+  const navItems = hasStoreLink
+    ? linksWithKnowledge
+    : [...linksWithKnowledge, { label: tMarket('store'), href: storeHref }];
 
   const buttonsBlock = doc.blocks.find((b) => b.type === 'buttons');
 
