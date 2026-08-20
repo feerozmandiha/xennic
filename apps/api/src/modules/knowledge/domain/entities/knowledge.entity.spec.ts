@@ -216,6 +216,37 @@ describe('KnowledgeEntity', () => {
       expect(entity.version).toBe(before + 1);
       expect(entity.publishedAt).toBeInstanceOf(Date);
     });
+
+    it('should throw when publishing a draft directly', () => {
+      const entity = createEntityWithStatus('draft');
+      expect(() => entity.publish()).toThrow(/Invalid status transition/);
+    });
+  });
+
+  describe('publishFromDraft', () => {
+    it('should allow publishing directly from draft (editor shortcut)', () => {
+      const entity = createEntityWithStatus('draft');
+      const before = entity.version;
+      entity.publishFromDraft();
+      expect(entity.status).toBe('published');
+      expect(entity.version).toBe(before + 1);
+      expect(entity.publishedAt).toBeInstanceOf(Date);
+    });
+
+    it('should fall back to normal publish for non-draft statuses', () => {
+      const entity = createEntityWithStatus('review');
+      const before = entity.version;
+      entity.publishFromDraft();
+      expect(entity.status).toBe('published');
+      expect(entity.version).toBe(before + 1);
+    });
+
+    it('should be idempotent when called on already published (no crash)', () => {
+      const entity = createEntityWithStatus('published');
+      // Calling publishFromDraft on published falls through to publish()
+      // which throws because published can only transition to archived.
+      expect(() => entity.publishFromDraft()).toThrow();
+    });
   });
 
   describe('rejectReview', () => {
