@@ -42,6 +42,7 @@ import { KnowledgeEntity } from '../../domain/entities/knowledge.entity.js';
 import { JwtAuthGuard } from '../../../auth/infrastructure/guards/jwt-auth.guard.js';
 import { WorkspaceGuard } from '../../../rbac/infrastructure/guards/workspace.guard.js';
 import { PermissionsGuard } from '../../../rbac/infrastructure/guards/permissions.guard.js';
+import { PlanEntitlementService } from '../../../billing/application/services/plan-entitlement.service.js';
 
 const WS_ID = 'ws-123';
 const USER_ID = 'user-456';
@@ -85,6 +86,12 @@ describe('KnowledgeController', () => {
             removeTaxonomy: jest.fn(),
             getTaxonomy: jest.fn(),
             recordView: jest.fn(),
+          },
+        },
+        {
+          provide: PlanEntitlementService,
+          useValue: {
+            getWorkspaceKnowledgeTier: jest.fn().mockResolvedValue('basic'),
           },
         },
       ],
