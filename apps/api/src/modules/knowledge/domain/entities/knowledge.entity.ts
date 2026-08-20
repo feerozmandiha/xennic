@@ -205,6 +205,23 @@ export class KnowledgeEntity {
     this._updatedAt = new Date();
   }
 
+  /**
+   * Publish directly from draft without the intermediate 'review'
+   * status. Used when an author/admin publishes from the editor
+   * without requesting review first.
+   */
+  publishFromDraft(): void {
+    if (this._status !== 'draft') {
+      // Fall back to the normal transition (review -> published, etc.)
+      this.publish();
+      return;
+    }
+    this._status = 'published';
+    this._version += 1;
+    this._publishedAt = new Date();
+    this._updatedAt = new Date();
+  }
+
   rejectReview(): void {
     this._transitionTo('draft');
     this._reviewerId = null;

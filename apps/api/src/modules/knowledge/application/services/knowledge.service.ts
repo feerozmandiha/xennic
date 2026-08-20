@@ -236,7 +236,11 @@ export class KnowledgeService {
 
   async publish(id: string, workspaceId: string): Promise<KnowledgeEntity> {
     const entity = await this.findOne(id, workspaceId);
-    entity.publish();
+    // The review workflow used to require draft -> review -> published.
+    // For authors/admins publishing from the editor, allow going straight
+    // from draft to published (requestReview still exists for teams that
+    // want a review step).
+    entity.publishFromDraft();
 
     // Snapshot current content as a version record
     await this._createVersionSnapshot(entity);

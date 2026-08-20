@@ -300,12 +300,24 @@ describe('KnowledgeService', () => {
       );
     });
 
-    it('should reject invalid transitions', async () => {
+    it('should reject invalid transitions (e.g. archived -> published)', async () => {
       const entity = makeEntity();
+      // Archived is the only status from which publish() must still fail.
+      entity.publishFromDraft(); // draft -> published
+      entity.archive(); // published -> archived
       repo.findById.mockResolvedValue(entity);
 
       await expect(service.publish(ARTICLE_ID, WS_ID)).rejects.toThrow();
       expect(repo.save).not.toHaveBeenCalled();
+    });
+
+    it('should allow publishing directly from draft (editor shortcut)', async () => {
+      const entity = makeEntity();
+      repo.findById.mockResolvedValue(entity);
+
+      const result = await service.publish(ARTICLE_ID, WS_ID);
+      expect(result.status).toBe('published');
+      expect(repo.save).toHaveBeenCalled();
     });
   });
 
