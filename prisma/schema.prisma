@@ -723,6 +723,7 @@ model knowledge {
 
   reading_time  Int?
   difficulty    String?
+  access_tier   String    @default("free")
   author_id     String?
   reviewer_id   String?
 
@@ -754,6 +755,7 @@ model knowledge {
   @@index([visibility])
   @@index([language])
   @@index([difficulty])
+  @@index([access_tier])
   @@index([author_id])
   factory_documents                 knowledge_documents[]    @relation("FactoryPublishedKnowledge")
 }

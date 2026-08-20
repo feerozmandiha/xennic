@@ -24,6 +24,7 @@ import {
 export const KNOWLEDGE_STATUSES = ['draft', 'review', 'published', 'archived'] as const;
 export const KNOWLEDGE_VISIBILITIES = ['public', 'private', 'workspace'] as const;
 export const KNOWLEDGE_DIFFICULTIES = ['beginner', 'intermediate', 'advanced', 'expert'] as const;
+export const KNOWLEDGE_ACCESS_TIERS = ['free', 'basic', 'pro', 'enterprise'] as const;
 export const TAXONOMY_TYPES = ['category', 'topic', 'tag', 'discipline', 'audience'] as const;
 
 // ─── Request DTOs ──────────────────────────────────────────────────────────────
@@ -60,6 +61,15 @@ export class CreateKnowledgeDto {
   @IsOptional()
   @IsEnum(KNOWLEDGE_DIFFICULTIES)
   difficulty?: KnowledgeDifficulty;
+
+  @ApiPropertyOptional({
+    enum: KNOWLEDGE_ACCESS_TIERS,
+    default: 'free',
+    description: 'Access tier: free (public), basic (logged-in), pro, enterprise',
+  })
+  @IsOptional()
+  @IsEnum(KNOWLEDGE_ACCESS_TIERS)
+  accessTier?: 'free' | 'basic' | 'pro' | 'enterprise';
 
   @ApiPropertyOptional({ description: 'Taxonomy assignments' })
   @IsOptional()
@@ -106,6 +116,11 @@ export class UpdateKnowledgeDto {
   @IsInt()
   @Min(0)
   readingTime?: number | null;
+
+  @ApiPropertyOptional({ enum: KNOWLEDGE_ACCESS_TIERS })
+  @IsOptional()
+  @IsEnum(KNOWLEDGE_ACCESS_TIERS)
+  accessTier?: 'free' | 'basic' | 'pro' | 'enterprise';
 }
 
 export class KnowledgeSearchQueryDto {
@@ -402,6 +417,7 @@ export class KnowledgeResponseDto {
   @ApiProperty() content!: Record<string, unknown>;
   @ApiProperty({ nullable: true }) readingTime!: number | null;
   @ApiProperty({ nullable: true, enum: KNOWLEDGE_DIFFICULTIES }) difficulty!: string | null;
+  @ApiProperty({ enum: KNOWLEDGE_ACCESS_TIERS, default: 'free' }) accessTier!: string;
   @ApiProperty({ nullable: true }) authorId!: string | null;
   @ApiProperty({ nullable: true }) reviewerId!: string | null;
   @ApiProperty() createdAt!: Date;
@@ -423,6 +439,7 @@ export class KnowledgeResponseDto {
     dto.content = e.content;
     dto.readingTime = e.readingTime;
     dto.difficulty = e.difficulty;
+    dto.accessTier = (e as any).accessTier ?? 'free';
     dto.authorId = e.authorId;
     dto.reviewerId = e.reviewerId;
     dto.createdAt = e.createdAt;

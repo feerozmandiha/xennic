@@ -53,6 +53,7 @@ export const DEFAULT_HEADER: CmsDocument = {
       links: [
         { label: 'صفحه اصلی', href: '/' },
         { label: 'فروشگاه', href: '/marketplace' },
+        { label: 'دانشنامه', href: '/knowledge' },
         { label: 'امکانات', href: '/#features' },
         { label: 'قیمت‌ها', href: '/#pricing' },
         { label: 'سوالات', href: '/#faq' },
