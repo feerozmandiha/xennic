@@ -19,8 +19,10 @@ import {
   addImage,
   isValidImageUrl,
   moveImage,
+  publicImageUrl,
   removeImageAt,
   setPrimaryImage,
+  uploadErrorMessage,
   type ProductImage,
 } from '../lib/product-images';
 
@@ -29,7 +31,6 @@ interface StoredFile {
   originalName: string;
   mimeType: string;
   size: number;
-  downloadUrl?: string;
 }
 
 interface ProductImageEditorProps {
@@ -90,15 +91,16 @@ export function ProductImageEditor({ value, onChange, disabled }: ProductImageEd
         const res = await apiClient.post<{ data: StoredFile }>('/storage/upload', fd);
         const uploaded = res.data;
 
+        // آدرس عمومی و ماندگار — نه URL امضاشدهٔ یک‌ساعتهٔ MinIO
         handleAdd({
-          url: uploaded.downloadUrl ?? `/api/v1/storage/files/${uploaded.id}/download`,
+          url: publicImageUrl(uploaded.id),
           altFa: uploaded.originalName ?? null,
           mimeType: uploaded.mimeType ?? file.type,
           fileSize: uploaded.size ?? file.size,
         });
       }
-    } catch (error: any) {
-      toast.error(error?.message ?? 'خطا در بارگذاری تصویر');
+    } catch (error: unknown) {
+      toast.error(uploadErrorMessage(error));
     } finally {
       setUploading(false);
       if (inputRef.current) inputRef.current.value = '';

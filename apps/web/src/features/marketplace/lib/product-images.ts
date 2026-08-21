@@ -76,3 +76,23 @@ export function altFor(image: ProductImage, locale: string): string {
   const alt = locale === 'en' ? (image.altEn ?? image.altFa) : (image.altFa ?? image.altEn);
   return alt ?? '';
 }
+
+/** آدرس عمومی و ماندگار یک فایل بارگذاری‌شده در ماژول storage. */
+export function publicImageUrl(fileId: string): string {
+  return `/api/v1/storage/public/images/${fileId}`;
+}
+
+/** پیام خطای قابل‌فهم برای شکست بارگذاری تصویر. */
+export function uploadErrorMessage(error: unknown): string {
+  const status = (error as { status?: number } | null)?.status;
+
+  if (status === 503) {
+    return 'سرویس ذخیره‌سازی فایل (MinIO) در دسترس نیست. آن را بالا بیاورید یا فعلاً آدرس تصویر را وارد کنید.';
+  }
+  if (status === 413) return 'حجم فایل بیش از حد مجاز است.';
+  if (status === 403) return 'برای بارگذاری فایل دسترسی لازم را ندارید.';
+  if (status === 0) return 'ارتباط با سرور برقرار نشد.';
+
+  const message = (error as { message?: string } | null)?.message;
+  return message && message.trim() ? message : 'خطا در بارگذاری تصویر';
+}

@@ -18,6 +18,8 @@ import {
   MAX_PRODUCT_IMAGES,
   PRODUCT_IMAGE_MIME_TYPES,
   isValidImageUrl,
+  publicImageUrl,
+  uploadErrorMessage,
   type ProductImage,
 } from '../lib/product-images';
 
@@ -82,15 +84,16 @@ export function ProductGalleryManager({ productId, images }: ProductGalleryManag
         const uploaded = res.data;
 
         await apiClient.post(`/products/${productId}/images`, {
-          url: uploaded.downloadUrl ?? `/api/v1/storage/files/${uploaded.id}/download`,
+          // آدرس عمومی و ماندگار — نه URL امضاشدهٔ یک‌ساعتهٔ MinIO
+          url: publicImageUrl(uploaded.id),
           altFa: uploaded.originalName ?? undefined,
           mimeType: uploaded.mimeType ?? file.type,
           fileSize: uploaded.size ?? file.size,
         });
       }
       invalidate();
-    } catch (error: any) {
-      toast.error(error?.message ?? 'خطا در بارگذاری تصویر');
+    } catch (error: unknown) {
+      toast.error(uploadErrorMessage(error));
     } finally {
       setUploading(false);
       if (inputRef.current) inputRef.current.value = '';

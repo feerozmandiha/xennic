@@ -113,9 +113,35 @@ model product_images {
 **ارسال `images` در ویرایش یعنی جایگزینی کامل آلبوم** (همان قرارداد `translations`). برای
 حفظ شناسهٔ ردیف‌های موجود، `id` تصویر را هم در آرایه بفرستید.
 
-آپلود فایل از مسیر موجود `POST /storage/upload` انجام می‌شود؛ endpoint آپلود جدیدی اضافه
-نشده است. آدرس بازگشتی (`downloadUrl` یا `/api/v1/storage/files/:id/download`) به‌عنوان
-`url` تصویر ثبت می‌شود.
+### بارگذاری و تحویل تصویر
+
+آپلود از مسیر موجود `POST /storage/upload` انجام می‌شود (endpoint آپلود جدیدی اضافه نشده)،
+اما **آدرسی که ذخیره می‌شود** آدرس تحویل عمومی است:
+
+```
+/api/v1/storage/public/images/:fileId
+```
+
+چرا نه دو گزینهٔ دیگر؟
+
+| گزینه                                | مشکل                                                                     |
+| ------------------------------------ | ------------------------------------------------------------------------ |
+| `downloadUrl` بازگشتی از آپلود       | URL امضاشدهٔ MinIO است و بعد از **یک ساعت** منقضی می‌شود                 |
+| `/api/v1/storage/files/:id/download`  | پشت `JwtAuthGuard` + `files.read` است و تگ `<img>` هدر Authorization ندارد |
+
+مسیر `GET /storage/public/images/:id` (کنترلر `StoragePublicController`) بدون احراز هویت
+است ولی **فقط** فایل‌هایی را سرو می‌کند که هم‌زمان:
+
+1. حذف نشده باشند،
+2. در باکت `public` باشند (باکت پیش‌فرض آپلود),
+3. mime آن‌ها `image/*` باشد.
+
+پاسخ با `Content-Disposition: inline` و `Cache-Control: public, max-age=86400, immutable`
+برمی‌گردد. اسناد و فایل‌های غیرتصویری از این مسیر قابل دریافت نیستند.
+
+> **پیش‌نیاز محلی:** بارگذاری فایل به MinIO نیاز دارد. اگر MinIO بالا نباشد آپلود با
+> `503 Storage service unavailable` شکست می‌خورد و رابط کاربری پیام «سرویس ذخیره‌سازی فایل
+> (MinIO) در دسترس نیست» را نشان می‌دهد؛ در این حالت می‌توان تصویر را با **آدرس** اضافه کرد.
 
 ### قرارداد پاسخ
 
@@ -168,7 +194,7 @@ model product_images {
 
 منطق مشترک سمت وب در `apps/web/src/features/marketplace/lib/product-images.ts` است
 (`normalizeImages`, `setPrimaryImage`, `moveImage`, `removeImageAt`, `isValidImageUrl`,
-`altFor`) و همان ثابت‌های دامنه را آینه می‌کند. تصاویر خراب با `onError` به حالت آیکن
+`altFor`, `publicImageUrl`, `uploadErrorMessage`) و همان ثابت‌های دامنه را آینه می‌کند. تصاویر خراب با `onError` به حالت آیکن
 جایگزین برمی‌گردند.
 
 ---
