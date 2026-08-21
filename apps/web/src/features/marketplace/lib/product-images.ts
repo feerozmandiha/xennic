@@ -85,14 +85,17 @@ export function publicImageUrl(fileId: string): string {
 /** پیام خطای قابل‌فهم برای شکست بارگذاری تصویر. */
 export function uploadErrorMessage(error: unknown): string {
   const status = (error as { status?: number } | null)?.status;
+  const serverMessage = (error as { message?: string } | null)?.message ?? '';
 
   if (status === 503) {
+    if (/credential|access key|signature/i.test(serverMessage)) {
+      return 'کلیدهای MinIO پذیرفته نشد. مقادیر MINIO_ACCESS_KEY و MINIO_SECRET_KEY در .env با سرویس ذخیره‌سازی یکی نیست.';
+    }
     return 'سرویس ذخیره‌سازی فایل (MinIO) در دسترس نیست. آن را بالا بیاورید یا فعلاً آدرس تصویر را وارد کنید.';
   }
   if (status === 413) return 'حجم فایل بیش از حد مجاز است.';
   if (status === 403) return 'برای بارگذاری فایل دسترسی لازم را ندارید.';
   if (status === 0) return 'ارتباط با سرور برقرار نشد.';
 
-  const message = (error as { message?: string } | null)?.message;
-  return message && message.trim() ? message : 'خطا در بارگذاری تصویر';
+  return serverMessage.trim() ? serverMessage : 'خطا در بارگذاری تصویر';
 }

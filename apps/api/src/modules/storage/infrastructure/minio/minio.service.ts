@@ -31,6 +31,45 @@ export function resolveMinioEndpoint(env: NodeJS.ProcessEnv = process.env): {
  *   MINIO_SECRET_KEY (default: MINIO_CREDENTIALS_FROM_ENV)
  *   MINIO_USE_SSL    (default: false)
  */
+/** خطاهای اعتبارسنجی MinIO — یعنی سرویس بالاست ولی کلیدها پذیرفته نشدند. */
+const CREDENTIAL_ERROR_CODES = [
+  'InvalidAccessKeyId',
+  'SignatureDoesNotMatch',
+  'AccessDenied',
+  'InvalidRequest',
+];
+
+/** خطاهای شبکه‌ای — یعنی اصلاً به MinIO نمی‌رسیم. */
+const CONNECTION_ERROR_CODES = [
+  'ECONNREFUSED',
+  'ENOTFOUND',
+  'EHOSTUNREACH',
+  'ETIMEDOUT',
+  'ECONNRESET',
+  'EAI_AGAIN',
+];
+
+/**
+ * پیام قابل‌فهم برای خطای MinIO.
+ *
+ * تفکیک «در دسترس نبودن» از «رد شدن کلیدها» مهم است، وگرنه یک تنظیم اشتباه در
+ * `MINIO_ACCESS_KEY` هم به‌صورت «سرویس بالا نیست» گزارش می‌شود و ساعت‌ها دنبال
+ * کانتینر خاموش می‌گردیم.
+ */
+export function describeStorageError(err: unknown, fallback: string): string {
+  const error = err as { code?: string; message?: string } | null;
+  const code = error?.code ?? '';
+  const message = error?.message ?? '';
+
+  if (CREDENTIAL_ERROR_CODES.includes(code) || /access key|signature|credential/i.test(message)) {
+    return 'Storage credentials rejected by MinIO — check MINIO_ACCESS_KEY / MINIO_SECRET_KEY';
+  }
+  if (CONNECTION_ERROR_CODES.includes(code) || /ECONNREFUSED|ENOTFOUND|timed? ?out/i.test(message)) {
+    return 'Storage service unreachable — is MinIO running?';
+  }
+  return fallback;
+}
+
 @Injectable()
 export class MinioService {
   private readonly logger = new Logger(MinioService.name);
@@ -70,7 +109,9 @@ export class MinioService {
     } catch (err) {
       const error = err as Error;
       this.logger.error(`Failed to ensure bucket "${bucket}": ${error.message}`);
-      throw new ServiceUnavailableException('Storage service unavailable');
+      throw new ServiceUnavailableException(
+        describeStorageError(err, 'Storage service unavailable'),
+      );
     }
   }
 
@@ -104,7 +145,8 @@ export class MinioService {
     } catch (err) {
       const error = err as Error;
       this.logger.error(`Upload failed for ${bucket}/${objectKey}: ${error.message}`);
-      throw new ServiceUnavailableException('File upload failed');
+      if (err instanceof ServiceUnavailableException) throw err;
+      throw new ServiceUnavailableException(describeStorageError(err, 'File upload failed'));
     }
   }
 
