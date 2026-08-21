@@ -3,10 +3,30 @@ import { Client as MinioClient, CopyDestinationOptions, CopySourceOptions } from
 import type { FileBucket } from '../../domain/entities/file.entity.js';
 
 /**
+ * محل اتصال MinIO از روی متغیرهای محیطی.
+ *
+ * `MINIO_ENDPOINT` می‌تواند هم `host` باشد و هم `host:port`؛ اگر پورت داخل آن
+ * نیامده باشد از `MINIO_PORT` استفاده می‌شود (شکل پیش‌فرض `.env.example`) و در
+ * نهایت ۹۰۰۰.
+ */
+export function resolveMinioEndpoint(env: NodeJS.ProcessEnv = process.env): {
+  host: string;
+  port: number;
+} {
+  const [rawHost, rawPort] = (env.MINIO_ENDPOINT ?? 'localhost').split(':');
+  const host = rawHost?.trim() || 'localhost';
+
+  const port = Number.parseInt(rawPort ?? env.MINIO_PORT ?? '9000', 10);
+
+  return { host, port: Number.isFinite(port) && port > 0 ? port : 9000 };
+}
+
+/**
  * MinIO Service — ارتباط مستقیم با MinIO object storage
  *
  * Connection via env vars:
- *   MINIO_ENDPOINT   (default: localhost:9000)
+ *   MINIO_ENDPOINT   (host یا host:port — default: localhost)
+ *   MINIO_PORT       (default: 9000 — وقتی پورت داخل endpoint نیامده باشد)
  *   MINIO_ACCESS_KEY (default: MINIO_CREDENTIALS_FROM_ENV)
  *   MINIO_SECRET_KEY (default: MINIO_CREDENTIALS_FROM_ENV)
  *   MINIO_USE_SSL    (default: false)
@@ -27,12 +47,10 @@ export class MinioService {
   ];
 
   constructor() {
-    const endpoint = process.env.MINIO_ENDPOINT ?? 'localhost:9000';
-    const [host, portStr] = endpoint.split(':');
-    const port = parseInt(portStr ?? '9000', 10);
+    const { host, port } = resolveMinioEndpoint();
 
     this.client = new MinioClient({
-      endPoint: host ?? 'localhost',
+      endPoint: host,
       port,
       useSSL: process.env.MINIO_USE_SSL === 'true',
       accessKey: process.env.MINIO_ACCESS_KEY ?? 'MINIO_CREDENTIALS_FROM_ENV',
