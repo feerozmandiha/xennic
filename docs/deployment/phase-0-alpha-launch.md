@@ -181,8 +181,16 @@ docker compose --env-file infrastructure/docker/compose/production/.env \
 ## 7. پشتیبان‌گیری و بازگشت
 
 ```bash
-# پشتیبان دیتابیس
-docker exec xennic-prod-postgres pg_dump -U xennic xennic > backup_$(date +%F).sql
+# پشتیبان دیتابیس با checksum و rotation
+BACKUP_DIR=/secure/xennic/backups/postgres \
+BACKUP_RETENTION_DAYS=14 \
+./infrastructure/docker/scripts/backup-postgres.sh
+
+# زمان‌بندی روزانه backup روی host production
+CRON_SCHEDULE="17 2 * * *" \
+BACKUP_DIR=/secure/xennic/backups/postgres \
+BACKUP_RETENTION_DAYS=14 \
+./infrastructure/docker/scripts/install-backup-cron.sh
 
 # بازگشت (Rollback): stop → remove containers → restore volume
 docker compose -f infrastructure/docker/compose/production/docker-compose.yml down

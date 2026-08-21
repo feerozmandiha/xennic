@@ -173,11 +173,43 @@ curl http://localhost:3000/api/v1/admin/outbox/status
 ## 7. Backup Procedures
 
 ### PostgreSQL
-```bash
-# Full backup
-pg_dump -h localhost -U postgres -d xennic -F c -f /backups/xennic-$(date +%Y%m%d).dump
 
-# WAL archiving (configured in postgresql.conf)
+Production Docker Compose deployments include a host-side backup helper with
+checksum generation, single-run locking, and retention cleanup.
+
+```bash
+# One-off backup using the production compose stack
+BACKUP_DIR=/secure/xennic/backups/postgres \
+BACKUP_RETENTION_DAYS=14 \
+./infrastructure/docker/scripts/backup-postgres.sh
+
+# Install a daily cron entry. Default schedule is 02:17 server time.
+CRON_SCHEDULE="17 2 * * *" \
+BACKUP_DIR=/secure/xennic/backups/postgres \
+BACKUP_RETENTION_DAYS=14 \
+./infrastructure/docker/scripts/install-backup-cron.sh
+
+# Verify the latest archive checksum
+cd /secure/xennic/backups/postgres
+sha256sum -c "$(ls -1t xennic-postgres-*.dump.sha256 | head -1)"
+```
+
+Restore drill example:
+
+```bash
+# Copy a selected .dump file to the host running Docker, then restore into the
+# production postgres container. Stop write traffic before running this command.
+docker compose --env-file infrastructure/docker/compose/production/.env \
+  -f infrastructure/docker/compose/production/docker-compose.yml \
+  exec -T postgres sh -c 'export PGPASSWORD="$POSTGRES_PASSWORD"; \
+    pg_restore --clean --if-exists --no-owner --no-acl \
+      --username="$POSTGRES_USER" --dbname="$POSTGRES_DB"' \
+  < /secure/xennic/backups/postgres/xennic-postgres-YYYYMMDDTHHMMSSZ.dump
+```
+
+WAL archiving remains a future enhancement for point-in-time recovery:
+
+```bash
 archive_command = 'cp %p /backups/wal/%f'
 ```
 

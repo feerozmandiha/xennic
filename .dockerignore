@@ -28,8 +28,9 @@ workspace
 .env.*
 !.env.example
 
-# ── Empty SQL backup placeholders at repo root ────────────────────────────────
+# ── Backup artifacts ──────────────────────────────────────────────────────────
 backup_pre_security_*.sql
+backups/
 
 # ── Misc ──────────────────────────────────────────────────────────────────────
 *.log
