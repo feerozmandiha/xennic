@@ -1,0 +1,28 @@
+name: Set up MinIO
+description: Start the object storage required by API integration tests
+
+runs:
+  using: composite
+  steps:
+    - name: Start MinIO
+      shell: bash
+      run: |
+        set -euo pipefail
+
+        docker run --detach --rm \
+          --name xennic-minio \
+          --publish 9000:9000 \
+          --env MINIO_ROOT_USER=xennic-test-access \
+          --env MINIO_ROOT_PASSWORD=xennic-test-secret-1234 \
+          minio/minio:RELEASE.2025-09-07T16-13-09Z \
+          server /data --address :9000
+
+        for attempt in {1..30}; do
+          if curl --fail --silent --show-error http://localhost:9000/minio/health/live; then
+            exit 0
+          fi
+          sleep 2
+        done
+
+        docker logs xennic-minio
+        exit 1

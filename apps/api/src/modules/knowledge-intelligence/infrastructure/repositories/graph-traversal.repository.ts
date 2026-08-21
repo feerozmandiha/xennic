@@ -17,32 +17,37 @@ export class GraphTraversalRepository implements IGraphTraversalRepository {
   ): Promise<ITraversalResult | null> {
     const rows = await prisma.$queryRaw<any[]>`
       WITH RECURSIVE path AS (
-        SELECT 
-          source_id as current_node,
-          ARRAY[source_id] as path,
-          0 as depth,
-          ARRAY[type] as edge_types,
-          0.0 as total_weight
-        FROM knowledge_graph_edges
-        WHERE source_id = ${sourceId}
-        
+        SELECT
+          n.id AS current_node,
+          ARRAY[n.id] AS path,
+          0 AS depth,
+          ARRAY[]::text[] AS edge_types,
+          0.0::double precision AS total_weight,
+          n.workspace_id
+        FROM knowledge_graph_nodes n
+        WHERE n.id = ${sourceId}
+
         UNION ALL
-        
-        SELECT 
+
+        SELECT
           e.target_id,
           p.path || e.target_id,
           p.depth + 1,
           p.edge_types || e.type,
-          p.total_weight + e.weight
-        FROM knowledge_graph_edges e
-        JOIN path p ON e.source_id = p.current_node
+          p.total_weight + e.weight,
+          p.workspace_id
+        FROM path p
+        JOIN knowledge_graph_edges e
+          ON e.source_id = p.current_node AND e.workspace_id = p.workspace_id
+        JOIN knowledge_graph_nodes target
+          ON target.id = e.target_id AND target.workspace_id = p.workspace_id
         WHERE p.depth < ${maxDepth}
           AND NOT e.target_id = ANY(p.path)
       )
       SELECT current_node, path, depth, edge_types, total_weight
       FROM path
       WHERE current_node = ${targetId}
-      ORDER BY total_weight ASC, depth ASC
+      ORDER BY depth ASC, total_weight DESC
       LIMIT 1
     `;
     if (rows.length === 0) return null;
@@ -63,32 +68,39 @@ export class GraphTraversalRepository implements IGraphTraversalRepository {
   ): Promise<ITraversalResult[]> {
     const rows = await prisma.$queryRaw<any[]>`
       WITH RECURSIVE path AS (
-        SELECT 
-          source_id as current_node,
-          ARRAY[source_id] as path,
-          0 as depth,
-          ARRAY[type] as edge_types,
-          0.0 as total_weight
-        FROM knowledge_graph_edges
-        WHERE source_id = ${sourceId}
-        
+        SELECT
+          n.id AS current_node,
+          ARRAY[n.id] AS path,
+          0 AS depth,
+          ARRAY[]::text[] AS edge_types,
+          0.0::double precision AS total_weight,
+          n.workspace_id
+        FROM knowledge_graph_nodes n
+        WHERE n.id = ${sourceId}
+
         UNION ALL
-        
-        SELECT 
+
+        SELECT
           e.target_id,
           p.path || e.target_id,
           p.depth + 1,
           p.edge_types || e.type,
-          p.total_weight + e.weight
-        FROM knowledge_graph_edges e
-        JOIN path p ON e.source_id = p.current_node
+          p.total_weight + e.weight,
+          p.workspace_id
+        FROM path p
+        JOIN knowledge_graph_edges e
+          ON e.source_id = p.current_node AND e.workspace_id = p.workspace_id
+        JOIN knowledge_graph_nodes target
+          ON target.id = e.target_id AND target.workspace_id = p.workspace_id
         WHERE p.depth < ${maxDepth}
-          AND NOT e.target_id = ANY(p.path)
+          AND (p.depth = 0 OR p.current_node <> ${targetId})
+          AND (e.target_id = ${targetId} OR NOT e.target_id = ANY(p.path))
       )
       SELECT current_node, path, depth, edge_types, total_weight
       FROM path
       WHERE current_node = ${targetId}
-      ORDER BY total_weight ASC, depth ASC
+        AND depth > 0
+      ORDER BY depth ASC, total_weight DESC
       LIMIT ${maxPaths}
     `;
     return rows.map((row) => ({
@@ -105,22 +117,34 @@ export class GraphTraversalRepository implements IGraphTraversalRepository {
   ): Promise<{ nodeId: string; distance: number; edgeType: string }[]> {
     const rows = await prisma.$queryRaw<any[]>`
       WITH RECURSIVE ancestors AS (
-        SELECT 
-          source_id as node_id,
-          1 as distance,
-          type as edge_type
-        FROM knowledge_graph_edges
-        WHERE target_id = ${nodeId}
-        
+        SELECT
+          e.source_id AS node_id,
+          1 AS distance,
+          e.type AS edge_type,
+          target.workspace_id,
+          ARRAY[e.target_id, e.source_id] AS path
+        FROM knowledge_graph_edges e
+        JOIN knowledge_graph_nodes target ON target.id = e.target_id
+        JOIN knowledge_graph_nodes source
+          ON source.id = e.source_id AND source.workspace_id = target.workspace_id
+        WHERE e.target_id = ${nodeId}
+          AND e.workspace_id = target.workspace_id
+
         UNION ALL
-        
-        SELECT 
+
+        SELECT
           e.source_id,
           a.distance + 1,
-          e.type
-        FROM knowledge_graph_edges e
-        JOIN ancestors a ON e.target_id = a.node_id
+          e.type,
+          a.workspace_id,
+          a.path || e.source_id
+        FROM ancestors a
+        JOIN knowledge_graph_edges e
+          ON e.target_id = a.node_id AND e.workspace_id = a.workspace_id
+        JOIN knowledge_graph_nodes source
+          ON source.id = e.source_id AND source.workspace_id = a.workspace_id
         WHERE a.distance < ${maxDepth}
+          AND NOT e.source_id = ANY(a.path)
       )
       SELECT DISTINCT node_id, distance, edge_type
       FROM ancestors
@@ -135,22 +159,34 @@ export class GraphTraversalRepository implements IGraphTraversalRepository {
   ): Promise<{ nodeId: string; distance: number; edgeType: string }[]> {
     const rows = await prisma.$queryRaw<any[]>`
       WITH RECURSIVE descendants AS (
-        SELECT 
-          target_id as node_id,
-          1 as distance,
-          type as edge_type
-        FROM knowledge_graph_edges
-        WHERE source_id = ${nodeId}
-        
+        SELECT
+          e.target_id AS node_id,
+          1 AS distance,
+          e.type AS edge_type,
+          source.workspace_id,
+          ARRAY[e.source_id, e.target_id] AS path
+        FROM knowledge_graph_edges e
+        JOIN knowledge_graph_nodes source ON source.id = e.source_id
+        JOIN knowledge_graph_nodes target
+          ON target.id = e.target_id AND target.workspace_id = source.workspace_id
+        WHERE e.source_id = ${nodeId}
+          AND e.workspace_id = source.workspace_id
+
         UNION ALL
-        
-        SELECT 
+
+        SELECT
           e.target_id,
           d.distance + 1,
-          e.type
-        FROM knowledge_graph_edges e
-        JOIN descendants d ON e.source_id = d.node_id
+          e.type,
+          d.workspace_id,
+          d.path || e.target_id
+        FROM descendants d
+        JOIN knowledge_graph_edges e
+          ON e.source_id = d.node_id AND e.workspace_id = d.workspace_id
+        JOIN knowledge_graph_nodes target
+          ON target.id = e.target_id AND target.workspace_id = d.workspace_id
         WHERE d.distance < ${maxDepth}
+          AND NOT e.target_id = ANY(d.path)
       )
       SELECT DISTINCT node_id, distance, edge_type
       FROM descendants
@@ -168,21 +204,49 @@ export class GraphTraversalRepository implements IGraphTraversalRepository {
     const outgoing = direction === 'out' || direction === 'both';
 
     const incomingQuery = incoming
-      ? prisma.$queryRaw<any[]>`
-          SELECT source_id as node_id, type as edge_type, weight
-          FROM knowledge_graph_edges
-          WHERE target_id = ${nodeId}
-            ${edgeType ? `AND type = ${edgeType}` : ''}
-        `
+      ? edgeType
+        ? prisma.$queryRaw<any[]>`
+            SELECT e.source_id AS node_id, e.type AS edge_type, e.weight
+            FROM knowledge_graph_edges e
+            JOIN knowledge_graph_nodes current ON current.id = e.target_id
+            JOIN knowledge_graph_nodes neighbor
+              ON neighbor.id = e.source_id AND neighbor.workspace_id = current.workspace_id
+            WHERE e.target_id = ${nodeId}
+              AND e.workspace_id = current.workspace_id
+              AND e.type = ${edgeType}
+          `
+        : prisma.$queryRaw<any[]>`
+            SELECT e.source_id AS node_id, e.type AS edge_type, e.weight
+            FROM knowledge_graph_edges e
+            JOIN knowledge_graph_nodes current ON current.id = e.target_id
+            JOIN knowledge_graph_nodes neighbor
+              ON neighbor.id = e.source_id AND neighbor.workspace_id = current.workspace_id
+            WHERE e.target_id = ${nodeId}
+              AND e.workspace_id = current.workspace_id
+          `
       : [];
 
     const outgoingQuery = outgoing
-      ? prisma.$queryRaw<any[]>`
-          SELECT target_id as node_id, type as edge_type, weight
-          FROM knowledge_graph_edges
-          WHERE source_id = ${nodeId}
-            ${edgeType ? `AND type = ${edgeType}` : ''}
-        `
+      ? edgeType
+        ? prisma.$queryRaw<any[]>`
+            SELECT e.target_id AS node_id, e.type AS edge_type, e.weight
+            FROM knowledge_graph_edges e
+            JOIN knowledge_graph_nodes current ON current.id = e.source_id
+            JOIN knowledge_graph_nodes neighbor
+              ON neighbor.id = e.target_id AND neighbor.workspace_id = current.workspace_id
+            WHERE e.source_id = ${nodeId}
+              AND e.workspace_id = current.workspace_id
+              AND e.type = ${edgeType}
+          `
+        : prisma.$queryRaw<any[]>`
+            SELECT e.target_id AS node_id, e.type AS edge_type, e.weight
+            FROM knowledge_graph_edges e
+            JOIN knowledge_graph_nodes current ON current.id = e.source_id
+            JOIN knowledge_graph_nodes neighbor
+              ON neighbor.id = e.target_id AND neighbor.workspace_id = current.workspace_id
+            WHERE e.source_id = ${nodeId}
+              AND e.workspace_id = current.workspace_id
+          `
       : [];
 
     const [inRows, outRows] = await Promise.all([incomingQuery, outgoingQuery]);
@@ -196,16 +260,25 @@ export class GraphTraversalRepository implements IGraphTraversalRepository {
 
   async subgraph(nodeIds: string[]): Promise<{ nodes: any[]; edges: any[] }> {
     if (nodeIds.length === 0) return { nodes: [], edges: [] };
-    const nodes = await prisma.knowledge_graph_nodes.findMany({
-      where: { id: { in: nodeIds } },
+    const root = await prisma.knowledge_graph_nodes.findUnique({
+      where: { id: nodeIds[0] },
+      select: { workspace_id: true },
     });
+    if (!root) return { nodes: [], edges: [] };
+
+    const workspaceId = root.workspace_id;
+    const scopedNodes = await prisma.knowledge_graph_nodes.findMany({
+      where: { id: { in: nodeIds }, workspace_id: workspaceId },
+    });
+    const scopedNodeIds = scopedNodes.map((node) => node.id);
     const edges = await prisma.knowledge_graph_edges.findMany({
       where: {
-        AND: [{ source_id: { in: nodeIds } }, { target_id: { in: nodeIds } }],
+        workspace_id: workspaceId,
+        AND: [{ source_id: { in: scopedNodeIds } }, { target_id: { in: scopedNodeIds } }],
       },
     });
     return {
-      nodes: nodes.map((n) => ({
+      nodes: scopedNodes.map((n) => ({
         id: n.id,
         type: n.type,
         label: n.label,
@@ -222,32 +295,48 @@ export class GraphTraversalRepository implements IGraphTraversalRepository {
   }
 
   async connectedComponents(workspaceId: string): Promise<string[][]> {
-    const rows = await prisma.$queryRaw<any[]>`
-      WITH RECURSIVE connected AS (
-        SELECT id, ARRAY[id] as component
-        FROM knowledge_graph_nodes
-        WHERE workspace_id = ${workspaceId}
-        
-        UNION ALL
-        
-        SELECT n.id, c.component || n.id
-        FROM knowledge_graph_nodes n
-        JOIN knowledge_graph_edges e ON e.target_id = n.id OR e.source_id = n.id
-        JOIN connected c ON (e.target_id = ANY(c.component) OR e.source_id = ANY(c.component))
-        WHERE n.workspace_id = ${workspaceId}
-          AND NOT n.id = ANY(c.component)
-      )
-      SELECT id, component
-      FROM connected
-      ORDER BY id
-    `;
-    const componentMap = new Map<string, string[]>();
-    for (const row of rows) {
-      if (!componentMap.has(row.id)) {
-        componentMap.set(row.id, row.component);
-      }
+    const [nodes, edges] = await Promise.all([
+      prisma.knowledge_graph_nodes.findMany({
+        where: { workspace_id: workspaceId },
+        select: { id: true },
+        orderBy: { id: 'asc' },
+      }),
+      prisma.knowledge_graph_edges.findMany({
+        where: { workspace_id: workspaceId },
+        select: { source_id: true, target_id: true },
+      }),
+    ]);
+
+    const nodeIds = new Set(nodes.map((node) => node.id));
+    const adjacency = new Map(nodes.map((node) => [node.id, new Set<string>()]));
+    for (const edge of edges) {
+      if (!nodeIds.has(edge.source_id) || !nodeIds.has(edge.target_id)) continue;
+      adjacency.get(edge.source_id)!.add(edge.target_id);
+      adjacency.get(edge.target_id)!.add(edge.source_id);
     }
-    return Array.from(componentMap.values());
+
+    const visited = new Set<string>();
+    const components: string[][] = [];
+    for (const node of nodes) {
+      if (visited.has(node.id)) continue;
+      const component: string[] = [];
+      const pending = [node.id];
+      visited.add(node.id);
+
+      while (pending.length > 0) {
+        const current = pending.pop()!;
+        component.push(current);
+        for (const neighbor of adjacency.get(current) ?? []) {
+          if (visited.has(neighbor)) continue;
+          visited.add(neighbor);
+          pending.push(neighbor);
+        }
+      }
+
+      components.push(component.sort());
+    }
+
+    return components;
   }
 
   async citationPaths(
@@ -258,31 +347,42 @@ export class GraphTraversalRepository implements IGraphTraversalRepository {
   ): Promise<ICitationPath[]> {
     const rows = await prisma.$queryRaw<any[]>`
       WITH RECURSIVE citation_graph AS (
-        SELECT 
-          source_id,
-          target_id,
-          ARRAY[source_id, target_id] as path,
-          1 as depth,
-          weight as total_weight
-        FROM knowledge_citations
-        WHERE workspace_id = ${workspaceId}
-        
+        SELECT
+          kc.source_id,
+          kc.target_id,
+          ARRAY[kc.source_id, kc.target_id] AS path,
+          1 AS depth,
+          kc.confidence::double precision AS total_weight
+        FROM knowledge_citations kc
+        JOIN knowledge_graph_nodes source
+          ON source.id = kc.source_id AND source.workspace_id = kc.workspace_id
+        JOIN knowledge_graph_nodes target
+          ON target.id = kc.target_id AND target.workspace_id = kc.workspace_id
+        WHERE kc.workspace_id = ${workspaceId}
+          AND source.entity_type = ${sourceEntityType}
+
         UNION ALL
-        
-        SELECT 
+
+        SELECT
           cg.source_id,
           kc.target_id,
           cg.path || kc.target_id,
           cg.depth + 1,
-          cg.total_weight + 1.0
+          cg.total_weight * kc.confidence
         FROM citation_graph cg
-        JOIN knowledge_citations kc ON kc.source_id = cg.target_id
+        JOIN knowledge_citations kc
+          ON kc.source_id = cg.target_id AND kc.workspace_id = ${workspaceId}
+        JOIN knowledge_graph_nodes target
+          ON target.id = kc.target_id AND target.workspace_id = kc.workspace_id
         WHERE cg.depth < ${maxDepth}
           AND NOT kc.target_id = ANY(cg.path)
       )
-      SELECT source_id, target_id, path, total_weight
-      FROM citation_graph
-      ORDER BY total_weight ASC
+      SELECT cg.source_id, cg.target_id, cg.path, cg.total_weight
+      FROM citation_graph cg
+      JOIN knowledge_graph_nodes target
+        ON target.id = cg.target_id AND target.workspace_id = ${workspaceId}
+      WHERE target.entity_type = ${targetEntityType}
+      ORDER BY cg.total_weight DESC, cg.depth ASC
       LIMIT 50
     `;
     return rows.map((r) => ({
@@ -300,21 +400,41 @@ export class GraphTraversalRepository implements IGraphTraversalRepository {
   ): Promise<{ nodes: string[]; edges: any[] }> {
     const upstream = direction === 'upstream' || direction === 'both';
     const downstream = direction === 'downstream' || direction === 'both';
+    const root = await prisma.knowledge_graph_nodes.findUnique({
+      where: { id: nodeId },
+      select: { workspace_id: true },
+    });
+    if (!root) return { nodes: [], edges: [] };
 
+    const workspaceId = root.workspace_id;
     let resultNodes: string[] = [];
     let resultEdges: any[] = [];
 
     if (upstream) {
       const upstreamNodes = await prisma.$queryRaw<any[]>`
         WITH RECURSIVE upstream AS (
-          SELECT source_id as node_id, 1 as depth
-          FROM knowledge_graph_edges
-          WHERE target_id = ${nodeId} AND type IN ('depends_on', 'references', 'derived_from')
+          SELECT
+            e.source_id AS node_id,
+            1 AS depth,
+            ARRAY[e.target_id, e.source_id] AS path
+          FROM knowledge_graph_edges e
+          JOIN knowledge_graph_nodes source
+            ON source.id = e.source_id AND source.workspace_id = e.workspace_id
+          WHERE e.target_id = ${nodeId}
+            AND e.workspace_id = ${workspaceId}
+            AND e.type IN ('depends_on', 'references', 'derived_from')
+
           UNION ALL
-          SELECT e.source_id, u.depth + 1
+
+          SELECT e.source_id, u.depth + 1, u.path || e.source_id
           FROM upstream u
-          JOIN knowledge_graph_edges e ON e.target_id = u.node_id
+          JOIN knowledge_graph_edges e
+            ON e.target_id = u.node_id AND e.workspace_id = ${workspaceId}
+          JOIN knowledge_graph_nodes source
+            ON source.id = e.source_id AND source.workspace_id = e.workspace_id
           WHERE u.depth < ${maxDepth}
+            AND e.type IN ('depends_on', 'references', 'derived_from')
+            AND NOT e.source_id = ANY(u.path)
         )
         SELECT DISTINCT node_id FROM upstream
       `;
@@ -325,14 +445,28 @@ export class GraphTraversalRepository implements IGraphTraversalRepository {
     if (downstream) {
       const downstreamNodes = await prisma.$queryRaw<any[]>`
         WITH RECURSIVE downstream AS (
-          SELECT target_id as node_id, 1 as depth
-          FROM knowledge_graph_edges
-          WHERE source_id = ${nodeId} AND type IN ('depends_on', 'references', 'derived_from')
+          SELECT
+            e.target_id AS node_id,
+            1 AS depth,
+            ARRAY[e.source_id, e.target_id] AS path
+          FROM knowledge_graph_edges e
+          JOIN knowledge_graph_nodes target
+            ON target.id = e.target_id AND target.workspace_id = e.workspace_id
+          WHERE e.source_id = ${nodeId}
+            AND e.workspace_id = ${workspaceId}
+            AND e.type IN ('depends_on', 'references', 'derived_from')
+
           UNION ALL
-          SELECT e.target_id, d.depth + 1
+
+          SELECT e.target_id, d.depth + 1, d.path || e.target_id
           FROM downstream d
-          JOIN knowledge_graph_edges e ON e.source_id = d.node_id
+          JOIN knowledge_graph_edges e
+            ON e.source_id = d.node_id AND e.workspace_id = ${workspaceId}
+          JOIN knowledge_graph_nodes target
+            ON target.id = e.target_id AND target.workspace_id = e.workspace_id
           WHERE d.depth < ${maxDepth}
+            AND e.type IN ('depends_on', 'references', 'derived_from')
+            AND NOT e.target_id = ANY(d.path)
         )
         SELECT DISTINCT node_id FROM downstream
       `;
@@ -344,6 +478,8 @@ export class GraphTraversalRepository implements IGraphTraversalRepository {
     if (uniqueNodes.length > 0) {
       const edges = await prisma.knowledge_graph_edges.findMany({
         where: {
+          workspace_id: workspaceId,
+          type: { in: ['depends_on', 'references', 'derived_from'] },
           AND: [{ source_id: { in: uniqueNodes } }, { target_id: { in: uniqueNodes } }],
         },
       });
@@ -364,26 +500,45 @@ export class GraphTraversalRepository implements IGraphTraversalRepository {
     maxDepth: number,
     edgeTypeWeight: Record<string, number>,
   ): Promise<{ nodeId: string; score: number }[]> {
+    const serializedWeights = JSON.stringify(edgeTypeWeight);
     const rows = await prisma.$queryRaw<any[]>`
       WITH RECURSIVE semantic AS (
-        SELECT 
-          target_id as node_id,
-          1 as depth,
-          weight * ${JSON.stringify(edgeTypeWeight).replace(/'/g, "''")}::float as cumulative_score
-        FROM knowledge_graph_edges
-        WHERE source_id = ${nodeId}
-        
+        SELECT
+          e.target_id AS node_id,
+          1 AS depth,
+          e.weight * COALESCE(
+            ((${serializedWeights}::jsonb ->> e.type)::double precision),
+            1.0
+          ) AS cumulative_score,
+          source.workspace_id,
+          ARRAY[e.source_id, e.target_id] AS path
+        FROM knowledge_graph_edges e
+        JOIN knowledge_graph_nodes source ON source.id = e.source_id
+        JOIN knowledge_graph_nodes target
+          ON target.id = e.target_id AND target.workspace_id = source.workspace_id
+        WHERE e.source_id = ${nodeId}
+          AND e.workspace_id = source.workspace_id
+
         UNION ALL
-        
-        SELECT 
+
+        SELECT
           e.target_id,
           s.depth + 1,
-          s.cumulative_score * (e.weight * ${JSON.stringify(edgeTypeWeight).replace(/'/g, "''")}::float)
+          s.cumulative_score * e.weight * COALESCE(
+            ((${serializedWeights}::jsonb ->> e.type)::double precision),
+            1.0
+          ),
+          s.workspace_id,
+          s.path || e.target_id
         FROM semantic s
-        JOIN knowledge_graph_edges e ON e.source_id = s.node_id
+        JOIN knowledge_graph_edges e
+          ON e.source_id = s.node_id AND e.workspace_id = s.workspace_id
+        JOIN knowledge_graph_nodes target
+          ON target.id = e.target_id AND target.workspace_id = s.workspace_id
         WHERE s.depth < ${maxDepth}
+          AND NOT e.target_id = ANY(s.path)
       )
-      SELECT node_id, MAX(cumulative_score) as score
+      SELECT node_id, MAX(cumulative_score) AS score
       FROM semantic
       GROUP BY node_id
       ORDER BY score DESC

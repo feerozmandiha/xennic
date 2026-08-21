@@ -1,5 +1,7 @@
 # Knowledge Factory Architecture
 
+> **Runtime status (audited 2026-08-19): DORMANT / TARGET ARCHITECTURE.** `KnowledgeFactoryModule` is not imported by `ApiModule`, so its 12 controller routes are not registered. Document list/detail are stubs, search analytics are incomplete, and queue/worker configuration has activation blockers. Do not treat the pipeline diagrams below as proof of an active end-to-end service. See [knowledge-runtime-audit.md](./knowledge-runtime-audit.md).
+
 **Document ID:** XEN-ARCH-KF-001  
 **Date:** 2026-07-03  
 **Status:** Approved  

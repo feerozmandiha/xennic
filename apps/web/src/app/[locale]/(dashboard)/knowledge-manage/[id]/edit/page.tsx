@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { KnowledgeEditClient } from '@/features/knowledge/components/knowledge-edit-client';
+import { KnowledgeAdminGuard } from '@/features/knowledge/admin';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('knowledge');
@@ -9,5 +10,9 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function KnowledgeEditPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  return <KnowledgeEditClient articleId={id} />;
+  return (
+    <KnowledgeAdminGuard>
+      <KnowledgeEditClient articleId={id} />
+    </KnowledgeAdminGuard>
+  );
 }

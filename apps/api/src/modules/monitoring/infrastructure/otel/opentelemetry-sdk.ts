@@ -8,6 +8,13 @@ import { ATTR_SERVICE_NAME, ATTR_SERVICE_VERSION } from '@opentelemetry/semantic
 const isExportEnabled = process.env.OTEL_EXPORTER_ENABLED === 'true';
 
 export function initializeOpenTelemetry(): NodeSDK | null {
+  // Without a collector configured there is nothing to export to. Starting the
+  // SDK anyway makes the metric reader retry an OTLP endpoint every minute and
+  // flood production logs with ECONNREFUSED, so opt out entirely.
+  if (!isExportEnabled) {
+    return null;
+  }
+
   const serviceName = process.env.OTEL_SERVICE_NAME ?? 'xennic-api';
 
   const resource = resourceFromAttributes({

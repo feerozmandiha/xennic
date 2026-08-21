@@ -1,9 +1,12 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
+import { useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { ShoppingCart, Package, Building2 } from 'lucide-react';
+import { ShoppingCart, Package, Building2, Store, ExternalLink } from 'lucide-react';
 import { PageHeader } from '@/components/ui/page-header';
+import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { ProductList } from './product-list';
 import { OrderList } from './order-list';
@@ -19,11 +22,25 @@ type TabKey = (typeof TABS)[number]['key'];
 
 export function MarketplaceClient() {
   const t = useTranslations('marketplace');
+  const params = useParams();
+  const locale = (params?.locale as string) ?? 'fa';
   const [activeTab, setActiveTab] = useState<TabKey>('products');
 
   return (
     <div>
-      <PageHeader title={t('title')} description={t('description')} />
+      <PageHeader
+        title={t('title')}
+        description={t('description')}
+        action={
+          <Button asChild variant="outline" size="sm" className="shrink-0">
+            <Link href={`/${locale}/marketplace`}>
+              <Store className="h-4 w-4" />
+              {t('viewStore')}
+              <ExternalLink className="h-3 w-3" />
+            </Link>
+          </Button>
+        }
+      />
 
       <div className="flex items-center gap-1 border-b border-[hsl(var(--border))] mb-6">
         {TABS.map(({ key, icon: Icon, labelKey }) => (

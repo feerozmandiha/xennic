@@ -44,4 +44,13 @@ export class OrdersController {
   async updateStatus(@Param('id') id: string, @Body() dto: UpdateOrderStatusDto, @Req() req: any) {
     return this.orderService.updateStatus(id, req.user.workspaceId, dto);
   }
+
+  @Post(':id/request-payment')
+  @ApiOperation({ summary: 'Initiate gateway payment for an order' })
+  async requestPayment(@Param('id') id: string, @Req() req: any) {
+    const frontendUrl = process.env.FRONTEND_URL ?? 'http://localhost:3001';
+    const callbackUrl = `${frontendUrl}/api/v1/marketplace/payment/callback`;
+    const result = await this.orderService.requestPayment(id, req.user.workspaceId, callbackUrl);
+    return { success: true, data: result };
+  }
 }

@@ -511,6 +511,12 @@ importers:
 
   packages/types: {}
 
+  services/bill-bot:
+    optionalDependencies:
+      pdfmake:
+        specifier: ^0.3.11
+        version: 0.3.11
+
 packages:
   '@alloc/quick-lru@5.2.0':
     resolution:

@@ -13,9 +13,17 @@ export class GraphNodeRepository implements IGraphNodeRepository {
     return this._toEntity(row);
   }
 
-  async findByEntity(entityType: string, entityId: string): Promise<KnowledgeGraphNode | null> {
+  async findByEntity(
+    entityType: string,
+    entityId: string,
+    workspaceId: string,
+  ): Promise<KnowledgeGraphNode | null> {
     const row = await prisma.knowledge_graph_nodes.findFirst({
-      where: { entity_type: entityType as EntityType, entity_id: entityId },
+      where: {
+        entity_type: entityType as EntityType,
+        entity_id: entityId,
+        workspace_id: workspaceId,
+      },
     });
     if (!row) return null;
     return this._toEntity(row);
@@ -92,9 +100,32 @@ export class GraphNodeRepository implements IGraphNodeRepository {
     await prisma.knowledge_graph_nodes.delete({ where: { id } });
   }
 
-  async deleteByEntity(entityType: string, entityId: string): Promise<void> {
-    await prisma.knowledge_graph_nodes.deleteMany({
-      where: { entity_type: entityType, entity_id: entityId },
+  async deleteByEntity(entityType: string, entityId: string, workspaceId: string): Promise<void> {
+    await prisma.$transaction(async (transaction) => {
+      const nodes = await transaction.knowledge_graph_nodes.findMany({
+        where: {
+          entity_type: entityType,
+          entity_id: entityId,
+          workspace_id: workspaceId,
+        },
+        select: { id: true },
+      });
+      const nodeIds = nodes.map((node) => node.id);
+      if (nodeIds.length === 0) return;
+
+      // Citations do not have graph-node foreign keys, so remove them explicitly.
+      await transaction.knowledge_citations.deleteMany({
+        where: {
+          workspace_id: workspaceId,
+          OR: [{ source_id: { in: nodeIds } }, { target_id: { in: nodeIds } }],
+        },
+      });
+      await transaction.knowledge_graph_nodes.deleteMany({
+        where: {
+          id: { in: nodeIds },
+          workspace_id: workspaceId,
+        },
+      });
     });
   }
 

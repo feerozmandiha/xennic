@@ -14,11 +14,12 @@ export class CitationExpansionService {
   ) {}
 
   async expand(
+    workspaceId: string,
     sourceId: string,
     maxDepth = 3,
   ): Promise<{ targetId: string; depth: number; path: string[]; confidence: number }[]> {
     const results: { targetId: string; depth: number; path: string[]; confidence: number }[] = [];
-    const visited = new Set<string>();
+    const visited = new Set<string>([sourceId]);
     const queue: { nodeId: string; depth: number; path: string[]; confidence: number }[] = [
       { nodeId: sourceId, depth: 0, path: [sourceId], confidence: 1.0 },
     ];
@@ -27,7 +28,11 @@ export class CitationExpansionService {
       const current = queue.shift()!;
       if (current.depth >= maxDepth) continue;
 
-      const citations = await this.citationRepo.findBySource(current.nodeId);
+      const citations = await this.citationRepo.findBySource(
+        current.nodeId,
+        undefined,
+        workspaceId,
+      );
       for (const citation of citations) {
         if (visited.has(citation.targetId)) continue;
         visited.add(citation.targetId);

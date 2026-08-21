@@ -17,15 +17,35 @@ export class GraphEdgeRepository implements IGraphEdgeRepository {
     targetId: string,
     type: string,
   ): Promise<KnowledgeGraphEdge | null> {
+    const workspaceId = await this._workspaceForNode(sourceId);
+    if (!workspaceId) return null;
+
     const row = await prisma.knowledge_graph_edges.findFirst({
-      where: { source_id: sourceId, target_id: targetId, type: type as EdgeType },
+      where: {
+        source_id: sourceId,
+        target_id: targetId,
+        type: type as EdgeType,
+        workspace_id: workspaceId,
+        target: { workspace_id: workspaceId },
+      },
     });
     if (!row) return null;
     return this._toEntity(row);
   }
 
-  async findAllBySource(sourceId: string, type?: string): Promise<KnowledgeGraphEdge[]> {
-    const where: any = { source_id: sourceId };
+  async findAllBySource(
+    sourceId: string,
+    type?: string,
+    workspaceId?: string,
+  ): Promise<KnowledgeGraphEdge[]> {
+    const scopedWorkspaceId = workspaceId ?? (await this._workspaceForNode(sourceId));
+    if (!scopedWorkspaceId) return [];
+
+    const where: any = {
+      source_id: sourceId,
+      workspace_id: scopedWorkspaceId,
+      target: { workspace_id: scopedWorkspaceId },
+    };
     if (type) where.type = type as EdgeType;
     const rows = await prisma.knowledge_graph_edges.findMany({
       where,
@@ -34,8 +54,19 @@ export class GraphEdgeRepository implements IGraphEdgeRepository {
     return rows.map((r) => this._toEntity(r));
   }
 
-  async findAllByTarget(targetId: string, type?: string): Promise<KnowledgeGraphEdge[]> {
-    const where: any = { target_id: targetId };
+  async findAllByTarget(
+    targetId: string,
+    type?: string,
+    workspaceId?: string,
+  ): Promise<KnowledgeGraphEdge[]> {
+    const scopedWorkspaceId = workspaceId ?? (await this._workspaceForNode(targetId));
+    if (!scopedWorkspaceId) return [];
+
+    const where: any = {
+      target_id: targetId,
+      workspace_id: scopedWorkspaceId,
+      source: { workspace_id: scopedWorkspaceId },
+    };
     if (type) where.type = type as EdgeType;
     const rows = await prisma.knowledge_graph_edges.findMany({
       where,
@@ -45,7 +76,11 @@ export class GraphEdgeRepository implements IGraphEdgeRepository {
   }
 
   async findAllByWorkspace(workspaceId: string, type?: string): Promise<KnowledgeGraphEdge[]> {
-    const where: any = { workspace_id: workspaceId };
+    const where: any = {
+      workspace_id: workspaceId,
+      source: { workspace_id: workspaceId },
+      target: { workspace_id: workspaceId },
+    };
     if (type) where.type = type as EdgeType;
     const rows = await prisma.knowledge_graph_edges.findMany({ where });
     return rows.map((r) => this._toEntity(r));
@@ -114,6 +149,14 @@ export class GraphEdgeRepository implements IGraphEdgeRepository {
 
   async deleteByTarget(targetId: string): Promise<void> {
     await prisma.knowledge_graph_edges.deleteMany({ where: { target_id: targetId } });
+  }
+
+  private async _workspaceForNode(nodeId: string): Promise<string | null> {
+    const node = await prisma.knowledge_graph_nodes.findUnique({
+      where: { id: nodeId },
+      select: { workspace_id: true },
+    });
+    return node?.workspace_id ?? null;
   }
 
   private _toEntity(row: any): KnowledgeGraphEdge {

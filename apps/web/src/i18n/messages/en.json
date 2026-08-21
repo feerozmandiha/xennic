@@ -60,6 +60,7 @@
     "energy": "Energy Analysis",
     "consultations": "Consultations",
     "knowledge": "Technical Encyclopedia",
+    "knowledgeManage": "Knowledge Management",
     "marketplace": "Marketplace",
     "search": "Search",
     "billing": "Billing & Subscription",
@@ -280,6 +281,73 @@
     "editArticle": "Edit Article",
     "newArticleDescription": "Create a new technical knowledge article."
   },
+  "knowledgeAdmin": {
+    "title": "Knowledge articles",
+    "subtitle": "{count} articles across all workspaces",
+    "newArticle": "New article",
+    "articleDeleted": "Article deleted",
+    "articleDeleteFailed": "Could not delete the article",
+    "deleteTitle": "Delete article",
+    "deleteQuestion": "Are you sure you want to delete this article?",
+    "loadFailed": "Could not load articles",
+    "loadFailedHint": "The knowledge service did not respond. Please try again.",
+    "emptyFiltered": "No article matches the current filters.",
+    "emptyAll": "No article has been created yet.",
+    "columns": {
+      "title": "Title",
+      "status": "Status",
+      "tier": "Access tier",
+      "workspace": "Workspace",
+      "author": "Author",
+      "publishedAt": "Published at",
+      "views": "Views"
+    },
+    "filters": {
+      "search": "Search",
+      "searchPlaceholder": "Search title or slug…",
+      "tier": "Access tier",
+      "status": "Status",
+      "language": "Language",
+      "allTiers": "All tiers",
+      "allStatuses": "All statuses",
+      "allLanguages": "All languages",
+      "reset": "Clear filters"
+    },
+    "status": {
+      "draft": "Draft",
+      "review": "In review",
+      "published": "Published",
+      "archived": "Archived"
+    },
+    "tier": {
+      "free": "Free",
+      "basic": "Basic",
+      "pro": "Pro",
+      "enterprise": "Enterprise"
+    },
+    "language": {
+      "fa": "Persian",
+      "en": "English"
+    },
+    "stats": {
+      "totalArticles": "Total articles",
+      "acrossWorkspaces": "Across all workspaces",
+      "published": "Published",
+      "draftsCount": "{count} drafts",
+      "totalViews": "Total views",
+      "allTime": "All time",
+      "gatedArticles": "Gated articles",
+      "freeCount": "{count} free articles",
+      "recentlyUpdated": "Recently updated"
+    },
+    "pagination": {
+      "summary": "Page {page} of {totalPages} — {total} articles",
+      "perPage": "{count} per page",
+      "pageSize": "Rows per page",
+      "previous": "Previous",
+      "next": "Next"
+    }
+  },
   "marketplace": {
     "title": "Marketplace",
     "description": "Manage products, orders and vendors",
@@ -310,7 +378,38 @@
     "update": "Update",
     "cancel": "Cancel",
     "error": "Operation failed",
-    "selectVendorFirst": "Please select a vendor first"
+    "selectVendorFirst": "Please select a vendor first",
+    "storefrontDescription": "Electrical engineering equipment & products catalog — browse and view prices without signing in",
+    "all": "All",
+    "specifications": "Technical specifications",
+    "loginToBuy": "Sign in to purchase",
+    "registerNote": "Don't have an account?",
+    "register": "Register",
+    "store": "Store",
+    "addToCart": "Add to cart",
+    "addedToCart": "Added to cart",
+    "viewCart": "View cart",
+    "cart": "Cart",
+    "emptyCart": "Your cart is empty",
+    "continueShopping": "Continue shopping",
+    "orderSummary": "Order summary",
+    "total": "Total",
+    "proceedToCheckout": "Proceed to checkout",
+    "reviewOrder": "Review order",
+    "placeOrder": "Place order",
+    "orderSuccess": "Order placed successfully",
+    "orderId": "Order ID",
+    "viewOrders": "View orders",
+    "noPaymentYet": "Online payment will be enabled in a later phase",
+    "viewStore": "View store",
+    "linkedFromCalc": "Linked from calculation",
+    "clearFilters": "Clear filters",
+    "payOnline": "Pay online",
+    "payTestMode": "Payment gateway is in test mode — no real transaction is made",
+    "paymentSuccess": "Payment successful",
+    "paymentSuccessNote": "Your order has been paid and confirmed",
+    "paymentFailed": "Payment failed",
+    "paymentFailedNote": "You can retry the payment from the orders section"
   },
   "errors": {
     "required": "This field is required",

@@ -65,6 +65,8 @@ model users {
   knowledge_workflows_reviewer   knowledge_workflows[]      @relation("KnowledgeWorkflowReview")
   knowledge_workflow_history     knowledge_workflow_history[]
   knowledge_documents_creator    knowledge_documents[]      @relation("KnowledgeDocumentCreator")
+  cms_content_created            cms_content[]              @relation("CmsContentCreatedBy")
+  cms_content_updated            cms_content[]              @relation("CmsContentUpdatedBy")
 
   @@index([deleted_at])
   @@index([created_at])
@@ -721,6 +723,7 @@ model knowledge {
 
   reading_time  Int?
   difficulty    String?
+  access_tier   String    @default("free")
   author_id     String?
   reviewer_id   String?
 
@@ -752,6 +755,7 @@ model knowledge {
   @@index([visibility])
   @@index([language])
   @@index([difficulty])
+  @@index([access_tier])
   @@index([author_id])
   factory_documents                 knowledge_documents[]    @relation("FactoryPublishedKnowledge")
 }
@@ -1116,6 +1120,11 @@ model orders {
   status       String   @default("pending")
   currency     String   @default("USD")
   total_amount Decimal  @db.Decimal(12, 2)
+  // درگاه پرداخت (Marketplace Checkout)
+  authority         String? // Zarinpal authority
+  gateway           String? @default("zarinpal")
+  gateway_reference String? // ref_id پس از تأیید پرداخت
+  paid_at           DateTime?
   created_at   DateTime @default(now())
   updated_at   DateTime @updatedAt
 
@@ -1126,6 +1135,7 @@ model orders {
   @@index([workspace_id])
   @@index([user_id])
   @@index([status])
+  @@index([authority])
 }
 
 model order_items {
@@ -2531,4 +2541,30 @@ model calculation_plugins {
   config      Json     @default("{}")
   created_at  DateTime @default(now())
   updated_at  DateTime @updatedAt
+}
+
+// ============================================================
+// CMS — Landing / Header / Footer editable content
+// ============================================================
+
+model cms_content {
+  id          String    @id @default(uuid())
+  slot        String
+  locale      String    @default("fa")
+  document    Json
+  version     Int       @default(1)
+  publishedAt DateTime? @map("published_at")
+  createdBy   String?   @map("created_by")
+  updatedBy   String?   @map("updated_by")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  createdByUser users? @relation("CmsContentCreatedBy", fields: [createdBy], references: [id], onDelete: SetNull)
+  updatedByUser users? @relation("CmsContentUpdatedBy", fields: [updatedBy], references: [id], onDelete: SetNull)
+
+  @@unique([slot, locale])
+  @@index([locale])
+  @@index([slot])
+  @@index([publishedAt])
+  @@map("cms_content")
 }

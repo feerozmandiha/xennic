@@ -7,6 +7,11 @@ import type {
   ProductSearchParams,
   OrderSearchParams,
   SearchResult,
+  PublicProductSearchParams,
+  PublicProductRecord,
+  PublicVendorSearchParams,
+  PublicVendorRecord,
+  CategoryCount,
 } from '../../domain/interfaces/marketplace.repository.interface.js';
 import { VendorEntity } from '../../domain/entities/vendor.entity.js';
 import { ProductEntity } from '../../domain/entities/product.entity.js';
@@ -137,7 +142,7 @@ export class MarketplaceRepository implements IMarketplaceRepository {
     offset?: number;
     limit?: number;
   }): Promise<SearchResult<ProductEntity>> {
-    const where: any = { deleted_at: null, category: params.category };
+    const where: any = { deleted_at: null, status: 'active', category: params.category };
 
     const [data, total] = await Promise.all([
       prisma.products.findMany({
@@ -150,61 +155,13 @@ export class MarketplaceRepository implements IMarketplaceRepository {
     ]);
 
     const entities = data.map((r) => this._productToEntity(r));
-
-    // Score and rank by spec match
-    const rules = SPEC_MATCH_RULES[params.category];
-    if (rules && Object.keys(params.specs).length > 0) {
-      const scored = entities.map((e) => {
-        const prodSpecs = e.specifications ?? {};
-        let score = 0;
-        let totalChecks = 0;
-
-        for (const [specKey, matchType] of Object.entries(rules)) {
-          const prodVal = prodSpecs[specKey];
-          if (prodVal == null) continue;
-
-          const [resultKey] = matchType;
-          if (!resultKey) {
-            // No result key mapping — can only match if product spec exists (bonus)
-            score += 0.5;
-            totalChecks++;
-            continue;
-          }
-
-          const resultVal = params.specs[resultKey];
-          if (resultVal == null) continue;
-
-          totalChecks++;
-          const pv = parseFloat(String(prodVal));
-          const rv = parseFloat(String(resultVal));
-
-          if (isNaN(pv) || isNaN(rv)) continue;
-
-          const [, matchTypeOp] = matchType;
-          switch (matchTypeOp) {
-            case 'exact':
-              if (Math.abs(pv - rv) / Math.max(rv, 1) < 0.05) score += 1;
-              break;
-            case 'min':
-              if (pv >= rv) score += 1;
-              break;
-            case 'max':
-              if (pv <= rv) score += 1;
-              break;
-          }
-        }
-
-        return { entity: e, score: totalChecks > 0 ? score / totalChecks : 0 };
-      });
-
-      scored.sort((a, b) => b.score - a.score);
-      return {
-        data: scored.map((s) => s.entity),
-        total,
-      };
-    }
-
-    return { data: entities, total };
+    const scored = this._scoreBySpecs(
+      entities,
+      params.specs,
+      params.category,
+      (e) => e.specifications,
+    );
+    return { data: scored.map((s) => s.item), total };
   }
 
   async saveProduct(entity: ProductEntity): Promise<void> {
@@ -255,6 +212,15 @@ export class MarketplaceRepository implements IMarketplaceRepository {
     return this._orderToEntity(row as any);
   }
 
+  async findOrderByAuthority(authority: string): Promise<OrderEntity | null> {
+    const row = await prisma.orders.findFirst({
+      where: { authority },
+      include: { items: true },
+    });
+    if (!row) return null;
+    return this._orderToEntity(row as any);
+  }
+
   async searchOrders(params: OrderSearchParams): Promise<SearchResult<OrderEntity>> {
     const where: any = { workspace_id: params.workspaceId };
     if (params.status) where.status = params.status;
@@ -279,6 +245,10 @@ export class MarketplaceRepository implements IMarketplaceRepository {
       update: {
         status: entity.status,
         total_amount: entity.totalAmount,
+        authority: entity.authority,
+        gateway: entity.gateway,
+        gateway_reference: entity.gatewayReference,
+        paid_at: entity.paidAt,
         updated_at: entity.updatedAt,
       },
       create: {
@@ -288,6 +258,10 @@ export class MarketplaceRepository implements IMarketplaceRepository {
         status: entity.status,
         currency: entity.currency,
         total_amount: entity.totalAmount,
+        authority: entity.authority,
+        gateway: entity.gateway,
+        gateway_reference: entity.gatewayReference,
+        paid_at: entity.paidAt,
         created_at: entity.createdAt,
         updated_at: entity.updatedAt,
       },
@@ -309,7 +283,241 @@ export class MarketplaceRepository implements IMarketplaceRepository {
     }
   }
 
+  // ── Public storefront (anonymous, read-only) ──────────
+
+  async searchPublicProducts(
+    params: PublicProductSearchParams,
+  ): Promise<SearchResult<PublicProductRecord>> {
+    const where: any = { deleted_at: null, status: 'active' };
+    if (params.query) {
+      where.OR = [
+        { sku: { contains: params.query, mode: 'insensitive' } },
+        { category: { contains: params.query, mode: 'insensitive' } },
+        { translations: { some: { title: { contains: params.query, mode: 'insensitive' } } } },
+        {
+          translations: { some: { description: { contains: params.query, mode: 'insensitive' } } },
+        },
+      ];
+    }
+    if (params.vendorId) where.vendor_id = params.vendorId;
+    if (params.type) where.type = params.type;
+    if (params.category) where.category = params.category;
+    if (params.minPrice != null || params.maxPrice != null) {
+      where.price = {};
+      if (params.minPrice != null) where.price.gte = params.minPrice;
+      if (params.maxPrice != null) where.price.lte = params.maxPrice;
+    }
+
+    const [rows, total] = await Promise.all([
+      prisma.products.findMany({
+        where,
+        skip: params.offset ?? 0,
+        take: params.limit ?? 20,
+        orderBy: { created_at: 'desc' },
+        include: { translations: true, vendor: true },
+      }),
+      prisma.products.count({ where }),
+    ]);
+
+    return {
+      data: rows.map((r) => this._publicProductToRecord(r, params.locale ?? 'fa')),
+      total,
+    };
+  }
+
+  async findPublicProductById(id: string, locale: string): Promise<PublicProductRecord | null> {
+    const row = await prisma.products.findFirst({
+      where: { id, deleted_at: null, status: 'active' },
+      include: { translations: true, vendor: true },
+    });
+    return row ? this._publicProductToRecord(row, locale) : null;
+  }
+
+  async suggestPublicProducts(params: {
+    category: string;
+    specs: Record<string, any>;
+    locale?: string;
+    limit?: number;
+  }): Promise<SearchResult<PublicProductRecord>> {
+    const where: any = { deleted_at: null, status: 'active', category: params.category };
+
+    const rows = await prisma.products.findMany({
+      where,
+      take: 500,
+      orderBy: { created_at: 'desc' },
+      include: { translations: true, vendor: true },
+    });
+
+    const records = rows.map((r) => this._publicProductToRecord(r, params.locale ?? 'fa'));
+    const scored = this._scoreBySpecs(
+      records,
+      params.specs,
+      params.category,
+      (rec) => rec.specifications,
+    );
+
+    return {
+      data: scored.slice(0, params.limit ?? 10).map((s) => s.item),
+      total: records.length,
+    };
+  }
+
+  async searchPublicVendors(
+    params: PublicVendorSearchParams,
+  ): Promise<SearchResult<PublicVendorRecord>> {
+    const where: any = { status: 'active' };
+    if (params.query) {
+      where.OR = [
+        { name: { contains: params.query, mode: 'insensitive' } },
+        { slug: { contains: params.query, mode: 'insensitive' } },
+      ];
+    }
+
+    const [rows, total] = await Promise.all([
+      prisma.vendors.findMany({
+        where,
+        skip: params.offset ?? 0,
+        take: params.limit ?? 20,
+        orderBy: { created_at: 'desc' },
+        include: {
+          _count: { select: { products: { where: { deleted_at: null, status: 'active' } } } },
+        },
+      }),
+      prisma.vendors.count({ where }),
+    ]);
+
+    return {
+      data: rows.map((r) => ({
+        id: r.id,
+        name: r.name,
+        slug: r.slug,
+        status: r.status,
+        productCount: r._count.products,
+        createdAt: r.created_at,
+        updatedAt: r.updated_at,
+      })),
+      total,
+    };
+  }
+
+  async findPublicVendorById(id: string): Promise<PublicVendorRecord | null> {
+    const row = await prisma.vendors.findFirst({
+      where: { id, status: 'active' },
+      include: {
+        _count: { select: { products: { where: { deleted_at: null, status: 'active' } } } },
+      },
+    });
+    if (!row) return null;
+    return {
+      id: row.id,
+      name: row.name,
+      slug: row.slug,
+      status: row.status,
+      productCount: row._count.products,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+    };
+  }
+
+  async listCategories(): Promise<CategoryCount[]> {
+    const grouped = await prisma.products.groupBy({
+      by: ['category'],
+      where: { deleted_at: null, status: 'active', category: { not: null } },
+      _count: { _all: true },
+      orderBy: { _count: { category: 'desc' } },
+    });
+    return grouped
+      .filter((g) => g.category)
+      .map((g) => ({ category: g.category as string, count: g._count._all }));
+  }
+
   // ── Mappers ─────────────────────────────────────
+
+  private _scoreBySpecs<T>(
+    items: T[],
+    specs: Record<string, any>,
+    category: string,
+    getSpecs: (item: T) => Record<string, any> | null,
+  ): { item: T; score: number }[] {
+    const rules = SPEC_MATCH_RULES[category];
+    if (!rules || Object.keys(specs).length === 0) {
+      return items.map((item) => ({ item, score: 0 }));
+    }
+
+    const scored = items.map((item) => {
+      const prodSpecs = getSpecs(item) ?? {};
+      let score = 0;
+      let totalChecks = 0;
+
+      for (const [specKey, matchType] of Object.entries(rules)) {
+        const prodVal = prodSpecs[specKey];
+        if (prodVal == null) continue;
+
+        const [resultKey] = matchType;
+        if (!resultKey) {
+          // No result key mapping — can only match if product spec exists (bonus)
+          score += 0.5;
+          totalChecks++;
+          continue;
+        }
+
+        const resultVal = specs[resultKey];
+        if (resultVal == null) continue;
+
+        totalChecks++;
+        const pv = parseFloat(String(prodVal));
+        const rv = parseFloat(String(resultVal));
+
+        if (isNaN(pv) || isNaN(rv)) continue;
+
+        const [, matchTypeOp] = matchType;
+        switch (matchTypeOp) {
+          case 'exact':
+            if (Math.abs(pv - rv) / Math.max(rv, 1) < 0.05) score += 1;
+            break;
+          case 'min':
+            if (pv >= rv) score += 1;
+            break;
+          case 'max':
+            if (pv <= rv) score += 1;
+            break;
+        }
+      }
+
+      return { item, score: totalChecks > 0 ? score / totalChecks : 0 };
+    });
+
+    scored.sort((a, b) => b.score - a.score);
+    return scored;
+  }
+
+  private _publicProductToRecord(row: any, locale: string): PublicProductRecord {
+    const translations: any[] = row.translations ?? [];
+    const find = (l: string) => translations.find((t) => t.locale === l);
+    const t = find(locale) ?? find('fa') ?? find('en') ?? translations[0];
+    return {
+      id: row.id,
+      sku: row.sku,
+      type: row.type,
+      category: row.category ?? null,
+      specifications: row.specifications
+        ? typeof row.specifications === 'string'
+          ? JSON.parse(row.specifications)
+          : row.specifications
+        : null,
+      price: Number(row.price),
+      currency: row.currency,
+      status: row.status,
+      vendorId: row.vendor_id,
+      vendorName: row.vendor?.name ?? '',
+      vendorSlug: row.vendor?.slug ?? '',
+      title: t?.title ?? row.sku,
+      description: t?.description ?? null,
+      locale: t?.locale ?? locale,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+    };
+  }
 
   private _vendorToEntity(row: any): VendorEntity {
     return VendorEntity.reconstitute({
@@ -360,6 +568,10 @@ export class MarketplaceRepository implements IMarketplaceRepository {
       items,
       createdAt: row.created_at,
       updatedAt: row.updated_at,
+      authority: row.authority ?? null,
+      gateway: row.gateway ?? null,
+      gatewayReference: row.gateway_reference ?? null,
+      paidAt: row.paid_at ?? null,
     });
   }
 }

@@ -1,6 +1,8 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
+import Link from 'next/link';
+import { useParams } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Send,
@@ -16,6 +18,7 @@ import {
   Copy,
   Check,
   RefreshCw,
+  Store,
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -24,6 +27,7 @@ import { useAuthStore } from '@/stores/auth.store';
 import { useToast } from '@/stores/toast.store';
 import { apiClient } from '@/lib/api/client';
 import { cn } from '@/lib/utils';
+import { detectCategories, storeLink } from '@/lib/marketplace';
 
 // ─────────────────────────────────────────────────────────────
 // TYPES
@@ -95,6 +99,14 @@ function MessageContent({ content }: { content: string }) {
 function MessageBubble({ msg, userName }: { msg: Message; userName?: string }) {
   const [copied, setCopied] = useState(false);
   const isUser = msg.role === 'user';
+  const params = useParams();
+  const locale = (params?.locale as string) ?? 'fa';
+
+  // تشخیص تجهیزات مرتبط در پاسخ دستیار برای لینک به فروشگاه
+  const categories = useMemo(
+    () => (!isUser && !msg.streaming ? detectCategories(msg.content) : []),
+    [isUser, msg.content, msg.streaming],
+  );
 
   function copyContent() {
     navigator.clipboard.writeText(msg.content).catch(() => {});
@@ -162,6 +174,24 @@ function MessageBubble({ msg, userName }: { msg: Message; userName?: string }) {
             </button>
           )}
         </div>
+
+        {categories.length > 0 ? (
+          <div className="flex flex-wrap items-center gap-1.5 px-1">
+            <span className="inline-flex items-center gap-1 text-[10px] text-[hsl(var(--muted-foreground))]">
+              <Store className="h-3 w-3" />
+              تجهیزات مرتبط:
+            </span>
+            {categories.map((c) => (
+              <Link
+                key={c}
+                href={storeLink(locale, { category: c })}
+                className="inline-flex items-center rounded-full border border-[hsl(var(--primary)/0.3)] bg-[hsl(var(--primary)/0.05)] px-2 py-0.5 text-[10px] font-medium text-[hsl(var(--primary))] transition-colors hover:bg-[hsl(var(--primary)/0.12)]"
+              >
+                {c}
+              </Link>
+            ))}
+          </div>
+        ) : null}
 
         <p
           className={cn(
@@ -359,14 +389,26 @@ const API_BASE =
     ? `${process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000'}/api/v1`
     : `http://localhost:3000/api/v1`;
 
-export function AiChatClient() {
+export function AiChatClient({
+  initialPrompt,
+  initialContext,
+}: {
+  initialPrompt?: string;
+  initialContext?: { title?: string; url?: string };
+} = {}) {
   const user = useAuthStore((s) => s.user);
   const wsId = useAuthStore((s) => s.workspaceId);
   const toast = useToast();
   const queryClient = useQueryClient();
 
   const [activeConvId, setActiveConvId] = useState<string | null>(null);
-  const [input, setInput] = useState('');
+  const [input, setInput] = useState(
+    initialPrompt
+      ? initialContext?.title
+        ? `لطفاً مقاله/دانشنامه «${initialContext.title}» را تجزیه و تحلیل کن.\n\n${initialPrompt}`
+        : initialPrompt
+      : '',
+  );
   const [isTyping, setIsTyping] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [useStream, setUseStream] = useState(false); // streaming endpoint در دست توسعه

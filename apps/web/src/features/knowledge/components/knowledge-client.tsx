@@ -172,7 +172,7 @@ function ArticleCard({
             )}
           </div>
           <a
-            href={`/${locale}/knowledge/${article.id}`}
+            href={`/${locale}/knowledge-manage/${article.id}`}
             className="inline-flex items-center gap-1 text-[10px] text-[hsl(var(--primary))] hover:underline font-medium"
           >
             جزئیات <ArrowUpRight className="h-3 w-3" />
@@ -218,9 +218,14 @@ export function KnowledgeClient() {
   if (difficultyFilter) searchParams.set('difficulty', difficultyFilter);
   searchParams.set('limit', '100');
 
+  // Workspace-scoped listing. The platform-wide (cross-workspace) view for
+  // the admin console lives in `KnowledgeAdminArticles`, which uses the
+  // paginated `/knowledge/admin/all` endpoint.
+  const endpoint = `/knowledge/search?${searchParams.toString()}`;
+
   const { data, isLoading } = useQuery({
     queryKey: ['knowledge', wsId, debouncedSearch, statusFilter, difficultyFilter],
-    queryFn: () => apiClient.get<any>(`/knowledge/search?${searchParams.toString()}`),
+    queryFn: () => apiClient.get<any>(endpoint),
     enabled: !!wsId,
     retry: false,
   });

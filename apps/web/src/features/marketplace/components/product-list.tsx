@@ -115,7 +115,7 @@ export function ProductList() {
                     </span>
                   </div>
                   <a
-                    href={`/${locale}/marketplace/products/${p.id}`}
+                    href={`/${locale}/marketplace/manage/products/${p.id}`}
                     className="inline-flex items-center gap-1 text-xs text-[hsl(var(--primary))] hover:underline"
                   >
                     {tCommon('details')} <ArrowUpRight className="h-3 w-3" />

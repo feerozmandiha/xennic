@@ -1,0 +1,35 @@
+# ══════════════════════════════════════════════════════════════════════════════
+# Optional override — publish infrastructure ports on the host for debugging.
+#
+# The base production stack deliberately publishes NO infra ports so it can run
+# next to a local development stack. Use this override only when you need to
+# reach Postgres/Redis/RabbitMQ/MinIO/Qdrant from the host, and make sure the
+# ports below are free (override them in .env if they are not).
+#
+#   docker compose --env-file .env \
+#     -f docker-compose.yml -f docker-compose.debug-ports.yml up -d
+# ══════════════════════════════════════════════════════════════════════════════
+
+services:
+  postgres:
+    ports:
+      - '127.0.0.1:${POSTGRES_PORT:-5432}:5432'
+
+  redis:
+    ports:
+      - '127.0.0.1:${REDIS_PORT:-6379}:6379'
+
+  rabbitmq:
+    ports:
+      - '127.0.0.1:${RABBITMQ_PORT:-5672}:5672'
+      - '127.0.0.1:${RABBITMQ_UI_PORT:-15672}:15672'
+
+  minio:
+    ports:
+      - '127.0.0.1:${MINIO_API_PORT:-9000}:9000'
+      - '127.0.0.1:${MINIO_CONSOLE_PORT:-9001}:9001'
+
+  qdrant:
+    ports:
+      - '127.0.0.1:${QDRANT_HTTP_PORT:-6333}:6333'
+      - '127.0.0.1:${QDRANT_GRPC_PORT:-6334}:6334'

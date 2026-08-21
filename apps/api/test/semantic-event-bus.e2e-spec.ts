@@ -142,9 +142,15 @@ describe('Semantic Event Bus (integration)', () => {
     expect(processedEvents).toContain(event.eventId);
   });
 
-  it('should handle all 12 defined event types', async () => {
+  it('should define all 14 event types, including Knowledge lifecycle events', async () => {
     const allTypes = Object.values(EventType);
-    expect(allTypes).toHaveLength(12);
+    expect(allTypes).toHaveLength(14);
+    expect(allTypes).toEqual(
+      expect.arrayContaining([
+        EventType.KnowledgeArticlePublished,
+        EventType.KnowledgeArticleArchived,
+      ]),
+    );
   });
 
   it('should handle GraphNodeCreated event type', async () => {
@@ -190,9 +196,9 @@ describe('Semantic Event Bus (integration)', () => {
     );
   });
 
-  it('should register and handle an event with all 12 event types', async () => {
+  it('should register and handle an event with all 14 event types', async () => {
     const allTypes = Object.values(EventType);
-    expect(allTypes).toHaveLength(12);
+    expect(allTypes).toHaveLength(14);
   });
 
   it('should handle concurrent event publications', async () => {

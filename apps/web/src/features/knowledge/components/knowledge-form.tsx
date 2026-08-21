@@ -7,6 +7,8 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import * as Dialog from '@radix-ui/react-dialog';
 import { X, BookOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { TierSelect } from './tier-select';
+import type { AccessTier } from '../lib/access-tiers';
 import { Input } from '@/components/ui/input';
 import { useAuthStore } from '@/stores/auth.store';
 import { useToast } from '@/stores/toast.store';
@@ -37,6 +39,7 @@ export function NewKnowledgeDialog({ open, onClose }: Props) {
   const [title, setTitle] = useState('');
   const [slug, setSlug] = useState('');
   const [difficulty, setDifficulty] = useState('');
+  const [accessTier, setAccessTier] = useState<AccessTier>('free');
   const [error, setError] = useState('');
 
   const mutation = useMutation({
@@ -46,7 +49,7 @@ export function NewKnowledgeDialog({ open, onClose }: Props) {
       queryClient.invalidateQueries({ queryKey: ['knowledge', wsId] });
       toast.success('مقاله ایجاد شد');
       handleClose();
-      router.push(`/${locale}/knowledge/${res.data.id}/edit`);
+      router.push(`/${locale}/knowledge-manage/${res.data.id}/edit`);
     },
     onError: (err: any) => {
       setError(err?.message ?? 'خطا در ایجاد مقاله');
@@ -76,6 +79,7 @@ export function NewKnowledgeDialog({ open, onClose }: Props) {
       slug: slug.trim(),
       content: { title: title.trim() },
       difficulty: difficulty || undefined,
+      accessTier,
     });
   }
 
@@ -148,6 +152,8 @@ export function NewKnowledgeDialog({ open, onClose }: Props) {
                 ))}
               </select>
             </div>
+
+            <TierSelect value={accessTier} onChange={setAccessTier} disabled={mutation.isPending} />
 
             <div className="flex gap-3 pt-2">
               <Button

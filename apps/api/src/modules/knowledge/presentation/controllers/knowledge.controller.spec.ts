@@ -1,30 +1,39 @@
-jest.mock('@xennic/database', () => ({
-  prisma: {
-    $queryRaw: jest.fn(),
-    $queryRawUnsafe: jest.fn(),
-    $executeRawUnsafe: jest.fn(),
-    knowledge_taxonomy: {
-      findFirst: jest.fn(),
-      findMany: jest.fn(),
-      create: jest.fn(),
-      createMany: jest.fn(),
-      delete: jest.fn(),
+jest.mock(
+  '@xennic/database',
+  () => ({
+    prisma: {
+      $queryRaw: jest.fn(),
+      $queryRawUnsafe: jest.fn(),
+      $executeRawUnsafe: jest.fn(),
+      knowledge_taxonomy: {
+        findFirst: jest.fn(),
+        findMany: jest.fn(),
+        create: jest.fn(),
+        createMany: jest.fn(),
+        delete: jest.fn(),
+      },
+      knowledge_analytics: { upsert: jest.fn() },
+      knowledge_versions: { create: jest.fn() },
+      workspaces: {
+        findUnique: jest.fn(),
+        findMany: jest.fn(),
+        upsert: jest.fn(),
+        count: jest.fn(),
+      },
+      workspace_members: {
+        findFirst: jest.fn(),
+        findMany: jest.fn(),
+        create: jest.fn(),
+        delete: jest.fn(),
+        count: jest.fn(),
+      },
+      roles: { findUnique: jest.fn(), findMany: jest.fn() },
+      role_permissions: { findMany: jest.fn(), deleteMany: jest.fn(), createMany: jest.fn() },
+      users: { findUnique: jest.fn(), findMany: jest.fn(), count: jest.fn() },
     },
-    knowledge_analytics: { upsert: jest.fn() },
-    knowledge_versions: { create: jest.fn() },
-    workspaces: { findUnique: jest.fn(), findMany: jest.fn(), upsert: jest.fn(), count: jest.fn() },
-    workspace_members: {
-      findFirst: jest.fn(),
-      findMany: jest.fn(),
-      create: jest.fn(),
-      delete: jest.fn(),
-      count: jest.fn(),
-    },
-    roles: { findUnique: jest.fn(), findMany: jest.fn() },
-    role_permissions: { findMany: jest.fn(), deleteMany: jest.fn(), createMany: jest.fn() },
-    users: { findUnique: jest.fn(), findMany: jest.fn(), count: jest.fn() },
-  },
-}));
+  }),
+  { virtual: true },
+);
 
 import { Test, TestingModule } from '@nestjs/testing';
 import { KnowledgeController } from './knowledge.controller.js';
@@ -33,6 +42,7 @@ import { KnowledgeEntity } from '../../domain/entities/knowledge.entity.js';
 import { JwtAuthGuard } from '../../../auth/infrastructure/guards/jwt-auth.guard.js';
 import { WorkspaceGuard } from '../../../rbac/infrastructure/guards/workspace.guard.js';
 import { PermissionsGuard } from '../../../rbac/infrastructure/guards/permissions.guard.js';
+import { PlanEntitlementService } from '../../../billing/application/services/plan-entitlement.service.js';
 
 const WS_ID = 'ws-123';
 const USER_ID = 'user-456';
@@ -61,6 +71,8 @@ describe('KnowledgeController', () => {
           provide: KnowledgeService,
           useValue: {
             findAll: jest.fn(),
+            findAllForAdmin: jest.fn(),
+            getAdminStats: jest.fn(),
             findOne: jest.fn(),
             findBySlug: jest.fn(),
             create: jest.fn(),
@@ -76,6 +88,12 @@ describe('KnowledgeController', () => {
             removeTaxonomy: jest.fn(),
             getTaxonomy: jest.fn(),
             recordView: jest.fn(),
+          },
+        },
+        {
+          provide: PlanEntitlementService,
+          useValue: {
+            getWorkspaceKnowledgeTier: jest.fn().mockResolvedValue('basic'),
           },
         },
       ],
@@ -127,6 +145,71 @@ describe('KnowledgeController', () => {
       expect(result.success).toBe(true);
       expect(result.data.slug).toBe('test-article');
       expect(knowledgeService.create).toHaveBeenCalledWith(dto, WS_ID, USER_ID);
+    });
+  });
+
+  describe('GET /knowledge/admin/all', () => {
+    it('should return the platform-wide list with filters applied', async () => {
+      const entity = makeEntity();
+      knowledgeService.findAllForAdmin.mockResolvedValue({
+        data: [
+          {
+            entity,
+            title: 'مقاله تست',
+            workspaceName: 'فضای کاری اصلی',
+            authorName: 'علی رضایی',
+            views: 42,
+          },
+        ],
+        meta: { page: 2, limit: 20, total: 30, totalPages: 2 },
+      });
+
+      const result = await controller.findAllForAdmin({
+        page: 2,
+        limit: 20,
+        status: 'published',
+        accessTier: 'pro',
+        language: 'fa',
+        q: 'کابل',
+      } as any);
+
+      expect(result.success).toBe(true);
+      expect(result.data).toHaveLength(1);
+      expect(result.data[0]).toMatchObject({
+        title: 'مقاله تست',
+        workspaceName: 'فضای کاری اصلی',
+        authorName: 'علی رضایی',
+        views: 42,
+        accessTier: 'free',
+      });
+      expect(result.meta).toEqual({ page: 2, limit: 20, total: 30, totalPages: 2 });
+      expect(knowledgeService.findAllForAdmin).toHaveBeenCalledWith({
+        page: 2,
+        limit: 20,
+        status: 'published',
+        accessTier: 'pro',
+        language: 'fa',
+        q: 'کابل',
+      });
+    });
+  });
+
+  describe('GET /knowledge/admin/stats', () => {
+    it('should return platform-wide statistics', async () => {
+      const stats = {
+        totalArticles: 12,
+        totalViews: 340,
+        byStatus: { draft: 4, review: 1, published: 6, archived: 1 },
+        byTier: { free: 5, basic: 3, pro: 3, enterprise: 1 },
+        recentArticles: [],
+      };
+      knowledgeService.getAdminStats.mockResolvedValue(stats as any);
+
+      const result = await controller.getAdminStats();
+
+      expect(result.success).toBe(true);
+      expect(result.data).toEqual(stats);
+      expect(knowledgeService.getAdminStats).toHaveBeenCalledTimes(1);
     });
   });
 

@@ -49,7 +49,7 @@ export function KnowledgeNewClient() {
     },
     onSuccess: (res: any) => {
       toast.success('مقاله ایجاد شد');
-      router.push(`/${locale}/knowledge/${res.id}`);
+      router.push(`/${locale}/knowledge-manage/${res.id}`);
     },
     onError: (err: any) => {
       setError(err?.message ?? 'خطا در ایجاد مقاله');

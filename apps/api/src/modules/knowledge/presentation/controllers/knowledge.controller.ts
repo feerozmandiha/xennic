@@ -25,13 +25,18 @@ import { JwtAuthGuard } from '../../../auth/infrastructure/guards/jwt-auth.guard
 import { WorkspaceGuard } from '../../../rbac/infrastructure/guards/workspace.guard.js';
 import { RequirePermissions } from '../../../rbac/infrastructure/decorators/permissions.decorator.js';
 import { PermissionsGuard } from '../../../rbac/infrastructure/guards/permissions.guard.js';
+import { AdminGuard } from '../../../admin/infrastructure/guards/admin.guard.js';
 import { KnowledgeService } from '../../application/services/knowledge.service.js';
+import { PlanEntitlementService } from '../../../billing/application/services/plan-entitlement.service.js';
 import {
   CreateKnowledgeDto,
   UpdateKnowledgeDto,
   KnowledgeSearchQueryDto,
   AssignReviewerDto,
   AddTaxonomyDto,
+  AdminKnowledgeQueryDto,
+  AdminKnowledgeItemDto,
+  AdminKnowledgeStatsDto,
   KnowledgeResponseDto,
   CreateCommentDto,
   UpdateCommentDto,
@@ -43,7 +48,25 @@ import {
 @UseGuards(JwtAuthGuard, WorkspaceGuard, PermissionsGuard)
 @Controller('knowledge')
 export class KnowledgeController {
-  constructor(private readonly knowledgeService: KnowledgeService) {}
+  constructor(
+    private readonly knowledgeService: KnowledgeService,
+    private readonly planEntitlements: PlanEntitlementService,
+  ) {}
+
+  // ── GET /knowledge/my-tier ────────────────────────────────────────────────
+
+  @Get('my-tier')
+  @ApiOperation({
+    summary: 'Knowledge access tier for the current user/workspace',
+    description:
+      'Returns the highest knowledge access tier the current user is entitled to ' +
+      'based on their active subscription. Unauthenticated callers receive free.',
+  })
+  @ApiResponse({ status: 200, description: 'Current tier' })
+  async myTier(@Req() req: any) {
+    const tier = await this.planEntitlements.getWorkspaceKnowledgeTier(req.workspaceId ?? null);
+    return { success: true, data: { tier: tier ?? 'free' } };
+  }
 
   // ─── GET /knowledge ────────────────────────────────────────────────────────
 
@@ -91,6 +114,50 @@ export class KnowledgeController {
   async create(@Body() dto: CreateKnowledgeDto, @Req() req: any) {
     const entity = await this.knowledgeService.create(dto, req.workspaceId, req.user.userId);
     return { success: true, data: KnowledgeResponseDto.fromEntity(entity) };
+  }
+
+  @Get('admin/all')
+  @UseGuards(JwtAuthGuard, AdminGuard)
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({
+    summary: 'Admin: list all articles across workspaces',
+    description:
+      'Platform-wide, paginated list used by the admin Knowledge console. Does ' +
+      'not filter by workspace so editors see every article. Supports filtering ' +
+      'by status, access tier and language plus search over title/slug.',
+  })
+  @ApiResponse({ status: 200, description: 'Articles retrieved', type: [AdminKnowledgeItemDto] })
+  async findAllForAdmin(@Query() query: AdminKnowledgeQueryDto) {
+    const result = await this.knowledgeService.findAllForAdmin({
+      page: query.page,
+      limit: query.limit,
+      status: query.status,
+      accessTier: query.accessTier,
+      language: query.language,
+      q: query.q,
+    });
+    return {
+      success: true,
+      data: result.data.map((row) => AdminKnowledgeItemDto.fromRow(row)),
+      meta: result.meta,
+    };
+  }
+
+  // ─── GET /knowledge/admin/stats ────────────────────────────────────────────
+
+  @Get('admin/stats')
+  @UseGuards(JwtAuthGuard, AdminGuard)
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({
+    summary: 'Admin: platform-wide knowledge statistics',
+    description:
+      'Aggregate counters for the admin console: total/published/draft articles, ' +
+      'breakdown by status and access tier, total views and recently updated articles.',
+  })
+  @ApiResponse({ status: 200, description: 'Statistics retrieved', type: AdminKnowledgeStatsDto })
+  async getAdminStats() {
+    const stats = await this.knowledgeService.getAdminStats();
+    return { success: true, data: stats };
   }
 
   // ─── SEARCH /knowledge/search ──────────────────────────────────────────────

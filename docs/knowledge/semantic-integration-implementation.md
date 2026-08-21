@@ -1,91 +1,103 @@
 # Implementation Report — Semantic Integration Layer
 
-## Summary
+> **Runtime qualification (audited 2026-08-19):** Semantic Integration is registered in `ApiModule`. Knowledge CMS now emits active article lifecycle events. Knowledge Factory is not registered, so its document-ingestion event flow remains dormant. This report describes the source as implemented; it does not claim that Factory is production-ready. See [knowledge-runtime-audit.md](./knowledge-runtime-audit.md).
 
-Phase K2 is complete. The Semantic Integration Layer connects 6 modules (Knowledge Factory, Knowledge Intelligence, AI Runtime, Workspace, RBAC, Storage) through an event-driven architecture with guaranteed delivery and idempotent processing.
+## Current runtime summary
 
-## Files Created/Modified
+The integration layer provides a PostgreSQL outbox, a five-second polling relay, an in-memory event bus, process logs, and idempotent handlers. The current registry contains **14 typed event contracts** and **4 handlers**.
 
-### New Files (13)
+| Producer/capability                         | Runtime state                                                                                            |
+| ------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| Knowledge CMS publish/archive               | Active. `KnowledgeService` enqueues `KnowledgeArticlePublished` and `KnowledgeArticleArchived`.          |
+| CMS article graph projection                | Active. Publish creates or updates the article node and metrics; archive removes the article projection. |
+| Knowledge Factory `DocumentPublished`       | Dormant. The worker and handler exist, but `KnowledgeFactoryModule` is not imported.                     |
+| AI cache invalidation for Factory documents | Handler exists, but has no active Factory producer.                                                      |
+| Graph/metrics follow-up events              | Contracts and publishing calls exist for the document flow; no consumers are registered.                 |
 
-| File                                                                                                   | Purpose                                 |
-| ------------------------------------------------------------------------------------------------------ | --------------------------------------- |
-| `apps/api/src/modules/semantic-integration/semantic-integration.module.ts`                             | Root module (`@Global()`)               |
-| `apps/api/src/modules/semantic-integration/semantic-integration.constants.ts`                          | Poll interval, batch size, max retries  |
-| `apps/api/src/modules/semantic-integration/domain/events/domain-event.types.ts`                        | 12 event types, typed payloads, factory |
-| `apps/api/src/modules/semantic-integration/domain/interfaces/event-handler.interface.ts`               | Handler contract                        |
-| `apps/api/src/modules/semantic-integration/domain/interfaces/event-publisher.interface.ts`             | Publisher contract                      |
-| `apps/api/src/modules/semantic-integration/application/services/domain-event-publisher.service.ts`     | Writes events to outbox                 |
-| `apps/api/src/modules/semantic-integration/application/services/semantic-event-bus.service.ts`         | In-memory pub/sub                       |
-| `apps/api/src/modules/semantic-integration/application/services/outbox-relay.service.ts`               | Polls outbox every 5s                   |
-| `apps/api/src/modules/semantic-integration/application/event-handlers/document-published.handler.ts`   | Creates graph + metrics                 |
-| `apps/api/src/modules/semantic-integration/application/event-handlers/cache-invalidation.handler.ts`   | Clears AI Runtime caches                |
-| `apps/api/src/modules/semantic-integration/infrastructure/persistence/event-outbox.repository.ts`      | Outbox CRUD                             |
-| `apps/api/src/modules/semantic-integration/infrastructure/persistence/event-process-log.repository.ts` | Idempotency tracking                    |
-| `docs/knowledge/event-topology.md`                                                                     | Event flow diagrams                     |
-| `docs/knowledge/adr-semantic-integration.md`                                                           | Architecture Decision Record            |
+## Event registry
 
-### Modified Files (5)
+The immutable event definitions, versions, payload maps, and factory live in `domain/events/domain-event.types.ts`.
 
-| File                                                                              | Change                                                                       |
-| --------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
-| `prisma/schema.prisma`                                                            | Added `event_outbox` + `event_process_log` tables                            |
-| `apps/api/src/modules/knowledge-factory/infrastructure/workers/publish.worker.ts` | Added `DomainEventPublisher` injection, emits `DocumentPublished` on success |
-| `apps/api/src/modules/knowledge-intelligence/knowledge-intelligence.module.ts`    | Added graph repositories to exports                                          |
-| `apps/api/src/api.module.ts`                                                      | Imported `SemanticIntegrationModule`                                         |
+| Group                              | Events                                                                                                                                          |
+| ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| Factory document lifecycle         | `DocumentUploaded`, `DocumentClassified`, `DocumentParsed`, `DocumentNormalized`, `DocumentChunked`, `EmbeddingsGenerated`, `DocumentPublished` |
+| Knowledge CMS lifecycle            | `KnowledgeArticlePublished`, `KnowledgeArticleArchived`                                                                                         |
+| Knowledge Intelligence/integration | `GraphNodeCreated`, `GraphEdgesCreated`, `OntologyUpdated`, `MetricsCalculated`, `SearchIndexUpdated`                                           |
 
-## Test Coverage
+All 14 contracts are version 1. `KnowledgeArticlePublished` carries the article/workspace identity, slug, title, language, visibility, version, content traits, and publication metadata. `KnowledgeArticleArchived` carries the article/workspace identity and archive timestamp.
 
-### TypeScript Compilation
+## Active CMS lifecycle flow
 
-- `pnpm typecheck`: PASS (0 errors)
-- `tsc --noEmit`: PASS (0 errors)
-- `tsc` (compile): PASS
+### Publish → graph projection and metrics
 
-### Verification Steps
+1. The lifecycle endpoint calls `KnowledgeService.publish()`.
+2. The article is persisted as published and version history is updated.
+3. `DomainEventPublisher` inserts `KnowledgeArticlePublished` into `event_outbox`.
+4. `OutboxRelayService` polls pending rows and dispatches the event to `SemanticEventBus`.
+5. `KnowledgeArticlePublishedHandler` checks `event_process_log` for idempotency.
+6. The handler creates or updates a workspace-bound graph node with entity type `knowledge`.
+7. The handler computes and saves confidence, freshness, authority, and completeness.
+8. Completion is recorded in `event_process_log`.
 
-1. `pnpm db:generate` — Regenerates Prisma client with new tables
-2. `pnpm build` — TypeScript compiles (OpenAPI generation has pre-existing NestJS init issue unrelated to changes)
-3. `pnpm dev` — App starts and registers handlers
+Republishing updates the existing projection rather than creating a duplicate node.
 
-## Key Metrics
+### Archive → projection removal
 
-| Metric                     | Value |
-| -------------------------- | ----- |
-| Domain events defined      | 12    |
-| Event handlers implemented | 2     |
-| Event payload types        | 12    |
-| New DB tables              | 2     |
-| New TypeScript files       | 13    |
-| Modified files             | 5     |
-| Outbox poll interval       | 5s    |
-| Max retries per event      | 3     |
-| Batch size                 | 50    |
+1. The lifecycle endpoint calls `KnowledgeService.archive()`.
+2. The article is persisted as archived and version history is updated.
+3. `KnowledgeArticleArchived` is inserted into the outbox.
+4. `KnowledgeArticleArchivedHandler` verifies idempotency and workspace ownership.
+5. The scoped projection is deleted transactionally: citations are removed explicitly, then database cascades remove its edges and metrics with the graph node.
+6. Completion is recorded in `event_process_log`.
 
-## Integration Points
+The CMS event is enqueued only after the article update succeeds. The article mutation and outbox insert are separate database operations, not one atomic transaction.
 
-### DocumentPublished → Graph + Metrics
+## Registered handlers
 
-1. `PublishWorker` emits `DocumentPublished` event
-2. `OutboxRelay` polls and dispatches to `SemanticEventBus`
-3. `DocumentPublishedHandler` checks idempotency
-4. Creates graph node via `GraphNodeRepository.create()`
-5. Calculates 4 metrics via KI services
-6. Saves metrics via `GraphMetricsRepository.save()`
-7. Emits `GraphNodeCreated` and `MetricsCalculated` events
-8. Logs completion to `event_process_log`
+| Handler                            | Event                       | Effect                                                                                                   |
+| ---------------------------------- | --------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `DocumentPublishedHandler`         | `DocumentPublished`         | Creates a Factory-document graph node, calculates metrics, and emits follow-up events. Producer dormant. |
+| `CacheInvalidationHandler`         | `DocumentPublished`         | Clears AI Runtime caches. Producer dormant.                                                              |
+| `KnowledgeArticlePublishedHandler` | `KnowledgeArticlePublished` | Upserts the CMS article graph projection and metrics.                                                    |
+| `KnowledgeArticleArchivedHandler`  | `KnowledgeArticleArchived`  | Deletes the CMS article projection and dependent graph data.                                             |
 
-### DocumentPublished → Cache Invalidation
+## Reliability semantics and limitations
 
-1. Same event dispatched to `CacheInvalidationHandler`
-2. Calls `MemoryAbstractionService.clearSession('*')`
-3. Calls `PromptRegistryService.remove('*')`
-4. Logs completion to `event_process_log`
+The current implementation should not be described as strict exactly-once or guaranteed end-to-end delivery:
 
-## Future Enhancements
+- Outbox rows persist across process restarts and are polled in batches of 50 every five seconds.
+- Relay-level exceptions increment `retry_count`; the row becomes `dead_letter` after three attempts.
+- Retries occur on the next fixed poll. There is no exponential backoff.
+- Individual event handlers log and swallow their own errors in `SemanticEventBus`. Consequently, a handler failure can still be followed by the relay marking the outbox row `delivered`; that failure does not currently trigger the outbox retry path.
+- `event_process_log` allows a completed handler to skip duplicate delivery, but this is idempotent at-least-once handling support, not a universal exactly-once guarantee.
+- The event bus is process-local and is not suitable for distributing handlers across multiple API replicas.
+- Source mutations and their outbox inserts are not performed in one shared Prisma transaction.
+- There is no administration surface for dead-letter inspection, retry, or event replay.
 
-1. **NOTIFY/LISTEN**: Replace polling with PostgreSQL NOTIFY for sub-second delivery
-2. **Dead letter admin UI**: Endpoint to view and retry dead-letter events
-3. **Webhook integration**: Expose events as webhooks (existing `webhooks` table)
-4. **Metrics aggregation**: Track event processing latency, throughput, error rates
-5. **Event replay**: Re-process historical events by re-publishing from the outbox
+## Key implementation files
+
+| File                                                                                                            | Purpose                                                     |
+| --------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
+| `semantic-integration.module.ts`                                                                                | Global module, handler registration, and relay startup      |
+| `domain/events/domain-event.types.ts`                                                                           | 14 event types, typed payloads, versions, and event factory |
+| `application/services/domain-event-publisher.service.ts`                                                        | Persists events to the outbox                               |
+| `application/services/outbox-relay.service.ts`                                                                  | Polls and dispatches pending rows                           |
+| `application/services/semantic-event-bus.service.ts`                                                            | In-process handler registry and dispatch                    |
+| `application/event-handlers/knowledge-article-published.handler.ts` and `knowledge-article-archived.handler.ts` | CMS publish/archive graph synchronization                   |
+| `application/event-handlers/document-published.handler.ts`                                                      | Factory document graph synchronization                      |
+| `application/event-handlers/cache-invalidation.handler.ts`                                                      | AI Runtime cache invalidation                               |
+| `infrastructure/persistence/event-outbox.repository.ts`                                                         | Outbox persistence and relay retry state                    |
+| `infrastructure/persistence/event-process-log.repository.ts`                                                    | Handler idempotency/process records                         |
+
+## Validation
+
+The Knowledge lifecycle and handler suites cover event emission, republishing, idempotency, workspace isolation, metric persistence, archive cleanup, and failure paths. See the current validation results in [knowledge-runtime-audit.md](./knowledge-runtime-audit.md). Full API compilation still depends on generating and building `@xennic/database`.
+
+## Required hardening
+
+1. Propagate or aggregate handler failures so the relay cannot mark a partially failed dispatch as delivered.
+2. Enqueue source mutations and lifecycle events in the same database transaction.
+3. Claim rows atomically for safe multi-replica relay processing.
+4. Implement actual backoff and expose dead-letter inspection/retry controls.
+5. Replace or bridge the process-local event bus before multi-instance deployment.
+6. Activate Knowledge Factory only after its controllers, persistence reads, queues, workers, permissions, and analytics have real implementations.

@@ -21,14 +21,22 @@ export class CitationRepository implements ICitationRepository {
     });
   }
 
-  async findBySource(sourceId: string, method?: string): Promise<KnowledgeCitation[]> {
-    const where: any = { source_id: sourceId };
+  async findBySource(
+    sourceId: string,
+    method?: string,
+    workspaceId?: string,
+  ): Promise<KnowledgeCitation[]> {
+    const scope = workspaceId ?? (await this._workspaceForNode(sourceId));
+    if (!scope) return [];
+
+    const where: any = { source_id: sourceId, workspace_id: scope };
     if (method) where.method = method;
     const rows = await prisma.knowledge_citations.findMany({
       where,
       orderBy: { created_at: 'desc' },
     });
-    return rows.map((r) =>
+    const scopedRows = await this._inWorkspace(rows, scope);
+    return scopedRows.map((r) =>
       KnowledgeCitation.reconstitute({
         id: r.id,
         workspaceId: r.workspace_id,
@@ -43,12 +51,16 @@ export class CitationRepository implements ICitationRepository {
     );
   }
 
-  async findByTarget(targetId: string): Promise<KnowledgeCitation[]> {
+  async findByTarget(targetId: string, workspaceId?: string): Promise<KnowledgeCitation[]> {
+    const scope = workspaceId ?? (await this._workspaceForNode(targetId));
+    if (!scope) return [];
+
     const rows = await prisma.knowledge_citations.findMany({
-      where: { target_id: targetId },
+      where: { target_id: targetId, workspace_id: scope },
       orderBy: { created_at: 'desc' },
     });
-    return rows.map((r) =>
+    const scopedRows = await this._inWorkspace(rows, scope);
+    return scopedRows.map((r) =>
       KnowledgeCitation.reconstitute({
         id: r.id,
         workspaceId: r.workspace_id,
@@ -75,7 +87,8 @@ export class CitationRepository implements ICitationRepository {
       where,
       orderBy: { created_at: 'desc' },
     });
-    return rows.map((r) =>
+    const scopedRows = await this._inWorkspace(rows, workspaceId);
+    return scopedRows.map((r) =>
       KnowledgeCitation.reconstitute({
         id: r.id,
         workspaceId: r.workspace_id,
@@ -168,5 +181,32 @@ export class CitationRepository implements ICitationRepository {
 
   async delete(id: string): Promise<void> {
     await prisma.knowledge_citations.delete({ where: { id } });
+  }
+
+  private async _workspaceForNode(nodeId: string): Promise<string | null> {
+    const node = await prisma.knowledge_graph_nodes.findUnique({
+      where: { id: nodeId },
+      select: { workspace_id: true },
+    });
+    return node?.workspace_id ?? null;
+  }
+
+  private async _inWorkspace<T extends { source_id: string; target_id: string }>(
+    rows: T[],
+    workspaceId: string,
+  ): Promise<T[]> {
+    if (rows.length === 0) return [];
+
+    const endpointIds = [...new Set(rows.flatMap((row) => [row.source_id, row.target_id]))];
+    const nodes = await prisma.knowledge_graph_nodes.findMany({
+      where: {
+        workspace_id: workspaceId,
+        id: { in: endpointIds },
+      },
+      select: { id: true },
+    });
+    const ownedNodeIds = new Set(nodes.map((node) => node.id));
+
+    return rows.filter((row) => ownedNodeIds.has(row.source_id) && ownedNodeIds.has(row.target_id));
   }
 }

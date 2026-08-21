@@ -2,7 +2,11 @@ import type { KnowledgeGraphNode } from '../../domain/entities/graph-node.entity
 
 export interface IGraphNodeRepository {
   findById(id: string): Promise<KnowledgeGraphNode | null>;
-  findByEntity(entityType: string, entityId: string): Promise<KnowledgeGraphNode | null>;
+  findByEntity(
+    entityType: string,
+    entityId: string,
+    workspaceId: string,
+  ): Promise<KnowledgeGraphNode | null>;
   findAllByWorkspace(
     workspaceId: string,
     type?: string,
@@ -27,5 +31,5 @@ export interface IGraphNodeRepository {
     },
   ): Promise<KnowledgeGraphNode>;
   delete(id: string): Promise<void>;
-  deleteByEntity(entityType: string, entityId: string): Promise<void>;
+  deleteByEntity(entityType: string, entityId: string, workspaceId: string): Promise<void>;
 }

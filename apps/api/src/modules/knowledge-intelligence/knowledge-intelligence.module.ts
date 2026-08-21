@@ -5,6 +5,7 @@ import { CitationsController } from './presentation/controllers/citations.contro
 import { GraphSearchController } from './presentation/controllers/graph-search.controller.js';
 import { MetricsController } from './presentation/controllers/metrics.controller.js';
 import { ClustersController } from './presentation/controllers/clusters.controller.js';
+import { GraphWorkspaceGuard } from './presentation/guards/graph-workspace.guard.js';
 
 import { GraphTraversalService } from './application/services/graph-traversal.service.js';
 import { SemanticExpansionService } from './application/services/semantic-expansion.service.js';
@@ -36,11 +37,9 @@ import { ClusterRepository } from './infrastructure/repositories/cluster.reposit
 
 import { WorkspaceModule } from '../workspace/workspace.module.js';
 import { RbacModule } from '../rbac/rbac.module.js';
-import { KnowledgeModule } from '../knowledge/knowledge.module.js';
-import { KnowledgeFactoryModule } from '../knowledge-factory/knowledge-factory.module.js';
 
 @Module({
-  imports: [WorkspaceModule, RbacModule, KnowledgeModule, KnowledgeFactoryModule],
+  imports: [WorkspaceModule, RbacModule],
   controllers: [
     GraphController,
     OntologyController,
@@ -50,6 +49,7 @@ import { KnowledgeFactoryModule } from '../knowledge-factory/knowledge-factory.m
     ClustersController,
   ],
   providers: [
+    GraphWorkspaceGuard,
     GraphTraversalService,
     SemanticExpansionService,
     CitationExpansionService,

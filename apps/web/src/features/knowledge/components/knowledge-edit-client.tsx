@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter, useParams } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Send, Archive, Clock, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -15,6 +15,8 @@ import { apiClient } from '@/lib/api/client';
 import { KnowledgeEditor } from './knowledge-editor';
 import { TaxonomySelect } from './taxonomy-select';
 import { StandardsManager } from './standards-manager';
+import { TierSelect } from './tier-select';
+import type { AccessTier } from '../lib/access-tiers';
 
 const DIFFICULTIES = [
   { value: 'beginner', label: 'مبتدی' },
@@ -53,6 +55,8 @@ export function KnowledgeEditClient({ articleId }: Props) {
   const [content, setContent] = useState<Record<string, unknown>>({});
   const [difficulty, setDifficulty] = useState('');
   const [visibility, setVisibility] = useState('public');
+  const [articleStatus, setArticleStatus] = useState<string>('draft');
+  const [accessTier, setAccessTier] = useState<AccessTier>('free');
   const [selectedTaxonomy, setSelectedTaxonomy] = useState<Record<string, string[]>>({
     category: [],
     topic: [],
@@ -89,6 +93,8 @@ export function KnowledgeEditClient({ articleId }: Props) {
       setContent((c as any).doc ?? c);
       setDifficulty(data.data.difficulty ?? '');
       setVisibility(data.data.visibility ?? 'public');
+      setArticleStatus(data.data.status ?? 'draft');
+      setAccessTier((data.data as any).accessTier ?? 'free');
     }
   }, [data]);
 
@@ -117,6 +123,7 @@ export function KnowledgeEditClient({ articleId }: Props) {
       content: Record<string, unknown>;
       difficulty: string;
       visibility: string;
+      accessTier: AccessTier;
       taxonomy: Record<string, string[]>;
       existingTaxonomy: TaxonomyEntry[];
     }) => {
@@ -125,6 +132,7 @@ export function KnowledgeEditClient({ articleId }: Props) {
         content: { title: variables.title.trim(), doc: variables.content },
         difficulty: variables.difficulty || null,
         visibility: variables.visibility,
+        accessTier: variables.accessTier,
       });
 
       const current: Record<string, string[]> = {
@@ -175,10 +183,45 @@ export function KnowledgeEditClient({ articleId }: Props) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['knowledge'] });
       toast.success('مقاله به‌روزرسانی شد');
-      router.push(`/${locale}/knowledge/${articleId}`);
+      router.push(`/${locale}/knowledge-manage/${articleId}`);
     },
     onError: (err: any) => {
       toast.error(err?.message ?? 'خطا در به‌روزرسانی مقاله');
+    },
+  });
+
+  const publishMutation = useMutation({
+    mutationFn: async () => {
+      // Save any pending edits first, then publish.
+      await mutation.mutateAsync({
+        slug,
+        title,
+        content,
+        difficulty,
+        visibility,
+        accessTier,
+        taxonomy: selectedTaxonomy,
+        existingTaxonomy: taxonomyQuery.data?.data ?? [],
+      });
+      return apiClient.post<{ success: boolean; data: any }>(`/knowledge/${articleId}/publish`, {});
+    },
+    onSuccess: (res) => {
+      setArticleStatus(res.data.data?.status ?? 'published');
+      queryClient.invalidateQueries({ queryKey: ['knowledge', articleId] });
+      queryClient.invalidateQueries({ queryKey: ['knowledge'] });
+      toast.success('مقاله منتشر شد');
+    },
+    onError: (err: any) => {
+      toast.error(err?.message ?? 'خطا در انتشار مقاله');
+    },
+  });
+
+  const _archiveMutation = useMutation({
+    mutationFn: () => apiClient.post(`/knowledge/${articleId}/archive`, {}),
+    onSuccess: () => {
+      setArticleStatus('archived');
+      queryClient.invalidateQueries({ queryKey: ['knowledge', articleId] });
+      toast.success('مقاله بایگانی شد');
     },
   });
 
@@ -190,10 +233,40 @@ export function KnowledgeEditClient({ articleId }: Props) {
       content,
       difficulty,
       visibility,
+      accessTier,
       taxonomy: selectedTaxonomy,
       existingTaxonomy: taxonomyQuery.data?.data ?? [],
     });
   }
+
+  const statusBadge = (() => {
+    switch (articleStatus) {
+      case 'published':
+        return {
+          label: 'منتشر شده',
+          cls: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
+          Icon: CheckCircle2,
+        };
+      case 'review':
+        return {
+          label: 'در حال بازبینی',
+          cls: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+          Icon: Clock,
+        };
+      case 'archived':
+        return {
+          label: 'بایگانی شده',
+          cls: 'bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-300',
+          Icon: Archive,
+        };
+      default:
+        return {
+          label: 'پیش‌نویس',
+          cls: 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300',
+          Icon: Clock,
+        };
+    }
+  })();
 
   if (isLoading) {
     return (
@@ -231,18 +304,35 @@ export function KnowledgeEditClient({ articleId }: Props) {
         <PageHeader
           title={t('editArticle')}
           action={
-            <div className="flex gap-3">
+            <div className="flex flex-wrap items-center gap-2">
+              <span
+                className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium ${statusBadge.cls}`}
+              >
+                <statusBadge.Icon className="h-3.5 w-3.5" />
+                {statusBadge.label}
+              </span>
               <Button
                 type="button"
                 variant="outline"
                 onClick={() => router.back()}
-                disabled={mutation.isPending}
+                disabled={mutation.isPending || publishMutation.isPending}
               >
                 {tCommon('cancel')}
               </Button>
-              <Button type="submit" loading={mutation.isPending}>
+              <Button type="submit" variant="outline" loading={mutation.isPending}>
                 {tCommon('save')}
               </Button>
+              {articleStatus !== 'published' && articleStatus !== 'archived' && (
+                <Button
+                  type="button"
+                  onClick={() => publishMutation.mutate()}
+                  loading={publishMutation.isPending}
+                  className="gap-1.5 bg-gradient-to-l from-[hsl(var(--primary))] to-[hsl(var(--accent))] shadow-md shadow-[hsl(var(--primary)/0.2)]"
+                >
+                  <Send className="h-4 w-4" />
+                  انتشار
+                </Button>
+              )}
             </div>
           }
         />
@@ -315,6 +405,23 @@ export function KnowledgeEditClient({ articleId }: Props) {
                     ))}
                   </select>
                 </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">سطح دسترسی</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <TierSelect
+                  value={accessTier}
+                  onChange={setAccessTier}
+                  disabled={mutation.isPending}
+                />
+                <p className="mt-3 text-[11px] leading-relaxed text-[hsl(var(--muted-foreground))]">
+                  مقالات <span className="font-semibold">بسیار ساده</span> بدون ورود در سایت قابل
+                  مشاهده‌اند. سطوح دیگر پس از ورود و بر اساس پلن کاربر قابل دسترسی هستند.
+                </p>
               </CardContent>
             </Card>
 

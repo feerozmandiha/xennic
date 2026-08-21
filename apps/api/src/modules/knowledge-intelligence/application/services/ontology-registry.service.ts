@@ -1,4 +1,4 @@
-import { Injectable, Logger, Inject } from '@nestjs/common';
+import { ForbiddenException, Injectable, Logger, Inject } from '@nestjs/common';
 import type { IOntologyRepository } from '../../domain/interfaces/ontology.repository.interface.js';
 
 @Injectable()
@@ -36,7 +36,11 @@ export class OntologyRegistryService {
     return this.ontologyRepo.findClassByUri(ontologyId, uri);
   }
 
-  async listClasses(ontologyId: string): Promise<any[]> {
-    return this.ontologyRepo.findAllClasses(ontologyId);
+  async listClasses(ontologyId: string, workspaceId: string): Promise<any[]> {
+    const ontology = await this.ontologyRepo.findById(ontologyId);
+    if (ontology && ontology.workspaceId !== workspaceId) {
+      throw new ForbiddenException('Ontology does not belong to the active workspace');
+    }
+    return ontology ? this.ontologyRepo.findAllClasses(ontologyId) : [];
   }
 }

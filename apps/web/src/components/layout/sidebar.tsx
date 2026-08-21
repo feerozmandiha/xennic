@@ -30,7 +30,16 @@ import { useAuthStore } from '@/stores/auth.store';
 import { apiClient } from '@/lib/api/client';
 import { cn } from '@/lib/utils';
 
-const NAV_ITEMS = [
+interface NavigationItem {
+  key: string;
+  route?: string;
+  icon: React.ElementType;
+  adminOnly: boolean;
+  /** Optional override for the i18n label key in `nav` namespace */
+  labelKey?: string;
+}
+
+const NAV_ITEMS: readonly NavigationItem[] = [
   { key: 'search', icon: Search, adminOnly: false },
   { key: 'dashboard', icon: LayoutDashboard, adminOnly: false },
   { key: 'projects', icon: FolderKanban, adminOnly: false },
@@ -40,8 +49,8 @@ const NAV_ITEMS = [
   { key: 'ai', icon: Cpu, adminOnly: false },
   { key: 'vision', icon: ScanEye, adminOnly: false },
   { key: 'energy', icon: FileBarChart, adminOnly: false },
-  { key: 'knowledge', icon: Library, adminOnly: false },
-  { key: 'marketplace', icon: ShoppingCart, adminOnly: false },
+  { key: 'knowledge', route: 'knowledge', icon: Library, adminOnly: false },
+  { key: 'marketplace', route: 'marketplace/manage', icon: ShoppingCart, adminOnly: false },
   { key: 'consultations', icon: MessageSquare, adminOnly: false },
   { key: 'storage', icon: HardDrive, adminOnly: false },
   { key: 'notifications', icon: Bell, adminOnly: false },
@@ -68,23 +77,28 @@ function useUnreadCount() {
 
 function NavItem({
   navKey,
+  route,
   icon: Icon,
   locale,
   pathname,
   onClick,
   badge,
+  labelKey,
 }: {
   navKey: string;
+  route?: string;
   icon: React.ElementType;
   locale: string;
   pathname: string;
   onClick?: () => void;
   badge?: number;
+  labelKey?: string;
 }) {
   const t = useTranslations('nav');
+  const routeSegment = route ?? navKey;
   // admin به route جداگانه می‌رود (خارج از dashboard layout)
-  const href = navKey === 'admin' ? `/${locale}/admin` : `/${locale}/${navKey}`;
-  const isActive = pathname.includes(`/${navKey}`);
+  const href = navKey === 'admin' ? `/${locale}/admin` : `/${locale}/${routeSegment}`;
+  const isActive = pathname.includes(`/${routeSegment}`);
 
   return (
     <Link
@@ -117,7 +131,7 @@ function NavItem({
           </span>
         )}
       </div>
-      <span className="truncate flex-1">{t(navKey as any)}</span>
+      <span className="truncate flex-1">{labelKey ? t(labelKey as any) : t(navKey as any)}</span>
       {isActive && <ChevronLeft className="h-3 w-3 opacity-40 rtl:rotate-180 shrink-0" />}
     </Link>
   );
@@ -162,15 +176,17 @@ function SidebarContent({
 
       {/* ── Nav ──────────────────────────────────────────────── */}
       <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
-        {NAV_ITEMS.filter((item) => !item.adminOnly || isAdmin).map(({ key, icon }) => (
+        {NAV_ITEMS.filter((item) => !item.adminOnly || isAdmin).map((item) => (
           <NavItem
-            key={key}
-            navKey={key}
-            icon={icon}
+            key={item.key}
+            navKey={item.key}
+            route={item.route}
+            icon={item.icon}
             locale={locale}
             pathname={pathname}
             onClick={onNavClick}
-            badge={key === 'notifications' ? unread : undefined}
+            badge={item.key === 'notifications' ? unread : undefined}
+            labelKey={item.labelKey}
           />
         ))}
       </nav>

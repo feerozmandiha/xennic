@@ -45,7 +45,6 @@ import {
   type CredentialType,
 } from '../../ai-provider-management/domain/entities/provider-credential.entity.js';
 import { ProviderQuotaEntity } from '../../ai-provider-management/domain/entities/provider-quota.entity.js';
-import { AesEncryptionService } from '../../ai-provider-management/infrastructure/encryption/aes-encryption.service.js';
 import { CalculationExecutionService } from '../application/services/calculation-execution.service.js';
 import { CertificateService } from '../application/services/certificate.service.js';
 import { AuditService } from '../application/services/audit.service.js';
@@ -555,7 +554,6 @@ describe('AI Validation Integration Certification', () => {
         RoutingEngineService,
         CredentialService,
         { provide: EncryptionService, useValue: testEncryptionService },
-        AesEncryptionService,
         QuotaService,
         ProviderRegistryService,
 

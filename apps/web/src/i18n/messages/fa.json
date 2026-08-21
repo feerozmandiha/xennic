@@ -60,6 +60,7 @@
     "energy": "تحلیل انرژی",
     "consultations": "مشاوره",
     "knowledge": "دانشنامه فنی",
+    "knowledgeManage": "مدیریت دانشنامه",
     "marketplace": "بازارگاه",
     "search": "جستجو",
     "billing": "اشتراک و صورتحساب",
@@ -280,6 +281,73 @@
     "editArticle": "ویرایش مقاله",
     "newArticleDescription": "یک مقاله دانشنامه فنی جدید ایجاد کنید. پس از ایجاد می‌توانید محتوا را ویرایش کنید."
   },
+  "knowledgeAdmin": {
+    "title": "مدیریت مقالات دانشنامه",
+    "subtitle": "{count} مقاله در کل فضاهای کاری",
+    "newArticle": "مقاله جدید",
+    "articleDeleted": "مقاله حذف شد",
+    "articleDeleteFailed": "خطا در حذف مقاله",
+    "deleteTitle": "حذف مقاله",
+    "deleteQuestion": "آیا از حذف این مقاله مطمئن هستید؟",
+    "loadFailed": "دریافت فهرست مقالات ناموفق بود",
+    "loadFailedHint": "ارتباط با سرویس دانشنامه برقرار نشد. دوباره تلاش کنید.",
+    "emptyFiltered": "هیچ مقاله‌ای با این فیلترها پیدا نشد.",
+    "emptyAll": "هنوز مقاله‌ای ثبت نشده است.",
+    "columns": {
+      "title": "عنوان",
+      "status": "وضعیت انتشار",
+      "tier": "سطح دسترسی",
+      "workspace": "فضای کاری",
+      "author": "نویسنده",
+      "publishedAt": "تاریخ انتشار",
+      "views": "بازدید"
+    },
+    "filters": {
+      "search": "جستجو",
+      "searchPlaceholder": "جستجو در عنوان یا slug…",
+      "tier": "سطح دسترسی",
+      "status": "وضعیت",
+      "language": "زبان",
+      "allTiers": "همه سطوح دسترسی",
+      "allStatuses": "همه وضعیت‌ها",
+      "allLanguages": "همه زبان‌ها",
+      "reset": "حذف فیلترها"
+    },
+    "status": {
+      "draft": "پیش‌نویس",
+      "review": "در انتظار بررسی",
+      "published": "منتشرشده",
+      "archived": "آرشیو"
+    },
+    "tier": {
+      "free": "رایگان",
+      "basic": "پایه",
+      "pro": "حرفه‌ای",
+      "enterprise": "سازمانی"
+    },
+    "language": {
+      "fa": "فارسی",
+      "en": "انگلیسی"
+    },
+    "stats": {
+      "totalArticles": "کل مقالات",
+      "acrossWorkspaces": "در همه فضاهای کاری",
+      "published": "منتشرشده",
+      "draftsCount": "{count} پیش‌نویس",
+      "totalViews": "کل بازدیدها",
+      "allTime": "از ابتدا تاکنون",
+      "gatedArticles": "مقالات اشتراکی",
+      "freeCount": "{count} مقاله رایگان",
+      "recentlyUpdated": "آخرین به‌روزرسانی‌ها"
+    },
+    "pagination": {
+      "summary": "صفحه {page} از {totalPages} — {total} مقاله",
+      "perPage": "{count} در هر صفحه",
+      "pageSize": "تعداد در هر صفحه",
+      "previous": "قبلی",
+      "next": "بعدی"
+    }
+  },
   "marketplace": {
     "title": "بازارگاه",
     "description": "مدیریت محصولات، سفارشات و فروشندگان",
@@ -310,7 +378,38 @@
     "update": "به‌روزرسانی",
     "cancel": "انصراف",
     "error": "خطا در انجام عملیات",
-    "selectVendorFirst": "لطفاً ابتدا فروشنده را انتخاب کنید"
+    "selectVendorFirst": "لطفاً ابتدا فروشنده را انتخاب کنید",
+    "storefrontDescription": "کاتالوگ تجهیزات و محصولات مهندسی برق — مرور و مشاهده قیمت‌ها بدون نیاز به ورود",
+    "all": "همه",
+    "specifications": "مشخصات فنی",
+    "loginToBuy": "برای خرید، وارد شوید",
+    "registerNote": "حساب کاربری ندارید؟",
+    "register": "ثبت‌نام کنید",
+    "store": "فروشگاه",
+    "addToCart": "افزودن به سبد خرید",
+    "addedToCart": "به سبد خرید اضافه شد",
+    "viewCart": "مشاهده سبد خرید",
+    "cart": "سبد خرید",
+    "emptyCart": "سبد خرید شما خالی است",
+    "continueShopping": "ادامه خرید",
+    "orderSummary": "خلاصه سفارش",
+    "total": "جمع کل",
+    "proceedToCheckout": "ادامه به تسویه حساب",
+    "reviewOrder": "بازبینی سفارش",
+    "placeOrder": "ثبت نهایی سفارش",
+    "orderSuccess": "سفارش با موفقیت ثبت شد",
+    "orderId": "شماره سفارش",
+    "viewOrders": "مشاهده سفارشات",
+    "noPaymentYet": "پرداخت آنلاین در فاز بعدی فعال می‌شود",
+    "viewStore": "مشاهده فروشگاه",
+    "linkedFromCalc": "مرتبط با محاسبه",
+    "clearFilters": "پاک کردن فیلترها",
+    "payOnline": "پرداخت آنلاین",
+    "payTestMode": "درگاه پرداخت در حالت آزمایشی است — تراکنش واقعی انجام نمی‌شود",
+    "paymentSuccess": "پرداخت با موفقیت انجام شد",
+    "paymentSuccessNote": "سفارش شما پرداخت و تأیید شد",
+    "paymentFailed": "پرداخت ناموفق بود",
+    "paymentFailedNote": "می‌توانید از بخش سفارشات دوباره اقدام به پرداخت کنید"
   },
   "errors": {
     "required": "این فیلد الزامی است",

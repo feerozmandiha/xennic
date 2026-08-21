@@ -8,6 +8,7 @@ import { ZarinpalGateway } from './infrastructure/gateways/zarinpal.gateway.js';
 import { SubscriptionModule } from '../subscription/subscription.module.js';
 import { WorkspaceModule } from '../workspace/workspace.module.js';
 import { RbacModule } from '../rbac/rbac.module.js';
+import { PlanEntitlementService } from './application/services/plan-entitlement.service.js';
 
 @Module({
   imports: [SubscriptionModule, WorkspaceModule, RbacModule],
@@ -15,6 +16,7 @@ import { RbacModule } from '../rbac/rbac.module.js';
   providers: [
     BillingService,
     SubscriptionBillingService,
+    PlanEntitlementService,
     {
       provide: 'IBillingRepository',
       useClass: BillingRepository,
@@ -24,6 +26,6 @@ import { RbacModule } from '../rbac/rbac.module.js';
       useClass: ZarinpalGateway,
     },
   ],
-  exports: [BillingService, SubscriptionBillingService],
+  exports: [BillingService, SubscriptionBillingService, PlanEntitlementService],
 })
 export class BillingModule {}
