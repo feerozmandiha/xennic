@@ -1,16 +1,12 @@
 'use client';
 
+import { API_BASE } from '@/lib/api/client';
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowRight, Loader2, Shield } from 'lucide-react';
 import { useAuthStore } from '@/stores/auth.store';
 import { CmsEditor } from '@/features/cms/components/cms-editor';
-
-const API_BASE =
-  typeof window !== 'undefined'
-    ? `${process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000'}/api/v1`
-    : 'http://localhost:3000/api/v1';
 
 export default function AdminCmsPage() {
   const router = useRouter();

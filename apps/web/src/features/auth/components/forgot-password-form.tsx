@@ -1,16 +1,12 @@
 'use client';
 
+import { API_BASE } from '@/lib/api/client';
 import { useState } from 'react';
 import { useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { KeyRound, ArrowLeft, CheckCircle2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-
-const API_BASE =
-  typeof window !== 'undefined'
-    ? `${process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000'}/api/v1`
-    : `${process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000'}/api/v1`;
 
 export function ForgotPasswordForm() {
   const t = useTranslations('auth');

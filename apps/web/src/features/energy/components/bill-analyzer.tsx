@@ -1,5 +1,6 @@
 'use client';
 
+import { API_BASE } from '@/lib/api/client';
 import { useState, useRef, useCallback } from 'react';
 import {
   Upload,
@@ -23,11 +24,6 @@ import { useToast } from '@/stores/toast.store';
 import { cn } from '@/lib/utils';
 
 // NestJS proxy → Python 8001 (CORS-safe)
-const API_BASE =
-  typeof window !== 'undefined'
-    ? `${process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000'}/api/v1`
-    : 'http://localhost:3000/api/v1';
-
 // ─────────────────────────────────────────────────────────────
 // helpers
 // ─────────────────────────────────────────────────────────────

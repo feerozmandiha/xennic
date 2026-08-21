@@ -4,10 +4,9 @@
  * token و workspace از localStorage می‌خواند
  */
 
-const API_BASE =
-  typeof window !== 'undefined'
-    ? `${process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000'}/api/v1`
-    : `${process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000'}/api/v1`;
+const DEFAULT_API_ORIGIN = 'http://localhost:3000';
+
+export const API_BASE = `${process.env.NEXT_PUBLIC_API_URL ?? DEFAULT_API_ORIGIN}/api/v1`;
 
 // ── Keys ثابت برای localStorage ───────────────────────────────────────────────
 const TOKEN_KEY = 'xennic_token';

@@ -25,7 +25,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { useAuthStore } from '@/stores/auth.store';
 import { useToast } from '@/stores/toast.store';
-import { apiClient } from '@/lib/api/client';
+import { API_BASE, apiClient } from '@/lib/api/client';
 import { cn } from '@/lib/utils';
 import { detectCategories, storeLink } from '@/lib/marketplace';
 
@@ -383,11 +383,6 @@ function WelcomeScreen({
 // ─────────────────────────────────────────────────────────────
 // MAIN COMPONENT
 // ─────────────────────────────────────────────────────────────
-
-const API_BASE =
-  typeof window !== 'undefined'
-    ? `${process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000'}/api/v1`
-    : `http://localhost:3000/api/v1`;
 
 export function AiChatClient({
   initialPrompt,

@@ -1,5 +1,6 @@
 'use client';
 
+import { API_BASE } from '@/lib/api/client';
 import { useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
@@ -9,11 +10,6 @@ import { Button } from '@/components/ui/button';
 import { useAuthStore } from '@/stores/auth.store';
 import { useToast } from '@/stores/toast.store';
 import { handlePostLogin } from '@/features/auth/hooks/use-post-login';
-
-const API_BASE =
-  typeof window !== 'undefined'
-    ? `${process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000'}/api/v1`
-    : `${process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000'}/api/v1`;
 
 export function LoginForm({
   redirectTo,
