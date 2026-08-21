@@ -184,6 +184,32 @@ cd apps/api && npx jest --testPathPattern "modules/knowledge/"   # 158 tests
 pnpm validate:arch                                                # must exit 0
 ```
 
+## Marketplace Module — Admin Console & Product Translations
+
+**Location:** `apps/api/src/modules/marketplace/` · `apps/web/src/features/admin/marketplace/`
+**DB tables:** `vendors`, `products`, `product_translations` (all pre-existing in `prisma/schema.prisma` — no migration)
+**Key classes:** `ProductTranslation` (value object), `ProductEntity`, `ProductService`, `VendorService`, `MarketplaceRepository`, `marketplace.mapper.ts`
+**Docs:** `docs/marketplace/marketplace-admin-and-product-translations.md`
+
+### Architecture
+
+- `ProductTranslation` owns every locale concern: supported set (`fa`, `en`), normalization (`fa-IR` → `fa`), title/description validation, and the fallback chain requested → `fa` → `en` → first available
+- Strict path (`create`/`collection`) validates user input; lenient path (`fromPersistence`) silently skips malformed DB rows so a bad legacy locale can never break a read
+- Translations are a child collection of the `products` aggregate — mutated only through `ProductEntity`; `saveProduct` mirrors the entity set onto `product_translations` (absent locales deleted, rest upserted)
+- Controllers return mapper output, **never** raw entities — domain entities keep state in private fields and would serialize as `_sku`/`_price`
+- Vendor deletion is guarded: `VendorService.remove` throws `409` while the vendor still owns products
+
+### Route ordering caveat
+
+In `products.controller.ts`, `@Get('suggest')` **must** stay declared before `@Get(':id')` or the wildcard swallows it.
+
+### Verification
+
+```bash
+cd apps/api && npx jest --testPathPattern "modules/marketplace"   # 151 tests
+pnpm validate:arch                                                # must exit 0
+```
+
 ## Semantic Integration Module
 
 **Phase K2** — Event-driven integration layer connecting Knowledge Factory, Knowledge Intelligence, AI Runtime, Workspace, RBAC, Storage, and Search.

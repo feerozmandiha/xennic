@@ -1,6 +1,40 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsOptional, IsString, IsNumber, IsEnum, IsObject } from 'class-validator';
+import {
+  ArrayMaxSize,
+  IsArray,
+  IsEnum,
+  IsIn,
+  IsNumber,
+  IsObject,
+  IsOptional,
+  IsString,
+  MaxLength,
+  ValidateNested,
+} from 'class-validator';
 import { Type } from 'class-transformer';
+import { SUPPORTED_PRODUCT_LOCALES } from '../../domain/value-objects/product-translation.vo.js';
+
+/** Body of `PUT /products/:id/translations/:locale` — locale comes from the path. */
+export class UpsertProductTranslationDto {
+  @ApiProperty({ example: 'کابل مسی ۳۵ میلی‌متر مربع' })
+  @IsString()
+  @MaxLength(200)
+  title!: string;
+
+  @ApiPropertyOptional({ example: 'کابل مسی تک‌رشته با عایق XLPE' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(4000)
+  description?: string;
+}
+
+/** Inline translation entry used by product create/update payloads. */
+export class ProductTranslationDto extends UpsertProductTranslationDto {
+  @ApiProperty({ enum: SUPPORTED_PRODUCT_LOCALES, example: 'fa' })
+  @IsString()
+  @IsIn(SUPPORTED_PRODUCT_LOCALES as unknown as string[])
+  locale!: string;
+}
 
 export class CreateProductDto {
   @ApiProperty()
@@ -37,6 +71,21 @@ export class CreateProductDto {
   @IsOptional()
   @IsString()
   currency?: string;
+
+  @ApiPropertyOptional({
+    type: [ProductTranslationDto],
+    description: 'ترجمه‌های محصول (fa / en) — حداکثر یک ورودی برای هر زبان',
+    example: [
+      { locale: 'fa', title: 'کابل مسی ۳۵', description: 'عایق XLPE' },
+      { locale: 'en', title: 'Copper cable 35mm²', description: 'XLPE insulated' },
+    ],
+  })
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(SUPPORTED_PRODUCT_LOCALES.length)
+  @ValidateNested({ each: true })
+  @Type(() => ProductTranslationDto)
+  translations?: ProductTranslationDto[];
 }
 
 export class UpdateProductDto {
@@ -70,9 +119,25 @@ export class UpdateProductDto {
   @IsOptional()
   @IsEnum(['active', 'inactive', 'archived'] as const)
   status?: 'active' | 'inactive' | 'archived';
+
+  @ApiPropertyOptional({
+    type: [ProductTranslationDto],
+    description: 'در صورت ارسال، کل مجموعه ترجمه‌ها جایگزین می‌شود',
+  })
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(SUPPORTED_PRODUCT_LOCALES.length)
+  @ValidateNested({ each: true })
+  @Type(() => ProductTranslationDto)
+  translations?: ProductTranslationDto[];
 }
 
 export class ProductSearchQueryDto {
+  @ApiPropertyOptional({ enum: SUPPORTED_PRODUCT_LOCALES, default: 'fa' })
+  @IsOptional()
+  @IsIn(SUPPORTED_PRODUCT_LOCALES as unknown as string[])
+  locale?: string;
+
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
@@ -127,19 +192,4 @@ export class SuggestProductsDto {
   @IsOptional()
   @IsString()
   limit?: string;
-}
-
-export class ProductTranslationDto {
-  @ApiProperty()
-  @IsString()
-  locale!: string;
-
-  @ApiProperty()
-  @IsString()
-  title!: string;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  description?: string;
 }

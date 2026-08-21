@@ -15,6 +15,7 @@ import type {
 } from '../../domain/interfaces/marketplace.repository.interface.js';
 import { VendorEntity } from '../../domain/entities/vendor.entity.js';
 import { ProductEntity } from '../../domain/entities/product.entity.js';
+import { ProductTranslation } from '../../domain/value-objects/product-translation.vo.js';
 import { OrderEntity } from '../../domain/entities/order.entity.js';
 import type { OrderItemData } from '../../domain/entities/order.entity.js';
 
@@ -102,22 +103,44 @@ export class MarketplaceRepository implements IMarketplaceRepository {
     });
   }
 
+  async countVendorProducts(vendorId: string, includeDeleted = false): Promise<number> {
+    return prisma.products.count({
+      where: includeDeleted ? { vendor_id: vendorId } : { vendor_id: vendorId, deleted_at: null },
+    });
+  }
+
+  async deleteVendor(id: string): Promise<void> {
+    await prisma.vendors.delete({ where: { id } });
+  }
+
   // ── Products ─────────────────────────────────────
 
   async findProductById(id: string): Promise<ProductEntity | null> {
-    const row = await prisma.products.findUnique({ where: { id } });
+    const row = await prisma.products.findUnique({
+      where: { id },
+      include: { translations: true },
+    });
     return row ? this._productToEntity(row) : null;
   }
 
   async findProductBySku(sku: string): Promise<ProductEntity | null> {
-    const row = await prisma.products.findUnique({ where: { sku } });
+    const row = await prisma.products.findUnique({
+      where: { sku },
+      include: { translations: true },
+    });
     return row ? this._productToEntity(row) : null;
   }
 
   async searchProducts(params: ProductSearchParams): Promise<SearchResult<ProductEntity>> {
     const where: any = { deleted_at: null };
     if (params.query) {
-      where.OR = [{ sku: { contains: params.query, mode: 'insensitive' } }];
+      where.OR = [
+        { sku: { contains: params.query, mode: 'insensitive' } },
+        { translations: { some: { title: { contains: params.query, mode: 'insensitive' } } } },
+        {
+          translations: { some: { description: { contains: params.query, mode: 'insensitive' } } },
+        },
+      ];
     }
     if (params.vendorId) where.vendor_id = params.vendorId;
     if (params.type) where.type = params.type;
@@ -130,6 +153,7 @@ export class MarketplaceRepository implements IMarketplaceRepository {
         skip: params.offset ?? 0,
         take: params.limit ?? 20,
         orderBy: { created_at: 'desc' },
+        include: { translations: true },
       }),
       prisma.products.count({ where }),
     ]);
@@ -150,6 +174,7 @@ export class MarketplaceRepository implements IMarketplaceRepository {
         skip: params.offset ?? 0,
         take: params.limit ?? 10,
         orderBy: { created_at: 'desc' },
+        include: { translations: true },
       }),
       prisma.products.count({ where }),
     ]);
@@ -192,6 +217,8 @@ export class MarketplaceRepository implements IMarketplaceRepository {
         updated_at: entity.updatedAt,
       },
     });
+
+    await this._syncProductTranslations(entity);
   }
 
   async deleteProduct(id: string): Promise<void> {
@@ -199,6 +226,61 @@ export class MarketplaceRepository implements IMarketplaceRepository {
       where: { id },
       data: { deleted_at: new Date(), status: 'archived' },
     });
+  }
+
+  // ── Product translations (fa / en) ────────────────
+
+  async findProductTranslations(productId: string): Promise<ProductTranslation[]> {
+    const rows = await prisma.product_translations.findMany({
+      where: { product_id: productId },
+    });
+    return ProductTranslation.fromPersistence(
+      rows.map((r) => ({ locale: r.locale, title: r.title, description: r.description })),
+    );
+  }
+
+  async upsertProductTranslation(
+    productId: string,
+    translation: ProductTranslation,
+  ): Promise<void> {
+    await prisma.product_translations.upsert({
+      where: { product_id_locale: { product_id: productId, locale: translation.locale } },
+      update: { title: translation.title, description: translation.description },
+      create: {
+        id: randomUUID(),
+        product_id: productId,
+        locale: translation.locale,
+        title: translation.title,
+        description: translation.description,
+      },
+    });
+  }
+
+  async deleteProductTranslation(productId: string, locale: string): Promise<boolean> {
+    const result = await prisma.product_translations.deleteMany({
+      where: { product_id: productId, locale },
+    });
+    return result.count > 0;
+  }
+
+  /**
+   * Mirrors the entity translation set onto `product_translations`:
+   * locales absent from the entity are removed, the rest are upserted.
+   */
+  private async _syncProductTranslations(entity: ProductEntity): Promise<void> {
+    const translations = entity.translations;
+    const locales = translations.map((t) => t.locale);
+
+    await prisma.product_translations.deleteMany({
+      where:
+        locales.length > 0
+          ? { product_id: entity.id, locale: { notIn: locales } }
+          : { product_id: entity.id },
+    });
+
+    for (const translation of translations) {
+      await this.upsertProductTranslation(entity.id, translation);
+    }
   }
 
   // ── Orders ────────────────────────────────────────
@@ -548,6 +630,11 @@ export class MarketplaceRepository implements IMarketplaceRepository {
       createdAt: row.created_at,
       updatedAt: row.updated_at,
       deletedAt: row.deleted_at ?? null,
+      translations: (row.translations ?? []).map((t: any) => ({
+        locale: t.locale,
+        title: t.title,
+        description: t.description ?? null,
+      })),
     });
   }
 

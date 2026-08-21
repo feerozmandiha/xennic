@@ -1,6 +1,7 @@
 import type { VendorEntity } from '../entities/vendor.entity.js';
 import type { ProductEntity } from '../entities/product.entity.js';
 import type { OrderEntity } from '../entities/order.entity.js';
+import type { ProductTranslation } from '../value-objects/product-translation.vo.js';
 
 export interface VendorSearchParams {
   query?: string;
@@ -92,6 +93,8 @@ export interface IMarketplaceRepository {
   findVendorBySlug(slug: string): Promise<VendorEntity | null>;
   searchVendors(params: VendorSearchParams): Promise<SearchResult<VendorEntity>>;
   saveVendor(entity: VendorEntity): Promise<void>;
+  countVendorProducts(vendorId: string, includeDeleted?: boolean): Promise<number>;
+  deleteVendor(id: string): Promise<void>;
 
   // Products
   findProductById(id: string): Promise<ProductEntity | null>;
@@ -105,6 +108,11 @@ export interface IMarketplaceRepository {
   }): Promise<SearchResult<ProductEntity>>;
   saveProduct(entity: ProductEntity): Promise<void>;
   deleteProduct(id: string): Promise<void>;
+
+  // Product translations (fa / en)
+  findProductTranslations(productId: string): Promise<ProductTranslation[]>;
+  upsertProductTranslation(productId: string, translation: ProductTranslation): Promise<void>;
+  deleteProductTranslation(productId: string, locale: string): Promise<boolean>;
 
   // Orders
   findOrderById(id: string): Promise<OrderEntity | null>;

@@ -1,7 +1,9 @@
-import { Injectable, Inject, NotFoundException } from '@nestjs/common';
+import { Injectable, Inject, ConflictException, NotFoundException } from '@nestjs/common';
 import type { IMarketplaceRepository } from '../../domain/interfaces/marketplace.repository.interface.js';
 import { ProductEntity } from '../../domain/entities/product.entity.js';
+import { ProductTranslation } from '../../domain/value-objects/product-translation.vo.js';
 import type { CreateProductDto, UpdateProductDto } from '../../presentation/dtos/product.dto.js';
+import type { UpsertProductTranslationDto } from '../../presentation/dtos/product.dto.js';
 import { calcCategory } from '../calc-category.map.js';
 
 @Injectable()
@@ -43,6 +45,14 @@ export class ProductService {
   }
 
   async create(dto: CreateProductDto): Promise<ProductEntity> {
+    const vendor = await this.repo.findVendorById(dto.vendorId);
+    if (!vendor) throw new NotFoundException('Vendor not found');
+
+    if (dto.sku) {
+      const duplicate = await this.repo.findProductBySku(dto.sku);
+      if (duplicate) throw new ConflictException('Product SKU already exists');
+    }
+
     const entity = ProductEntity.create({
       vendorId: dto.vendorId,
       type: dto.type,
@@ -51,6 +61,7 @@ export class ProductService {
       sku: dto.sku,
       price: dto.price,
       currency: dto.currency,
+      translations: dto.translations,
     });
     await this.repo.saveProduct(entity);
     return entity;
@@ -58,9 +69,58 @@ export class ProductService {
 
   async update(id: string, dto: UpdateProductDto): Promise<ProductEntity> {
     const entity = await this.findById(id);
-    entity.update(dto);
+    const { translations, ...attributes } = dto;
+
+    entity.update(attributes);
+    // ارسال آرایه ترجمه‌ها یعنی «جایگزینی کامل مجموعه ترجمه‌ها»
+    if (translations !== undefined) entity.replaceTranslations(translations);
+
     await this.repo.saveProduct(entity);
     return entity;
+  }
+
+  // ── Translations (fa / en) ───────────────────────────────────────────────
+
+  async listTranslations(productId: string): Promise<ProductTranslation[]> {
+    const entity = await this.findById(productId);
+    return entity.translations;
+  }
+
+  async getTranslation(productId: string, locale: string): Promise<ProductTranslation> {
+    const normalized = ProductTranslation.normalizeLocale(locale);
+    const entity = await this.findById(productId);
+
+    const translation = entity.findTranslation(normalized);
+    if (!translation) {
+      throw new NotFoundException(`Translation "${normalized}" not found for this product`);
+    }
+    return translation;
+  }
+
+  async upsertTranslation(
+    productId: string,
+    locale: string,
+    dto: UpsertProductTranslationDto,
+  ): Promise<ProductTranslation> {
+    const entity = await this.findById(productId);
+    const translation = entity.upsertTranslation({
+      locale,
+      title: dto.title,
+      description: dto.description,
+    });
+
+    await this.repo.upsertProductTranslation(entity.id, translation);
+    return translation;
+  }
+
+  async removeTranslation(productId: string, locale: string): Promise<void> {
+    const normalized = ProductTranslation.normalizeLocale(locale);
+    const entity = await this.findById(productId);
+
+    if (!entity.removeTranslation(normalized)) {
+      throw new NotFoundException(`Translation "${normalized}" not found for this product`);
+    }
+    await this.repo.deleteProductTranslation(entity.id, normalized);
   }
 
   async remove(id: string): Promise<void> {
