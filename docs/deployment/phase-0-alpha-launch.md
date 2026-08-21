@@ -188,13 +188,27 @@ docker exec xennic-prod-postgres pg_dump -U xennic xennic > backup_$(date +%F).s
 docker compose -f infrastructure/docker/compose/production/docker-compose.yml down
 ```
 
-## 8. فعال‌سازی HTTPS (گام بعدی)
+## 8. HTTPS و سخت‌سازی Nginx
 
-1. گواهی Let's Encrypt را بگیرید (مثلاً با certbot) و فایل‌های `fullchain.pem` و
-   `privkey.pem` را در `infrastructure/docker/compose/production/certs/` بگذارید.
-2. بلاک `server { listen 443 ssl; ... }` را در
-   `infrastructure/docker/nginx/nginx.conf` فعال کنید.
-3. `docker compose ... restart nginx`.
+پیکربندی production Nginx به‌صورت پیش‌فرض HTTPS، ریدایرکت HTTP به HTTPS، headerهای
+امنیتی و rate-limit را فعال می‌کند. قبل از بالا آوردن `nginx` در production، گواهی
+Let's Encrypt یا گواهی معتبر سازمانی را آماده کنید و فایل‌های زیر را در مسیر
+`infrastructure/docker/compose/production/certs/` قرار دهید:
+
+- `fullchain.pem`
+- `privkey.pem`
+
+سپس صحت پیکربندی و راه‌اندازی Nginx را بررسی کنید:
+
+```bash
+docker compose --env-file infrastructure/docker/compose/production/.env \
+  -f infrastructure/docker/compose/production/docker-compose.yml \
+  run --rm nginx nginx -t
+
+docker compose --env-file infrastructure/docker/compose/production/.env \
+  -f infrastructure/docker/compose/production/docker-compose.yml \
+  up -d nginx
+```
 
 ## 9. محدودیت‌های شناخته‌شده فاز آلفا
 
