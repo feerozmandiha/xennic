@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from typing import Literal
 
+from pydantic import AliasChoices, Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -11,6 +12,7 @@ class Settings(BaseSettings):
         env_file=".env",
         env_file_encoding="utf-8",
         extra="ignore",
+        populate_by_name=True,
     )
 
     # Service
@@ -30,6 +32,16 @@ class Settings(BaseSettings):
     openai_api_key: str = ""
     anthropic_api_key: str = ""
 
+    # HTTP / CORS
+    # Prefer VISION_CORS_ORIGINS when the vision-service needs a stricter or
+    # different allowlist than the main API. CORS_ORIGINS is kept as a shared
+    # fallback for Docker Compose deployments.
+    cors_origins: str = Field(
+        default="http://localhost:3000,http://localhost:3001",
+        validation_alias=AliasChoices("VISION_CORS_ORIGINS", "CORS_ORIGINS"),
+    )
+    cors_allow_credentials: bool = True
+
     # Limits
     max_image_size_mb: int = 20
     allowed_extensions: str = "jpg,jpeg,png,bmp,tiff,pdf"
@@ -38,7 +50,26 @@ class Settings(BaseSettings):
     max_pipeline_parallelism: int = 4
     enable_gpu: bool = False
 
+    @model_validator(mode="after")
+    def validate_cors_configuration(self) -> "Settings":
+        origins = self.cors_origins_list
+        if not origins:
+            raise ValueError("CORS origins must contain at least one origin")
+        if "*" in origins and self.cors_allow_credentials:
+            raise ValueError(
+                "CORS wildcard origins are not allowed when credentials are enabled"
+            )
+        return self
+
     # Derived
+    @property
+    def cors_origins_list(self) -> list[str]:
+        return [
+            origin.strip()
+            for origin in self.cors_origins.split(",")
+            if origin.strip()
+        ]
+
     @property
     def allowed_extensions_list(self) -> list[str]:
         return [e.strip().lower() for e in self.allowed_extensions.split(",")]
