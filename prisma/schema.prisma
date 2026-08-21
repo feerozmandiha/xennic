@@ -1093,6 +1093,7 @@ model products {
 
   vendor       vendors               @relation(fields: [vendor_id], references: [id])
   translations product_translations[]
+  images       product_images[]
   order_items  order_items[]
 
   @@index([vendor_id])
@@ -1111,6 +1112,26 @@ model product_translations {
   product     products @relation(fields: [product_id], references: [id], onDelete: Cascade)
 
   @@unique([product_id, locale])
+}
+
+model product_images {
+  id         String   @id @default(uuid())
+  product_id String
+  url        String
+  alt_fa     String?
+  alt_en     String?
+  is_primary Boolean  @default(false)  // تصویر شاخص — حداکثر یکی برای هر محصول
+  sort_order Int      @default(0)      // ترتیب نمایش در آلبوم (۰ به بالا)
+  mime_type  String?
+  file_size  Int?
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  product    products @relation(fields: [product_id], references: [id], onDelete: Cascade)
+
+  @@unique([product_id, url])
+  @@index([product_id])
+  @@index([product_id, sort_order])
 }
 
 model orders {

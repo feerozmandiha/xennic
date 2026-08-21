@@ -6,6 +6,8 @@ import { useQuery, useMutation } from '@tanstack/react-query';
 import { useAuthStore } from '@/stores/auth.store';
 import { useToast } from '@/stores/toast.store';
 import { apiClient } from '@/lib/api/client';
+import { ProductImageEditor } from './product-image-editor';
+import { normalizeImages, type ProductImage } from '../lib/product-images';
 
 const ENGINEERING_CATEGORIES = [
   { value: '', label: '—' },
@@ -40,6 +42,7 @@ export function ProductForm({ open, onClose, product }: ProductFormProps) {
   const [sku, setSku] = useState(product?.sku ?? '');
   const [price, setPrice] = useState(String(product?.price ?? ''));
   const [currency, setCurrency] = useState(product?.currency ?? 'USD');
+  const [images, setImages] = useState<ProductImage[]>(normalizeImages(product?.images ?? []));
   const [specsJson, setSpecsJson] = useState(
     product?.specifications ? JSON.stringify(product.specifications, null, 2) : '',
   );
@@ -88,13 +91,23 @@ export function ProductForm({ open, onClose, product }: ProductFormProps) {
       price: Number(price),
       currency,
       specifications,
+      images: normalizeImages(images).map((image) => ({
+        id: image.id,
+        url: image.url,
+        altFa: image.altFa?.trim() ? image.altFa.trim() : undefined,
+        altEn: image.altEn?.trim() ? image.altEn.trim() : undefined,
+        isPrimary: image.isPrimary,
+        sortOrder: image.sortOrder,
+        mimeType: image.mimeType ?? undefined,
+        fileSize: image.fileSize ?? undefined,
+      })),
     });
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative z-10 w-full max-w-lg bg-[hsl(var(--card))] rounded-[var(--radius-xl)] border border-[hsl(var(--border))] shadow-lg p-6 max-h-[90vh] overflow-y-auto">
+      <div className="relative z-10 w-full max-w-2xl bg-[hsl(var(--card))] rounded-[var(--radius-xl)] border border-[hsl(var(--border))] shadow-lg p-6 max-h-[90vh] overflow-y-auto">
         <h2 className="text-lg font-semibold mb-6">
           {product ? t('editProduct') : t('newProduct')}
         </h2>
@@ -179,6 +192,12 @@ export function ProductForm({ open, onClose, product }: ProductFormProps) {
               </select>
             </div>
           </div>
+
+          <ProductImageEditor
+            value={images}
+            onChange={setImages}
+            disabled={createMutation.isPending}
+          />
 
           <div>
             <label className="block text-sm font-medium mb-1">

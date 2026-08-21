@@ -1,0 +1,120 @@
+import { apiClient } from '@/lib/api/client';
+import type {
+  AdminProduct,
+  AdminVendor,
+  Paginated,
+  ProductImage,
+  ProductLocale,
+  ProductStatus,
+  ProductTranslation,
+  VendorStatus,
+} from './types';
+
+export interface ProductFilters {
+  q?: string;
+  vendorId?: string;
+  category?: string;
+  status?: ProductStatus | '';
+  locale?: ProductLocale;
+  limit?: number;
+}
+
+function buildQuery(params: Record<string, string | number | undefined | null>): string {
+  const search = new URLSearchParams();
+  for (const [key, value] of Object.entries(params)) {
+    if (value === undefined || value === null || value === '') continue;
+    search.set(key, String(value));
+  }
+  const qs = search.toString();
+  return qs ? `?${qs}` : '';
+}
+
+export interface ProductPayload {
+  vendorId: string;
+  type: string;
+  category?: string;
+  sku?: string;
+  price: number;
+  currency: string;
+  specifications?: Record<string, unknown>;
+  translations?: { locale: ProductLocale; title: string; description?: string }[];
+  images?: ProductImage[];
+}
+
+export type ProductUpdatePayload = Partial<Omit<ProductPayload, 'vendorId'>> & {
+  status?: ProductStatus;
+};
+
+export const marketplaceAdminApi = {
+  // ── Products ───────────────────────────────────────────────────────────
+  listProducts: (filters: ProductFilters = {}) =>
+    apiClient.get<Paginated<AdminProduct>>(
+      `/products${buildQuery({
+        q: filters.q,
+        vendorId: filters.vendorId,
+        category: filters.category,
+        status: filters.status,
+        locale: filters.locale,
+        limit: filters.limit ?? 100,
+      })}`,
+    ),
+
+  createProduct: (body: ProductPayload) => apiClient.post<AdminProduct>('/products', body),
+
+  updateProduct: (id: string, body: ProductUpdatePayload) =>
+    apiClient.patch<AdminProduct>(`/products/${id}`, body),
+
+  deleteProduct: (id: string) => apiClient.delete<{ success: boolean }>(`/products/${id}`),
+
+  // ── Product translations (fa / en) ─────────────────────────────────────
+  listTranslations: (id: string) =>
+    apiClient.get<ProductTranslation[]>(`/products/${id}/translations`),
+
+  upsertTranslation: (
+    id: string,
+    locale: ProductLocale,
+    body: { title: string; description?: string },
+  ) => apiClient.put<ProductTranslation>(`/products/${id}/translations/${locale}`, body),
+
+  deleteTranslation: (id: string, locale: ProductLocale) =>
+    apiClient.delete<{ success: boolean }>(`/products/${id}/translations/${locale}`),
+
+  // ── Product images (album) ─────────────────────────────────────────────
+  listImages: (id: string) => apiClient.get<ProductImage[]>(`/products/${id}/images`),
+
+  addImage: (id: string, body: ProductImage) =>
+    apiClient.post<ProductImage>(`/products/${id}/images`, body),
+
+  updateImage: (id: string, imageId: string, body: Partial<ProductImage>) =>
+    apiClient.patch<ProductImage>(`/products/${id}/images/${imageId}`, body),
+
+  deleteImage: (id: string, imageId: string) =>
+    apiClient.delete<{ success: boolean }>(`/products/${id}/images/${imageId}`),
+
+  setPrimaryImage: (id: string, imageId: string) =>
+    apiClient.put<ProductImage>(`/products/${id}/images/${imageId}/primary`, {}),
+
+  reorderImages: (id: string, imageIds: string[]) =>
+    apiClient.put<ProductImage[]>(`/products/${id}/images/order`, { imageIds }),
+
+  // ── Vendors ────────────────────────────────────────────────────────────
+  listVendors: (q?: string) =>
+    apiClient.get<Paginated<AdminVendor>>(`/vendors${buildQuery({ q, limit: 200 })}`),
+
+  createVendor: (body: { name: string; slug?: string }) =>
+    apiClient.post<AdminVendor>('/vendors', body),
+
+  updateVendor: (id: string, body: { name?: string; status?: VendorStatus }) =>
+    apiClient.patch<AdminVendor>(`/vendors/${id}`, body),
+
+  deleteVendor: (id: string) => apiClient.delete<{ success: boolean }>(`/vendors/${id}`),
+};
+
+/** پیام خطای قابل‌نمایش از پاسخ API. */
+export function apiErrorMessage(error: unknown, fallback: string): string {
+  if (error && typeof error === 'object' && 'message' in error) {
+    const message = (error as { message?: string }).message;
+    if (message) return message;
+  }
+  return fallback;
+}

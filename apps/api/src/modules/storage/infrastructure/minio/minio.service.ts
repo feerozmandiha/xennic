@@ -3,14 +3,73 @@ import { Client as MinioClient, CopyDestinationOptions, CopySourceOptions } from
 import type { FileBucket } from '../../domain/entities/file.entity.js';
 
 /**
+ * محل اتصال MinIO از روی متغیرهای محیطی.
+ *
+ * `MINIO_ENDPOINT` می‌تواند هم `host` باشد و هم `host:port`؛ اگر پورت داخل آن
+ * نیامده باشد از `MINIO_PORT` استفاده می‌شود (شکل پیش‌فرض `.env.example`) و در
+ * نهایت ۹۰۰۰.
+ */
+export function resolveMinioEndpoint(env: NodeJS.ProcessEnv = process.env): {
+  host: string;
+  port: number;
+} {
+  const [rawHost, rawPort] = (env.MINIO_ENDPOINT ?? 'localhost').split(':');
+  const host = rawHost?.trim() || 'localhost';
+
+  const port = Number.parseInt(rawPort ?? env.MINIO_PORT ?? '9000', 10);
+
+  return { host, port: Number.isFinite(port) && port > 0 ? port : 9000 };
+}
+
+/**
  * MinIO Service — ارتباط مستقیم با MinIO object storage
  *
  * Connection via env vars:
- *   MINIO_ENDPOINT   (default: localhost:9000)
+ *   MINIO_ENDPOINT   (host یا host:port — default: localhost)
+ *   MINIO_PORT       (default: 9000 — وقتی پورت داخل endpoint نیامده باشد)
  *   MINIO_ACCESS_KEY (default: MINIO_CREDENTIALS_FROM_ENV)
  *   MINIO_SECRET_KEY (default: MINIO_CREDENTIALS_FROM_ENV)
  *   MINIO_USE_SSL    (default: false)
  */
+/** خطاهای اعتبارسنجی MinIO — یعنی سرویس بالاست ولی کلیدها پذیرفته نشدند. */
+const CREDENTIAL_ERROR_CODES = [
+  'InvalidAccessKeyId',
+  'SignatureDoesNotMatch',
+  'AccessDenied',
+  'InvalidRequest',
+];
+
+/** خطاهای شبکه‌ای — یعنی اصلاً به MinIO نمی‌رسیم. */
+const CONNECTION_ERROR_CODES = [
+  'ECONNREFUSED',
+  'ENOTFOUND',
+  'EHOSTUNREACH',
+  'ETIMEDOUT',
+  'ECONNRESET',
+  'EAI_AGAIN',
+];
+
+/**
+ * پیام قابل‌فهم برای خطای MinIO.
+ *
+ * تفکیک «در دسترس نبودن» از «رد شدن کلیدها» مهم است، وگرنه یک تنظیم اشتباه در
+ * `MINIO_ACCESS_KEY` هم به‌صورت «سرویس بالا نیست» گزارش می‌شود و ساعت‌ها دنبال
+ * کانتینر خاموش می‌گردیم.
+ */
+export function describeStorageError(err: unknown, fallback: string): string {
+  const error = err as { code?: string; message?: string } | null;
+  const code = error?.code ?? '';
+  const message = error?.message ?? '';
+
+  if (CREDENTIAL_ERROR_CODES.includes(code) || /access key|signature|credential/i.test(message)) {
+    return 'Storage credentials rejected by MinIO — check MINIO_ACCESS_KEY / MINIO_SECRET_KEY';
+  }
+  if (CONNECTION_ERROR_CODES.includes(code) || /ECONNREFUSED|ENOTFOUND|timed? ?out/i.test(message)) {
+    return 'Storage service unreachable — is MinIO running?';
+  }
+  return fallback;
+}
+
 @Injectable()
 export class MinioService {
   private readonly logger = new Logger(MinioService.name);
@@ -27,12 +86,10 @@ export class MinioService {
   ];
 
   constructor() {
-    const endpoint = process.env.MINIO_ENDPOINT ?? 'localhost:9000';
-    const [host, portStr] = endpoint.split(':');
-    const port = parseInt(portStr ?? '9000', 10);
+    const { host, port } = resolveMinioEndpoint();
 
     this.client = new MinioClient({
-      endPoint: host ?? 'localhost',
+      endPoint: host,
       port,
       useSSL: process.env.MINIO_USE_SSL === 'true',
       accessKey: process.env.MINIO_ACCESS_KEY ?? 'MINIO_CREDENTIALS_FROM_ENV',
@@ -52,7 +109,9 @@ export class MinioService {
     } catch (err) {
       const error = err as Error;
       this.logger.error(`Failed to ensure bucket "${bucket}": ${error.message}`);
-      throw new ServiceUnavailableException('Storage service unavailable');
+      throw new ServiceUnavailableException(
+        describeStorageError(err, 'Storage service unavailable'),
+      );
     }
   }
 
@@ -86,7 +145,8 @@ export class MinioService {
     } catch (err) {
       const error = err as Error;
       this.logger.error(`Upload failed for ${bucket}/${objectKey}: ${error.message}`);
-      throw new ServiceUnavailableException('File upload failed');
+      if (err instanceof ServiceUnavailableException) throw err;
+      throw new ServiceUnavailableException(describeStorageError(err, 'File upload failed'));
     }
   }
 

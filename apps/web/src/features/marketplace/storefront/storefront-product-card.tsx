@@ -3,8 +3,10 @@
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { Package, Building2 } from 'lucide-react';
+import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { altFor, type ProductImage } from '../lib/product-images';
 
 export interface StorefrontProduct {
   id: string;
@@ -15,25 +17,48 @@ export interface StorefrontProduct {
   price: number;
   currency: string;
   vendorName: string;
+  primaryImageUrl?: string | null;
+  images?: ProductImage[];
 }
 
 export function StorefrontProductCard({ product }: { product: StorefrontProduct }) {
   const params = useParams();
   const locale = (params?.locale as string) ?? 'fa';
   const numberLocale = locale === 'fa' ? 'fa-IR' : 'en-US';
+  const [broken, setBroken] = useState(false);
+
+  const cover = product.primaryImageUrl ?? product.images?.[0]?.url ?? null;
+  const coverAlt = product.images?.[0] ? altFor(product.images[0], locale) : '';
+  const showCover = Boolean(cover) && !broken;
 
   return (
     <Link href={`/${locale}/marketplace/products/${product.id}`} className="group">
-      <Card className="card-hover h-full transition-all group-hover:-translate-y-0.5">
+      <Card className="card-hover h-full overflow-hidden transition-all group-hover:-translate-y-0.5">
+        <div className="relative aspect-[4/3] w-full overflow-hidden rounded-t-[var(--radius-xl)] bg-[hsl(var(--secondary))]">
+          {showCover ? (
+            <img
+              src={cover as string}
+              alt={coverAlt || product.title}
+              loading="lazy"
+              className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+              onError={() => setBroken(true)}
+            />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center">
+              <Package className="h-8 w-8 text-[hsl(var(--muted-foreground))] opacity-30" />
+            </div>
+          )}
+          {(product.images?.length ?? 0) > 1 ? (
+            <span className="absolute bottom-2 end-2 rounded-full bg-black/60 px-2 py-0.5 text-[10px] font-medium text-white">
+              +{(product.images?.length ?? 1) - 1}
+            </span>
+          ) : null}
+        </div>
+
         <CardContent className="flex h-full flex-col gap-3 p-5">
-          <div className="flex items-start gap-3">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[var(--radius-lg)] bg-[hsl(var(--primary)/0.08)]">
-              <Package className="h-5 w-5 text-[hsl(var(--primary))]" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-semibold">{product.title}</p>
-              <p className="truncate text-xs text-[hsl(var(--muted-foreground))]">{product.sku}</p>
-            </div>
+          <div className="min-w-0">
+            <p className="truncate text-sm font-semibold">{product.title}</p>
+            <p className="truncate text-xs text-[hsl(var(--muted-foreground))]">{product.sku}</p>
           </div>
 
           <div className="flex items-center gap-2">

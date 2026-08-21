@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useQuery } from '@tanstack/react-query';
-import { ArrowLeft, Package, Building2, ShoppingCart } from 'lucide-react';
+import { ArrowLeft, Building2, ShoppingCart } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent } from '@/components/ui/card';
@@ -12,6 +12,8 @@ import { Button } from '@/components/ui/button';
 import { apiClient } from '@/lib/api/client';
 import { useCartStore, useCartTotals } from '@/stores/cart.store';
 import { useToast } from '@/stores/toast.store';
+import { StorefrontProductGallery } from './storefront-product-gallery';
+import type { ProductImage } from '../lib/product-images';
 
 interface StorefrontProductDetail {
   id: string;
@@ -25,6 +27,8 @@ interface StorefrontProductDetail {
   currency: string;
   vendorName: string;
   vendorSlug: string;
+  primaryImageUrl?: string | null;
+  images?: ProductImage[];
 }
 
 export function StorefrontProductDetail({ id }: { id: string }) {
@@ -62,6 +66,12 @@ export function StorefrontProductDetail({ id }: { id: string }) {
   if (!data) return <p className="text-sm text-[hsl(var(--muted-foreground))]">{t('notFound')}</p>;
 
   const specs = Object.entries(data.specifications ?? {});
+  const images: ProductImage[] =
+    data.images && data.images.length > 0
+      ? data.images
+      : data.primaryImageUrl
+        ? [{ url: data.primaryImageUrl, isPrimary: true, sortOrder: 0 }]
+        : [];
 
   return (
     <div>
@@ -76,10 +86,11 @@ export function StorefrontProductDetail({ id }: { id: string }) {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <Card className="lg:col-span-2">
           <CardContent className="p-6">
+            <div className="mb-6">
+              <StorefrontProductGallery images={images} title={data.title} locale={locale} />
+            </div>
+
             <div className="mb-6 flex items-start gap-4">
-              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-[var(--radius-xl)] bg-[hsl(var(--primary)/0.08)]">
-                <Package className="h-7 w-7 text-[hsl(var(--primary))]" />
-              </div>
               <div className="min-w-0 flex-1">
                 <h1 className="text-xl font-bold">{data.title}</h1>
                 <p className="text-sm text-[hsl(var(--muted-foreground))]">{data.sku}</p>

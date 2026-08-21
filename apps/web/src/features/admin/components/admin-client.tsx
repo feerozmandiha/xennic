@@ -34,6 +34,7 @@ import {
   Webhook,
   Flag,
   Palette,
+  Store,
 } from 'lucide-react';
 import { useAuthStore } from '@/stores/auth.store';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -44,6 +45,7 @@ import { cn } from '@/lib/utils';
 import { AiProviderManagement } from './ai-provider-management';
 import { CmsEditor } from '@/features/cms/components/cms-editor';
 import { KnowledgeAdminConsole } from '@/features/knowledge/admin';
+import { MarketplaceAdminSection } from '@/features/admin/marketplace';
 import { ThemeSection } from './theme-section';
 
 // ─────────────────────────────────────────────────────────────
@@ -67,6 +69,7 @@ const SECTIONS = [
   { key: 'workspaces', label: 'Workspace ها', icon: Building2 },
   { key: 'plans', label: 'پلن‌ها و تعرفه', icon: CreditCard },
   { key: 'consultations', label: 'تیکت‌ها', icon: MessageSquare },
+  { key: 'marketplace', label: 'فروشگاه (بازارگاه)', icon: Store },
   { key: 'knowledge', label: 'دانشنامه', icon: BookOpen },
   { key: 'notifications', label: 'اعلان‌ها', icon: Bell },
   { key: 'settings', label: 'تنظیمات', icon: Settings },
@@ -2666,6 +2669,7 @@ export function AdminClient() {
     workspaces: <WorkspacesSection />,
     plans: <PlansSection />,
     consultations: <ConsultationsSection />,
+    marketplace: <MarketplaceAdminSection />,
     knowledge: <KnowledgeAdminSection />,
     notifications: <NotificationsSection />,
     settings: <SettingsSection />,

@@ -26,6 +26,7 @@ const ALLOWED_MIME_TYPES = new Set([
   'image/png',
   'image/gif',
   'image/webp',
+  'image/avif',
   'image/svg+xml',
   // Text / Data
   'text/plain',
@@ -109,6 +110,24 @@ export class StorageService {
     const file = await this._getFile(id, workspaceId);
     const url = await this.minioService.getPresignedUrl(file.bucket, file.objectKey, expirySeconds);
     return { url, file };
+  }
+
+  /**
+   * خواندن یک **تصویر عمومی** بدون احراز هویت و بدون scope کارگاه.
+   *
+   * فقط فایل‌هایی که در باکت `public` هستند و mime آن‌ها `image/*` است سرو
+   * می‌شوند؛ برای نمایش تصویر محصولات بازارگاه در `<img>` لازم است، چون تگ
+   * تصویر نه هدر Authorization می‌فرستد و نه URL امضاشدهٔ یک‌ساعته به درد
+   * کاتالوگ ماندگار می‌خورد.
+   */
+  async downloadPublicImage(id: string): Promise<{ buffer: Buffer; file: FileEntity }> {
+    const file = await this.storageRepository.findById(id);
+    if (!file || file.isDeleted() || file.bucket !== 'public' || !file.isImage()) {
+      throw new NotFoundException(`Image "${id}" not found`);
+    }
+
+    const buffer = await this.minioService.getObject(file.bucket, file.objectKey);
+    return { buffer, file };
   }
 
   async download(id: string, workspaceId: string): Promise<{ buffer: Buffer; file: FileEntity }> {

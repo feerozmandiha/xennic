@@ -1,0 +1,347 @@
+import { ProductEntity } from '../../domain/entities/product.entity.js';
+import { ProductTranslation } from '../../domain/value-objects/product-translation.vo.js';
+import { ProductImage } from '../../domain/value-objects/product-image.vo.js';
+
+const prismaMock = {
+  products: {
+    findUnique: jest.fn(),
+    findMany: jest.fn(),
+    count: jest.fn(),
+    upsert: jest.fn(),
+    update: jest.fn(),
+    groupBy: jest.fn(),
+  },
+  product_translations: {
+    findMany: jest.fn(),
+    upsert: jest.fn(),
+    deleteMany: jest.fn(),
+  },
+  product_images: {
+    findMany: jest.fn(),
+    upsert: jest.fn(),
+    deleteMany: jest.fn(),
+  },
+  vendors: {
+    findUnique: jest.fn(),
+    findMany: jest.fn(),
+    count: jest.fn(),
+    upsert: jest.fn(),
+    delete: jest.fn(),
+    findFirst: jest.fn(),
+  },
+  // تراکنش را در تست به‌صورت اجرای ترتیبی همان promiseها شبیه‌سازی می‌کنیم
+  $transaction: jest.fn((operations: unknown[]) => Promise.all(operations)),
+};
+
+jest.mock('@xennic/database', () => ({ prisma: prismaMock }));
+
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const { MarketplaceRepository } = require('./marketplace.repository.js');
+
+function productRow(overrides: Record<string, any> = {}) {
+  return {
+    id: 'prod-1',
+    vendor_id: 'vendor-1',
+    type: 'physical',
+    category: 'cable',
+    specifications: { cable_size_mm2: 35 },
+    sku: 'CABLE-35',
+    price: 250,
+    currency: 'USD',
+    status: 'active',
+    created_at: new Date('2026-01-01T00:00:00Z'),
+    updated_at: new Date('2026-01-02T00:00:00Z'),
+    deleted_at: null,
+    translations: [],
+    images: [],
+    ...overrides,
+  };
+}
+
+function imageRow(overrides: Record<string, any> = {}) {
+  return {
+    id: 'img-1',
+    product_id: 'prod-1',
+    url: 'https://cdn.example.com/a.jpg',
+    alt_fa: null,
+    alt_en: null,
+    is_primary: true,
+    sort_order: 0,
+    mime_type: 'image/jpeg',
+    file_size: 1024,
+    ...overrides,
+  };
+}
+
+describe('MarketplaceRepository — product translations', () => {
+  let repo: any;
+
+  beforeEach(() => {
+    repo = new MarketplaceRepository();
+    jest.clearAllMocks();
+    prismaMock.product_translations.deleteMany.mockResolvedValue({ count: 0 });
+    prismaMock.product_images.deleteMany.mockResolvedValue({ count: 0 });
+    prismaMock.product_images.upsert.mockResolvedValue({});
+    prismaMock.$transaction.mockImplementation((operations: unknown[]) => Promise.all(operations));
+  });
+
+  describe('findProductById', () => {
+    it('hydrates translations onto the entity', async () => {
+      prismaMock.products.findUnique.mockResolvedValue(
+        productRow({
+          translations: [
+            { locale: 'en', title: 'Cable', description: null },
+            { locale: 'fa', title: 'کابل', description: 'عایق XLPE' },
+          ],
+        }),
+      );
+
+      const entity = await repo.findProductById('prod-1');
+
+      expect(prismaMock.products.findUnique).toHaveBeenCalledWith({
+        where: { id: 'prod-1' },
+        include: { translations: true, images: true },
+      });
+      expect(entity.locales).toEqual(['fa', 'en']);
+      expect(entity.titleFor('fa')).toBe('کابل');
+    });
+
+    it('returns null when the row is missing', async () => {
+      prismaMock.products.findUnique.mockResolvedValue(null);
+      await expect(repo.findProductById('nope')).resolves.toBeNull();
+    });
+  });
+
+  describe('searchProducts', () => {
+    it('matches the query against SKU and translated title/description', async () => {
+      prismaMock.products.findMany.mockResolvedValue([]);
+      prismaMock.products.count.mockResolvedValue(0);
+
+      await repo.searchProducts({ query: 'کابل', offset: 0, limit: 20 });
+
+      const where = prismaMock.products.findMany.mock.calls[0][0].where;
+      expect(where.OR).toEqual([
+        { sku: { contains: 'کابل', mode: 'insensitive' } },
+        { translations: { some: { title: { contains: 'کابل', mode: 'insensitive' } } } },
+        { translations: { some: { description: { contains: 'کابل', mode: 'insensitive' } } } },
+      ]);
+      expect(prismaMock.products.findMany.mock.calls[0][0].include).toEqual({
+        translations: true,
+        images: true,
+      });
+    });
+  });
+
+  describe('saveProduct', () => {
+    it('mirrors the entity translation set onto product_translations', async () => {
+      prismaMock.products.upsert.mockResolvedValue({});
+      prismaMock.product_translations.upsert.mockResolvedValue({});
+
+      const entity = ProductEntity.reconstitute({
+        ...productRow(),
+        vendorId: 'vendor-1',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        deletedAt: null,
+        translations: [
+          { locale: 'fa', title: 'کابل' },
+          { locale: 'en', title: 'Cable' },
+        ],
+      } as any);
+
+      await repo.saveProduct(entity);
+
+      expect(prismaMock.product_translations.deleteMany).toHaveBeenCalledWith({
+        where: { product_id: 'prod-1', locale: { notIn: ['fa', 'en'] } },
+      });
+      expect(prismaMock.product_translations.upsert).toHaveBeenCalledTimes(2);
+      expect(prismaMock.product_translations.upsert.mock.calls[0][0]).toEqual(
+        expect.objectContaining({
+          where: { product_id_locale: { product_id: 'prod-1', locale: 'fa' } },
+          update: { title: 'کابل', description: null },
+        }),
+      );
+    });
+
+    it('removes every translation row when the entity has none', async () => {
+      prismaMock.products.upsert.mockResolvedValue({});
+
+      const entity = ProductEntity.reconstitute({
+        ...productRow(),
+        vendorId: 'vendor-1',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        deletedAt: null,
+        translations: [],
+      } as any);
+
+      await repo.saveProduct(entity);
+
+      expect(prismaMock.product_translations.deleteMany).toHaveBeenCalledWith({
+        where: { product_id: 'prod-1' },
+      });
+      expect(prismaMock.product_translations.upsert).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('upsertProductTranslation / deleteProductTranslation', () => {
+    it('upserts a single locale', async () => {
+      prismaMock.product_translations.upsert.mockResolvedValue({});
+      const translation = ProductTranslation.create({
+        locale: 'en',
+        title: 'Cable',
+        description: 'XLPE',
+      });
+
+      await repo.upsertProductTranslation('prod-1', translation);
+
+      expect(prismaMock.product_translations.upsert).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { product_id_locale: { product_id: 'prod-1', locale: 'en' } },
+          update: { title: 'Cable', description: 'XLPE' },
+        }),
+      );
+    });
+
+    it('reports whether a row was actually deleted', async () => {
+      prismaMock.product_translations.deleteMany.mockResolvedValueOnce({ count: 1 });
+      await expect(repo.deleteProductTranslation('prod-1', 'en')).resolves.toBe(true);
+
+      prismaMock.product_translations.deleteMany.mockResolvedValueOnce({ count: 0 });
+      await expect(repo.deleteProductTranslation('prod-1', 'en')).resolves.toBe(false);
+    });
+  });
+
+  describe('findProductTranslations', () => {
+    it('skips rows with unsupported locales', async () => {
+      prismaMock.product_translations.findMany.mockResolvedValue([
+        { locale: 'ar', title: 'كابل', description: null },
+        { locale: 'fa', title: 'کابل', description: null },
+      ]);
+
+      const list = await repo.findProductTranslations('prod-1');
+
+      expect(list.map((t: ProductTranslation) => t.locale)).toEqual(['fa']);
+    });
+  });
+
+  describe('product images (album)', () => {
+    it('hydrates the gallery onto the entity, primary first', async () => {
+      prismaMock.products.findUnique.mockResolvedValue(
+        productRow({
+          images: [
+            imageRow({ id: 'img-2', url: 'https://cdn/b.jpg', is_primary: true, sort_order: 5 }),
+            imageRow({ id: 'img-1', url: 'https://cdn/a.jpg', is_primary: false, sort_order: 1 }),
+          ],
+        }),
+      );
+
+      const entity = await repo.findProductById('prod-1');
+
+      expect(entity.images.map((i: ProductImage) => i.id)).toEqual(['img-2', 'img-1']);
+      expect(entity.primaryImageUrl).toBe('https://cdn/b.jpg');
+      expect(entity.images.map((i: ProductImage) => i.sortOrder)).toEqual([0, 1]);
+    });
+
+    it('saveProductImages deletes removed rows and upserts the rest in one transaction', async () => {
+      const images = [
+        ProductImage.create({ id: 'img-1', url: 'https://cdn/a.jpg', isPrimary: true }),
+        ProductImage.create({ id: 'img-2', url: 'https://cdn/b.jpg', sortOrder: 1 }),
+      ];
+
+      await repo.saveProductImages('prod-1', images);
+
+      expect(prismaMock.$transaction).toHaveBeenCalledTimes(1);
+      expect(prismaMock.product_images.deleteMany).toHaveBeenCalledWith({
+        where: { product_id: 'prod-1', id: { notIn: ['img-1', 'img-2'] } },
+      });
+      expect(prismaMock.product_images.upsert).toHaveBeenCalledTimes(2);
+      expect(prismaMock.product_images.upsert.mock.calls[0][0]).toEqual(
+        expect.objectContaining({
+          where: { id: 'img-1' },
+          update: expect.objectContaining({
+            url: 'https://cdn/a.jpg',
+            is_primary: true,
+            sort_order: 0,
+          }),
+        }),
+      );
+    });
+
+    it('clears the album when the entity has no image', async () => {
+      await repo.saveProductImages('prod-1', []);
+
+      expect(prismaMock.product_images.deleteMany).toHaveBeenCalledWith({
+        where: { product_id: 'prod-1' },
+      });
+      expect(prismaMock.product_images.upsert).not.toHaveBeenCalled();
+    });
+
+    it('findProductImages skips malformed rows', async () => {
+      prismaMock.product_images.findMany.mockResolvedValue([
+        imageRow({ id: 'bad', url: 'not-a-url', is_primary: false, sort_order: 1 }),
+        imageRow({ id: 'img-1', url: 'https://cdn/a.jpg' }),
+      ]);
+
+      const images = await repo.findProductImages('prod-1');
+
+      expect(images.map((i: ProductImage) => i.id)).toEqual(['img-1']);
+    });
+
+    it('deleteProductImage reports whether a row was removed', async () => {
+      prismaMock.product_images.deleteMany.mockResolvedValueOnce({ count: 1 });
+      await expect(repo.deleteProductImage('prod-1', 'img-1')).resolves.toBe(true);
+
+      prismaMock.product_images.deleteMany.mockResolvedValueOnce({ count: 0 });
+      await expect(repo.deleteProductImage('prod-1', 'img-1')).resolves.toBe(false);
+    });
+
+    it('saveProduct also mirrors the album', async () => {
+      prismaMock.products.upsert.mockResolvedValue({});
+
+      const entity = ProductEntity.reconstitute({
+        ...productRow(),
+        vendorId: 'vendor-1',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        deletedAt: null,
+        translations: [],
+        images: [{ id: 'img-1', url: 'https://cdn/a.jpg', isPrimary: true, sortOrder: 0 }],
+      } as any);
+
+      await repo.saveProduct(entity);
+
+      expect(prismaMock.product_images.upsert).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('vendor deletion guard support', () => {
+    it('counts only live products by default', async () => {
+      prismaMock.products.count.mockResolvedValue(2);
+
+      await repo.countVendorProducts('vendor-1');
+
+      expect(prismaMock.products.count).toHaveBeenCalledWith({
+        where: { vendor_id: 'vendor-1', deleted_at: null },
+      });
+    });
+
+    it('counts soft-deleted products too when asked', async () => {
+      prismaMock.products.count.mockResolvedValue(5);
+
+      await repo.countVendorProducts('vendor-1', true);
+
+      expect(prismaMock.products.count).toHaveBeenCalledWith({
+        where: { vendor_id: 'vendor-1' },
+      });
+    });
+
+    it('hard-deletes the vendor row', async () => {
+      prismaMock.vendors.delete.mockResolvedValue({});
+
+      await repo.deleteVendor('vendor-1');
+
+      expect(prismaMock.vendors.delete).toHaveBeenCalledWith({ where: { id: 'vendor-1' } });
+    });
+  });
+});

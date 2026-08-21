@@ -12,13 +12,19 @@ export class VendorEntity {
     private _updatedAt: Date,
   ) {}
 
+  /** تولید slug یکسان در سرویس و انتیتی تا بررسی تکراری‌بودن دقیق باشد. */
+  static slugify(value: string): string {
+    return value
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, '-')
+      .replace(/[^a-z0-9-]/g, '')
+      .replace(/-{2,}/g, '-')
+      .replace(/^-|-$/g, '');
+  }
+
   static create(data: { name: string; slug?: string }): VendorEntity {
-    const slug =
-      data.slug ??
-      data.name
-        .toLowerCase()
-        .replace(/\s+/g, '-')
-        .replace(/[^a-z0-9-]/g, '');
+    const slug = VendorEntity.slugify(data.slug ?? data.name);
     return new VendorEntity(randomUUID(), data.name, slug, 'active', new Date(), new Date());
   }
 
