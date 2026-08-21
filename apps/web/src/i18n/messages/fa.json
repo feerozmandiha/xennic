@@ -281,6 +281,73 @@
     "editArticle": "ویرایش مقاله",
     "newArticleDescription": "یک مقاله دانشنامه فنی جدید ایجاد کنید. پس از ایجاد می‌توانید محتوا را ویرایش کنید."
   },
+  "knowledgeAdmin": {
+    "title": "مدیریت مقالات دانشنامه",
+    "subtitle": "{count} مقاله در کل فضاهای کاری",
+    "newArticle": "مقاله جدید",
+    "articleDeleted": "مقاله حذف شد",
+    "articleDeleteFailed": "خطا در حذف مقاله",
+    "deleteTitle": "حذف مقاله",
+    "deleteQuestion": "آیا از حذف این مقاله مطمئن هستید؟",
+    "loadFailed": "دریافت فهرست مقالات ناموفق بود",
+    "loadFailedHint": "ارتباط با سرویس دانشنامه برقرار نشد. دوباره تلاش کنید.",
+    "emptyFiltered": "هیچ مقاله‌ای با این فیلترها پیدا نشد.",
+    "emptyAll": "هنوز مقاله‌ای ثبت نشده است.",
+    "columns": {
+      "title": "عنوان",
+      "status": "وضعیت انتشار",
+      "tier": "سطح دسترسی",
+      "workspace": "فضای کاری",
+      "author": "نویسنده",
+      "publishedAt": "تاریخ انتشار",
+      "views": "بازدید"
+    },
+    "filters": {
+      "search": "جستجو",
+      "searchPlaceholder": "جستجو در عنوان یا slug…",
+      "tier": "سطح دسترسی",
+      "status": "وضعیت",
+      "language": "زبان",
+      "allTiers": "همه سطوح دسترسی",
+      "allStatuses": "همه وضعیت‌ها",
+      "allLanguages": "همه زبان‌ها",
+      "reset": "حذف فیلترها"
+    },
+    "status": {
+      "draft": "پیش‌نویس",
+      "review": "در انتظار بررسی",
+      "published": "منتشرشده",
+      "archived": "آرشیو"
+    },
+    "tier": {
+      "free": "رایگان",
+      "basic": "پایه",
+      "pro": "حرفه‌ای",
+      "enterprise": "سازمانی"
+    },
+    "language": {
+      "fa": "فارسی",
+      "en": "انگلیسی"
+    },
+    "stats": {
+      "totalArticles": "کل مقالات",
+      "acrossWorkspaces": "در همه فضاهای کاری",
+      "published": "منتشرشده",
+      "draftsCount": "{count} پیش‌نویس",
+      "totalViews": "کل بازدیدها",
+      "allTime": "از ابتدا تاکنون",
+      "gatedArticles": "مقالات اشتراکی",
+      "freeCount": "{count} مقاله رایگان",
+      "recentlyUpdated": "آخرین به‌روزرسانی‌ها"
+    },
+    "pagination": {
+      "summary": "صفحه {page} از {totalPages} — {total} مقاله",
+      "perPage": "{count} در هر صفحه",
+      "pageSize": "تعداد در هر صفحه",
+      "previous": "قبلی",
+      "next": "بعدی"
+    }
+  },
   "marketplace": {
     "title": "بازارگاه",
     "description": "مدیریت محصولات، سفارشات و فروشندگان",

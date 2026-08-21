@@ -31,11 +31,38 @@ import {
   WorkflowResponseDto,
   KnowledgeAnalyticsDto,
   KnowledgeDashboardStatsDto,
+  AdminKnowledgeStatsDto,
   RelatedCalculationDto,
+  KNOWLEDGE_STATUSES,
+  KNOWLEDGE_ACCESS_TIERS,
 } from '../../presentation/dtos/knowledge.dto.js';
 
 export interface PaginatedKnowledge {
   data: KnowledgeEntity[];
+  meta: { page: number; limit: number; total: number; totalPages: number };
+}
+
+/** Filters accepted by the platform-wide admin article list. */
+export interface AdminKnowledgeListParams {
+  page?: number;
+  limit?: number;
+  status?: string;
+  accessTier?: string;
+  language?: string;
+  q?: string;
+}
+
+/** A single row of the admin article table, enriched with joined labels. */
+export interface AdminKnowledgeListRow {
+  entity: KnowledgeEntity;
+  title: string | null;
+  workspaceName: string | null;
+  authorName: string | null;
+  views: number;
+}
+
+export interface PaginatedAdminKnowledge {
+  data: AdminKnowledgeListRow[];
   meta: { page: number; limit: number; total: number; totalPages: number };
 }
 
@@ -73,22 +100,16 @@ export class KnowledgeService {
    * Admin-facing list across all workspaces. Uses no workspace_id filter
    * so platform editors can see every article regardless of which
    * workspace created it.
+   *
+   * Supports multi-filtering (status / access tier / language), search over
+   * title + slug and real pagination.
    */
-  async findAllForAdmin(
-    page = 1,
-    limit = 50,
-    status?: string,
-    q?: string,
-  ): Promise<PaginatedKnowledge> {
+  async findAllForAdmin(params: AdminKnowledgeListParams = {}): Promise<PaginatedAdminKnowledge> {
+    const page = Math.max(1, params.page ?? 1);
+    const limit = Math.min(100, Math.max(1, params.limit ?? 20));
     const offset = (page - 1) * limit;
-    const where: any = { is_active: true };
-    if (status && status !== 'all') where.status = status;
-    if (q) {
-      where.OR = [
-        { slug: { contains: q, mode: 'insensitive' } },
-        { search_text: { contains: q, mode: 'insensitive' } },
-      ];
-    }
+
+    const where = this._buildAdminWhere(params);
 
     const [rows, total] = await Promise.all([
       prisma.knowledge.findMany({
@@ -96,37 +117,143 @@ export class KnowledgeService {
         skip: offset,
         take: limit,
         orderBy: { created_at: 'desc' },
+        include: {
+          workspace: { select: { name: true } },
+          author: { select: { first_name: true, last_name: true, email: true } },
+          analytics: { select: { views: true } },
+        },
       }),
       prisma.knowledge.count({ where }),
     ]);
 
     return {
-      data: rows.map((r) =>
-        KnowledgeEntity.reconstitute({
-          id: r.id,
-          workspaceId: r.workspace_id,
-          slug: r.slug,
-          status: r.status,
-          visibility: r.visibility,
-          language: r.language,
-          version: r.version,
-          isActive: r.is_active,
-          content: (r.content as Record<string, unknown>) ?? {},
-          searchText: r.search_text ?? null,
-          readingTime: r.reading_time ?? null,
-          difficulty: r.difficulty ?? null,
-          accessTier: r.access_tier ?? 'free',
-          authorId: r.author_id ?? null,
-          reviewerId: r.reviewer_id ?? null,
-          createdAt: r.created_at,
-          updatedAt: r.updated_at,
-          publishedAt: r.published_at ?? null,
-          reviewedAt: r.reviewed_at ?? null,
-          archivedAt: r.archived_at ?? null,
-        }),
-      ),
-      meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
+      data: rows.map((r) => ({
+        entity: this._toAdminEntity(r),
+        title: this._articleTitle(r.content),
+        workspaceName: r.workspace?.name ?? null,
+        authorName: this._authorName(r.author),
+        views: r.analytics?.views ?? 0,
+      })),
+      meta: { page, limit, total, totalPages: Math.max(1, Math.ceil(total / limit)) },
     };
+  }
+
+  /**
+   * Platform-wide knowledge statistics for the admin console. Unlike
+   * `getDashboardAnalytics` this is *not* workspace-scoped, so the numbers
+   * match what the admin article table shows.
+   */
+  async getAdminStats(): Promise<AdminKnowledgeStatsDto> {
+    const where = { is_active: true };
+
+    const [total, byStatusRows, byTierRows, viewsAgg, recentRows] = await Promise.all([
+      prisma.knowledge.count({ where }),
+      prisma.knowledge.groupBy({ by: ['status'], where, _count: { _all: true } }),
+      prisma.knowledge.groupBy({ by: ['access_tier'], where, _count: { _all: true } }),
+      prisma.knowledge_analytics.aggregate({
+        _sum: { views: true },
+        where: { knowledge: { is_active: true } },
+      }),
+      prisma.knowledge.findMany({
+        where,
+        orderBy: { updated_at: 'desc' },
+        take: 5,
+        select: {
+          id: true,
+          slug: true,
+          content: true,
+          status: true,
+          access_tier: true,
+          published_at: true,
+          updated_at: true,
+        },
+      }),
+    ]);
+
+    const byStatus: Record<string, number> = {};
+    for (const status of KNOWLEDGE_STATUSES) byStatus[status] = 0;
+    for (const row of byStatusRows) {
+      byStatus[row.status] = row._count._all;
+    }
+
+    const byTier: Record<string, number> = {};
+    for (const tier of KNOWLEDGE_ACCESS_TIERS) byTier[tier] = 0;
+    for (const row of byTierRows) {
+      byTier[row.access_tier] = row._count._all;
+    }
+
+    return AdminKnowledgeStatsDto.fromData({
+      totalArticles: total,
+      totalViews: viewsAgg._sum.views ?? 0,
+      byStatus,
+      byTier,
+      recentArticles: recentRows.map((r) => ({
+        id: r.id,
+        slug: r.slug,
+        title: this._articleTitle(r.content),
+        status: r.status,
+        accessTier: r.access_tier ?? 'free',
+        publishedAt: r.published_at ?? null,
+        updatedAt: r.updated_at,
+      })),
+    });
+  }
+
+  private _buildAdminWhere(params: AdminKnowledgeListParams): any {
+    const where: any = { is_active: true };
+
+    if (params.status && params.status !== 'all') where.status = params.status;
+    if (params.accessTier && params.accessTier !== 'all') where.access_tier = params.accessTier;
+    if (params.language && params.language !== 'all') where.language = params.language;
+
+    const q = params.q?.trim();
+    if (q) {
+      where.OR = [
+        { slug: { contains: q, mode: 'insensitive' } },
+        { search_text: { contains: q, mode: 'insensitive' } },
+      ];
+    }
+
+    return where;
+  }
+
+  private _articleTitle(content: unknown): string | null {
+    if (!content || typeof content !== 'object') return null;
+    const title = (content as Record<string, unknown>).title;
+    return typeof title === 'string' && title.trim().length > 0 ? title : null;
+  }
+
+  private _authorName(
+    author: { first_name?: string | null; last_name?: string | null; email?: string | null } | null,
+  ): string | null {
+    if (!author) return null;
+    const name = [author.first_name, author.last_name].filter(Boolean).join(' ').trim();
+    return name.length > 0 ? name : (author.email ?? null);
+  }
+
+  private _toAdminEntity(r: any): KnowledgeEntity {
+    return KnowledgeEntity.reconstitute({
+      id: r.id,
+      workspaceId: r.workspace_id,
+      slug: r.slug,
+      status: r.status,
+      visibility: r.visibility,
+      language: r.language,
+      version: r.version,
+      isActive: r.is_active,
+      content: (r.content as Record<string, unknown>) ?? {},
+      searchText: r.search_text ?? null,
+      readingTime: r.reading_time ?? null,
+      difficulty: r.difficulty ?? null,
+      accessTier: r.access_tier ?? 'free',
+      authorId: r.author_id ?? null,
+      reviewerId: r.reviewer_id ?? null,
+      createdAt: r.created_at,
+      updatedAt: r.updated_at,
+      publishedAt: r.published_at ?? null,
+      reviewedAt: r.reviewed_at ?? null,
+      archivedAt: r.archived_at ?? null,
+    });
   }
 
   // ── findPublished (public, no workspace) ────────────────────────────────────
@@ -603,7 +730,9 @@ export class KnowledgeService {
   }
 
   async getDashboardAnalytics(workspaceId: string): Promise<KnowledgeDashboardStatsDto> {
-    const where = { workspace_id: workspaceId, deleted_at: null as Date | null };
+    // NOTE: the `knowledge` table has no `deleted_at` column — soft deletes are
+    // tracked through `is_active`, so filtering on `deleted_at` broke this query.
+    const where = { workspace_id: workspaceId, is_active: true };
 
     const [articles, analyticsRows] = await Promise.all([
       prisma.knowledge.findMany({ where, select: { id: true, slug: true, status: true } }),
