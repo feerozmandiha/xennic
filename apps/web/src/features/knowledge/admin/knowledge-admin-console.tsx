@@ -13,7 +13,7 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { KnowledgeClient } from '../components/knowledge-client';
+import { KnowledgeAdminArticles } from './knowledge-admin-articles';
 import { KnowledgeIntelligenceDashboard } from './knowledge-intelligence-dashboard';
 import { KnowledgeGraphExplorer } from './knowledge-graph-explorer';
 import { KnowledgeClusterWorkbench } from './knowledge-cluster-workbench';
@@ -152,7 +152,7 @@ export function KnowledgeAdminConsole() {
           </div>
         </div>
 
-        {activeArea === 'articles' ? <KnowledgeClient adminView /> : null}
+        {activeArea === 'articles' ? <KnowledgeAdminArticles /> : null}
         {activeArea === 'quality' ? <KnowledgeIntelligenceDashboard /> : null}
         {activeArea === 'graph' ? <KnowledgeGraphExplorer /> : null}
         {activeArea === 'clusters' ? <KnowledgeClusterWorkbench /> : null}

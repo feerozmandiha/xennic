@@ -191,18 +191,12 @@ const STATUS_FILTERS = [
   { key: 'archived', label: 'آرشیو' },
 ];
 
-interface KnowledgeClientProps {
-  /** Use the platform-wide admin endpoint instead of the workspace-scoped search. */
-  adminView?: boolean;
-}
-
-export function KnowledgeClient({ adminView = false }: KnowledgeClientProps = {}) {
+export function KnowledgeClient() {
   const t = useTranslations('knowledge');
   const tCommon = useTranslations('common');
   const params = useParams();
   const locale = (params?.locale as string) ?? 'fa';
   const wsId = useAuthStore((s) => s.workspaceId);
-  const isAdmin = useAuthStore((s) => s.isAdmin);
   const toast = useToast();
   const queryClient = useQueryClient();
 
@@ -224,26 +218,15 @@ export function KnowledgeClient({ adminView = false }: KnowledgeClientProps = {}
   if (difficultyFilter) searchParams.set('difficulty', difficultyFilter);
   searchParams.set('limit', '100');
 
-  // When adminView is true we use the platform-wide endpoint that
-  // lists articles from every workspace. The regular endpoint is
-  // workspace-scoped and only returns articles created in the user's
-  // current workspace, which is why the admin console previously
-  // appeared to show just one article.
-  const useAdminEndpoint = adminView && isAdmin;
-  const endpoint = useAdminEndpoint
-    ? `/knowledge/admin/all?${searchParams.toString()}`
-    : `/knowledge/search?${searchParams.toString()}`;
+  // Workspace-scoped listing. The platform-wide (cross-workspace) view for
+  // the admin console lives in `KnowledgeAdminArticles`, which uses the
+  // paginated `/knowledge/admin/all` endpoint.
+  const endpoint = `/knowledge/search?${searchParams.toString()}`;
 
   const { data, isLoading } = useQuery({
-    queryKey: [
-      'knowledge',
-      useAdminEndpoint ? 'admin' : wsId,
-      debouncedSearch,
-      statusFilter,
-      difficultyFilter,
-    ],
+    queryKey: ['knowledge', wsId, debouncedSearch, statusFilter, difficultyFilter],
     queryFn: () => apiClient.get<any>(endpoint),
-    enabled: useAdminEndpoint || !!wsId,
+    enabled: !!wsId,
     retry: false,
   });
 

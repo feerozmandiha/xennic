@@ -1,4 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import {
   IsString,
   IsNotEmpty,
@@ -10,6 +11,7 @@ import {
   MaxLength,
   IsInt,
   Min,
+  Max,
   IsArray,
 } from 'class-validator';
 import {
@@ -172,6 +174,134 @@ export class AssignReviewerDto {
   @ApiProperty()
   @IsUUID()
   reviewerId!: string;
+}
+
+// ─── Admin console DTOs ─────────────────────────────────────────────────────
+
+export const KNOWLEDGE_ADMIN_STATUS_FILTERS = ['all', ...KNOWLEDGE_STATUSES] as const;
+export const KNOWLEDGE_ADMIN_TIER_FILTERS = ['all', ...KNOWLEDGE_ACCESS_TIERS] as const;
+
+export class AdminKnowledgeQueryDto {
+  @ApiPropertyOptional({ description: 'Free text search over title and slug' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(200)
+  q?: string;
+
+  @ApiPropertyOptional({ enum: KNOWLEDGE_ADMIN_STATUS_FILTERS, default: 'all' })
+  @IsOptional()
+  @IsEnum(KNOWLEDGE_ADMIN_STATUS_FILTERS)
+  status?: (typeof KNOWLEDGE_ADMIN_STATUS_FILTERS)[number];
+
+  @ApiPropertyOptional({ enum: KNOWLEDGE_ADMIN_TIER_FILTERS, default: 'all' })
+  @IsOptional()
+  @IsEnum(KNOWLEDGE_ADMIN_TIER_FILTERS)
+  accessTier?: (typeof KNOWLEDGE_ADMIN_TIER_FILTERS)[number];
+
+  @ApiPropertyOptional({ example: 'fa', description: 'Language code, or "all"' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(10)
+  language?: string;
+
+  @ApiPropertyOptional({ type: Number, default: 1, minimum: 1 })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  page?: number;
+
+  @ApiPropertyOptional({ type: Number, default: 20, minimum: 1, maximum: 100 })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(100)
+  limit?: number;
+}
+
+export class AdminKnowledgeItemDto {
+  @ApiProperty() id!: string;
+  @ApiProperty() slug!: string;
+  @ApiProperty({ nullable: true }) title!: string | null;
+  @ApiProperty({ enum: KNOWLEDGE_STATUSES }) status!: string;
+  @ApiProperty({ enum: KNOWLEDGE_ACCESS_TIERS }) accessTier!: string;
+  @ApiProperty() language!: string;
+  @ApiProperty() version!: number;
+  @ApiProperty({ enum: KNOWLEDGE_VISIBILITIES }) visibility!: string;
+  @ApiProperty() workspaceId!: string;
+  @ApiProperty({ nullable: true }) workspaceName!: string | null;
+  @ApiProperty({ nullable: true }) authorId!: string | null;
+  @ApiProperty({ nullable: true }) authorName!: string | null;
+  @ApiProperty() views!: number;
+  @ApiProperty({ nullable: true }) publishedAt!: Date | null;
+  @ApiProperty() updatedAt!: Date;
+  @ApiProperty() createdAt!: Date;
+
+  static fromRow(row: {
+    entity: KnowledgeEntity;
+    title: string | null;
+    workspaceName: string | null;
+    authorName: string | null;
+    views: number;
+  }): AdminKnowledgeItemDto {
+    const dto = new AdminKnowledgeItemDto();
+    const e = row.entity;
+    dto.id = e.id;
+    dto.slug = e.slug;
+    dto.title = row.title;
+    dto.status = e.status;
+    dto.accessTier = e.accessTier ?? 'free';
+    dto.language = e.language;
+    dto.version = e.version;
+    dto.visibility = e.visibility;
+    dto.workspaceId = e.workspaceId;
+    dto.workspaceName = row.workspaceName;
+    dto.authorId = e.authorId;
+    dto.authorName = row.authorName;
+    dto.views = row.views;
+    dto.publishedAt = e.publishedAt;
+    dto.updatedAt = e.updatedAt;
+    dto.createdAt = e.createdAt;
+    return dto;
+  }
+}
+
+export class AdminKnowledgeRecentItemDto {
+  @ApiProperty() id!: string;
+  @ApiProperty() slug!: string;
+  @ApiProperty({ nullable: true }) title!: string | null;
+  @ApiProperty({ enum: KNOWLEDGE_STATUSES }) status!: string;
+  @ApiProperty({ enum: KNOWLEDGE_ACCESS_TIERS }) accessTier!: string;
+  @ApiProperty({ nullable: true }) publishedAt!: Date | null;
+  @ApiProperty() updatedAt!: Date;
+}
+
+export class AdminKnowledgeStatsDto {
+  @ApiProperty() totalArticles!: number;
+  @ApiProperty() totalViews!: number;
+  @ApiProperty({ description: 'Article count keyed by status' })
+  byStatus!: Record<string, number>;
+  @ApiProperty({ description: 'Article count keyed by access tier' })
+  byTier!: Record<string, number>;
+  @ApiProperty({ type: [AdminKnowledgeRecentItemDto] })
+  recentArticles!: AdminKnowledgeRecentItemDto[];
+
+  static fromData(data: {
+    totalArticles: number;
+    totalViews: number;
+    byStatus: Record<string, number>;
+    byTier: Record<string, number>;
+    recentArticles: AdminKnowledgeRecentItemDto[];
+  }): AdminKnowledgeStatsDto {
+    const dto = new AdminKnowledgeStatsDto();
+    dto.totalArticles = data.totalArticles;
+    dto.totalViews = data.totalViews;
+    dto.byStatus = data.byStatus;
+    dto.byTier = data.byTier;
+    dto.recentArticles = data.recentArticles;
+    return dto;
+  }
 }
 
 // ─── Version DTO ─────────────────────────────────────────────────────────────

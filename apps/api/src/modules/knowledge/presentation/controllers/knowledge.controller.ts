@@ -34,6 +34,9 @@ import {
   KnowledgeSearchQueryDto,
   AssignReviewerDto,
   AddTaxonomyDto,
+  AdminKnowledgeQueryDto,
+  AdminKnowledgeItemDto,
+  AdminKnowledgeStatsDto,
   KnowledgeResponseDto,
   CreateCommentDto,
   UpdateCommentDto,
@@ -119,34 +122,42 @@ export class KnowledgeController {
   @ApiOperation({
     summary: 'Admin: list all articles across workspaces',
     description:
-      'Platform-wide list used by the admin Knowledge console. Does ' +
-      'not filter by workspace so editors see every article.',
+      'Platform-wide, paginated list used by the admin Knowledge console. Does ' +
+      'not filter by workspace so editors see every article. Supports filtering ' +
+      'by status, access tier and language plus search over title/slug.',
   })
-  @ApiQuery({ name: 'page', required: false, type: Number, example: 1 })
-  @ApiQuery({ name: 'limit', required: false, type: Number, example: 50 })
-  @ApiQuery({
-    name: 'status',
-    required: false,
-    enum: ['all', 'draft', 'review', 'published', 'archived'],
-  })
-  @ApiQuery({ name: 'q', required: false, type: String })
-  async findAllForAdmin(
-    @Query('page') page?: string,
-    @Query('limit') limit?: string,
-    @Query('status') status?: string,
-    @Query('q') q?: string,
-  ) {
-    const result = await this.knowledgeService.findAllForAdmin(
-      page ? parseInt(page, 10) : 1,
-      limit ? parseInt(limit, 10) : 50,
-      status,
-      q,
-    );
+  @ApiResponse({ status: 200, description: 'Articles retrieved', type: [AdminKnowledgeItemDto] })
+  async findAllForAdmin(@Query() query: AdminKnowledgeQueryDto) {
+    const result = await this.knowledgeService.findAllForAdmin({
+      page: query.page,
+      limit: query.limit,
+      status: query.status,
+      accessTier: query.accessTier,
+      language: query.language,
+      q: query.q,
+    });
     return {
       success: true,
-      data: KnowledgeResponseDto.fromEntities(result.data),
+      data: result.data.map((row) => AdminKnowledgeItemDto.fromRow(row)),
       meta: result.meta,
     };
+  }
+
+  // ─── GET /knowledge/admin/stats ────────────────────────────────────────────
+
+  @Get('admin/stats')
+  @UseGuards(JwtAuthGuard, AdminGuard)
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({
+    summary: 'Admin: platform-wide knowledge statistics',
+    description:
+      'Aggregate counters for the admin console: total/published/draft articles, ' +
+      'breakdown by status and access tier, total views and recently updated articles.',
+  })
+  @ApiResponse({ status: 200, description: 'Statistics retrieved', type: AdminKnowledgeStatsDto })
+  async getAdminStats() {
+    const stats = await this.knowledgeService.getAdminStats();
+    return { success: true, data: stats };
   }
 
   // ─── SEARCH /knowledge/search ──────────────────────────────────────────────
