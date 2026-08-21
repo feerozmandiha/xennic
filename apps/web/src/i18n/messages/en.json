@@ -16,7 +16,8 @@
     "noData": "No data found",
     "searchMinChars": "Type at least 2 characters to search",
     "total": "Total",
-    "actions": "Actions"
+    "actions": "Actions",
+    "details": "Details"
   },
   "auth": {
     "login": "Sign In",
