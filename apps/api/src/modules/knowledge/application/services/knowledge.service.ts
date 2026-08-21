@@ -69,6 +69,66 @@ export class KnowledgeService {
     };
   }
 
+  /**
+   * Admin-facing list across all workspaces. Uses no workspace_id filter
+   * so platform editors can see every article regardless of which
+   * workspace created it.
+   */
+  async findAllForAdmin(
+    page = 1,
+    limit = 50,
+    status?: string,
+    q?: string,
+  ): Promise<PaginatedKnowledge> {
+    const offset = (page - 1) * limit;
+    const where: any = { is_active: true };
+    if (status && status !== 'all') where.status = status;
+    if (q) {
+      where.OR = [
+        { slug: { contains: q, mode: 'insensitive' } },
+        { search_text: { contains: q, mode: 'insensitive' } },
+      ];
+    }
+
+    const [rows, total] = await Promise.all([
+      prisma.knowledge.findMany({
+        where,
+        skip: offset,
+        take: limit,
+        orderBy: { created_at: 'desc' },
+      }),
+      prisma.knowledge.count({ where }),
+    ]);
+
+    return {
+      data: rows.map((r) =>
+        KnowledgeEntity.reconstitute({
+          id: r.id,
+          workspaceId: r.workspace_id,
+          slug: r.slug,
+          status: r.status,
+          visibility: r.visibility,
+          language: r.language,
+          version: r.version,
+          isActive: r.is_active,
+          content: (r.content as Record<string, unknown>) ?? {},
+          searchText: r.search_text ?? null,
+          readingTime: r.reading_time ?? null,
+          difficulty: r.difficulty ?? null,
+          accessTier: r.access_tier ?? 'free',
+          authorId: r.author_id ?? null,
+          reviewerId: r.reviewer_id ?? null,
+          createdAt: r.created_at,
+          updatedAt: r.updated_at,
+          publishedAt: r.published_at ?? null,
+          reviewedAt: r.reviewed_at ?? null,
+          archivedAt: r.archived_at ?? null,
+        }),
+      ),
+      meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
+    };
+  }
+
   // ── findPublished (public, no workspace) ────────────────────────────────────
 
   async findPublished(page = 1, limit = 20, locale?: string): Promise<PaginatedKnowledge> {

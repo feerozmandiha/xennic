@@ -152,7 +152,7 @@ export function KnowledgeAdminConsole() {
           </div>
         </div>
 
-        {activeArea === 'articles' ? <KnowledgeClient /> : null}
+        {activeArea === 'articles' ? <KnowledgeClient adminView /> : null}
         {activeArea === 'quality' ? <KnowledgeIntelligenceDashboard /> : null}
         {activeArea === 'graph' ? <KnowledgeGraphExplorer /> : null}
         {activeArea === 'clusters' ? <KnowledgeClusterWorkbench /> : null}
