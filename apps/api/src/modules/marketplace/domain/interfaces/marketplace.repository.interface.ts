@@ -2,6 +2,7 @@ import type { VendorEntity } from '../entities/vendor.entity.js';
 import type { ProductEntity } from '../entities/product.entity.js';
 import type { OrderEntity } from '../entities/order.entity.js';
 import type { ProductTranslation } from '../value-objects/product-translation.vo.js';
+import type { ProductImage, ProductImageJson } from '../value-objects/product-image.vo.js';
 
 export interface VendorSearchParams {
   query?: string;
@@ -62,6 +63,9 @@ export interface PublicProductRecord {
   title: string;
   description: string | null;
   locale: string;
+  /** آلبوم تصاویر — مرتب، با تصویر شاخص در ابتدا. */
+  images: ProductImageJson[];
+  primaryImageUrl: string | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -113,6 +117,11 @@ export interface IMarketplaceRepository {
   findProductTranslations(productId: string): Promise<ProductTranslation[]>;
   upsertProductTranslation(productId: string, translation: ProductTranslation): Promise<void>;
   deleteProductTranslation(productId: string, locale: string): Promise<boolean>;
+
+  // Product images (album)
+  findProductImages(productId: string): Promise<ProductImage[]>;
+  saveProductImages(productId: string, images: ProductImage[]): Promise<void>;
+  deleteProductImage(productId: string, imageId: string): Promise<boolean>;
 
   // Orders
   findOrderById(id: string): Promise<OrderEntity | null>;

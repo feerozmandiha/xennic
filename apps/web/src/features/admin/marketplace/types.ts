@@ -11,6 +11,18 @@ export const PRODUCT_LOCALE_LABELS: Record<ProductLocale, string> = {
   en: 'English',
 };
 
+/** یک تصویر در آلبوم محصول — آینهٔ `ProductImage` در بک‌اند. */
+export interface ProductImage {
+  id?: string;
+  url: string;
+  altFa?: string | null;
+  altEn?: string | null;
+  isPrimary?: boolean;
+  sortOrder?: number;
+  mimeType?: string | null;
+  fileSize?: number | null;
+}
+
 export interface ProductTranslation {
   locale: ProductLocale;
   title: string;
@@ -34,6 +46,8 @@ export interface AdminProduct {
   description: string | null;
   resolvedLocale: ProductLocale | null;
   translations: ProductTranslation[];
+  images: ProductImage[];
+  primaryImageUrl: string | null;
   createdAt: string;
   updatedAt: string;
   deletedAt: string | null;

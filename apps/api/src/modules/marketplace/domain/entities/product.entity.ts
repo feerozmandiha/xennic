@@ -8,11 +8,15 @@ import type {
   ProductLocale,
   ProductTranslationData,
 } from '../value-objects/product-translation.vo.js';
+import { ProductGallery } from '../value-objects/product-gallery.vo.js';
+import { ProductImage } from '../value-objects/product-image.vo.js';
+import type { ProductImageData } from '../value-objects/product-image.vo.js';
 
 export type ProductStatus = 'active' | 'inactive' | 'archived';
 
 export class ProductEntity {
   private _translations: ProductTranslation[];
+  private _gallery: ProductGallery;
 
   constructor(
     public readonly id: string,
@@ -28,8 +32,10 @@ export class ProductEntity {
     private _updatedAt: Date,
     private _deletedAt: Date | null,
     translations: ProductTranslation[] = [],
+    gallery: ProductGallery = ProductGallery.empty(),
   ) {
     this._translations = ProductTranslation.sort(translations);
+    this._gallery = gallery;
   }
 
   static create(data: {
@@ -41,6 +47,7 @@ export class ProductEntity {
     price: number;
     currency?: string;
     translations?: ProductTranslationData[];
+    images?: ProductImageData[];
   }): ProductEntity {
     return new ProductEntity(
       randomUUID(),
@@ -56,6 +63,7 @@ export class ProductEntity {
       new Date(),
       null,
       ProductTranslation.collection(data.translations),
+      ProductGallery.create(data.images),
     );
   }
 
@@ -73,6 +81,7 @@ export class ProductEntity {
     updatedAt: Date;
     deletedAt: Date | null;
     translations?: ProductTranslationData[] | null;
+    images?: ProductImageData[] | null;
   }): ProductEntity {
     return new ProductEntity(
       data.id,
@@ -88,6 +97,7 @@ export class ProductEntity {
       data.updatedAt,
       data.deletedAt,
       ProductTranslation.fromPersistence(data.translations),
+      ProductGallery.fromPersistence(data.images),
     );
   }
 
@@ -204,6 +214,73 @@ export class ProductEntity {
     this._translations = next;
     this._updatedAt = new Date();
     return true;
+  }
+
+  // ── Images / gallery (آلبوم تصاویر) ─────────────────────────────────────
+
+  /** آلبوم تصاویر — همیشه مرتب، با تصویر شاخص در ابتدا. */
+  get gallery(): ProductGallery {
+    return this._gallery;
+  }
+
+  get images(): ProductImage[] {
+    return this._gallery.all;
+  }
+
+  get primaryImage(): ProductImage | null {
+    return this._gallery.primary;
+  }
+
+  get primaryImageUrl(): string | null {
+    return this._gallery.primaryUrl;
+  }
+
+  findImage(imageId: string): ProductImage | null {
+    return this._gallery.find(imageId);
+  }
+
+  addImage(data: ProductImageData): ProductImage {
+    // url در آلبوم یکتاست، پس همان کلید تطبیق تصویر تازه‌افزوده است
+    const url = ProductImage.normalizeUrl(data.url);
+
+    this._gallery = this._gallery.add(data);
+    this._touch();
+
+    return this._gallery.all.find((image) => image.url === url)!;
+  }
+
+  updateImage(imageId: string, patch: Partial<ProductImageData>): ProductImage {
+    this._gallery = this._gallery.update(imageId, patch);
+    this._touch();
+    return this._gallery.find(imageId)!;
+  }
+
+  removeImage(imageId: string): void {
+    this._gallery = this._gallery.remove(imageId);
+    this._touch();
+  }
+
+  setPrimaryImage(imageId: string): ProductImage {
+    this._gallery = this._gallery.setPrimary(imageId);
+    this._touch();
+    return this._gallery.find(imageId)!;
+  }
+
+  reorderImages(imageIds: string[]): ProductImage[] {
+    this._gallery = this._gallery.reorder(imageIds);
+    this._touch();
+    return this._gallery.all;
+  }
+
+  /** جایگزینی کل آلبوم (مسیر create/update محصول). */
+  replaceImages(items: ProductImageData[] | null | undefined): ProductImage[] {
+    this._gallery = ProductGallery.create(items);
+    this._touch();
+    return this._gallery.all;
+  }
+
+  private _touch(): void {
+    this._updatedAt = new Date();
   }
 
   /** Display title for a locale, falling back to the SKU for untranslated products. */

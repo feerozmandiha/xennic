@@ -46,6 +46,9 @@ describe('ProductService', () => {
     upsertProductTranslation: jest.fn(),
     deleteProductTranslation: jest.fn(),
     findProductTranslations: jest.fn(),
+    findProductImages: jest.fn(),
+    saveProductImages: jest.fn(),
+    deleteProductImage: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -336,6 +339,142 @@ describe('ProductService', () => {
 
       expect(entity.status).toBe('archived');
       expect(repo.saveProduct).toHaveBeenCalledWith(entity);
+    });
+  });
+
+  // ── images / album ───────────────────────────────────────────────────────
+
+  describe('product images', () => {
+    function productWithImages() {
+      return makeProduct({
+        images: [
+          { id: 'img-1', url: 'https://cdn/a.jpg' },
+          { id: 'img-2', url: 'https://cdn/b.jpg' },
+        ],
+      });
+    }
+
+    it('create stores the album coming from the payload', async () => {
+      const product = await service.create({
+        vendorId: 'vendor-1',
+        type: 'physical',
+        price: 250,
+        sku: 'CABLE-35',
+        images: [{ url: 'https://cdn/a.jpg' }, { url: 'https://cdn/b.jpg', isPrimary: true }],
+      } as any);
+
+      expect(product.images).toHaveLength(2);
+      expect(product.primaryImageUrl).toBe('https://cdn/b.jpg');
+      expect(repo.saveProduct).toHaveBeenCalledWith(product);
+    });
+
+    it('update replaces the whole album when images are provided', async () => {
+      repo.findProductById.mockResolvedValue(productWithImages());
+
+      const product = await service.update('prod-1', {
+        images: [{ url: 'https://cdn/z.jpg' }],
+      } as any);
+
+      expect(product.images.map((i) => i.url)).toEqual(['https://cdn/z.jpg']);
+    });
+
+    it('update leaves the album untouched when images is omitted', async () => {
+      repo.findProductById.mockResolvedValue(productWithImages());
+
+      const product = await service.update('prod-1', { price: 300 } as any);
+
+      expect(product.images).toHaveLength(2);
+    });
+
+    it('listImages returns the ordered album', async () => {
+      repo.findProductById.mockResolvedValue(productWithImages());
+
+      const images = await service.listImages('prod-1');
+
+      expect(images.map((i) => i.id)).toEqual(['img-1', 'img-2']);
+    });
+
+    it('addImage persists the album and returns the new image', async () => {
+      repo.findProductById.mockResolvedValue(productWithImages());
+
+      const image = await service.addImage('prod-1', { url: 'https://cdn/c.jpg' } as any);
+
+      expect(image.url).toBe('https://cdn/c.jpg');
+      expect(image.sortOrder).toBe(2);
+      expect(repo.saveProductImages).toHaveBeenCalledWith(
+        'prod-1',
+        expect.arrayContaining([expect.objectContaining({ url: 'https://cdn/c.jpg' })]),
+      );
+    });
+
+    it('addImage rejects a duplicate url and persists nothing', async () => {
+      repo.findProductById.mockResolvedValue(productWithImages());
+
+      await expect(service.addImage('prod-1', { url: 'https://cdn/a.jpg' } as any)).rejects.toThrow(
+        BadRequestException,
+      );
+      expect(repo.saveProductImages).not.toHaveBeenCalled();
+    });
+
+    it('updateImage patches and persists', async () => {
+      repo.findProductById.mockResolvedValue(productWithImages());
+
+      const image = await service.updateImage('prod-1', 'img-2', { altFa: 'دو' } as any);
+
+      expect(image.altFa).toBe('دو');
+      expect(repo.saveProductImages).toHaveBeenCalledTimes(1);
+    });
+
+    it('updateImage throws NotFound for an unknown image', async () => {
+      repo.findProductById.mockResolvedValue(productWithImages());
+
+      await expect(service.updateImage('prod-1', 'nope', { altFa: 'x' } as any)).rejects.toThrow(
+        NotFoundException,
+      );
+      expect(repo.saveProductImages).not.toHaveBeenCalled();
+    });
+
+    it('removeImage persists the remaining album', async () => {
+      repo.findProductById.mockResolvedValue(productWithImages());
+
+      await service.removeImage('prod-1', 'img-1');
+
+      const [, images] = repo.saveProductImages.mock.calls[0];
+      expect(images.map((i: any) => i.id)).toEqual(['img-2']);
+      expect(images[0].isPrimary).toBe(true);
+    });
+
+    it('setPrimaryImage moves the chosen image to the cover slot', async () => {
+      repo.findProductById.mockResolvedValue(productWithImages());
+
+      const image = await service.setPrimaryImage('prod-1', 'img-2');
+
+      expect(image.isPrimary).toBe(true);
+      const [, images] = repo.saveProductImages.mock.calls[0];
+      expect(images.map((i: any) => i.id)).toEqual(['img-2', 'img-1']);
+    });
+
+    it('reorderImages persists the new order', async () => {
+      repo.findProductById.mockResolvedValue(productWithImages());
+
+      const images = await service.reorderImages('prod-1', ['img-2', 'img-1']);
+
+      expect(images.map((i) => i.id)).toEqual(['img-2', 'img-1']);
+      expect(images.map((i) => i.sortOrder)).toEqual([0, 1]);
+      expect(repo.saveProductImages).toHaveBeenCalledWith('prod-1', images);
+    });
+
+    it('reorderImages rejects an incomplete list', async () => {
+      repo.findProductById.mockResolvedValue(productWithImages());
+
+      await expect(service.reorderImages('prod-1', ['img-1'])).rejects.toThrow(BadRequestException);
+      expect(repo.saveProductImages).not.toHaveBeenCalled();
+    });
+
+    it('image operations throw NotFound for an unknown product', async () => {
+      repo.findProductById.mockResolvedValue(null);
+
+      await expect(service.listImages('missing')).rejects.toThrow(NotFoundException);
     });
   });
 });

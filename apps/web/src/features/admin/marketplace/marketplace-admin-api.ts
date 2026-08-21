@@ -3,6 +3,7 @@ import type {
   AdminProduct,
   AdminVendor,
   Paginated,
+  ProductImage,
   ProductLocale,
   ProductStatus,
   ProductTranslation,
@@ -37,6 +38,7 @@ export interface ProductPayload {
   currency: string;
   specifications?: Record<string, unknown>;
   translations?: { locale: ProductLocale; title: string; description?: string }[];
+  images?: ProductImage[];
 }
 
 export type ProductUpdatePayload = Partial<Omit<ProductPayload, 'vendorId'>> & {
@@ -76,6 +78,24 @@ export const marketplaceAdminApi = {
 
   deleteTranslation: (id: string, locale: ProductLocale) =>
     apiClient.delete<{ success: boolean }>(`/products/${id}/translations/${locale}`),
+
+  // ── Product images (album) ─────────────────────────────────────────────
+  listImages: (id: string) => apiClient.get<ProductImage[]>(`/products/${id}/images`),
+
+  addImage: (id: string, body: ProductImage) =>
+    apiClient.post<ProductImage>(`/products/${id}/images`, body),
+
+  updateImage: (id: string, imageId: string, body: Partial<ProductImage>) =>
+    apiClient.patch<ProductImage>(`/products/${id}/images/${imageId}`, body),
+
+  deleteImage: (id: string, imageId: string) =>
+    apiClient.delete<{ success: boolean }>(`/products/${id}/images/${imageId}`),
+
+  setPrimaryImage: (id: string, imageId: string) =>
+    apiClient.put<ProductImage>(`/products/${id}/images/${imageId}/primary`, {}),
+
+  reorderImages: (id: string, imageIds: string[]) =>
+    apiClient.put<ProductImage[]>(`/products/${id}/images/order`, { imageIds }),
 
   // ── Vendors ────────────────────────────────────────────────────────────
   listVendors: (q?: string) =>

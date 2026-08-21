@@ -87,9 +87,17 @@ export function ProductList() {
             <Card key={p.id} className="card-hover group">
               <CardContent className="p-5">
                 <div className="flex items-start gap-3 mb-3">
-                  <div className="w-10 h-10 rounded-[var(--radius-lg)] bg-[hsl(var(--primary)/0.08)] flex items-center justify-center shrink-0">
-                    <Package className="h-5 w-5 text-[hsl(var(--primary))]" />
-                  </div>
+                  {p.primaryImageUrl ? (
+                    <img
+                      src={p.primaryImageUrl}
+                      alt={p.images?.[0]?.altFa ?? p.sku}
+                      className="h-10 w-10 shrink-0 rounded-[var(--radius-lg)] object-cover"
+                    />
+                  ) : (
+                    <div className="w-10 h-10 rounded-[var(--radius-lg)] bg-[hsl(var(--primary)/0.08)] flex items-center justify-center shrink-0">
+                      <Package className="h-5 w-5 text-[hsl(var(--primary))]" />
+                    </div>
+                  )}
                   <div className="min-w-0 flex-1">
                     <p className="font-semibold text-sm truncate">{p.sku}</p>
                     <p className="text-xs text-[hsl(var(--muted-foreground))]">{p.type}</p>

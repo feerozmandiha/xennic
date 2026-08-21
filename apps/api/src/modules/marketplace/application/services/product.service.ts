@@ -2,8 +2,13 @@ import { Injectable, Inject, ConflictException, NotFoundException } from '@nestj
 import type { IMarketplaceRepository } from '../../domain/interfaces/marketplace.repository.interface.js';
 import { ProductEntity } from '../../domain/entities/product.entity.js';
 import { ProductTranslation } from '../../domain/value-objects/product-translation.vo.js';
+import type { ProductImage } from '../../domain/value-objects/product-image.vo.js';
 import type { CreateProductDto, UpdateProductDto } from '../../presentation/dtos/product.dto.js';
-import type { UpsertProductTranslationDto } from '../../presentation/dtos/product.dto.js';
+import type {
+  CreateProductImageDto,
+  UpdateProductImageDto,
+  UpsertProductTranslationDto,
+} from '../../presentation/dtos/product.dto.js';
 import { calcCategory } from '../calc-category.map.js';
 
 @Injectable()
@@ -62,6 +67,7 @@ export class ProductService {
       price: dto.price,
       currency: dto.currency,
       translations: dto.translations,
+      images: dto.images,
     });
     await this.repo.saveProduct(entity);
     return entity;
@@ -69,14 +75,67 @@ export class ProductService {
 
   async update(id: string, dto: UpdateProductDto): Promise<ProductEntity> {
     const entity = await this.findById(id);
-    const { translations, ...attributes } = dto;
+    const { translations, images, ...attributes } = dto;
 
     entity.update(attributes);
     // ارسال آرایه ترجمه‌ها یعنی «جایگزینی کامل مجموعه ترجمه‌ها»
     if (translations !== undefined) entity.replaceTranslations(translations);
+    // ارسال آرایه تصاویر یعنی «جایگزینی کامل آلبوم»
+    if (images !== undefined) entity.replaceImages(images);
 
     await this.repo.saveProduct(entity);
     return entity;
+  }
+
+  // ── Images / gallery (آلبوم تصاویر) ──────────────────────────────────────
+
+  async listImages(productId: string): Promise<ProductImage[]> {
+    const entity = await this.findById(productId);
+    return entity.images;
+  }
+
+  async addImage(productId: string, dto: CreateProductImageDto): Promise<ProductImage> {
+    const entity = await this.findById(productId);
+    const image = entity.addImage(dto);
+
+    // چون افزودن ممکن است ترتیب و تصویر شاخص را جابه‌جا کند، کل آلبوم ذخیره می‌شود
+    await this.repo.saveProductImages(entity.id, entity.images);
+    return entity.findImage(image.id)!;
+  }
+
+  async updateImage(
+    productId: string,
+    imageId: string,
+    dto: UpdateProductImageDto,
+  ): Promise<ProductImage> {
+    const entity = await this.findById(productId);
+    const image = entity.updateImage(imageId, dto);
+
+    await this.repo.saveProductImages(entity.id, entity.images);
+    return image;
+  }
+
+  async removeImage(productId: string, imageId: string): Promise<void> {
+    const entity = await this.findById(productId);
+    entity.removeImage(imageId);
+
+    await this.repo.saveProductImages(entity.id, entity.images);
+  }
+
+  async setPrimaryImage(productId: string, imageId: string): Promise<ProductImage> {
+    const entity = await this.findById(productId);
+    const image = entity.setPrimaryImage(imageId);
+
+    await this.repo.saveProductImages(entity.id, entity.images);
+    return image;
+  }
+
+  async reorderImages(productId: string, imageIds: string[]): Promise<ProductImage[]> {
+    const entity = await this.findById(productId);
+    const images = entity.reorderImages(imageIds);
+
+    await this.repo.saveProductImages(entity.id, images);
+    return images;
   }
 
   // ── Translations (fa / en) ───────────────────────────────────────────────

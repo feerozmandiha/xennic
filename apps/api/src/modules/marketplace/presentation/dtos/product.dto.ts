@@ -1,18 +1,134 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   ArrayMaxSize,
+  ArrayNotEmpty,
   IsArray,
+  IsBoolean,
   IsEnum,
   IsIn,
+  IsInt,
   IsNumber,
   IsObject,
   IsOptional,
   IsString,
   MaxLength,
+  Min,
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { SUPPORTED_PRODUCT_LOCALES } from '../../domain/value-objects/product-translation.vo.js';
+import { SUPPORTED_IMAGE_MIME_TYPES } from '../../domain/value-objects/product-image.vo.js';
+import { MAX_PRODUCT_IMAGES } from '../../domain/value-objects/product-gallery.vo.js';
+
+/** ورودی افزودن یک تصویر به آلبوم محصول. */
+export class CreateProductImageDto {
+  @ApiPropertyOptional({
+    description: 'شناسهٔ تصویر موجود — هنگام جایگزینی آلبوم برای حفظ همان ردیف ارسال می‌شود',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(64)
+  id?: string;
+
+  @ApiProperty({
+    example: '/api/v1/storage/files/6f1c…/download',
+    description: 'آدرس مطلق http(s) یا مسیر نسبی از ریشه',
+  })
+  @IsString()
+  @MaxLength(2048)
+  url!: string;
+
+  @ApiPropertyOptional({ example: 'کابل مسی ۳۵ روی قرقره', maxLength: 300 })
+  @IsOptional()
+  @IsString()
+  @MaxLength(300)
+  altFa?: string;
+
+  @ApiPropertyOptional({ example: 'Copper cable on a drum', maxLength: 300 })
+  @IsOptional()
+  @IsString()
+  @MaxLength(300)
+  altEn?: string;
+
+  @ApiPropertyOptional({ description: 'تصویر شاخص محصول', default: false })
+  @IsOptional()
+  @IsBoolean()
+  isPrimary?: boolean;
+
+  @ApiPropertyOptional({ minimum: 0 })
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  @Type(() => Number)
+  sortOrder?: number;
+
+  @ApiPropertyOptional({ enum: SUPPORTED_IMAGE_MIME_TYPES })
+  @IsOptional()
+  @IsIn(SUPPORTED_IMAGE_MIME_TYPES as unknown as string[])
+  mimeType?: string;
+
+  @ApiPropertyOptional({ description: 'اندازه فایل به بایت', minimum: 0 })
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  @Type(() => Number)
+  fileSize?: number;
+}
+
+/** ویرایش یک تصویر موجود — همهٔ فیلدها اختیاری‌اند. */
+export class UpdateProductImageDto {
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  @MaxLength(2048)
+  url?: string;
+
+  @ApiPropertyOptional({ maxLength: 300 })
+  @IsOptional()
+  @IsString()
+  @MaxLength(300)
+  altFa?: string;
+
+  @ApiPropertyOptional({ maxLength: 300 })
+  @IsOptional()
+  @IsString()
+  @MaxLength(300)
+  altEn?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsBoolean()
+  isPrimary?: boolean;
+
+  @ApiPropertyOptional({ minimum: 0 })
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  @Type(() => Number)
+  sortOrder?: number;
+
+  @ApiPropertyOptional({ enum: SUPPORTED_IMAGE_MIME_TYPES })
+  @IsOptional()
+  @IsIn(SUPPORTED_IMAGE_MIME_TYPES as unknown as string[])
+  mimeType?: string;
+
+  @ApiPropertyOptional({ minimum: 0 })
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  @Type(() => Number)
+  fileSize?: number;
+}
+
+/** چیدمان مجدد آلبوم — فهرست باید شامل همهٔ تصاویر فعلی باشد. */
+export class ReorderProductImagesDto {
+  @ApiProperty({ type: [String], description: 'شناسهٔ تصاویر به ترتیب دلخواه؛ اولی شاخص می‌شود' })
+  @IsArray()
+  @ArrayNotEmpty()
+  @ArrayMaxSize(MAX_PRODUCT_IMAGES)
+  @IsString({ each: true })
+  imageIds!: string[];
+}
 
 /** Body of `PUT /products/:id/translations/:locale` — locale comes from the path. */
 export class UpsertProductTranslationDto {
@@ -86,6 +202,17 @@ export class CreateProductDto {
   @ValidateNested({ each: true })
   @Type(() => ProductTranslationDto)
   translations?: ProductTranslationDto[];
+
+  @ApiPropertyOptional({
+    type: [CreateProductImageDto],
+    description: `آلبوم تصاویر محصول — حداکثر ${MAX_PRODUCT_IMAGES} تصویر`,
+  })
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(MAX_PRODUCT_IMAGES)
+  @ValidateNested({ each: true })
+  @Type(() => CreateProductImageDto)
+  images?: CreateProductImageDto[];
 }
 
 export class UpdateProductDto {
@@ -130,6 +257,17 @@ export class UpdateProductDto {
   @ValidateNested({ each: true })
   @Type(() => ProductTranslationDto)
   translations?: ProductTranslationDto[];
+
+  @ApiPropertyOptional({
+    type: [CreateProductImageDto],
+    description: 'در صورت ارسال، کل آلبوم تصاویر جایگزین می‌شود',
+  })
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(MAX_PRODUCT_IMAGES)
+  @ValidateNested({ each: true })
+  @Type(() => CreateProductImageDto)
+  images?: CreateProductImageDto[];
 }
 
 export class ProductSearchQueryDto {

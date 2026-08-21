@@ -1,5 +1,6 @@
 import { ProductEntity } from '../../domain/entities/product.entity.js';
 import { ProductTranslation } from '../../domain/value-objects/product-translation.vo.js';
+import { ProductImage } from '../../domain/value-objects/product-image.vo.js';
 
 const prismaMock = {
   products: {
@@ -15,6 +16,11 @@ const prismaMock = {
     upsert: jest.fn(),
     deleteMany: jest.fn(),
   },
+  product_images: {
+    findMany: jest.fn(),
+    upsert: jest.fn(),
+    deleteMany: jest.fn(),
+  },
   vendors: {
     findUnique: jest.fn(),
     findMany: jest.fn(),
@@ -23,6 +29,8 @@ const prismaMock = {
     delete: jest.fn(),
     findFirst: jest.fn(),
   },
+  // تراکنش را در تست به‌صورت اجرای ترتیبی همان promiseها شبیه‌سازی می‌کنیم
+  $transaction: jest.fn((operations: unknown[]) => Promise.all(operations)),
 };
 
 jest.mock('@xennic/database', () => ({ prisma: prismaMock }));
@@ -45,6 +53,22 @@ function productRow(overrides: Record<string, any> = {}) {
     updated_at: new Date('2026-01-02T00:00:00Z'),
     deleted_at: null,
     translations: [],
+    images: [],
+    ...overrides,
+  };
+}
+
+function imageRow(overrides: Record<string, any> = {}) {
+  return {
+    id: 'img-1',
+    product_id: 'prod-1',
+    url: 'https://cdn.example.com/a.jpg',
+    alt_fa: null,
+    alt_en: null,
+    is_primary: true,
+    sort_order: 0,
+    mime_type: 'image/jpeg',
+    file_size: 1024,
     ...overrides,
   };
 }
@@ -56,6 +80,9 @@ describe('MarketplaceRepository — product translations', () => {
     repo = new MarketplaceRepository();
     jest.clearAllMocks();
     prismaMock.product_translations.deleteMany.mockResolvedValue({ count: 0 });
+    prismaMock.product_images.deleteMany.mockResolvedValue({ count: 0 });
+    prismaMock.product_images.upsert.mockResolvedValue({});
+    prismaMock.$transaction.mockImplementation((operations: unknown[]) => Promise.all(operations));
   });
 
   describe('findProductById', () => {
@@ -73,7 +100,7 @@ describe('MarketplaceRepository — product translations', () => {
 
       expect(prismaMock.products.findUnique).toHaveBeenCalledWith({
         where: { id: 'prod-1' },
-        include: { translations: true },
+        include: { translations: true, images: true },
       });
       expect(entity.locales).toEqual(['fa', 'en']);
       expect(entity.titleFor('fa')).toBe('کابل');
@@ -100,6 +127,7 @@ describe('MarketplaceRepository — product translations', () => {
       ]);
       expect(prismaMock.products.findMany.mock.calls[0][0].include).toEqual({
         translations: true,
+        images: true,
       });
     });
   });
@@ -194,6 +222,96 @@ describe('MarketplaceRepository — product translations', () => {
       const list = await repo.findProductTranslations('prod-1');
 
       expect(list.map((t: ProductTranslation) => t.locale)).toEqual(['fa']);
+    });
+  });
+
+  describe('product images (album)', () => {
+    it('hydrates the gallery onto the entity, primary first', async () => {
+      prismaMock.products.findUnique.mockResolvedValue(
+        productRow({
+          images: [
+            imageRow({ id: 'img-2', url: 'https://cdn/b.jpg', is_primary: true, sort_order: 5 }),
+            imageRow({ id: 'img-1', url: 'https://cdn/a.jpg', is_primary: false, sort_order: 1 }),
+          ],
+        }),
+      );
+
+      const entity = await repo.findProductById('prod-1');
+
+      expect(entity.images.map((i: ProductImage) => i.id)).toEqual(['img-2', 'img-1']);
+      expect(entity.primaryImageUrl).toBe('https://cdn/b.jpg');
+      expect(entity.images.map((i: ProductImage) => i.sortOrder)).toEqual([0, 1]);
+    });
+
+    it('saveProductImages deletes removed rows and upserts the rest in one transaction', async () => {
+      const images = [
+        ProductImage.create({ id: 'img-1', url: 'https://cdn/a.jpg', isPrimary: true }),
+        ProductImage.create({ id: 'img-2', url: 'https://cdn/b.jpg', sortOrder: 1 }),
+      ];
+
+      await repo.saveProductImages('prod-1', images);
+
+      expect(prismaMock.$transaction).toHaveBeenCalledTimes(1);
+      expect(prismaMock.product_images.deleteMany).toHaveBeenCalledWith({
+        where: { product_id: 'prod-1', id: { notIn: ['img-1', 'img-2'] } },
+      });
+      expect(prismaMock.product_images.upsert).toHaveBeenCalledTimes(2);
+      expect(prismaMock.product_images.upsert.mock.calls[0][0]).toEqual(
+        expect.objectContaining({
+          where: { id: 'img-1' },
+          update: expect.objectContaining({
+            url: 'https://cdn/a.jpg',
+            is_primary: true,
+            sort_order: 0,
+          }),
+        }),
+      );
+    });
+
+    it('clears the album when the entity has no image', async () => {
+      await repo.saveProductImages('prod-1', []);
+
+      expect(prismaMock.product_images.deleteMany).toHaveBeenCalledWith({
+        where: { product_id: 'prod-1' },
+      });
+      expect(prismaMock.product_images.upsert).not.toHaveBeenCalled();
+    });
+
+    it('findProductImages skips malformed rows', async () => {
+      prismaMock.product_images.findMany.mockResolvedValue([
+        imageRow({ id: 'bad', url: 'not-a-url', is_primary: false, sort_order: 1 }),
+        imageRow({ id: 'img-1', url: 'https://cdn/a.jpg' }),
+      ]);
+
+      const images = await repo.findProductImages('prod-1');
+
+      expect(images.map((i: ProductImage) => i.id)).toEqual(['img-1']);
+    });
+
+    it('deleteProductImage reports whether a row was removed', async () => {
+      prismaMock.product_images.deleteMany.mockResolvedValueOnce({ count: 1 });
+      await expect(repo.deleteProductImage('prod-1', 'img-1')).resolves.toBe(true);
+
+      prismaMock.product_images.deleteMany.mockResolvedValueOnce({ count: 0 });
+      await expect(repo.deleteProductImage('prod-1', 'img-1')).resolves.toBe(false);
+    });
+
+    it('saveProduct also mirrors the album', async () => {
+      prismaMock.products.upsert.mockResolvedValue({});
+
+      const entity = ProductEntity.reconstitute({
+        ...productRow(),
+        vendorId: 'vendor-1',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        deletedAt: null,
+        translations: [],
+        images: [{ id: 'img-1', url: 'https://cdn/a.jpg', isPrimary: true, sortOrder: 0 }],
+      } as any);
+
+      await repo.saveProduct(entity);
+
+      expect(prismaMock.product_images.upsert).toHaveBeenCalledTimes(1);
     });
   });
 

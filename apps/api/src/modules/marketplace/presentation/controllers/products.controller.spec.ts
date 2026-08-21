@@ -41,6 +41,12 @@ describe('ProductsController', () => {
     getTranslation: jest.fn(),
     upsertTranslation: jest.fn(),
     removeTranslation: jest.fn(),
+    listImages: jest.fn(),
+    addImage: jest.fn(),
+    updateImage: jest.fn(),
+    removeImage: jest.fn(),
+    setPrimaryImage: jest.fn(),
+    reorderImages: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -259,6 +265,103 @@ describe('ProductsController', () => {
         1,
         10,
       );
+    });
+  });
+
+  describe('images / album', () => {
+    function makeProductWithImages() {
+      return makeProduct({
+        images: [
+          { id: 'img-1', url: 'https://cdn/a.jpg', altFa: 'الف', mimeType: 'image/jpeg' },
+          { id: 'img-2', url: 'https://cdn/b.jpg' },
+        ],
+      });
+    }
+
+    it('exposes images and primaryImageUrl on the product payload', async () => {
+      service.findById.mockResolvedValue(makeProductWithImages());
+
+      const result: any = await controller.findById('prod-1');
+
+      expect(result.primaryImageUrl).toBe('https://cdn/a.jpg');
+      expect(result.images).toHaveLength(2);
+      expect(result.images[0]).toEqual({
+        id: 'img-1',
+        url: 'https://cdn/a.jpg',
+        altFa: 'الف',
+        altEn: null,
+        isPrimary: true,
+        sortOrder: 0,
+        mimeType: 'image/jpeg',
+        fileSize: null,
+      });
+    });
+
+    it('reports a null primaryImageUrl and an empty album for a product with no image', async () => {
+      service.findById.mockResolvedValue(makeProduct());
+
+      const result: any = await controller.findById('prod-1');
+
+      expect(result.primaryImageUrl).toBeNull();
+      expect(result.images).toEqual([]);
+    });
+
+    it('GET :id/images returns the serialized album', async () => {
+      service.listImages.mockResolvedValue(makeProductWithImages().images);
+
+      const result = await controller.listImages('prod-1');
+
+      expect(service.listImages).toHaveBeenCalledWith('prod-1');
+      expect(result.map((i: any) => i.id)).toEqual(['img-1', 'img-2']);
+    });
+
+    it('POST :id/images forwards the dto and serializes the new image', async () => {
+      const product = makeProductWithImages();
+      service.addImage.mockResolvedValue(product.findImage('img-2'));
+
+      const dto = { url: 'https://cdn/b.jpg' } as any;
+      const result: any = await controller.addImage('prod-1', dto);
+
+      expect(service.addImage).toHaveBeenCalledWith('prod-1', dto);
+      expect(result.url).toBe('https://cdn/b.jpg');
+    });
+
+    it('PATCH :id/images/:imageId forwards both params', async () => {
+      const product = makeProductWithImages();
+      service.updateImage.mockResolvedValue(product.findImage('img-1'));
+
+      const dto = { altEn: 'Cable' } as any;
+      await controller.updateImage('prod-1', 'img-1', dto);
+
+      expect(service.updateImage).toHaveBeenCalledWith('prod-1', 'img-1', dto);
+    });
+
+    it('DELETE :id/images/:imageId reports success', async () => {
+      service.removeImage.mockResolvedValue(undefined);
+
+      await expect(controller.removeImage('prod-1', 'img-1')).resolves.toEqual({ success: true });
+      expect(service.removeImage).toHaveBeenCalledWith('prod-1', 'img-1');
+    });
+
+    it('PUT :id/images/:imageId/primary sets the cover image', async () => {
+      const product = makeProductWithImages();
+      service.setPrimaryImage.mockResolvedValue(product.setPrimaryImage('img-2'));
+
+      const result: any = await controller.setPrimaryImage('prod-1', 'img-2');
+
+      expect(service.setPrimaryImage).toHaveBeenCalledWith('prod-1', 'img-2');
+      expect(result.isPrimary).toBe(true);
+      expect(result.id).toBe('img-2');
+    });
+
+    it('PUT :id/images/order forwards the id list', async () => {
+      const product = makeProductWithImages();
+      service.reorderImages.mockResolvedValue(product.reorderImages(['img-2', 'img-1']));
+
+      const result = await controller.reorderImages('prod-1', { imageIds: ['img-2', 'img-1'] });
+
+      expect(service.reorderImages).toHaveBeenCalledWith('prod-1', ['img-2', 'img-1']);
+      expect(result.map((i: any) => i.id)).toEqual(['img-2', 'img-1']);
     });
   });
 });

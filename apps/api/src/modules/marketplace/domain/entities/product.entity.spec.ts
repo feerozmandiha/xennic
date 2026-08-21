@@ -1,4 +1,4 @@
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { ProductEntity } from './product.entity.js';
 
 function makeProduct(overrides: Record<string, any> = {}): ProductEntity {
@@ -222,6 +222,178 @@ describe('ProductEntity — translations', () => {
         ]),
       ).toThrow(BadRequestException);
       expect(product.locales).toEqual(['fa']);
+    });
+  });
+
+  describe('images / gallery', () => {
+    it('starts with an empty gallery', () => {
+      const product = makeProduct();
+
+      expect(product.images).toEqual([]);
+      expect(product.primaryImage).toBeNull();
+      expect(product.primaryImageUrl).toBeNull();
+      expect(product.gallery.isEmpty).toBe(true);
+    });
+
+    it('accepts images at construction and normalizes them', () => {
+      const product = makeProduct({
+        images: [
+          { id: 'img-1', url: 'https://cdn/a.jpg', sortOrder: 4 },
+          { id: 'img-2', url: 'https://cdn/b.jpg', sortOrder: 1, isPrimary: true },
+        ],
+      });
+
+      expect(product.images.map((i) => i.id)).toEqual(['img-2', 'img-1']);
+      expect(product.primaryImageUrl).toBe('https://cdn/b.jpg');
+      expect(product.images.map((i) => i.sortOrder)).toEqual([0, 1]);
+    });
+
+    it('addImage makes the first image the cover', () => {
+      const product = makeProduct();
+
+      const image = product.addImage({ url: 'https://cdn/a.jpg' });
+
+      expect(image.isPrimary).toBe(true);
+      expect(product.primaryImageUrl).toBe('https://cdn/a.jpg');
+      expect(product.images).toHaveLength(1);
+    });
+
+    it('addImage appends further images', () => {
+      const product = makeProduct();
+      product.addImage({ url: 'https://cdn/a.jpg' });
+      const second = product.addImage({ url: 'https://cdn/b.jpg' });
+
+      expect(second.isPrimary).toBe(false);
+      expect(second.sortOrder).toBe(1);
+      expect(product.primaryImageUrl).toBe('https://cdn/a.jpg');
+    });
+
+    it('addImage rejects a duplicate url', () => {
+      const product = makeProduct({ images: [{ id: 'img-1', url: 'https://cdn/a.jpg' }] });
+
+      expect(() => product.addImage({ url: 'https://cdn/a.jpg' })).toThrow(BadRequestException);
+      expect(product.images).toHaveLength(1);
+    });
+
+    it('addImage rejects an invalid url without mutating the album', () => {
+      const product = makeProduct({ images: [{ id: 'img-1', url: 'https://cdn/a.jpg' }] });
+
+      expect(() => product.addImage({ url: 'javascript:alert(1)' })).toThrow(BadRequestException);
+      expect(product.images).toHaveLength(1);
+    });
+
+    it('updateImage patches alt texts', () => {
+      const product = makeProduct({ images: [{ id: 'img-1', url: 'https://cdn/a.jpg' }] });
+
+      const updated = product.updateImage('img-1', { altFa: 'کابل', altEn: 'Cable' });
+
+      expect(updated.altFa).toBe('کابل');
+      expect(product.findImage('img-1')?.altEn).toBe('Cable');
+    });
+
+    it('updateImage throws NotFound for an unknown image', () => {
+      const product = makeProduct();
+      expect(() => product.updateImage('nope', { altFa: 'x' })).toThrow(NotFoundException);
+    });
+
+    it('removeImage promotes the next image to cover', () => {
+      const product = makeProduct({
+        images: [
+          { id: 'img-1', url: 'https://cdn/a.jpg' },
+          { id: 'img-2', url: 'https://cdn/b.jpg' },
+        ],
+      });
+
+      product.removeImage('img-1');
+
+      expect(product.images.map((i) => i.id)).toEqual(['img-2']);
+      expect(product.primaryImageUrl).toBe('https://cdn/b.jpg');
+    });
+
+    it('removeImage throws NotFound for an unknown image', () => {
+      const product = makeProduct();
+      expect(() => product.removeImage('nope')).toThrow(NotFoundException);
+    });
+
+    it('setPrimaryImage changes the cover and moves it first', () => {
+      const product = makeProduct({
+        images: [
+          { id: 'img-1', url: 'https://cdn/a.jpg' },
+          { id: 'img-2', url: 'https://cdn/b.jpg' },
+        ],
+      });
+
+      const primary = product.setPrimaryImage('img-2');
+
+      expect(primary.isPrimary).toBe(true);
+      expect(product.images.map((i) => i.id)).toEqual(['img-2', 'img-1']);
+      expect(product.primaryImage?.id).toBe('img-2');
+    });
+
+    it('reorderImages applies the given order', () => {
+      const product = makeProduct({
+        images: [
+          { id: 'img-1', url: 'https://cdn/a.jpg' },
+          { id: 'img-2', url: 'https://cdn/b.jpg' },
+          { id: 'img-3', url: 'https://cdn/c.jpg' },
+        ],
+      });
+
+      product.reorderImages(['img-3', 'img-1', 'img-2']);
+
+      expect(product.images.map((i) => i.id)).toEqual(['img-3', 'img-1', 'img-2']);
+      expect(product.images.map((i) => i.sortOrder)).toEqual([0, 1, 2]);
+      expect(product.primaryImageUrl).toBe('https://cdn/c.jpg');
+    });
+
+    it('reorderImages rejects an incomplete list without mutating the album', () => {
+      const product = makeProduct({
+        images: [
+          { id: 'img-1', url: 'https://cdn/a.jpg' },
+          { id: 'img-2', url: 'https://cdn/b.jpg' },
+        ],
+      });
+
+      expect(() => product.reorderImages(['img-2'])).toThrow(BadRequestException);
+      expect(product.images.map((i) => i.id)).toEqual(['img-1', 'img-2']);
+    });
+
+    it('replaceImages swaps the whole album', () => {
+      const product = makeProduct({ images: [{ id: 'img-1', url: 'https://cdn/a.jpg' }] });
+
+      product.replaceImages([{ id: 'img-9', url: 'https://cdn/z.jpg' }]);
+
+      expect(product.images.map((i) => i.id)).toEqual(['img-9']);
+      expect(product.primaryImageUrl).toBe('https://cdn/z.jpg');
+    });
+
+    it('replaceImages with an empty array clears the album', () => {
+      const product = makeProduct({ images: [{ id: 'img-1', url: 'https://cdn/a.jpg' }] });
+
+      product.replaceImages([]);
+
+      expect(product.images).toEqual([]);
+      expect(product.primaryImageUrl).toBeNull();
+    });
+
+    it('replaceImages rejects duplicates without partially applying the change', () => {
+      const product = makeProduct({ images: [{ id: 'img-1', url: 'https://cdn/a.jpg' }] });
+
+      expect(() =>
+        product.replaceImages([{ url: 'https://cdn/x.jpg' }, { url: 'https://cdn/x.jpg' }]),
+      ).toThrow(BadRequestException);
+      expect(product.images.map((i) => i.id)).toEqual(['img-1']);
+    });
+
+    it('touches updatedAt on every album mutation', () => {
+      const product = makeProduct();
+      const before = product.updatedAt.getTime();
+
+      jest.spyOn(Date, 'now').mockReturnValue(before + 10_000);
+      product.addImage({ url: 'https://cdn/a.jpg' });
+      jest.spyOn(Date, 'now').mockRestore();
+
+      expect(product.updatedAt.getTime()).toBeGreaterThanOrEqual(before);
     });
   });
 

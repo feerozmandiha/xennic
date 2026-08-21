@@ -4,6 +4,8 @@ import { useMemo, useState } from 'react';
 import { Languages, Loader2, Package, Save, Trash2, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/stores/toast.store';
+import { ProductImageEditor } from '@/features/marketplace/components/product-image-editor';
+import { normalizeImages } from '@/features/marketplace/lib/product-images';
 import {
   SpecEditor,
   createSpecRow,
@@ -20,7 +22,13 @@ import {
   PRODUCT_STATUS_LABELS,
   PRODUCT_TYPES,
 } from './types';
-import type { AdminProduct, AdminVendor, ProductLocale, ProductStatus } from './types';
+import type {
+  AdminProduct,
+  AdminVendor,
+  ProductImage,
+  ProductLocale,
+  ProductStatus,
+} from './types';
 import type { ProductPayload, ProductUpdatePayload } from './marketplace-admin-api';
 
 const inputCls =
@@ -58,6 +66,23 @@ export function buildTranslationsPayload(draft: TranslationDraft) {
     locale,
     title: draft[locale].title.trim(),
     description: draft[locale].description.trim() || undefined,
+  }));
+}
+
+/**
+ * آلبوم تصاویر آماده برای ارسال — ترتیب و تصویر شاخص نهایی می‌شود و
+ * متن‌های جایگزین خالی حذف می‌شوند.
+ */
+export function buildImagesPayload(images: ProductImage[]): ProductImage[] {
+  return normalizeImages(images).map((image) => ({
+    id: image.id,
+    url: image.url,
+    altFa: image.altFa?.trim() ? image.altFa.trim() : undefined,
+    altEn: image.altEn?.trim() ? image.altEn.trim() : undefined,
+    isPrimary: image.isPrimary,
+    sortOrder: image.sortOrder,
+    mimeType: image.mimeType ?? undefined,
+    fileSize: image.fileSize ?? undefined,
   }));
 }
 
@@ -99,6 +124,9 @@ export function ProductEditor({
   const [translations, setTranslations] = useState<TranslationDraft>(() =>
     translationsFromProduct(product),
   );
+  const [images, setImages] = useState<ProductImage[]>(() =>
+    normalizeImages(product?.images ?? []),
+  );
   const [activeLocale, setActiveLocale] = useState<ProductLocale>('fa');
 
   const translatedLocales = useMemo(
@@ -136,6 +164,7 @@ export function ProductEditor({
 
     const specifications = rowsToSpecs(specRows);
     const translationsPayload = buildTranslationsPayload(translations);
+    const imagesPayload = buildImagesPayload(images);
 
     if (isEdit && product) {
       const payload: ProductUpdatePayload = {
@@ -146,6 +175,7 @@ export function ProductEditor({
         status,
         specifications,
         translations: translationsPayload,
+        images: imagesPayload,
       };
       onUpdate(product.id, payload);
       return;
@@ -160,6 +190,7 @@ export function ProductEditor({
       currency,
       specifications,
       translations: translationsPayload,
+      images: imagesPayload,
     });
   };
 
@@ -284,6 +315,11 @@ export function ProductEditor({
               </div>
             )}
           </div>
+        </div>
+
+        {/* تصاویر */}
+        <div className="mt-4 rounded-xl border border-[hsl(var(--border))] p-3">
+          <ProductImageEditor value={images} onChange={setImages} disabled={saving} />
         </div>
 
         {/* مشخصات فنی */}

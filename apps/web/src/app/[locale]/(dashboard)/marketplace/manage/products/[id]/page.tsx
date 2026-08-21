@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent } from '@/components/ui/card';
 import { apiClient } from '@/lib/api/client';
+import { ProductGalleryManager } from '@/features/marketplace/components/product-gallery-manager';
 
 export default function ProductDetailPage() {
   const t = useTranslations('marketplace');
@@ -41,9 +42,17 @@ export default function ProductDetailPage() {
       <Card>
         <CardContent className="p-6">
           <div className="flex items-start gap-4 mb-6">
-            <div className="w-14 h-14 rounded-[var(--radius-xl)] bg-[hsl(var(--primary)/0.08)] flex items-center justify-center">
-              <Package className="h-7 w-7 text-[hsl(var(--primary))]" />
-            </div>
+            {p.primaryImageUrl ? (
+              <img
+                src={p.primaryImageUrl}
+                alt={p.images?.[0]?.altFa ?? p.sku}
+                className="h-14 w-14 shrink-0 rounded-[var(--radius-xl)] object-cover"
+              />
+            ) : (
+              <div className="w-14 h-14 rounded-[var(--radius-xl)] bg-[hsl(var(--primary)/0.08)] flex items-center justify-center">
+                <Package className="h-7 w-7 text-[hsl(var(--primary))]" />
+              </div>
+            )}
             <div className="min-w-0 flex-1">
               <h1 className="text-xl font-bold">{p.sku}</h1>
               <p className="text-sm text-[hsl(var(--muted-foreground))]">{p.type}</p>
@@ -75,6 +84,12 @@ export default function ProductDetailPage() {
               </p>
             </div>
           </div>
+        </CardContent>
+      </Card>
+
+      <Card className="mt-6">
+        <CardContent className="p-6">
+          <ProductGalleryManager productId={id} images={p.images ?? []} />
         </CardContent>
       </Card>
     </div>

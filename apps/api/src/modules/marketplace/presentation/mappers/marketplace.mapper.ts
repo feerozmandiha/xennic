@@ -2,6 +2,7 @@ import type { ProductEntity } from '../../domain/entities/product.entity.js';
 import type { VendorEntity } from '../../domain/entities/vendor.entity.js';
 import type { ProductTranslationJson } from '../../domain/value-objects/product-translation.vo.js';
 import { DEFAULT_PRODUCT_LOCALE } from '../../domain/value-objects/product-translation.vo.js';
+import type { ProductImageJson } from '../../domain/value-objects/product-image.vo.js';
 
 export interface ProductResponse {
   id: string;
@@ -19,6 +20,10 @@ export interface ProductResponse {
   /** Locale actually used for `title`/`description`, `null` when untranslated. */
   resolvedLocale: string | null;
   translations: ProductTranslationJson[];
+  /** آلبوم تصاویر — مرتب، تصویر شاخص در ابتدا. */
+  images: ProductImageJson[];
+  /** میان‌بر تصویر شاخص برای فهرست‌ها و کارت‌ها. */
+  primaryImageUrl: string | null;
   createdAt: Date;
   updatedAt: Date;
   deletedAt: Date | null;
@@ -58,6 +63,8 @@ export function toProductResponse(
     description: resolved?.description ?? null,
     resolvedLocale: resolved?.locale ?? null,
     translations: entity.translations.map((t) => t.toJSON()),
+    images: entity.gallery.toJSON(),
+    primaryImageUrl: entity.primaryImageUrl,
     createdAt: entity.createdAt,
     updatedAt: entity.updatedAt,
     deletedAt: entity.deletedAt,

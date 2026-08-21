@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Edit3, Languages, Loader2, Package, Plus, Search, Trash2 } from 'lucide-react';
+import { Edit3, ImageOff, Languages, Loader2, Package, Plus, Search, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/stores/toast.store';
 import { ProductEditor } from './product-editor';
@@ -240,10 +240,31 @@ export function ProductsPanel() {
               products.map((product) => (
                 <tr key={product.id} className="hover:bg-[hsl(var(--secondary)/0.25)]">
                   <td className="px-4 py-3">
-                    <p className="font-medium">{product.title}</p>
-                    <p className="text-[10px] text-[hsl(var(--muted-foreground))]" dir="ltr">
-                      {product.sku}
-                    </p>
+                    <div className="flex items-center gap-2.5">
+                      {product.primaryImageUrl ? (
+                        <img
+                          src={product.primaryImageUrl}
+                          alt={product.images?.[0]?.altFa ?? product.title}
+                          loading="lazy"
+                          className="h-10 w-10 shrink-0 rounded-lg border border-[hsl(var(--border))] object-cover"
+                        />
+                      ) : (
+                        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-dashed border-[hsl(var(--border))]">
+                          <ImageOff className="h-4 w-4 text-[hsl(var(--muted-foreground))] opacity-40" />
+                        </span>
+                      )}
+                      <div className="min-w-0">
+                        <p className="font-medium">{product.title}</p>
+                        <p className="text-[10px] text-[hsl(var(--muted-foreground))]" dir="ltr">
+                          {product.sku}
+                        </p>
+                        {(product.images?.length ?? 0) > 1 ? (
+                          <p className="text-[10px] text-[hsl(var(--muted-foreground))]">
+                            {product.images.length} تصویر
+                          </p>
+                        ) : null}
+                      </div>
+                    </div>
                   </td>
                   <td className="px-4 py-3 text-xs">
                     {vendorNameById.get(product.vendorId) ?? '—'}

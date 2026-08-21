@@ -14,7 +14,10 @@ import { ApiTags, ApiOperation, ApiBearerAuth, ApiParam, ApiQuery } from '@nestj
 import { ProductService } from '../../application/services/product.service.js';
 import {
   CreateProductDto,
+  CreateProductImageDto,
+  ReorderProductImagesDto,
   UpdateProductDto,
+  UpdateProductImageDto,
   UpsertProductTranslationDto,
 } from '../dtos/product.dto.js';
 import {
@@ -146,6 +149,54 @@ export class ProductsController {
   @ApiParam({ name: 'locale', enum: SUPPORTED_PRODUCT_LOCALES })
   async removeTranslation(@Param('id') id: string, @Param('locale') locale: string) {
     await this.productService.removeTranslation(id, locale);
+    return { success: true };
+  }
+
+  // ── Images / album ─────────────────────────────────────────────────────
+
+  @Get(':id/images')
+  @ApiOperation({ summary: 'List the product image album (ordered, primary first)' })
+  async listImages(@Param('id') id: string) {
+    const images = await this.productService.listImages(id);
+    return images.map((image) => image.toJSON());
+  }
+
+  @Post(':id/images')
+  @ApiOperation({ summary: 'Add an image to the product album' })
+  async addImage(@Param('id') id: string, @Body() dto: CreateProductImageDto) {
+    const image = await this.productService.addImage(id, dto);
+    return image.toJSON();
+  }
+
+  @Put(':id/images/order')
+  @ApiOperation({ summary: 'Reorder the album — the first id becomes the primary image' })
+  async reorderImages(@Param('id') id: string, @Body() dto: ReorderProductImagesDto) {
+    const images = await this.productService.reorderImages(id, dto.imageIds);
+    return images.map((image) => image.toJSON());
+  }
+
+  @Put(':id/images/:imageId/primary')
+  @ApiOperation({ summary: 'Mark an image as the product primary image' })
+  async setPrimaryImage(@Param('id') id: string, @Param('imageId') imageId: string) {
+    const image = await this.productService.setPrimaryImage(id, imageId);
+    return image.toJSON();
+  }
+
+  @Patch(':id/images/:imageId')
+  @ApiOperation({ summary: 'Update an album image (alt text, order, primary flag)' })
+  async updateImage(
+    @Param('id') id: string,
+    @Param('imageId') imageId: string,
+    @Body() dto: UpdateProductImageDto,
+  ) {
+    const image = await this.productService.updateImage(id, imageId, dto);
+    return image.toJSON();
+  }
+
+  @Delete(':id/images/:imageId')
+  @ApiOperation({ summary: 'Remove an image from the album' })
+  async removeImage(@Param('id') id: string, @Param('imageId') imageId: string) {
+    await this.productService.removeImage(id, imageId);
     return { success: true };
   }
 }
