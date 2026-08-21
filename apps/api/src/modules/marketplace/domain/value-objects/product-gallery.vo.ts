@@ -81,10 +81,12 @@ export class ProductGallery {
     const primaryIndex = ordered.findIndex((image) => image.isPrimary);
     const resolvedPrimary = primaryIndex >= 0 ? primaryIndex : 0;
 
-    const [primary] = ordered.splice(resolvedPrimary, 1);
-    const finalOrder = [primary, ...ordered];
+    const primary = ordered[resolvedPrimary];
+    if (!primary) return [];
 
-    return ProductGallery.renumber(finalOrder);
+    const rest = ordered.filter((_, index) => index !== resolvedPrimary);
+
+    return ProductGallery.renumber([primary, ...rest]);
   }
 
   /**
