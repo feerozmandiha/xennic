@@ -1,15 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { DocumentIntakeService } from './document-intake.service.js';
 import type { IKnowledgeDocumentRepository } from '../../domain/interfaces/knowledge-document.repository.interface.js';
-import type { IKnowledgeChunkRepository } from '../../domain/interfaces/knowledge-chunk.repository.interface.js';
-import type { IExtractionRepository } from '../../domain/interfaces/extraction.repository.interface.js';
-import type { IPipelineRunRepository } from '../../domain/interfaces/pipeline-run.repository.interface.js';
-import type { EmbeddingGateway } from '../../domain/interfaces/embedding-gateway.interface.js';
 import type { IStorageService } from '../../domain/interfaces/storage-service.interface.js';
 import { KnowledgeDocument } from '../../domain/entities/knowledge-document.entity.js';
 
 const WORKSPACE_ID = 'ws-test-123';
-const TEST_UUID = '550e8400-e29b-41d4-a716-446655440000';
 
 describe('DocumentIntakeService', () => {
   let service: DocumentIntakeService;

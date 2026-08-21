@@ -36,7 +36,6 @@ import { WorkspaceModule } from '../workspace/workspace.module.js';
 import { RbacModule } from '../rbac/rbac.module.js';
 import { KnowledgeModule } from '../knowledge/knowledge.module.js';
 import { StorageModule } from '../storage/storage.module.js';
-import { MinioService } from '../storage/infrastructure/minio/minio.service.js';
 import { KfStorageAdapter } from './infrastructure/storage/minio-storage.service.js';
 import { BullModule } from '@nestjs/bullmq';
 
