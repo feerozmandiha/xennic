@@ -25,6 +25,7 @@ import { JwtAuthGuard } from '../../../auth/infrastructure/guards/jwt-auth.guard
 import { WorkspaceGuard } from '../../../rbac/infrastructure/guards/workspace.guard.js';
 import { RequirePermissions } from '../../../rbac/infrastructure/decorators/permissions.decorator.js';
 import { PermissionsGuard } from '../../../rbac/infrastructure/guards/permissions.guard.js';
+import { AdminGuard } from '../../../admin/infrastructure/guards/admin.guard.js';
 import { KnowledgeService } from '../../application/services/knowledge.service.js';
 import { PlanEntitlementService } from '../../../billing/application/services/plan-entitlement.service.js';
 import {
@@ -110,6 +111,42 @@ export class KnowledgeController {
   async create(@Body() dto: CreateKnowledgeDto, @Req() req: any) {
     const entity = await this.knowledgeService.create(dto, req.workspaceId, req.user.userId);
     return { success: true, data: KnowledgeResponseDto.fromEntity(entity) };
+  }
+
+  @Get('admin/all')
+  @UseGuards(JwtAuthGuard, AdminGuard)
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({
+    summary: 'Admin: list all articles across workspaces',
+    description:
+      'Platform-wide list used by the admin Knowledge console. Does ' +
+      'not filter by workspace so editors see every article.',
+  })
+  @ApiQuery({ name: 'page', required: false, type: Number, example: 1 })
+  @ApiQuery({ name: 'limit', required: false, type: Number, example: 50 })
+  @ApiQuery({
+    name: 'status',
+    required: false,
+    enum: ['all', 'draft', 'review', 'published', 'archived'],
+  })
+  @ApiQuery({ name: 'q', required: false, type: String })
+  async findAllForAdmin(
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+    @Query('status') status?: string,
+    @Query('q') q?: string,
+  ) {
+    const result = await this.knowledgeService.findAllForAdmin(
+      page ? parseInt(page, 10) : 1,
+      limit ? parseInt(limit, 10) : 50,
+      status,
+      q,
+    );
+    return {
+      success: true,
+      data: KnowledgeResponseDto.fromEntities(result.data),
+      meta: result.meta,
+    };
   }
 
   // ─── SEARCH /knowledge/search ──────────────────────────────────────────────
