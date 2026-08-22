@@ -2,13 +2,15 @@
 AI Service Configuration
 """
 
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 from typing import Optional
 
 
 class Settings(BaseSettings):
     """Application settings"""
-    
+
+    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+
     # Service
     SERVICE_NAME: str = "ai-service"
     SERVICE_PORT: int = 8002
@@ -37,10 +39,6 @@ class Settings(BaseSettings):
 
     # Database (future)
     DATABASE_URL: Optional[str] = None
-    
-    class Config:
-        env_file = ".env"
-        extra = "ignore"
 
 
 settings = Settings()
