@@ -20,13 +20,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import { useAuthStore } from '@/stores/auth.store';
 import { useToast } from '@/stores/toast.store';
-import { apiClient } from '@/lib/api/client';
+import { API_BASE, apiClient } from '@/lib/api/client';
 import { cn } from '@/lib/utils';
-
-const API_BASE =
-  typeof window !== 'undefined'
-    ? `${process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000'}/api/v1`
-    : `${process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000'}/api/v1`;
 
 // ── File Icon ─────────────────────────────────────────────────────────────────
 

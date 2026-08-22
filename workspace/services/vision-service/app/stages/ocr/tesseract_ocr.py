@@ -12,8 +12,6 @@ import pytesseract
 from app.config.settings import settings
 
 
-TESSDATA_PATH = "/usr/share/tesseract-ocr/5/tessdata"
-
 _LANG_MAP: dict[str, str] = {
     "fa": "fas",
     "en": "eng",
@@ -25,7 +23,7 @@ def _to_tesseract_lang(paddle_langs: list[str]) -> str:
     mapped = [_LANG_MAP.get(l, l) for l in paddle_langs]
     available = {
         f.replace(".traineddata", "")
-        for f in os.listdir(TESSDATA_PATH)
+        for f in os.listdir(settings.tesseract_data_path)
         if f.endswith(".traineddata")
     }
     mapped = [l for l in mapped if l in available]
@@ -33,7 +31,10 @@ def _to_tesseract_lang(paddle_langs: list[str]) -> str:
 
 
 def _try_ocr(gray: np.ndarray, config_suffix: str = "") -> list[dict[str, Any]]:
-    base = f"--oem 3 --psm 3 --tessdata-dir {TESSDATA_PATH} -l {_to_tesseract_lang(settings.paddle_langs)}"
+    base = (
+        f"--oem 3 --psm 3 --tessdata-dir {settings.tesseract_data_path} "
+        f"-l {_to_tesseract_lang(settings.paddle_langs)}"
+    )
     config = f"{base} {config_suffix}".strip()
 
     data = pytesseract.image_to_data(

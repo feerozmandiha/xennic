@@ -19,6 +19,7 @@ httpx==0.28.1
 minio==7.2.16
 
 # RAG & Vector Store
+numpy==1.26.4
 qdrant-client==1.12.1
 
 # Testing

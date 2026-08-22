@@ -330,13 +330,16 @@ async def request_validation_error_handler(
 # ── Health Check ──────────────────────────────────────────────────────────────
 
 @app.get("/health", tags=["System"])
-async def health_check():
-    registry = CalculationRegistry()
+async def health_check(request: Request):
+    registry = getattr(request.app.state, "registry", None)
+    registry_ready = registry is not None
+
     return {
-        "status":                 "ok",
+        "status":                 "ok" if registry_ready else "degraded",
         "service":                "engineering-service",
         "version":                "0.4.0",
-        "calculators_registered": registry.count(),
+        "registry_ready":         registry_ready,
+        "calculators_registered": registry.count() if registry_ready else 0,
     }
 
 

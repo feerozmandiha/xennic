@@ -29,6 +29,22 @@
 
 بنابراین برای توسعه روزمره، همه چیز را یکجا بالا نیاورید. سرویس‌های Python سنگین هستند و ممکن است باعث کندی یا هنگ سیستم شوند.
 
+## نسخه Python برای تست‌های لوکال
+
+سرویس‌های Python پروژه با Python 3.12 پشتیبانی و در CI اجرا می‌شوند. فایل `.python-version`
+نیز روی `3.12` تنظیم شده است. برای اجرای تست‌های Python از venv مبتنی بر 3.12 استفاده کنید؛
+Python 3.14 در حال حاضر با برخی وابستگی‌های native مثل NumPy/CFFI سازگار نیست.
+
+نمونه:
+
+```bash
+cd workspace/services/engineering-service
+python3.12 -m venv .venv
+source .venv/bin/activate
+python -m pip install -r requirements.txt
+PYTHONPATH=. python -m pytest tests -q --tb=short
+```
+
 ---
 
 ## 1. راه‌اندازی سبک برای توسعه روزمره

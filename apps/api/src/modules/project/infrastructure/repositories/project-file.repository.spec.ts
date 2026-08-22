@@ -5,7 +5,6 @@ import { ProjectFile } from '../../domain/entities/project-file.entity.js';
 import { prisma } from '@xennic/database';
 
 const prismaMock = prisma as any;
-const UNSET = Symbol('UNSET');
 
 function makeRow(overrides?: {
   id?: string;

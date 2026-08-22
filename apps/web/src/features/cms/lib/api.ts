@@ -1,10 +1,5 @@
-import { apiClient, getToken } from '@/lib/api/client';
+import { API_BASE, apiClient, getToken } from '@/lib/api/client';
 import type { CmsContent, CmsDocument, CmsMedia } from './types';
-
-const API_BASE =
-  typeof window !== 'undefined'
-    ? `${process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000'}/api/v1`
-    : `${process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000'}/api/v1`;
 
 export interface ListResult<T> {
   data: T[];

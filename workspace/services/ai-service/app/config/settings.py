@@ -2,13 +2,15 @@
 AI Service Configuration
 """
 
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 from typing import Optional
 
 
 class Settings(BaseSettings):
     """Application settings"""
-    
+
+    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+
     # Service
     SERVICE_NAME: str = "ai-service"
     SERVICE_PORT: int = 8002
@@ -30,6 +32,11 @@ class Settings(BaseSettings):
     # Engineering Service
     ENGINEERING_SERVICE_URL: str = "http://engineering-service:8001"
     
+    # Embeddings
+    EMBEDDING_API_KEY: Optional[str] = None
+    EMBEDDING_MODEL: str = "text-embedding-3-small"
+    EMBEDDING_DIMENSION: int = 1536
+
     # Qdrant Vector Database
     QDRANT_URL: Optional[str] = None
     QDRANT_API_KEY: Optional[str] = None
@@ -37,10 +44,6 @@ class Settings(BaseSettings):
 
     # Database (future)
     DATABASE_URL: Optional[str] = None
-    
-    class Config:
-        env_file = ".env"
-        extra = "ignore"
 
 
 settings = Settings()

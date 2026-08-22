@@ -38,7 +38,8 @@ def test_health_check():
     data = response.json()
     assert data["status"] == "ok"
     assert data["service"] == "engineering-service"
-    assert "calculators_registered" in data
+    assert data["registry_ready"] is True
+    assert data["calculators_registered"] == 5
 
 
 def test_ohms_law_calculate_voltage():

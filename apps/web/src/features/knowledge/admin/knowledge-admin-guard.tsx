@@ -1,14 +1,10 @@
 'use client';
 
+import { API_BASE } from '@/lib/api/client';
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useAuthStore } from '@/stores/auth.store';
 import { Shield, Loader2 } from 'lucide-react';
-
-const API_BASE =
-  typeof window !== 'undefined'
-    ? `${process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000'}/api/v1`
-    : 'http://localhost:3000/api/v1';
 
 /**
  * Client-side guard that only lets platform admins access

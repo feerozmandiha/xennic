@@ -1,7 +1,6 @@
 import { BadRequestException } from '@nestjs/common';
 import { Readable } from 'stream';
 import { FileVersionController } from './file-version.controller.js';
-import { FileVersionService } from '../../application/services/file-version.service.js';
 import { FileVersionEntity } from '../../domain/entities/file-version.entity.js';
 
 jest.mock('@xennic/database', () => ({ prisma: {} }));

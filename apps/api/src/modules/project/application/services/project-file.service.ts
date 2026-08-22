@@ -4,7 +4,6 @@ import {
   NotFoundException,
   ConflictException,
   ForbiddenException,
-  BadRequestException,
 } from '@nestjs/common';
 import type { IProjectFileRepository } from '../../domain/interfaces/project-file.repository.interface.js';
 import type { IProjectRepository } from '../../domain/interfaces/project.repository.interface.js';

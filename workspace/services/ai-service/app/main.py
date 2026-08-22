@@ -124,15 +124,25 @@ async def http_exception_handler(request: Request, exc: HTTPException):
     )
 
 
+def _get_agent_registry(request: Request) -> AgentRegistry:
+    registry = getattr(request.app.state, "registry", None)
+    if registry is None:
+        raise HTTPException(status_code=503, detail="Agent registry is not initialized")
+    return registry
+
+
 # Health Check
 @app.get("/health", tags=["System"])
-async def health_check():
-    registry = AgentRegistry()
+async def health_check(request: Request):
+    registry = getattr(request.app.state, "registry", None)
+    registry_ready = registry is not None
+
     return {
-        "status": "ok",
+        "status": "ok" if registry_ready else "degraded",
         "service": "ai-service",
         "version": "0.2.0",
-        "agents_registered": len(registry.list_all()),
+        "registry_ready": registry_ready,
+        "agents_registered": len(registry.list_all()) if registry_ready else 0,
     }
 
 
@@ -147,20 +157,26 @@ async def root():
 
 
 @app.get("/api/v1/ai/agents", tags=["AI Gateway"], response_model=list[AgentInfo])
-async def list_agents():
-    registry = AgentRegistry()
+async def list_agents(request: Request):
+    registry = _get_agent_registry(request)
     return registry.list_all()
 
 
 @app.post("/api/v1/ai/chat", tags=["AI Gateway"])
-async def chat(input: ChatInput):
-    registry = AgentRegistry()
+async def chat(input: ChatInput, request: Request):
+    registry = _get_agent_registry(request)
     agent = registry.get(input.agent_id)
     
     if not agent:
         return JSONResponse(
             status_code=404,
-            content={"success": False, "error": {"code": "AGENT_NOT_FOUND", "message": f"Agent '{input.agent_id}' not found"}}
+            content={
+                "success": False,
+                "error": {
+                    "code": "AGENT_NOT_FOUND",
+                    "message": f"Agent '{input.agent_id}' not found",
+                },
+            },
         )
     
     response = await agent.process(input)
@@ -168,14 +184,20 @@ async def chat(input: ChatInput):
 
 
 @app.post("/api/v1/ai/chat/stream", tags=["AI Gateway"])
-async def chat_stream(input: StreamChatInput):
-    registry = AgentRegistry()
+async def chat_stream(input: StreamChatInput, request: Request):
+    registry = _get_agent_registry(request)
     agent = registry.get(input.agent_id)
     
     if not agent:
         return JSONResponse(
             status_code=404,
-            content={"success": False, "error": {"code": "AGENT_NOT_FOUND", "message": f"Agent '{input.agent_id}' not found"}}
+            content={
+                "success": False,
+                "error": {
+                    "code": "AGENT_NOT_FOUND",
+                    "message": f"Agent '{input.agent_id}' not found",
+                },
+            },
         )
     
     chat_input = ChatInput(
