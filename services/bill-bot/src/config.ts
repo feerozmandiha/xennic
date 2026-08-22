@@ -14,6 +14,13 @@ export interface AppConfig {
   pollingTimeoutSec: number;
   maxConcurrentOcr: number;
   logLevel: 'debug' | 'info' | 'warn' | 'error';
+  /**
+   * حالت اجرای ربات:
+   * - 'mvp'  (پیش‌فرض): فقط دریافت قبض ← استخراج ← نمایش جدول. بدون ذخیره‌سازی،
+   *   بدون تحلیل تعرفه، PDF و مشاوره. برای تست و بررسی کارفرما.
+   * - 'full': چرخه کامل طبق مستندات (تحلیل ۱۴۰۵ + گزارش PDF + مشاوره + store).
+   */
+  mode: 'mvp' | 'full';
 }
 
 function env(key: string, fallback = ''): string {
@@ -54,6 +61,7 @@ export function loadConfig(): AppConfig {
     pollingTimeoutSec: Number(env('POLLING_TIMEOUT_SEC', '30')),
     maxConcurrentOcr: Number(env('MAX_CONCURRENT_OCR', '3')),
     logLevel: (env('LOG_LEVEL', 'info') as AppConfig['logLevel']) || 'info',
+    mode: env('BILL_BOT_MODE', 'mvp') === 'full' ? 'full' : 'mvp',
   };
 }
 

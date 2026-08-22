@@ -22,6 +22,7 @@ import {
   adminRequestKeyboard,
   analysisKeyboard,
   consultTypeKeyboard,
+  mvpKeyboard,
   phoneKeyboard,
   windowKeyboard,
   zoneKeyboard,
@@ -51,6 +52,12 @@ interface Session {
 
 const MAX_FILE_BYTES = 10 * 1024 * 1024;
 const ALLOWED_EXT = ['pdf', 'jpg', 'jpeg', 'png', 'webp'];
+
+/** پیام نسخه آزمایشی (MVP) — در حالت mvp پس از هر جدول نمایش داده می‌شود. */
+const MVP_NOTE =
+  '📋 این نسخه آزمایشی فقط «جدول اطلاعات قبض» را نمایش می‌دهد.\n' +
+  'تحلیل تعرفه، گزارش PDF و مشاوره پس از اتصال کامل به Xennic فعال می‌شوند.\n' +
+  '🔒 هیچ داده‌ای از قبض شما ذخیره نمی‌شود.';
 const FIELD_LABELS: Record<string, string> = {
   consumptionKwh: 'مصرف (کیلووات‌ساعت)',
   periodDays: 'تعداد روز دوره',
@@ -106,9 +113,10 @@ export class Flow {
   private rateFiles = new Map<string, number[]>();
   private activeOcr = 0;
   private cfg: AppConfig;
-  private store: ConsultationStore;
+  /** در حالت mvp مقدار null است — هیچ ذخیره‌سازی انجام نمی‌شود. */
+  private store: ConsultationStore | null;
 
-  constructor(cfg: AppConfig, store: ConsultationStore) {
+  constructor(cfg: AppConfig, store: ConsultationStore | null) {
     this.cfg = cfg;
     this.store = store;
   }
@@ -241,15 +249,24 @@ export class Flow {
     switch (cmd) {
       case '/start':
         s.state = { name: 'idle' };
-        await api.sendMessage(
-          chatId,
-          `سلام 👋 من ربات تحلیل قبض برق‌ام.\n\nقبض برقت رو به‌صورت «عکس» یا «PDF» بفرست تا:\n۱) اطلاعاتش رو دقیق استخراج کنم و در جدول نشان دهم\n۲) بر اساس تعرفه ${faNumber(this.cfg.tariffYear)} توانیر تحلیلش کنم\n۳) گزارش ${'PDF'} و مسیر مشاوره بدهم`,
-        );
+        if (this.cfg.mode === 'mvp') {
+          await api.sendMessage(
+            chatId,
+            `سلام 👋 من ربات استخراج قبض برق‌ام (نسخه آزمایشی).\n\nقبض برقت رو به‌صورت «عکس» یا «PDF» بفرست تا:\n۱) همه اطلاعاتش رو دقیق استخراج کنم\n۲) به‌صورت جدول مرتب در همین گفتگو نشونت بدم\n\n🔒 هیچ داده‌ای از قبض شما ذخیره نمی‌شود.`,
+          );
+        } else {
+          await api.sendMessage(
+            chatId,
+            `سلام 👋 من ربات تحلیل قبض برق‌ام.\n\nقبض برقت رو به‌صورت «عکس» یا «PDF» بفرست تا:\n۱) اطلاعاتش رو دقیق استخراج کنم و در جدول نشان دهم\n۲) بر اساس تعرفه ${faNumber(this.cfg.tariffYear)} توانیر تحلیلش کنم\n۳) گزارش ${'PDF'} و مسیر مشاوره بدهم`,
+          );
+        }
         return;
       case '/help':
         await api.sendMessage(
           chatId,
-          'دستورها:\n/bill — شروع (همان فرستادن فایل کافی است)\n/status — وضعیت درخواست مشاوره\n/cancel — لغو مرحله جاری\n/delete — پاک کردن داده‌های شما\n\nعکس واضح و بدون زاویه، دقت استخراج را بالا می‌برد.',
+          this.cfg.mode === 'mvp'
+            ? 'دستورها:\n/bill — شروع (همان فرستادن فایل کافی است)\n/cancel — لغو مرحله جاری\n/delete — پاک کردن نشست جاری\n\nعکس واضح و بدون زاویه، دقت استخراج را بالا می‌برد.\nفرمت‌های مجاز: JPG ،PNG ،WEBP و PDF تا ۱۰ مگابایت.'
+            : 'دستورها:\n/bill — شروع (همان فرستادن فایل کافی است)\n/status — وضعیت درخواست مشاوره\n/cancel — لغو مرحله جاری\n/delete — پاک کردن داده‌های شما\n\nعکس واضح و بدون زاویه، دقت استخراج را بالا می‌برد.',
         );
         return;
       case '/bill':
@@ -261,6 +278,13 @@ export class Flow {
         await api.sendMessage(chatId, 'لغو شد. برای شروع دوباره فایل قبض را بفرستید.');
         return;
       case '/status': {
+        if (!this.store) {
+          await api.sendMessage(
+            chatId,
+            'ℹ️ در نسخه آزمایشی فعلی هیچ داده‌ای ذخیره نمی‌شود؛ بنابراین سابقه‌ای برای نمایش وجود ندارد.',
+          );
+          return;
+        }
         const list = this.store.byUser(platform.id, String(chatId)).slice(-3).reverse();
         if (list.length === 0) {
           await api.sendMessage(chatId, 'درخواست مشاوره‌ای از شما ثبت نشده است.');
@@ -286,6 +310,10 @@ export class Flow {
         );
         return;
       case '/requests': {
+        if (!this.store) {
+          await api.sendMessage(chatId, 'ℹ️ این قابلیت در نسخه آزمایشی فعلی فعال نیست.');
+          return;
+        }
         if (!this.isAdmin(chatId)) {
           await api.sendMessage(chatId, '⛔ این دستور فقط برای ادمین است.');
           return;
@@ -407,7 +435,7 @@ export class Flow {
       bill.confidence = bill.confidence ?? {};
     }
     s.bill = bill;
-    await this.presentTableAndAnalysis(platform, api, chatId, s, visionWarn);
+    await this.presentResult(platform, api, chatId, s, visionWarn);
     void waitMsg;
   }
 
@@ -428,10 +456,37 @@ export class Flow {
     }
     s.bill = bill;
     s.state = { name: 'idle' };
-    await this.presentTableAndAnalysis(platform, api, chatId, s, []);
+    await this.presentResult(platform, api, chatId, s, []);
   }
 
-  // ── جدول + تحلیل ──────────────────────────────────────────────
+  // ── ارائه نتیجه ───────────────────────────────────────────────
+  /**
+   * نقطه واحد نمایش نتیجه:
+   * - حالت mvp: فقط جدول اطلاعات + دکمه «اصلاح اطلاعات»/«قبض جدید» — بدون ذخیره‌سازی.
+   * - حالت full: جدول ← انتخاب منطقه ← تحلیل تعرفه (مطابق مستندات).
+   */
+  private async presentResult(
+    platform: PlatformInfo,
+    api: BotApi,
+    chatId: number,
+    s: Session,
+    extraWarnings: string[],
+  ): Promise<void> {
+    const bill = s.bill!;
+
+    if (this.cfg.mode === 'mvp') {
+      const confPct = Math.round(overallConfidence(bill) * 100);
+      await api.sendMessage(chatId, formatBillTable(bill, confPct));
+      const hasReview = ['consumptionKwh', 'periodDays', 'energyChargeRials', 'totalRials'].some(
+        (k) => needsReview(bill, k),
+      );
+      await api.sendMessage(chatId, MVP_NOTE, { replyMarkup: mvpKeyboard(hasReview) });
+      return;
+    }
+
+    await this.presentTableAndAnalysis(platform, api, chatId, s, extraWarnings);
+  }
+
   private async presentTableAndAnalysis(
     platform: PlatformInfo,
     api: BotApi,
@@ -525,7 +580,7 @@ export class Flow {
     if (s.bill!.confidence) s.bill!.confidence[key as string] = 0.95;
     s.state = { name: 'idle' };
     await api.sendMessage(chatId, `✅ «${entry[1]}» به ${faNumber(value)} تغییر کرد.`);
-    await this.runAnalysis(platform, api, chatId, s, []);
+    await this.presentResult(platform, api, chatId, s, []);
   }
 
   // ── callbackها ────────────────────────────────────────────────
@@ -548,22 +603,51 @@ export class Flow {
 
     switch (data) {
       case CB.analyze:
+        if (this.cfg.mode === 'mvp') {
+          await api.sendMessage(
+            chatId,
+            'ℹ️ تحلیل تعرفه در نسخه آزمایشی فعلی غیرفعال است؛ این قابلیت پس از اتصال به Xennic فعال می‌شود.',
+          );
+          return;
+        }
         await this.runAnalysis(platform, api, chatId, s, []);
         return;
       case CB.pdf:
+        if (this.cfg.mode === 'mvp') {
+          await api.sendMessage(
+            chatId,
+            'ℹ️ گزارش PDF در نسخه آزمایشی فعلی غیرفعال است؛ این قابلیت پس از اتصال به Xennic فعال می‌شود.',
+          );
+          return;
+        }
         await this.sendPdfReport(api, chatId, s);
         return;
       case CB.consult:
+        if (this.cfg.mode === 'mvp') {
+          await api.sendMessage(
+            chatId,
+            'ℹ️ درخواست مشاوره در نسخه آزمایشی فعلی غیرفعال است (نیازمند ذخیره‌سازی است).',
+          );
+          return;
+        }
         s.state = { name: 'idle' };
         await api.sendMessage(chatId, 'چه نوع مشاوره‌ای می‌خواهید؟', {
           replyMarkup: consultTypeKeyboard(),
         });
         return;
       case CB.consultPv:
+        if (this.cfg.mode === 'mvp') {
+          await api.sendMessage(chatId, 'ℹ️ این قابلیت در نسخه آزمایشی فعلی فعال نیست.');
+          return;
+        }
         s.state = { name: 'consult_message' };
         await api.sendMessage(chatId, '💬 لطفاً سؤال یا موضوع مشاوره خود را در یک پیام بنویسید:');
         return;
       case CB.consultCall:
+        if (this.cfg.mode === 'mvp') {
+          await api.sendMessage(chatId, 'ℹ️ این قابلیت در نسخه آزمایشی فعلی فعال نیست.');
+          return;
+        }
         s.state = { name: 'consult_name', channel: 'call' };
         await api.sendMessage(chatId, '📞 نام شما؟');
         return;
@@ -601,6 +685,13 @@ export class Flow {
     }
 
     if (data.startsWith('act:zone:')) {
+      if (this.cfg.mode === 'mvp') {
+        await api.sendMessage(
+          chatId,
+          'ℹ️ انتخاب منطقه در نسخه آزمایشی فعلی غیرفعال است؛ این قابلیت پس از اتصال به Xennic فعال می‌شود.',
+        );
+        return;
+      }
       const z = data.slice('act:zone:'.length) as ZoneId;
       if (s.bill) {
         s.bill.region = z;
@@ -624,6 +715,10 @@ export class Flow {
   }
 
   private async handleAdminCallback(api: BotApi, chatId: number, data: string): Promise<void> {
+    if (!this.store) {
+      await api.sendMessage(chatId, 'ℹ️ این قابلیت در نسخه آزمایشی فعلی فعال نیست.');
+      return;
+    }
     if (!this.isAdmin(chatId)) {
       await api.sendMessage(chatId, '⛔ فقط ادمین.');
       return;
@@ -676,6 +771,10 @@ export class Flow {
       window?: 'morning' | 'noon' | 'evening';
     },
   ): Promise<void> {
+    if (!this.store) {
+      await api.sendMessage(chatId, 'ℹ️ ثبت مشاوره در نسخه آزمایشی فعلی غیرفعال است.');
+      return;
+    }
     // ضد‌اسپم
     const now = Date.now();
     if (s.lastConsultAt && now - s.lastConsultAt < 10 * 60_000) {

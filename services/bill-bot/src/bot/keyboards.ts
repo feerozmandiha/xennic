@@ -38,6 +38,16 @@ export function analysisKeyboard(report: ReportModel): ReplyMarkup {
   return { inline_keyboard: rows };
 }
 
+/** کیبورد نسخه آزمایشی (MVP) — فقط اصلاح/قبض جدید؛ بدون تحلیل، PDF و مشاوره. */
+export function mvpKeyboard(hasReviewFields: boolean): ReplyMarkup {
+  const rows: NonNullable<ReplyMarkup['inline_keyboard']> = [];
+  if (hasReviewFields) {
+    rows.push([{ text: '✏️ اصلاح اطلاعات', callback_data: CB.fix }]);
+  }
+  rows.push([{ text: '🔄 قبض جدید', callback_data: CB.newBill }]);
+  return { inline_keyboard: rows };
+}
+
 export function zoneKeyboard(): ReplyMarkup {
   return {
     inline_keyboard: [

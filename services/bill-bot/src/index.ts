@@ -84,12 +84,16 @@ async function main(): Promise<void> {
     process.exit(1);
   }
 
-  const store = new ConsultationStore(cfg.dataDir, cfg.storeEncKey || undefined);
-  await store.init();
+  const store =
+    cfg.mode === 'full'
+      ? new ConsultationStore(cfg.dataDir, cfg.storeEncKey || undefined)
+      : null;
+  if (store) await store.init();
   const flow = new Flow(cfg, store);
 
   log.info('bill_bot_starting', {
     platforms: platforms.map((p) => p.id),
+    mode: cfg.mode,
     tariffYear: cfg.tariffYear,
     vision: cfg.visionServiceUrl,
     llm: cfg.llm ? cfg.llm.model : 'off',
