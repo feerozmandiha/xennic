@@ -13,7 +13,7 @@ opencv-contrib-python==4.10.0.84
 Pillow==11.1.0
 scikit-image==0.25.2
 scipy==1.15.2
-numpy==2.2.4
+numpy==1.26.4
 
 # OCR
 pytesseract==0.3.13
