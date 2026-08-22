@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+  <meta name="theme-color" content="#0f172a">
+  <title>اپ موبایل زنیک — خوانش پلاک و قبض</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;600;800&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <span class="logo">⚡</span>
+      <h1>زنیک موبایل</h1>
+      <span class="tag">بدون عضویت · بدون ذخیره</span>
+    </div>
+  </header>
+
+  <main>
+    <nav class="tabs" aria-label="ماژول‌ها">
+      <button class="tab-btn active" onclick="switchTab('nameplate')" id="tab-nameplate">
+        <span class="icon">🔧</span>
+        <span>پلاک تجهیزات</span>
+      </button>
+      <button class="tab-btn" onclick="switchTab('bill')" id="tab-bill">
+        <span class="icon">📄</span>
+        <span>قبض برق</span>
+      </button>
+    </nav>
+
+    <section id="panel-nameplate" class="panel active">
+      <div class="card upload-card">
+        <h2>خوانش پلاک تجهیزات برقی</h2>
+        <p class="sub">تصویر، عکس دوربین یا فایل PDF را انتخاب کنید. اطلاعات در همان لحظه استخراج و نمایش داده می‌شود.</p>
+        <label class="file-drop" for="file-nameplate">
+          <input type="file" id="file-nameplate" accept="image/*,.pdf" onchange="handleFile('nameplate', this)">
+          <span class="drop-text">📸 عکس بگیرید یا فایل بکشید</span>
+          <span class="file-hint">PDF / JPG / PNG</span>
+        </label>
+      </div>
+
+      <div id="result-nameplate" class="result-area" hidden>
+        <div class="result-header">
+          <h3>نتیجه استخراج پلاک</h3>
+          <span class="confidence-badge" id="conf-nameplate">اطمینان: --%</span>
+        </div>
+        <div class="table-wrap">
+          <table id="table-nameplate">
+            <thead><tr><th>فیلد</th><th>مقدار</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section id="panel-bill" class="panel">
+      <div class="card upload-card">
+        <h2>خوانش قبض برق مشترکین</h2>
+        <p class="sub">تصویر قبض، عکس یا فایل PDF. اطلاعات دقیق و حرفه‌ای در جدول نمایش داده می‌شود.</p>
+        <label class="file-drop" for="file-bill">
+          <input type="file" id="file-bill" accept="image/*,.pdf" onchange="handleFile('bill', this)">
+          <span class="drop-text">📄 قبض را بارگذاری کنید</span>
+          <span class="file-hint">PDF / JPG / PNG</span>
+        </label>
+      </div>
+
+      <div id="result-bill" class="result-area" hidden>
+        <div class="result-header">
+          <h3>نتیجه استخراج قبض</h3>
+          <span class="confidence-badge" id="conf-bill">اطمینان: --%</span>
+        </div>
+        <div class="table-wrap">
+          <table id="table-bill">
+            <thead><tr><th>فیلد</th><th>مقدار</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>اپ موبایل زنیک — پورت <strong>۳۰۰۲</strong> · متصل به vision-service (<strong>۸۰۰۳</strong>)</p>
+    <p>بدون ذخیره‌سازی · بدون عضویت · نمایش فوری</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
