@@ -26,6 +26,16 @@ class Settings(BaseSettings):
     paddle_ocr_lang: str = "fa,en,ar"
     vision_llm_provider: Literal["groq", "openai", "anthropic", "mock"] = "groq"
     vision_llm_model: str = "llama-3.2-90b-vision-preview"
+    vision_groq_base_url: str = Field(
+        default="https://api.groq.com/openai/v1/chat/completions",
+        validation_alias=AliasChoices("VISION_GROQ_BASE_URL", "GROQ_VISION_BASE_URL"),
+    )
+
+    # OCR / Tesseract
+    tesseract_data_path: str = Field(
+        default="/usr/share/tesseract-ocr/5/tessdata",
+        validation_alias=AliasChoices("TESSDATA_PATH", "TESSERACT_DATA_PATH"),
+    )
 
     # API Keys
     groq_api_key: str = ""

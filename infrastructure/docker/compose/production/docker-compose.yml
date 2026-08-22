@@ -150,6 +150,9 @@ services:
       LOG_LEVEL: ${LOG_LEVEL:-INFO}
       OCR_ENGINE_MODE: ${VISION_OCR_ENGINE_MODE:-hybrid}
       VISION_LLM_PROVIDER: ${VISION_LLM_PROVIDER:-groq}
+      VISION_LLM_MODEL: ${VISION_LLM_MODEL:-llama-3.2-90b-vision-preview}
+      VISION_GROQ_BASE_URL: ${VISION_GROQ_BASE_URL:-https://api.groq.com/openai/v1/chat/completions}
+      TESSDATA_PATH: ${TESSDATA_PATH:-/usr/share/tesseract-ocr/5/tessdata}
       GROQ_API_KEY: ${GROQ_API_KEY:-}
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
       CORS_ORIGINS: ${VISION_CORS_ORIGINS:-https://app.xennic.example.com,https://www.xennic.example.com}

@@ -26,11 +26,15 @@ class LLMClient(abc.ABC):
 class GroqVisionClient(LLMClient):
     """Groq multimodal (vision) client using existing key."""
 
-    BASE_URL = "https://api.groq.com/openai/v1/chat/completions"
-
-    def __init__(self, api_key: str, model: str | None = None) -> None:
+    def __init__(
+        self,
+        api_key: str,
+        model: str | None = None,
+        base_url: str | None = None,
+    ) -> None:
         self.api_key = api_key
         self.model = model or settings.vision_llm_model
+        self.base_url = base_url or settings.vision_groq_base_url
         self._client = httpx.AsyncClient(timeout=settings.llm_timeout_seconds)
 
     async def analyze_image(
@@ -68,7 +72,7 @@ class GroqVisionClient(LLMClient):
             "Content-Type": "application/json",
         }
 
-        resp = await self._client.post(self.BASE_URL, json=payload, headers=headers)
+        resp = await self._client.post(self.base_url, json=payload, headers=headers)
         resp.raise_for_status()
         data = resp.json()
 
@@ -102,7 +106,10 @@ class MockVisionClient(LLMClient):
 def get_vision_client() -> LLMClient | None:
     provider = settings.vision_llm_provider
     if provider == "groq" and settings.groq_api_key:
-        return GroqVisionClient(api_key=settings.groq_api_key)
+        return GroqVisionClient(
+            api_key=settings.groq_api_key,
+            base_url=settings.vision_groq_base_url,
+        )
     if provider == "openai" and settings.openai_api_key:
         msg = "OpenAI vision client not yet implemented"
         raise NotImplementedError(msg)
