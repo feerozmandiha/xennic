@@ -143,15 +143,26 @@ class QdrantStore:
         ]
 
     async def delete_workspace(self, workspace_id: str) -> int:
-        """Delete all collections for a workspace. Returns count of deleted collections."""
+        """Delete all collections for a workspace. Returns count of deleted collections.
+
+        Collections are created dynamically by collection name and workspace ID,
+        so deletion must not be limited to the built-in COLLECTIONS catalogue.
+        """
         client = await self._ensure_client()
+        prefix = f"xennic_{workspace_id}_"
         deleted = 0
-        for collection in self.COLLECTIONS:
-            name = await self._collection_name(collection, workspace_id)
-            exists = await client.collection_exists(name)
-            if exists:
-                await client.delete_collection(name)
-                deleted += 1
+
+        collections_response = await client.get_collections()
+        collection_names = [
+            collection.name
+            for collection in collections_response.collections
+            if collection.name.startswith(prefix)
+        ]
+
+        for name in collection_names:
+            await client.delete_collection(name)
+            deleted += 1
+
         return deleted
 
     async def delete_documents(
