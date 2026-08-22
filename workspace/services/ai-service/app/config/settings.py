@@ -32,6 +32,11 @@ class Settings(BaseSettings):
     # Engineering Service
     ENGINEERING_SERVICE_URL: str = "http://engineering-service:8001"
     
+    # Embeddings
+    EMBEDDING_API_KEY: Optional[str] = None
+    EMBEDDING_MODEL: str = "text-embedding-3-small"
+    EMBEDDING_DIMENSION: int = 1536
+
     # Qdrant Vector Database
     QDRANT_URL: Optional[str] = None
     QDRANT_API_KEY: Optional[str] = None

@@ -10,6 +10,8 @@ import logging
 from typing import List, Dict, Any, Optional
 from uuid import uuid4
 
+from ..config.settings import settings
+
 logger = logging.getLogger(__name__)
 
 try:
@@ -39,7 +41,7 @@ class QdrantStore:
     """
 
     COLLECTIONS = ['documents', 'articles', 'engineering_standards', 'calculations', 'ai_knowledge']
-    VECTOR_SIZE = 1536  # OpenAI text-embedding-3-small
+    VECTOR_SIZE = settings.EMBEDDING_DIMENSION
 
     def __init__(
         self,

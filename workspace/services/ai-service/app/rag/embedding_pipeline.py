@@ -1,13 +1,12 @@
 """
 Embedding Pipeline for Xennic AI Platform
 
-Generates embeddings for documents using OpenAI's text-embedding-3-small model
-Dimension: 1536
+Generates embeddings for documents using the configured OpenAI-compatible model
+Dimension: configurable via EMBEDDING_DIMENSION
 
 Fallback mode: Returns dummy embeddings when API key is not configured
 """
 
-import os
 import asyncio
 from typing import List, Optional
 import numpy as np
@@ -20,12 +19,14 @@ class EmbeddingPipeline:
     Generate embeddings for documents
     
     Models:
-    - OpenAI: text-embedding-3-small (1536 dimensions)
+    - OpenAI-compatible embedding model from EMBEDDING_MODEL
     - Fallback: Random embeddings for development
     """
     
     def __init__(self):
-        self.api_key = settings.OPENAI_API_KEY
+        self.api_key = settings.EMBEDDING_API_KEY or settings.OPENAI_API_KEY
+        self.model = settings.EMBEDDING_MODEL
+        self.dimension = settings.EMBEDDING_DIMENSION
         self._client = None
     
     def _get_client(self):
@@ -39,8 +40,9 @@ class EmbeddingPipeline:
         """Check if API key is configured"""
         return bool(self.api_key)
     
-    def _generate_dummy_embedding(self, dimension: int = 1536) -> List[float]:
+    def _generate_dummy_embedding(self, dimension: Optional[int] = None) -> List[float]:
         """Generate a dummy embedding for development (no API key)"""
+        dimension = dimension or self.dimension
         # Use deterministic hash-based embeddings for consistency
         # This ensures same text gets same embedding in fallback mode
         np.random.seed(hash(str(dimension)) % 2**32)
@@ -59,7 +61,7 @@ class EmbeddingPipeline:
             texts: List of text strings to embed
             
         Returns:
-            List of embedding vectors (each of length 1536)
+            List of embedding vectors (each of configured length)
         """
         if not texts:
             return []
@@ -72,7 +74,7 @@ class EmbeddingPipeline:
         try:
             client = self._get_client()
             response = await client.embeddings.create(
-                model="text-embedding-3-small",
+                model=self.model,
                 input=texts,
             )
             return [item.embedding for item in response.data]
@@ -89,7 +91,7 @@ class EmbeddingPipeline:
             text: Text string to embed
             
         Returns:
-            Embedding vector (length 1536)
+            Embedding vector (configured length)
         """
         embeddings = await self.generate_embeddings([text])
         return embeddings[0] if embeddings else self._generate_dummy_embedding()
@@ -123,5 +125,5 @@ class EmbeddingPipeline:
         return all_embeddings
     
     def get_embedding_dimension(self) -> int:
-        """Return the dimension of embeddings (1536)"""
-        return 1536
+        """Return the configured embedding dimension"""
+        return self.dimension

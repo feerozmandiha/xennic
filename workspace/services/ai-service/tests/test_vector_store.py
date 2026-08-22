@@ -5,11 +5,13 @@ Tests for vector store implementations:
 - VectorStore (auto-detect dispatcher)
 """
 
-import os
 import json
-import pytest
 from pathlib import Path
 from typing import List, Dict, Any
+
+import pytest
+
+from app.config.settings import settings
 
 
 STORE_DIR = Path("/tmp/vector_store")
@@ -136,7 +138,8 @@ class TestQdrantStore:
             {'title': 'Doc A', 'content': 'Content A'},
             {'title': 'Doc B', 'content': 'Content B'},
         ]
-        embeddings = [[0.1] * 1536, [0.2] * 1536]
+        dimension = settings.EMBEDDING_DIMENSION
+        embeddings = [[0.1] * dimension, [0.2] * dimension]
         return documents, embeddings
 
     async def test_qdrant_add_and_search(self):
@@ -144,15 +147,17 @@ class TestQdrantStore:
         ids = await self.store.add_documents('test_coll', docs, embs, 'test_qdrant')
         assert len(ids) == 2
 
-        results = await self.store.search('test_coll', [0.2] * 1536, 'test_qdrant', limit=5)
+        query_embedding = [0.2] * settings.EMBEDDING_DIMENSION
+        results = await self.store.search('test_coll', query_embedding, 'test_qdrant', limit=5)
         assert len(results) > 0
 
     async def test_qdrant_workspace_isolation(self):
         docs, embs = await self._sample_docs()
         await self.store.add_documents('test_coll', docs, embs, 'test_qdrant')
 
-        results_a = await self.store.search('test_coll', [0.2] * 1536, 'test_qdrant')
-        results_b = await self.store.search('test_coll', [0.2] * 1536, 'other_ws')
+        query_embedding = [0.2] * settings.EMBEDDING_DIMENSION
+        results_a = await self.store.search('test_coll', query_embedding, 'test_qdrant')
+        results_b = await self.store.search('test_coll', query_embedding, 'other_ws')
         assert len(results_a) > 0
         assert len(results_b) == 0
 
