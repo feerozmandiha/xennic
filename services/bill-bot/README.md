@@ -14,6 +14,33 @@
 حالت از طریق متغیر `BILL_BOT_MODE=mvp|full` در env تنظیم می‌شود (پیش‌فرض `mvp`).
 در حالت `mvp` هیچ فایلی روی دیسک نوشته نمی‌شود (`DATA_DIR` ساخته/استفاده نمی‌شود) و نشست‌ها فقط در حافظه نگه داشته می‌شوند.
 
+## تست و بررسی روی لوکال (Pull)
+
+```bash
+# ۱) دریافت شاخه توسعه از origin
+git fetch origin
+git checkout arena/01a0296d-xennic
+git pull origin arena/01a0296d-xennic
+
+# ۲) ساخت env (توکن‌های واقعی را در آن وارد کنید)
+cp services/bill-bot/.env.example services/bill-bot/.env
+
+# ۳) اجرای تست‌ها (بدون نیاز به نصب وابستگی — Node ≥ 22.6)
+node --experimental-strip-types --test services/bill-bot/test/*.test.ts
+#   یا: cd services/bill-bot && node --experimental-strip-types --test test/*.test.ts
+
+# ۴) اجرای ربات (نسخه آزمایشی — فقط جدول و بدون ذخیره‌سازی)
+cd services/bill-bot && node --experimental-strip-types src/index.ts
+#   یا با pnpm از ریشه:  pnpm --filter @xennic/bill-bot dev
+
+# ۵) (اختیاری) راه‌اندازی vision-service برای OCR دقیق‌تر — از ریشه مخزن
+docker compose -f infrastructure/docker/compose/base/docker-compose.yml up -d --no-build vision-service
+curl -s http://localhost:8003/health
+```
+
+> سناریوی تست پیشنهادی: `/start` ← ارسال عکس/PDF قبض ← مشاهده جدول (شناسه‌ای / دوره و قرائت / ریز مبالغ) ← دکمه «اصلاح اطلاعات» برای فیلدهای ⚠️ ← «قبض جدید».
+> بررسی «بدون ذخیره‌سازی»: مطمئن شوید دایرکتوری `services/bill-bot/data` ساخته **نشده** باشد.
+
 ## پیش‌نیازها
 
 - Node.js ≥ 22.6 (بدون نیاز به build یا نصب وابستگی اجباری)
